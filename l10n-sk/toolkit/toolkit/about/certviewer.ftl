@@ -36,6 +36,9 @@ certificate-viewer-key-size = Veľkosť kľúča
 certificate-viewer-inc-locality = Sídlo spoločnosti
 certificate-viewer-locality = Lokalita
 certificate-viewer-location = Umiestnenie
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Názov protokolu
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID protokolu
 certificate-viewer-method = Metóda
 certificate-viewer-modulus = Modul
@@ -110,6 +113,8 @@ certificate-viewer-export = Exportovať
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (neznáme)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certifikát
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -19,6 +19,7 @@
 #include "mozilla/dom/CustomElementRegistry.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
+#include "mozilla/dom/ElementBinding.h"
 #include "mozilla/dom/FormData.h"
 #include "mozilla/dom/FragmentOrElement.h"
 #include "mozilla/dom/HTMLElement.h"
@@ -33,6 +34,7 @@
 #include "mozilla/dom/SessionStoreUtils.h"
 #include "mozilla/dom/SessionStoreUtilsBinding.h"
 #include "mozilla/dom/ToJSValue.h"
+#include "mozilla/dom/TrustedHTML.h"
 #include "mozilla/dom/UnionTypes.h"
 #include "mozilla/dom/sessionstore/SessionStoreTypes.h"
 #include "mozilla/dom/txIXPathContext.h"
@@ -43,7 +45,6 @@
 #include "mozilla/dom/XPathExpression.h"
 #include "mozilla/dom/PBackgroundSessionStorageCache.h"
 #include "mozilla/ipc/BackgroundUtils.h"
-#include "mozilla/ReverseIterator.h"
 #include "mozilla/UniquePtr.h"
 #include "nsCharSeparatedTokenizer.h"
 #include "nsContentList.h"
@@ -280,7 +281,7 @@ void SessionStoreUtils::RestoreDocShellCapabilities(
   if (!mozilla::SessionHistoryInParent()) {
     // With SessionHistoryInParent, this is set from the parent process.
     BrowsingContext* bc = aDocShell->GetBrowsingContext();
-    Unused << bc->SetAllowJavascript(allowJavascript);
+    (void)bc->SetAllowJavascript(allowJavascript);
   }
 }
 
@@ -455,7 +456,7 @@ static void AppendValueToCollectedData(Document& aDocument, nsINode* aNode,
     // further causes an explosion of escape characters. cf. bug 467409
     if (aId.EqualsLiteral("sessionData")) {
       nsAutoCString url;
-      Unused << aDocument.GetDocumentURI()->GetSpecIgnoringRef(url);
+      (void)aDocument.GetDocumentURI()->GetSpecIgnoringRef(url);
       if (url.EqualsLiteral("about:sessionrestore") ||
           url.EqualsLiteral("about:welcomeback")) {
         JS::Rooted<JS::Value> jsval(aCx);
@@ -562,11 +563,11 @@ static uint32_t SizeOfFormEntry(const FormEntryValue& aValue) {
               formDataSize += entry.name().Length();
               const auto& entryValue = entry.value();
               switch (entryValue.type()) {
-                case FormDataValue::TBlobImpl:
+                case IPCFormDataValue::TBlobImpl:
                   formDataSize +=
                       entryValue.get_BlobImpl()->GetAllocationSize();
                   break;
-                case FormDataValue::TnsString:
+                case IPCFormDataValue::TnsString:
                   formDataSize += entryValue.get_nsString().Length();
                   break;
                 default:
@@ -1297,12 +1298,12 @@ static void SetSessionData(JSContext* aCx, Element* aElement,
   }
 }
 
-MOZ_CAN_RUN_SCRIPT
-static void SetInnerHTML(Document& aDocument, const nsString& aInnerHTML) {
+MOZ_CAN_RUN_SCRIPT static void SetInnerHTML(Document& aDocument,
+                                            const nsAString& aInnerHTML) {
   RefPtr<Element> bodyElement = aDocument.GetBody();
   if (bodyElement && bodyElement->IsInDesignMode()) {
     IgnoredErrorResult rv;
-    bodyElement->SetInnerHTML(aInnerHTML, aDocument.NodePrincipal(), rv);
+    bodyElement->SetInnerHTMLTrusted(aInnerHTML, aDocument.NodePrincipal(), rv);
     if (!rv.Failed()) {
       nsContentUtils::DispatchInputEvent(bodyElement);
     }
@@ -1365,7 +1366,7 @@ bool SessionStoreUtils::RestoreFormData(const GlobalObject& aGlobal,
   // Don't restore any data for the given frame if the URL
   // stored in the form data doesn't match its current URL.
   nsAutoCString url;
-  Unused << aDocument.GetDocumentURI()->GetSpecIgnoringRef(url);
+  (void)aDocument.GetDocumentURI()->GetSpecIgnoringRef(url);
   if (!aData.mUrl.Value().Equals(url)) {
     return false;
   }
@@ -1660,6 +1661,8 @@ already_AddRefed<Promise> SessionStoreUtils::InitializeRestore(
     return nullptr;
   }
 
+  aContext.MaybeReconstructActiveEntryList();
+
   nsCOMPtr<nsISHistory> shistory = aContext.GetSessionHistory();
   MOZ_DIAGNOSTIC_ASSERT(shistory);
   shistory->ReloadCurrentEntry();
@@ -1673,8 +1676,7 @@ void SessionStoreUtils::RestoreDocShellState(
   if (aDocShell) {
     nsCOMPtr<nsIURI> currentUri;
     nsDocShell::Cast(aDocShell)->GetCurrentURI(getter_AddRefs(currentUri));
-    if (aState.URI() &&
-        (!currentUri || mozilla::net::SchemeIsAbout(currentUri))) {
+    if (aState.URI() && (!currentUri || currentUri->SchemeIs("about"))) {
       aDocShell->SetCurrentURIForSessionStore(aState.URI());
     }
     RestoreDocShellCapabilities(aDocShell, aState.docShellCaps());
@@ -1719,7 +1721,7 @@ already_AddRefed<Promise> SessionStoreUtils::RestoreDocShellState(
     }
   }
 
-  Unused << aContext.SetAllowJavascript(allowJavascript);
+  (void)aContext.SetAllowJavascript(allowJavascript);
 
   DocShellRestoreState state = {uri, aDocShellCaps};
 

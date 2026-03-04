@@ -33,14 +33,11 @@ LBoxAllocation LIRGeneratorMIPS64::useBoxFixed(MDefinition* mir, Register reg1,
   return LBoxAllocation(LUse(reg1, mir->virtualRegister(), useAtStart));
 }
 
-void LIRGeneratorMIPS64::lowerDivI64(MDiv* div) {
-  if (div->isUnsigned()) {
-    lowerUDivI64(div);
-    return;
-  }
+LDefinition LIRGeneratorMIPS64::tempToUnbox() { return temp(); }
 
-  LDivOrModI64* lir = new (alloc())
-      LDivOrModI64(useRegister(div->lhs()), useRegister(div->rhs()), temp());
+void LIRGeneratorMIPS64::lowerDivI64(MDiv* div) {
+  auto* lir = new (alloc())
+      LDivOrModI64(useRegister(div->lhs()), useRegister(div->rhs()));
   defineInt64(lir, div);
 }
 
@@ -49,13 +46,8 @@ void LIRGeneratorMIPS64::lowerWasmBuiltinDivI64(MWasmBuiltinDivI64* div) {
 }
 
 void LIRGeneratorMIPS64::lowerModI64(MMod* mod) {
-  if (mod->isUnsigned()) {
-    lowerUModI64(mod);
-    return;
-  }
-
-  LDivOrModI64* lir = new (alloc())
-      LDivOrModI64(useRegister(mod->lhs()), useRegister(mod->rhs()), temp());
+  auto* lir = new (alloc())
+      LDivOrModI64(useRegister(mod->lhs()), useRegister(mod->rhs()));
   defineInt64(lir, mod);
 }
 
@@ -64,29 +56,15 @@ void LIRGeneratorMIPS64::lowerWasmBuiltinModI64(MWasmBuiltinModI64* mod) {
 }
 
 void LIRGeneratorMIPS64::lowerUDivI64(MDiv* div) {
-  LUDivOrModI64* lir = new (alloc())
-      LUDivOrModI64(useRegister(div->lhs()), useRegister(div->rhs()), temp());
+  auto* lir = new (alloc())
+      LUDivOrModI64(useRegister(div->lhs()), useRegister(div->rhs()));
   defineInt64(lir, div);
 }
 
 void LIRGeneratorMIPS64::lowerUModI64(MMod* mod) {
-  LUDivOrModI64* lir = new (alloc())
-      LUDivOrModI64(useRegister(mod->lhs()), useRegister(mod->rhs()), temp());
+  auto* lir = new (alloc())
+      LUDivOrModI64(useRegister(mod->lhs()), useRegister(mod->rhs()));
   defineInt64(lir, mod);
-}
-
-void LIRGeneratorMIPS64::lowerBigIntDiv(MBigIntDiv* ins) {
-  auto* lir = new (alloc()) LBigIntDiv(useRegister(ins->lhs()),
-                                       useRegister(ins->rhs()), temp(), temp());
-  define(lir, ins);
-  assignSafepoint(lir, ins);
-}
-
-void LIRGeneratorMIPS64::lowerBigIntMod(MBigIntMod* ins) {
-  auto* lir = new (alloc()) LBigIntMod(useRegister(ins->lhs()),
-                                       useRegister(ins->rhs()), temp(), temp());
-  define(lir, ins);
-  assignSafepoint(lir, ins);
 }
 
 void LIRGeneratorMIPS64::lowerAtomicLoad64(MLoadUnboxedScalar* ins) {
@@ -120,7 +98,7 @@ void LIRGenerator::visitBox(MBox* box) {
     define(new (alloc()) LValue(opd->toConstant()->toJSValue()), box,
            LDefinition(LDefinition::BOX));
   } else {
-    LBox* ins = new (alloc()) LBox(useRegister(opd), opd->type());
+    LBox* ins = new (alloc()) LBox(useRegisterAtStart(opd), opd->type());
     define(ins, box, LDefinition(LDefinition::BOX));
   }
 }
@@ -129,10 +107,10 @@ void LIRGenerator::visitUnbox(MUnbox* unbox) {
   MDefinition* box = unbox->getOperand(0);
   MOZ_ASSERT(box->type() == MIRType::Value);
 
-  LUnbox* lir;
+  LInstructionHelper<1, BOX_PIECES, 0>* lir;
   if (IsFloatingPointType(unbox->type())) {
-    lir = new (alloc())
-        LUnboxFloatingPoint(useRegisterAtStart(box), unbox->type());
+    MOZ_ASSERT(unbox->type() == MIRType::Double);
+    lir = new (alloc()) LUnboxFloatingPoint(useBoxAtStart(box));
   } else if (unbox->fallible()) {
     // If the unbox is fallible, load the Value in a register first to
     // avoid multiple loads.

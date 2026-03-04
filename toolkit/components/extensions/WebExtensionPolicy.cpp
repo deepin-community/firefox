@@ -60,6 +60,12 @@ static const char kBackgroundPageHTMLEnd[] =
   "extensions.webextensions.base-content-security-policy.v3"
 #define DEFAULT_BASE_CSP_V3 "script-src 'self' 'wasm-unsafe-eval';"
 
+#define BASE_CSP_PREF_V3_WITH_LOCALHOST \
+  "extensions.webextensions.base-content-security-policy.v3-with-localhost"
+#define DEFAULT_BASE_CSP_V3_WITH_LOCALHOST                   \
+  "script-src 'self' 'wasm-unsafe-eval' http://localhost:* " \
+  "http://127.0.0.1:*;"
+
 static inline ExtensionPolicyService& EPS() {
   return ExtensionPolicyService::GetSingleton();
 }
@@ -191,6 +197,7 @@ WebExtensionPolicyCore::WebExtensionPolicyCore(GlobalObject& aGlobal,
       mTemporarilyInstalled(aInit.mTemporarilyInstalled),
       mBackgroundWorkerScript(aInit.mBackgroundWorkerScript),
       mIgnoreQuarantine(aInit.mIsPrivileged || aInit.mIgnoreQuarantine),
+      mHasRecommendedState(aInit.mHasRecommendedState),
       mPermissions(new AtomSet(aInit.mPermissions)) {
   // In practice this is not necessary, but in tests where the uuid
   // passed in is not lowercased various tests can fail.
@@ -201,6 +208,13 @@ WebExtensionPolicyCore::WebExtensionPolicyCore(GlobalObject& aGlobal,
     nsresult rv = Preferences::GetString(BASE_CSP_PREF_V2, mBaseCSP);
     if (NS_FAILED(rv)) {
       mBaseCSP = NS_LITERAL_STRING_FROM_CSTRING(DEFAULT_BASE_CSP_V2);
+    }
+  } else if (mTemporarilyInstalled) {
+    nsresult rv =
+        Preferences::GetString(BASE_CSP_PREF_V3_WITH_LOCALHOST, mBaseCSP);
+    if (NS_FAILED(rv)) {
+      mBaseCSP =
+          NS_LITERAL_STRING_FROM_CSTRING(DEFAULT_BASE_CSP_V3_WITH_LOCALHOST);
     }
   } else {
     nsresult rv = Preferences::GetString(BASE_CSP_PREF_V3, mBaseCSP);
@@ -402,7 +416,7 @@ bool WebExtensionPolicy::Enable() {
     mBrowsingContextGroup = group->MakeKeepAlivePtr();
   }
 
-  Unused << Proto()->SetSubstitution(MozExtensionHostname(), BaseURI());
+  (void)Proto()->SetSubstitution(MozExtensionHostname(), BaseURI());
 
   mActive = true;
   return true;
@@ -422,7 +436,7 @@ bool WebExtensionPolicy::Disable() {
     mBrowsingContextGroup = nullptr;
   }
 
-  Unused << Proto()->SetSubstitution(MozExtensionHostname(), nullptr);
+  (void)Proto()->SetSubstitution(MozExtensionHostname(), nullptr);
 
   mActive = false;
   return true;
@@ -453,6 +467,10 @@ Result<nsString, nsresult> WebExtensionPolicy::GetURL(
 void WebExtensionPolicy::SetIgnoreQuarantine(bool aIgnore) {
   WebExtensionPolicy_Binding::ClearCachedIgnoreQuarantineValue(this);
   mCore->SetIgnoreQuarantine(aIgnore);
+}
+
+void WebExtensionPolicy::SetHasRecommendedState(bool aHasRecommendedState) {
+  mCore->SetHasRecommendedState(aHasRecommendedState);
 }
 
 void WebExtensionPolicy::RegisterContentScript(
@@ -494,10 +512,7 @@ void WebExtensionPolicy::SetAllowedOrigins(MatchPatternSet& aAllowedOrigins) {
 }
 
 void WebExtensionPolicy::InjectContentScripts(ErrorResult& aRv) {
-  nsresult rv = EPS().InjectContentScripts(this);
-  if (NS_FAILED(rv)) {
-    aRv.Throw(rv);
-  }
+  EPS().InjectContentScripts(this, aRv);
 }
 
 /* static */
@@ -514,7 +529,7 @@ bool WebExtensionPolicy::IsExtensionProcess(GlobalObject& aGlobal) {
 bool WebExtensionPolicy::BackgroundServiceWorkerEnabled(GlobalObject& aGlobal) {
   // When MOZ_WEBEXT_WEBIDL_ENABLED is not set at compile time, extension APIs
   // are not available to extension service workers. To avoid confusion, the
-  // extensions.backgroundServiceWorkerEnabled.enabled pref is locked to false
+  // extensions.backgroundServiceWorker.enabled pref is locked to false
   // in modules/libpref/init/all.js when MOZ_WEBEXT_WEBIDL_ENABLED is not set.
   return StaticPrefs::extensions_backgroundServiceWorker_enabled_AtStartup();
 }
@@ -557,7 +572,7 @@ bool WebExtensionPolicy::IsQuarantinedDoc(const DocInfo& aDoc) {
 /* static */
 bool WebExtensionPolicy::IsQuarantinedURI(const URLInfo& aURI) {
   // Ensure EPS is initialized before asking it about quarantined domains.
-  Unused << EPS();
+  (void)EPS();
 
   RefPtr<AtomSet> quarantinedDomains =
       ExtensionPolicyService::QuarantinedDomains();
@@ -611,13 +626,7 @@ bool WebExtensionPolicy::CanAccessContext(nsILoadContext* aContext) const {
 
 bool WebExtensionPolicy::CanAccessWindow(
     const dom::WindowProxyHolder& aWindow) const {
-  if (PrivateBrowsingAllowed()) {
-    return true;
-  }
-  // match browsing mode with policy
-  nsIDocShell* docShell = aWindow.get()->GetDocShell();
-  nsCOMPtr<nsILoadContext> loadContext = do_QueryInterface(docShell);
-  return !(loadContext && loadContext->UsePrivateBrowsing());
+  return PrivateBrowsingAllowed() || !aWindow.get()->UsePrivateBrowsing();
 }
 
 void WebExtensionPolicy::GetReadyPromise(
@@ -703,11 +712,20 @@ WebExtensionContentScript::Constructor(GlobalObject& aGlobal,
   return script.forget();
 }
 
+void WebExtensionContentScript::GetWorldId(nsAString& aWorldId) const {
+  if (!mWorldId.IsNull()) {
+    aWorldId = mWorldId.Value();
+  } else {
+    SetDOMStringToNull(aWorldId);
+  }
+}
+
 MozDocumentMatcher::MozDocumentMatcher(GlobalObject& aGlobal,
                                        const dom::MozDocumentMatcherInit& aInit,
                                        bool aRestricted, ErrorResult& aRv)
     : mHasActiveTabPermission(aInit.mHasActiveTabPermission),
       mRestricted(aRestricted),
+      mIsUserScript(aInit.mIsUserScript),
       mAllFrames(aInit.mAllFrames),
       mCheckPermissions(aInit.mCheckPermissions),
       mFrameID(aInit.mFrameID),
@@ -764,7 +782,9 @@ WebExtensionContentScript::WebExtensionContentScript(
                          !aExtension.HasPermission(nsGkAtoms::mozillaAddons),
                          aRv),
       mRunAt(aInit.mRunAt),
-      mWorld(aInit.mWorld) {
+      mWorld(aInit.mWorld),
+      mWorldId(aInit.mWorldId),
+      mCssOrigin(aInit.mCssOrigin) {
   mCssPaths.Assign(aInit.mCssPaths);
   mJsPaths.Assign(aInit.mJsPaths);
   mExtension = &aExtension;
@@ -773,6 +793,12 @@ WebExtensionContentScript::WebExtensionContentScript(
   if (mExtension->ManifestVersion() >= 3) {
     mCheckPermissions = true;
   }
+
+  // The USER_SCRIPT world is not supported for regular content scripts.
+  MOZ_ASSERT_IF(!mIsUserScript,
+                mWorld != ContentScriptExecutionWorld::USER_SCRIPT);
+  // User scripts should never run in privileged content script worlds.
+  MOZ_ASSERT_IF(mIsUserScript, mWorld != ContentScriptExecutionWorld::ISOLATED);
 }
 
 bool MozDocumentMatcher::Matches(const DocInfo& aDoc,
@@ -812,15 +838,18 @@ bool MozDocumentMatcher::Matches(const DocInfo& aDoc,
     return false;
   }
 
+  if (mIsUserScript && mExtension &&
+      !mExtension->HasPermission(nsGkAtoms::userScripts)) {
+    // The "userScripts" permission can be revoked after script registration.
+    return false;
+  }
+
   // Top-level about:blank is a special case. Unlike about:blank frames/windows
   // opened by web pages, these do not have an origin that could be matched by
   // a match pattern (they have a null principal instead). To allow extensions
   // that intend to run scripts "everywhere", consider the document matched if
   // the match pattern describe a very broad pattern (such as "<all_urls>").
   if (mMatchAboutBlank && aDoc.IsTopLevelOpaqueAboutBlank()) {
-    if (StaticPrefs::extensions_script_about_blank_without_permission()) {
-      return true;
-    }
     if (mHasActiveTabPermission) {
       return true;
     }
@@ -878,15 +907,31 @@ bool MozDocumentMatcher::MatchesURI(const URLInfo& aURL,
                                     bool aIgnorePermissions) const {
   MOZ_ASSERT((!mRestricted && !mCheckPermissions) || mExtension);
 
-  if (!mMatches->Matches(aURL)) {
-    return false;
+  if (MOZ_LIKELY(!mIsUserScript)) {
+    // mMatches must always match for normal content scripts.
+    if (!mMatches->Matches(aURL)) {
+      return false;
+    }
+    // mIncludeGlobs is optional, but if specified must match.
+    if (!mIncludeGlobs.IsNull() &&
+        !mIncludeGlobs.Value().Matches(aURL.CSpec())) {
+      return false;
+    }
+  } else {
+    // Unlike normal content scripts that match by (mMatches AND mIncludeGlobs),
+    // user scripts accept if there is any match: (mMatches OR mIncludeGlobs).
+    // This implies that mMatches does not have to be specified.
+    // mMatches is not a Nullable because we want it to be specified for content
+    // scripts (which is by far the most common case). An empty MatchPatternSet
+    // is equivalent to an unspecified (non-matching) mMatches.
+    if (!mMatches->Matches(aURL) &&
+        (mIncludeGlobs.IsNull() ||
+         !mIncludeGlobs.Value().Matches(aURL.CSpec()))) {
+      return false;
+    }
   }
 
   if (mExcludeMatches && mExcludeMatches->Matches(aURL)) {
-    return false;
-  }
-
-  if (!mIncludeGlobs.IsNull() && !mIncludeGlobs.Value().Matches(aURL.CSpec())) {
     return false;
   }
 
@@ -979,9 +1024,7 @@ void DocumentObserver::Observe(
   }
 }
 
-void DocumentObserver::Disconnect() {
-  Unused << EPS().UnregisterObserver(*this);
-}
+void DocumentObserver::Disconnect() { (void)EPS().UnregisterObserver(*this); }
 
 void DocumentObserver::NotifyMatch(MozDocumentMatcher& aMatcher,
                                    nsPIDOMWindowOuter* aWindow) {
@@ -1051,9 +1094,10 @@ bool DocInfo::IsTopLevelOpaqueAboutBlank() const {
         bool isFinalAboutBlankDoc =
             mThis.URL().Scheme() == nsGkAtoms::about &&
             mThis.URL().Spec().EqualsLiteral("about:blank") &&
-            // Exclude initial about:blank to avoid matching initial about:blank
-            // of pending loads in the parent process, see bug 1901894.
-            !aWin->GetDoc()->IsInitialDocument();
+            // Exclude uncommitted initial about:blank to avoid matching
+            // about:blank of pending non-blank loads in the parent process,
+            // see bug 1901894.
+            !aWin->GetDoc()->IsUncommittedInitialDocument();
 
         // Principal() is expected to never be nullptr given a Window.
         MOZ_ASSERT(mThis.Principal());

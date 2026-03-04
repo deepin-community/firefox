@@ -12,7 +12,6 @@
 #include "base/platform_thread.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/Mutex.h"
-#include "mozilla/Types.h"
 #include "mozilla/UniquePtr.h"
 #include "nsTArray.h"
 
@@ -36,7 +35,7 @@ class SandboxReporter final : public PlatformThread::Delegate {
 
   // Used in GeckoChildProcessHost to connect the child process's
   // client to this report collector.
-  void GetClientFileDescriptorMapping(int* aSrcFd, int* aDstFd) const;
+  int GetClientFileDescriptor() const;
 
   // A snapshot of the report ring buffer; element 0 of `mReports` is
   // the `mOffset`th report to be received, and so on.

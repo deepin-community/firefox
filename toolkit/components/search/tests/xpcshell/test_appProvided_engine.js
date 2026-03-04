@@ -25,16 +25,6 @@ let CONFIG = [
             { name: "partnerCode", value: "{partnerCode}" },
             { name: "starbase", value: "Regula I" },
             { name: "experiment", value: "Genesis" },
-            {
-              name: "accessPoint",
-              searchAccessPoint: {
-                addressbar: "addressbar",
-                contextmenu: "contextmenu",
-                homepage: "homepage",
-                newtab: "newtab",
-                searchbar: "searchbar",
-              },
-            },
           ],
           searchTermParamName: "search",
         },
@@ -46,6 +36,18 @@ let CONFIG = [
         trending: {
           base: "https://example.com/3",
           searchTermParamName: "trending",
+          // In the past
+          isNewUntil: "2020-01-01",
+        },
+        visualSearch: {
+          base: "https://example.com/4",
+          searchTermParamName: "visual",
+          displayNameMap: {
+            default: "Visual Search",
+          },
+          // In the future
+          isNewUntil: "2095-01-01",
+          excludePartnerCodeFromTelemetry: true,
         },
       },
     },
@@ -60,6 +62,9 @@ let CONFIG = [
           base: "https://example.com/1",
           searchTermParamName: "search",
         },
+        trending: {
+          base: "https://example.com/3",
+        },
       },
     },
   },
@@ -69,14 +74,13 @@ let CONFIG = [
     base: {
       classification: "unknown",
       name: "override name",
+      partnerCode: "old-pc",
       urls: {
         search: {
           base: "https://www.example.com/search",
           params: [
-            {
-              name: "old_param",
-              value: "old_value",
-            },
+            { name: "old_param", value: "old_value" },
+            { name: "pc", value: "{partnerCode}" },
           ],
           searchTermParamName: "q",
         },
@@ -87,12 +91,10 @@ let CONFIG = [
         environment: {
           locales: ["en-US"],
         },
+        // In the future
+        isNewUntil: "2095-01-01",
       },
     ],
-  },
-  {
-    globalDefault: "engine_no_initial_icon",
-    specificDefaults: [],
   },
 ];
 
@@ -101,9 +103,13 @@ const TEST_CONFIG_OVERRIDE = [
     identifier: "override",
     urls: {
       search: {
-        params: [{ name: "new_param", value: "new_value" }],
+        params: [
+          { name: "new_param", value: "new_value" },
+          { name: "pc", value: "{partnerCode}" },
+        ],
       },
     },
+    partnerCode: "new_partner_code",
     telemetrySuffix: "tsfx",
     clickUrl: "https://example.org/somewhere",
   },
@@ -141,7 +147,7 @@ add_task(async function test_engine_with_all_params_set() {
   let submission = engine.getSubmission("test");
   Assert.equal(
     submission.uri.spec,
-    "https://example.com/1?partnerCode=pc&starbase=Regula%20I&experiment=Genesis&accessPoint=searchbar&search=test",
+    "https://example.com/1?partnerCode=pc&starbase=Regula%20I&experiment=Genesis&search=test",
     "Should have the correct search URL"
   );
   Assert.ok(!submission.postData, "Should not have postData for a GET url");
@@ -162,14 +168,71 @@ add_task(async function test_engine_with_all_params_set() {
   );
 
   let trendingSubmission = engine.getSubmission(
-    "test",
+    "",
     SearchUtils.URL_TYPE.TRENDING_JSON
   );
   Assert.equal(
     trendingSubmission.uri.spec,
-    "https://example.com/3?trending=test"
+    "https://example.com/3?trending=",
+    "Should have the correct trending URL with search term parameter."
   );
-  Assert.ok(!submission.postData, "Should not have postData for a GET url");
+  Assert.ok(
+    !trendingSubmission.postData,
+    "Should not have postData for a GET url"
+  );
+
+  let visualSearchSubmission = engine.getSubmission(
+    "https://example.com/test.jpg",
+    SearchUtils.URL_TYPE.VISUAL_SEARCH
+  );
+  Assert.equal(
+    visualSearchSubmission.uri.spec,
+    "https://example.com/4?visual=" +
+      encodeURIComponent("https://example.com/test.jpg"),
+    "Should have the correct visual search URL with search term parameter."
+  );
+  Assert.ok(
+    !visualSearchSubmission.postData,
+    "Should not have postData for a GET url"
+  );
+
+  // The `SEARCH` URL config does not define any of these properties.
+  Assert.equal(
+    engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.SEARCH)
+      .displayName,
+    "",
+    "The SEARCH URL shouldn't have a display name"
+  );
+  Assert.ok(
+    !engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.SEARCH).isNew(),
+    "isNew for the SEARCH URL should return false"
+  );
+  Assert.ok(
+    !engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.SEARCH)
+      .excludePartnerCodeFromTelemetry,
+    "excludePartnerCodeFromTelemetry for the SEARCH URL should be false"
+  );
+
+  // The `VISUAL_SEARCH` URL config defines all of these properties.
+  Assert.equal(
+    engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.VISUAL_SEARCH)
+      .displayName,
+    "Visual Search",
+    "The display name of the visual search URL should be correct"
+  );
+  Assert.ok(
+    engine.wrappedJSObject
+      .getURLOfType(SearchUtils.URL_TYPE.VISUAL_SEARCH)
+      .isNew(),
+    "isNew for the visual search URL should return true"
+  );
+  Assert.ok(
+    engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.VISUAL_SEARCH)
+      .excludePartnerCodeFromTelemetry,
+    "excludePartnerCodeFromTelemetry for the visual search URL should be true"
+  );
+
+  checkUrlOfType(engine);
 });
 
 add_task(async function test_engine_with_some_params_set() {
@@ -201,11 +264,17 @@ add_task(async function test_engine_with_some_params_set() {
     null,
     "Should not have a suggestions URL"
   );
-  Assert.equal(
-    engine.getSubmission("test", SearchUtils.URL_TYPE.TRENDING_JSON),
-    null,
-    "Should not have a trending URL"
+  let trendingSubmission = engine.getSubmission(
+    "",
+    SearchUtils.URL_TYPE.TRENDING_JSON
   );
+  Assert.equal(
+    trendingSubmission.uri.spec,
+    "https://example.com/3",
+    "Should have the correct trending URL without search term parameter."
+  );
+
+  checkUrlOfType(engine);
 });
 
 add_task(async function test_engine_remote_override() {
@@ -217,14 +286,18 @@ add_task(async function test_engine_remote_override() {
   Assert.equal(
     engine.telemetryId,
     "override",
-    "Should have the overridden telemetry suffix"
+    "Should not have a telemetry suffix - overrides not applied yet"
   );
   Assert.equal(
     engine.getSubmission("test").uri.spec,
-    "https://www.example.com/search?old_param=old_value&q=test",
-    "Should have the overridden URL"
+    "https://www.example.com/search?old_param=old_value&pc=old-pc&q=test",
+    "Should not have overridden URL - overrides not applied yet"
   );
-  Assert.equal(engine.clickUrl, null, "Should not have a click URL");
+  Assert.equal(
+    engine.clickUrl,
+    null,
+    "Should not have a click URL - overrides not applied yet"
+  );
 
   // Now apply and test the overrides.
   await SearchTestUtils.updateRemoteSettingsConfig(
@@ -243,7 +316,7 @@ add_task(async function test_engine_remote_override() {
   );
   Assert.equal(
     engine.getSubmission("test").uri.spec,
-    "https://www.example.com/search?new_param=new_value&q=test",
+    "https://www.example.com/search?new_param=new_value&pc=new_partner_code&q=test",
     "Should have the overridden URL"
   );
   Assert.equal(
@@ -251,4 +324,117 @@ add_task(async function test_engine_remote_override() {
     "https://example.org/somewhere",
     "Should have the click URL specified by the override"
   );
+
+  checkUrlOfType(engine);
 });
+
+add_task(async function test_displayName() {
+  let engine = Services.search.getEngineById("testEngine");
+
+  let supportedTypesWithoutNames = [
+    SearchUtils.URL_TYPE.SEARCH,
+    SearchUtils.URL_TYPE.SUGGEST_JSON,
+  ];
+  for (let type of supportedTypesWithoutNames) {
+    Assert.ok(type, "Sanity check: The type exists");
+    Assert.ok(
+      engine.supportsResponseType(type),
+      "Sanity check: The engine should support response type: " + type
+    );
+    Assert.ok(
+      !engine.wrappedJSObject.getURLOfType(type).displayName,
+      "displayName should be falsey for a type that doesn't have a name"
+    );
+  }
+
+  let supportedTypesWithNames = {
+    [SearchUtils.URL_TYPE.VISUAL_SEARCH]: "Visual Search",
+  };
+  for (let [type, expectedName] of Object.entries(supportedTypesWithNames)) {
+    Assert.ok(type, "Sanity check: The type exists");
+    Assert.ok(
+      engine.supportsResponseType(type),
+      "Sanity check: The engine should support response type: " + type
+    );
+    Assert.equal(
+      engine.wrappedJSObject.getURLOfType(type).displayName,
+      expectedName,
+      "displayName should be correct for a type that has a name"
+    );
+  }
+
+  let unsupportedTypes = [
+    SearchUtils.URL_TYPE.OPENSEARCH,
+    SearchUtils.URL_TYPE.SEARCH_FORM,
+  ];
+  for (let type of unsupportedTypes) {
+    Assert.ok(type, "Sanity check: The type exists");
+    Assert.ok(
+      !engine.supportsResponseType(type),
+      "Sanity check: The engine should not support response type: " + type
+    );
+    Assert.ok(
+      !engine.wrappedJSObject.getURLOfType(type),
+      "getURLOfType should return nothing for unsupported type: " + type
+    );
+  }
+});
+
+add_task(async function test_isNew_urlOnly() {
+  // This engine has `isNewUntil` defined for its trending and visual search
+  // URLs, but the trending date is in the past.
+  let engine = Services.search.getEngineById("testEngine");
+  Assert.ok(
+    !engine.wrappedJSObject.isNew(),
+    "isNew should return false for testEngine without an arg"
+  );
+
+  // `isNewUntil` isn't defined on the search URL
+  Assert.ok(
+    !engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.SEARCH).isNew(),
+    "isNew should return false for SEARCH"
+  );
+
+  // In the past
+  Assert.ok(
+    !engine.wrappedJSObject
+      .getURLOfType(SearchUtils.URL_TYPE.TRENDING_JSON)
+      .isNew(),
+    "isNew should return false for TRENDING_JSON"
+  );
+
+  // In the future
+  Assert.ok(
+    engine.wrappedJSObject
+      .getURLOfType(SearchUtils.URL_TYPE.VISUAL_SEARCH)
+      .isNew(),
+    "isNew should return true for VISUAL_SEARCH"
+  );
+});
+
+add_task(async function test_isNew_variant() {
+  // This engine has `isNewUntil` defined on its variant.
+  let engine = Services.search.getEngineById("override");
+  Assert.ok(
+    engine.wrappedJSObject.isNew(),
+    "isNew should return true for override engine"
+  );
+  Assert.ok(
+    !engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.SEARCH).isNew(),
+    "isNew should return false for SEARCH"
+  );
+  Assert.ok(
+    !engine.wrappedJSObject.getURLOfType(SearchUtils.URL_TYPE.VISUAL_SEARCH),
+    "getURLOfType should return nothing for unsupported type VISUAL_SEARCH"
+  );
+});
+
+function checkUrlOfType(engine) {
+  for (let [key, type] of Object.entries(SearchUtils.URL_TYPE)) {
+    Assert.equal(
+      !!engine.wrappedJSObject.getURLOfType(type),
+      engine.supportsResponseType(type),
+      "getURLOfType should return a URL iff the type is supported: " + key
+    );
+  }
+}

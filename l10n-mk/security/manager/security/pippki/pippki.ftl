@@ -8,7 +8,6 @@ password-quality-meter = Мерач на квалитетот на лозинк�
 
 change-device-password-window =
     .title = Промени лозинка
-
 # Variables:
 # $tokenName (String) - Security device of the change password dialog
 change-password-token = Безбедносен уред: { $tokenName }
@@ -36,7 +35,7 @@ download-cert-view-cert =
     .label = Поглед
 download-cert-view-text = Испитај го CA сертификатот
 
-## Client Authorization Ask dialog
+## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Барање за идентификација на корисникот
@@ -54,8 +53,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Резервна лозинка за сертификатот (повторно):
 set-password-reminder = Важно: ако ја заборавите лозинката за резервниот сертификат, нема да можете да му пристапите на истиот. Чувајте ја лозинката на сигурно место.
-
-## Protected Auth dialog
-
-## Protected authentication alert
-

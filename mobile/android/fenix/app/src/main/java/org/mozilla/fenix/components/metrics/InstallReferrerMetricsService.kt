@@ -8,11 +8,15 @@ import android.content.Context
 import android.os.RemoteException
 import com.android.installreferrer.api.InstallReferrerClient
 import com.android.installreferrer.api.InstallReferrerStateListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import mozilla.components.support.base.log.logger.Logger
 import org.json.JSONException
 import org.json.JSONObject
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.MetaAttribution
+import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.GleanMetrics.PlayStoreAttribution
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.utils.Settings
@@ -31,6 +35,7 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
 
     private var referrerClient: InstallReferrerClient? = null
 
+    @Suppress("CognitiveComplexMethod")
     override fun start() {
         if (context.settings().utmParamsKnown) {
             return
@@ -45,7 +50,7 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
                 override fun onInstallReferrerSetupFinished(responseCode: Int) {
                     PlayStoreAttribution.attributionTime.stopAndAccumulate(timerId)
                     val firstSession = FirstSessionPing(context)
-
+                    PlayStoreAttribution.responseCode.set(responseCode.toString())
                     when (responseCode) {
                         InstallReferrerClient.InstallReferrerResponse.OK -> {
                             // Connection established.
@@ -67,7 +72,7 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
                             PlayStoreAttribution.installReferrerResponse.set(installReferrerResponse)
 
                             val utmParams = UTMParams.parseUTMParameters(installReferrerResponse)
-                            if (FeatureFlags.metaAttributionEnabled) {
+                            if (FeatureFlags.META_ATTRIBUTION_ENABLED) {
                                 MetaParams.extractMetaAttribution(utmParams.content)
                                     ?.recordMetaAttribution()
                             }
@@ -76,6 +81,7 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
                             context.settings().utmParamsKnown = true
 
                             firstSession.checkAndSend()
+                            triggerPing()
                         }
 
                         InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED,
@@ -85,6 +91,7 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
                             // unrecoverable errors, but we still want to send the first-session ping.
                             context.settings().utmParamsKnown = true
                             firstSession.checkAndSend()
+                            triggerPing()
                         }
 
                         InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE -> {
@@ -112,6 +119,12 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
     override fun track(event: Event) = Unit
 
     override fun shouldTrack(event: Event): Boolean = false
+
+    private fun triggerPing() {
+        CoroutineScope(Dispatchers.IO).launch {
+            Pings.playStoreAttribution.submit()
+        }
+    }
 }
 
 /**

@@ -95,6 +95,7 @@ Device <- CommandBuffer = insert(device.start, device.end, buffer.start, buffer.
 [`UsageScope`]: https://gpuweb.github.io/gpuweb/#programming-model-synchronization
 */
 
+mod blas;
 mod buffer;
 mod metadata;
 mod range;
@@ -105,11 +106,14 @@ use crate::{
     binding_model, command,
     lock::{rank, Mutex},
     pipeline,
-    resource::{self, Labeled, ResourceErrorIdent},
+    resource::{self, Labeled, RawResourceAccess, ResourceErrorIdent},
     snatch::SnatchGuard,
+    track::blas::BlasTracker,
 };
 
-use std::{fmt, ops, sync::Arc};
+use alloc::{sync::Arc, vec::Vec};
+use core::{fmt, mem, ops};
+
 use thiserror::Error;
 
 pub(crate) use buffer::{
@@ -118,10 +122,13 @@ pub(crate) use buffer::{
 use metadata::{ResourceMetadata, ResourceMetadataProvider};
 pub(crate) use stateless::StatelessTracker;
 pub(crate) use texture::{
-    DeviceTextureTracker, TextureSelector, TextureTracker, TextureTrackerSetSingle,
-    TextureUsageScope, TextureViewBindGroupState,
+    DeviceTextureTracker, TextureTracker, TextureTrackerSetSingle, TextureUsageScope,
+    TextureViewBindGroupState,
 };
-use wgt::strict_assert_ne;
+use wgt::{
+    error::{ErrorType, WebGpuError},
+    strict_assert_ne,
+};
 
 #[repr(transparent)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -217,13 +224,15 @@ impl SharedTrackerIndexAllocator {
 pub(crate) struct TrackerIndexAllocators {
     pub buffers: Arc<SharedTrackerIndexAllocator>,
     pub textures: Arc<SharedTrackerIndexAllocator>,
-    pub texture_views: Arc<SharedTrackerIndexAllocator>,
+    pub external_textures: Arc<SharedTrackerIndexAllocator>,
     pub samplers: Arc<SharedTrackerIndexAllocator>,
     pub bind_groups: Arc<SharedTrackerIndexAllocator>,
     pub compute_pipelines: Arc<SharedTrackerIndexAllocator>,
     pub render_pipelines: Arc<SharedTrackerIndexAllocator>,
     pub bundles: Arc<SharedTrackerIndexAllocator>,
     pub query_sets: Arc<SharedTrackerIndexAllocator>,
+    pub blas_s: Arc<SharedTrackerIndexAllocator>,
+    pub tlas_s: Arc<SharedTrackerIndexAllocator>,
 }
 
 impl TrackerIndexAllocators {
@@ -231,13 +240,15 @@ impl TrackerIndexAllocators {
         TrackerIndexAllocators {
             buffers: Arc::new(SharedTrackerIndexAllocator::new()),
             textures: Arc::new(SharedTrackerIndexAllocator::new()),
-            texture_views: Arc::new(SharedTrackerIndexAllocator::new()),
+            external_textures: Arc::new(SharedTrackerIndexAllocator::new()),
             samplers: Arc::new(SharedTrackerIndexAllocator::new()),
             bind_groups: Arc::new(SharedTrackerIndexAllocator::new()),
             compute_pipelines: Arc::new(SharedTrackerIndexAllocator::new()),
             render_pipelines: Arc::new(SharedTrackerIndexAllocator::new()),
             bundles: Arc::new(SharedTrackerIndexAllocator::new()),
             query_sets: Arc::new(SharedTrackerIndexAllocator::new()),
+            blas_s: Arc::new(SharedTrackerIndexAllocator::new()),
+            tlas_s: Arc::new(SharedTrackerIndexAllocator::new()),
         }
     }
 }
@@ -249,12 +260,12 @@ impl TrackerIndexAllocators {
 pub(crate) struct PendingTransition<S: ResourceUses> {
     pub id: u32,
     pub selector: S::Selector,
-    pub usage: ops::Range<S>,
+    pub usage: hal::StateTransition<S>,
 }
 
-pub(crate) type PendingTransitionList = Vec<PendingTransition<hal::TextureUses>>;
+pub(crate) type PendingTransitionList = Vec<PendingTransition<wgt::TextureUses>>;
 
-impl PendingTransition<hal::BufferUses> {
+impl PendingTransition<wgt::BufferUses> {
     /// Produce the hal barrier corresponding to the transition.
     pub fn into_hal<'a>(
         self,
@@ -269,15 +280,15 @@ impl PendingTransition<hal::BufferUses> {
     }
 }
 
-impl PendingTransition<hal::TextureUses> {
+impl PendingTransition<wgt::TextureUses> {
     /// Produce the hal barrier corresponding to the transition.
     pub fn into_hal(
         self,
         texture: &dyn hal::DynTexture,
     ) -> hal::TextureBarrier<'_, dyn hal::DynTexture> {
         // These showing up in a barrier is always a bug
-        strict_assert_ne!(self.usage.start, hal::TextureUses::UNKNOWN);
-        strict_assert_ne!(self.usage.end, hal::TextureUses::UNKNOWN);
+        strict_assert_ne!(self.usage.from, wgt::TextureUses::UNKNOWN);
+        strict_assert_ne!(self.usage.to, wgt::TextureUses::UNKNOWN);
 
         let mip_count = self.selector.mips.end - self.selector.mips.start;
         strict_assert_ne!(mip_count, 0);
@@ -337,7 +348,7 @@ pub enum ResourceUsageCompatibilityError {
     #[error("Attempted to use {res} with {invalid_use}.")]
     Buffer {
         res: ResourceErrorIdent,
-        invalid_use: InvalidUse<hal::BufferUses>,
+        invalid_use: InvalidUse<wgt::BufferUses>,
     },
     #[error(
         "Attempted to use {res} (mips {mip_levels:?} layers {array_layers:?}) with {invalid_use}."
@@ -346,15 +357,21 @@ pub enum ResourceUsageCompatibilityError {
         res: ResourceErrorIdent,
         mip_levels: ops::Range<u32>,
         array_layers: ops::Range<u32>,
-        invalid_use: InvalidUse<hal::TextureUses>,
+        invalid_use: InvalidUse<wgt::TextureUses>,
     },
+}
+
+impl WebGpuError for ResourceUsageCompatibilityError {
+    fn webgpu_error_type(&self) -> ErrorType {
+        ErrorType::Validation
+    }
 }
 
 impl ResourceUsageCompatibilityError {
     fn from_buffer(
         buffer: &resource::Buffer,
-        current_state: hal::BufferUses,
-        new_state: hal::BufferUses,
+        current_state: wgt::BufferUses,
+        new_state: wgt::BufferUses,
     ) -> Self {
         Self::Buffer {
             res: buffer.error_ident(),
@@ -367,9 +384,9 @@ impl ResourceUsageCompatibilityError {
 
     fn from_texture(
         texture: &resource::Texture,
-        selector: TextureSelector,
-        current_state: hal::TextureUses,
-        new_state: hal::TextureUses,
+        selector: wgt::TextureSelector,
+        current_state: wgt::TextureUses,
+        new_state: wgt::TextureUses,
     ) -> Self {
         Self::Texture {
             res: texture.error_ident(),
@@ -419,7 +436,9 @@ impl<T: ResourceUses> fmt::Display for InvalidUse<T> {
 pub(crate) struct BindGroupStates {
     pub buffers: BufferBindGroupState,
     pub views: TextureViewBindGroupState,
+    pub external_textures: StatelessTracker<resource::ExternalTexture>,
     pub samplers: StatelessTracker<resource::Sampler>,
+    pub acceleration_structures: StatelessTracker<resource::Tlas>,
 }
 
 impl BindGroupStates {
@@ -427,7 +446,9 @@ impl BindGroupStates {
         Self {
             buffers: BufferBindGroupState::new(),
             views: TextureViewBindGroupState::new(),
+            external_textures: StatelessTracker::new(),
             samplers: StatelessTracker::new(),
+            acceleration_structures: StatelessTracker::new(),
         }
     }
 
@@ -440,7 +461,7 @@ impl BindGroupStates {
         // Views are stateless, however, `TextureViewBindGroupState`
         // is special as it will be merged with other texture trackers.
         self.views.optimize();
-        // Samplers are stateless and don't need to be optimized
+        // Samplers and Tlas's are stateless and don't need to be optimized
         // since the tracker is never merged with any other tracker.
     }
 }
@@ -507,10 +528,9 @@ impl<'a> Drop for UsageScope<'a> {
         // clear vecs and push into pool
         self.buffers.clear();
         self.textures.clear();
-        self.pool.lock().push((
-            std::mem::take(&mut self.buffers),
-            std::mem::take(&mut self.textures),
-        ));
+        self.pool
+            .lock()
+            .push((mem::take(&mut self.buffers), mem::take(&mut self.textures)));
     }
 }
 
@@ -592,10 +612,32 @@ impl DeviceTracker {
 
 /// A full double sided tracker used by CommandBuffers.
 pub(crate) struct Tracker {
+    /// Buffers used within this command buffer.
+    ///
+    /// For compute passes, this only includes buffers actually used by the
+    /// pipeline (contrast with the `bind_groups` member).
     pub buffers: BufferTracker,
+
+    /// Textures used within this command buffer.
+    ///
+    /// For compute passes, this only includes textures actually used by the
+    /// pipeline (contrast with the `bind_groups` member).
     pub textures: TextureTracker,
+
+    pub blas_s: BlasTracker,
+    pub tlas_s: StatelessTracker<resource::Tlas>,
     pub views: StatelessTracker<resource::TextureView>,
+
+    /// Contains all bind groups that were passed in any call to
+    /// `set_bind_group` on the encoder.
+    ///
+    /// WebGPU requires that submission fails if any resource in any of these
+    /// bind groups is destroyed, even if the resource is not actually used by
+    /// the pipeline (e.g. because the pipeline does not use the bound slot, or
+    /// because the bind group was replaced by a subsequent call to
+    /// `set_bind_group`).
     pub bind_groups: StatelessTracker<binding_model::BindGroup>,
+
     pub compute_pipelines: StatelessTracker<pipeline::ComputePipeline>,
     pub render_pipelines: StatelessTracker<pipeline::RenderPipeline>,
     pub bundles: StatelessTracker<command::RenderBundle>,
@@ -607,6 +649,8 @@ impl Tracker {
         Self {
             buffers: BufferTracker::new(),
             textures: TextureTracker::new(),
+            blas_s: BlasTracker::new(),
+            tlas_s: StatelessTracker::new(),
             views: StatelessTracker::new(),
             bind_groups: StatelessTracker::new(),
             compute_pipelines: StatelessTracker::new(),
@@ -631,27 +675,22 @@ impl Tracker {
     /// bind group as a source of which IDs to look at. The bind groups
     /// must have first been added to the usage scope.
     ///
-    /// Only stateful things are merged in herell other resources are owned
+    /// Only stateful things are merged in here, all other resources are owned
     /// indirectly by the bind group.
     ///
-    /// # Safety
+    /// # Panics
     ///
-    /// The maximum ID given by each bind group resource must be less than the
-    /// value given to `set_size`
-    pub unsafe fn set_and_remove_from_usage_scope_sparse(
+    /// If a resource in the `bind_group` is not found in the usage scope.
+    pub fn set_and_remove_from_usage_scope_sparse(
         &mut self,
         scope: &mut UsageScope,
         bind_group: &BindGroupStates,
     ) {
-        unsafe {
-            self.buffers.set_and_remove_from_usage_scope_sparse(
-                &mut scope.buffers,
-                bind_group.buffers.used_tracker_indices(),
-            )
-        };
-        unsafe {
-            self.textures
-                .set_and_remove_from_usage_scope_sparse(&mut scope.textures, &bind_group.views)
-        };
+        self.buffers.set_and_remove_from_usage_scope_sparse(
+            &mut scope.buffers,
+            bind_group.buffers.used_tracker_indices(),
+        );
+        self.textures
+            .set_and_remove_from_usage_scope_sparse(&mut scope.textures, &bind_group.views);
     }
 }

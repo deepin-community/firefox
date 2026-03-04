@@ -7,12 +7,11 @@
 #ifndef mozilla_dom_LargestContentfulPaint_h___
 #define mozilla_dom_LargestContentfulPaint_h___
 
-#include "nsCycleCollectionParticipant.h"
+#include "imgRequestProxy.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/PerformanceEntry.h"
 #include "mozilla/dom/PerformanceLargestContentfulPaintBinding.h"
-
-#include "imgRequestProxy.h"
+#include "nsCycleCollectionParticipant.h"
 
 class nsTextFrame;
 namespace mozilla::dom {
@@ -48,36 +47,6 @@ class ImagePendingRendering final {
   nsWeakPtr mElement;
   WeakPtr<PreloaderBase> mImageRequestProxy;
   TimeStamp mLoadTime;
-};
-
-class ContentIdentifierHashEntry : public PLDHashEntryHdr {
- public:
-  using KeyType = const Element*;
-  using KeyTypePointer = const Element*;
-
-  explicit ContentIdentifierHashEntry(KeyTypePointer aKey) : mElement(aKey) {}
-
-  ContentIdentifierHashEntry(ContentIdentifierHashEntry&&) = default;
-
-  ~ContentIdentifierHashEntry() = default;
-
-  bool KeyEquals(KeyTypePointer aKey) const { return mElement == aKey; }
-
-  static KeyTypePointer KeyToPointer(KeyType& aKey) { return aKey; }
-
-  static PLDHashNumber HashKey(KeyTypePointer aKey) {
-    return mozilla::HashGeneric(reinterpret_cast<uintptr_t>(aKey));
-  }
-
-  // mImageRequestProxies isn't memmoveable.
-  enum { ALLOW_MEMMOVE = false };
-
-  AutoTArray<WeakPtr<PreloaderBase>, 1> mImageRequestProxies;
-
- private:
-  // Raw pointer; Element::UnbindFromTree will delete this entry to make
-  // sure mElement is always valid.
-  const Element* mElement;
 };
 
 class LCPHelpers final {
@@ -120,6 +89,8 @@ class LargestContentfulPaint final : public PerformanceEntry {
   DOMHighResTimeStamp RenderTime() const;
   DOMHighResTimeStamp LoadTime() const;
   DOMHighResTimeStamp StartTime() const override;
+  DOMHighResTimeStamp PaintTime() const { return RenderTime(); }
+  Nullable<DOMHighResTimeStamp> GetPresentationTime() const { return nullptr; }
 
   unsigned long Size() const { return mSize; }
   void GetId(nsAString& aId) const {

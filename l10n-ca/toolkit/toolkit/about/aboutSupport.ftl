@@ -161,9 +161,6 @@ media-capabilities-title = Capacitats multimèdia
 # List all the entries of the database.
 media-capabilities-enumerate = Enumera la base de dades
 
-## Codec support table
-
-
 ##
 
 intl-title = Internacionalització i localització
@@ -342,6 +339,10 @@ support-printing-clear-settings-button = Esborra la configuració d'impressió d
 support-printing-prefs-name = Nom
 support-printing-prefs-value = Valor
 
+## Remote Settings sections
+
+support-remote-settings-status-ok = D’acord
+
 ## Normandy sections
 
 support-remote-experiments-title = Experiments remots
@@ -350,6 +351,3 @@ support-remote-experiments-branch = Branca de l'experiment
 support-remote-features-title = Funcions remotes
 support-remote-features-name = Nom
 support-remote-features-status = Estat
-
-## Pointing devices
-

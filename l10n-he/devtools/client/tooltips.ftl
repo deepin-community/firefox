@@ -10,6 +10,8 @@ learn-more = <span data-l10n-name="link">מידע נוסף</span>
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
 ## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
 ## Variables:
 ##   $property (string) - A CSS property name e.g. "color".
 ##   $display (string) - A CSS display value e.g. "inline-block".
@@ -25,7 +27,8 @@ inactive-css-property-is-impossible-to-override-in-visited = אי אפשר לד�
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## the problem can be solved. CSS properties and values in <strong> tags should
+## not be translated.
 
 inactive-css-not-grid-or-flex-container-fix = כדאי לנסות להוסיף <strong>display:grid</strong> או <strong>display:flex</strong>. { learn-more }
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = כדאי לנסות להוסיף <strong>display:grid</strong>, ‏<strong>display:flex</strong>, או <strong>columns:2</strong>. { learn-more }

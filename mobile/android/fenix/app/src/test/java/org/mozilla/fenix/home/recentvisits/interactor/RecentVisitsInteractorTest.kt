@@ -12,16 +12,19 @@ import mozilla.components.concept.storage.HistoryMetadataKey
 import org.junit.Before
 import org.junit.Test
 import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
-import org.mozilla.fenix.home.pocket.PocketStoriesController
+import org.mozilla.fenix.home.pocket.controller.PocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
 import org.mozilla.fenix.home.recenttabs.controller.RecentTabController
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryGroup
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryHighlight
 import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
+import org.mozilla.fenix.home.search.HomeSearchController
 import org.mozilla.fenix.home.sessioncontrol.DefaultSessionControlController
 import org.mozilla.fenix.home.sessioncontrol.SessionControlInteractor
+import org.mozilla.fenix.home.termsofuse.PrivacyNoticeBannerController
 import org.mozilla.fenix.home.toolbar.ToolbarController
+import org.mozilla.fenix.home.topsites.controller.TopSiteController
 import org.mozilla.fenix.search.toolbar.SearchSelectorController
 
 class RecentVisitsInteractorTest {
@@ -35,6 +38,9 @@ class RecentVisitsInteractorTest {
     private val privateBrowsingController: PrivateBrowsingController = mockk(relaxed = true)
     private val searchSelectorController: SearchSelectorController = mockk(relaxed = true)
     private val toolbarController: ToolbarController = mockk(relaxed = true)
+    private val homeSearchController: HomeSearchController = mockk(relaxed = true)
+    private val topSiteController: TopSiteController = mockk(relaxed = true)
+    private val privacyNoticeBannerController: PrivacyNoticeBannerController = mockk(relaxed = true)
 
     private lateinit var interactor: SessionControlInteractor
 
@@ -50,6 +56,9 @@ class RecentVisitsInteractorTest {
             privateBrowsingController,
             searchSelectorController,
             toolbarController,
+            homeSearchController,
+            topSiteController,
+            privacyNoticeBannerController,
         )
     }
 

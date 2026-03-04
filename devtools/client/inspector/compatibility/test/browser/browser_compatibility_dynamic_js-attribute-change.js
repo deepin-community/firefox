@@ -13,18 +13,18 @@ const {
 
 // Test the behavior rules are dynamically added
 
-const ISSUE_OUTLINE_RADIUS = {
+const ISSUE_DEPRECATED = {
   type: COMPATIBILITY_ISSUE_TYPE.CSS_PROPERTY,
-  property: "-moz-user-input",
-  url: "https://developer.mozilla.org/docs/Web/CSS/-moz-user-input",
+  property: "-moz-user-focus",
+  url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/-moz-user-focus",
   deprecated: true,
   experimental: false,
 };
 
-const ISSUE_SCROLLBAR_WIDTH = {
+const ISSUE_NOT_DEPRECATED = {
   type: COMPATIBILITY_ISSUE_TYPE.CSS_PROPERTY,
-  property: "scrollbar-width",
-  url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+  property: "overflow-anchor",
+  url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
   deprecated: false,
   experimental: false,
 };
@@ -32,7 +32,7 @@ const ISSUE_SCROLLBAR_WIDTH = {
 const TEST_URI = `
   <style>
     .issue {
-      -moz-user-input: none;
+      -moz-user-focus: none;
     }
   </style>
   <body>
@@ -65,10 +65,10 @@ add_task(async function () {
     inspector,
     selectedElementPane,
     allElementsPane,
-    [ISSUE_SCROLLBAR_WIDTH],
-    [ISSUE_SCROLLBAR_WIDTH],
+    [ISSUE_NOT_DEPRECATED],
+    [ISSUE_NOT_DEPRECATED],
     async function () {
-      content.document.querySelector(".test").style["scrollbar-width"] = "none";
+      content.document.querySelector(".test").style["overflow-anchor"] = "auto";
     }
   );
 
@@ -78,8 +78,8 @@ add_task(async function () {
     inspector,
     selectedElementPane,
     allElementsPane,
-    [ISSUE_SCROLLBAR_WIDTH, ISSUE_OUTLINE_RADIUS],
-    [ISSUE_SCROLLBAR_WIDTH, ISSUE_OUTLINE_RADIUS],
+    [ISSUE_NOT_DEPRECATED, ISSUE_DEPRECATED],
+    [ISSUE_NOT_DEPRECATED, ISSUE_DEPRECATED],
     async function () {
       content.document.querySelector(".test").classList.add("issue");
     }
@@ -91,8 +91,8 @@ add_task(async function () {
     inspector,
     selectedElementPane,
     allElementsPane,
-    [ISSUE_SCROLLBAR_WIDTH],
-    [ISSUE_SCROLLBAR_WIDTH],
+    [ISSUE_NOT_DEPRECATED],
+    [ISSUE_NOT_DEPRECATED],
     async function () {
       content.document.querySelector(".test").classList.remove("issue");
     }

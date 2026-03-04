@@ -205,7 +205,7 @@ master-password-reload-button =
 confirmation-dialog-cancel-button = 取消
 confirmation-dialog-dismiss-button =
     .title = 取消
-about-logins-confirm-remove-dialog-title = 要移除此登录信息吗？
+about-logins-confirm-remove-dialog-title = 确定要移除此登录信息吗？
 confirm-delete-dialog-message = 此操作不可撤销。
 # Title for modal to confirm the removal of one saved password
 about-logins-confirm-delete-dialog-title = 确定要移除密码吗？
@@ -223,13 +223,13 @@ about-logins-confirm-remove-all-dialog-confirm-button-label =
     }
 about-logins-confirm-remove-all-dialog-checkbox-label =
     { $count ->
-        [1] 是的，移除此登录信息
-       *[other] 是的，移除这些登录信息
+        [1] 是，移除此登录信息
+       *[other] 是，移除这些登录信息
     }
 about-logins-confirm-remove-all-dialog-title =
     { $count ->
-        [one] 要移除 { $count } 条登录信息吗？
-       *[other] 要移除全部共 { $count } 条登录信息吗？
+        [one] 确定要移除 { $count } 条登录信息吗？
+       *[other] 确定要移除全部共 { $count } 条登录信息吗？
     }
 about-logins-confirm-remove-all-dialog-message =
     { $count ->
@@ -250,7 +250,7 @@ about-logins-confirm-remove-all-dialog-checkbox-label2 =
        *[other] 是，移除密码
     }
 # Title for modal to confirm the removal of all saved passwords when user is NOT synced
-about-logins-confirm-remove-all-dialog-title2 = 确定移除 { $count } 个密码吗？
+about-logins-confirm-remove-all-dialog-title2 = 确定要移除 { $count } 个密码吗？
 # Message for modal to confirm the removal of saved passwords when user is NOT synced
 about-logins-confirm-remove-all-dialog-message2 =
     { $count ->
@@ -262,8 +262,8 @@ about-logins-confirm-remove-all-sync-dialog-title2 = 确定在所有设备上移
 # Message for modal to confirm the removal of saved passwords when user IS synced.
 about-logins-confirm-remove-all-sync-dialog-message3 =
     { $count ->
-        [1] 将在您所有同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
-       *[other] 将在您所有同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有数据外泄警报。此操作不可撤销。
+        [1] 将从您所有同步的设备上，移除保存在 { -brand-short-name } 中的密码，以及在此显示的所有外泄警报。此操作不可撤销。
+       *[other] 将从您所有同步的设备上，移除保存在 { -brand-short-name } 中的全部密码，以及在此显示的所有外泄警报。此操作不可撤销。
     }
 
 ##
@@ -429,9 +429,9 @@ about-logins-import-report-no-change =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">重复的登录信息</div> <div data-l10n-name="not-imported">（未导入）</div>
     }
-about-logins-import-report-added2 = <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details"> 个新密码已添加</div>
-about-logins-import-report-modified2 = <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details"> 个现有项已更新</div>
-about-logins-import-report-no-change2 = <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details"> 个重复项</div><div data-l10n-name="not-imported">（未导入）</div>
+about-logins-import-report-added2 = <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">新增的密码</div>
+about-logins-import-report-modified2 = <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">更新的现有密码</div>
+about-logins-import-report-no-change2 = <div data-l10n-name="count">{ $count }</div><div data-l10n-name="details">重复的密码</div><div data-l10n-name="not-imported">（未导入）</div>
 about-logins-import-report-error =
     { $count ->
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">错误</div> <div data-l10n-name="not-imported">（未导入）</div>

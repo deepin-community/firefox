@@ -10,66 +10,78 @@ class LoginPasswordField extends MozLitElement {
   static CONCEALED_PASSWORD_TEXT = " ".repeat(8);
 
   static properties = {
-    _value: { type: String, state: true },
-    readonly: { type: Boolean, reflect: true },
-    visible: { type: Boolean, reflect: true },
+    value: { type: String },
+    name: { type: String },
+    newPassword: { type: Boolean },
+    concealed: { type: Boolean, reflect: true },
+    required: { type: Boolean, reflect: true },
   };
 
   static queries = {
     input: "input",
-    button: "button",
+    label: "label",
+    button: "moz-button",
   };
 
-  set value(newValue) {
-    this._value = newValue;
+  constructor() {
+    super();
+    this.value = "";
+    this.concealed = true;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("input", e => {
+      this.value = e.composedTarget.value;
+    });
   }
 
   get #type() {
-    return this.visible ? "text" : "password";
+    return this.concealed ? "password" : "text";
   }
 
   get #password() {
-    return this.readonly && !this.visible
+    if (!this.value) {
+      return "";
+    }
+
+    return !this.newPassword && this.concealed
       ? LoginPasswordField.CONCEALED_PASSWORD_TEXT
-      : this._value;
+      : this.value;
+  }
+
+  updated(changedProperties) {
+    if (changedProperties.has("concealed") && !changedProperties.concealed) {
+      this.input.selectionStart = this.value.length;
+    }
   }
 
   render() {
     return html`
       ${stylesTemplate()}
-      <label
-        class="field-label"
-        data-l10n-id="login-item-password-label"
-      ></label>
       ${editableFieldTemplate({
         type: this.#type,
         value: this.#password,
         labelId: "login-item-password-label",
         disabled: this.readonly,
+        required: this.required,
         onFocus: this.handleFocus,
         onBlur: this.handleBlur,
+        labelL10nId: "login-item-password-label",
+        noteL10nId: "contextual-manager-passwords-password-tooltip-2",
       })}
     `;
   }
 
-  handleFocus(ev) {
-    if (ev.relatedTarget !== this.button) {
-      this.visible = true;
-    }
+  handleFocus() {
+    this.concealed = false;
   }
 
   handleBlur(ev) {
-    if (ev.relatedTarget !== this.button) {
-      this.visible = false;
+    if (ev.relatedTarget === this.label) {
+      return;
     }
-  }
-
-  toggleVisibility() {
-    this.visible = !this.visible;
-    if (this.visible) {
-      this.onPasswordVisible?.();
-    }
-    this.input.focus();
+    this.concealed = true;
   }
 }
 

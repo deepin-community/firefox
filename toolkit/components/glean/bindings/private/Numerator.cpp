@@ -7,11 +7,13 @@
 #include "mozilla/glean/bindings/Numerator.h"
 
 #include "nsString.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/glean/bindings/ScalarGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
 #include "jsapi.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -20,7 +22,7 @@ namespace impl {
 void NumeratorMetric::AddToNumerator(int32_t aAmount) const {
   auto scalarId = ScalarIdForMetric(mId);
   if (scalarId && aAmount >= 0) {
-    Telemetry::ScalarAdd(scalarId.extract(), u"numerator"_ns, aAmount);
+    TelemetryScalar::Add(scalarId.extract(), u"numerator"_ns, aAmount);
   }
   fog_numerator_add_to_numerator(mId, aAmount);
 }

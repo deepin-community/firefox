@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Σελιδοδείκτες
+sidebar-menu-bookmarks-2 = Σελιδοδείκτες
 sidebar-menu-history =
     .label = Ιστορικό
 sidebar-menu-synced-tabs =
     .label = Συγχρονισμένες καρτέλες
-sidebar-menu-megalist =
-    .label = Κωδικοί πρόσβασης
 sidebar-menu-close =
     .label = Κλείσιμο πλαϊνής γραμμής
 sidebar-close-button =

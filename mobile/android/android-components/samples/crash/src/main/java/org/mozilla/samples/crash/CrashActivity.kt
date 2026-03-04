@@ -11,11 +11,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import mozilla.components.concept.base.crash.Breadcrumb
 import mozilla.components.lib.crash.Crash
+import mozilla.components.support.ktx.android.view.setupPersistentInsets
 import mozilla.components.support.utils.ext.registerReceiverCompat
 import org.mozilla.samples.crash.databinding.ActivityCrashBinding
 
@@ -43,6 +45,8 @@ class CrashActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         binding = ActivityCrashBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        enableEdgeToEdge()
+        window.setupPersistentInsets(true)
 
         binding.fatalCrashButton.setOnClickListener(this)
         binding.crashButton.setOnClickListener(this)
@@ -138,7 +142,6 @@ class CrashActivity : AppCompatActivity(), View.OnClickListener {
                     "extrasPath",
                     "${filesDir.path}/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.extra",
                 )
-                intent.putExtra("minidumpSuccess", true)
 
                 ContextCompat.startForegroundService(this, intent)
             }
@@ -159,7 +162,9 @@ class CrashActivity : AppCompatActivity(), View.OnClickListener {
             }
 
             binding.crashList -> {
-                startActivity(Intent(this, CrashListActivity::class.java))
+                supportFragmentManager.beginTransaction()
+                    .add(binding.root.id, CrashListFragment())
+                    .commit()
             }
 
             else -> throw java.lang.RuntimeException("Unknown ID")

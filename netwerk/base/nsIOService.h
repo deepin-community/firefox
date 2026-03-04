@@ -12,13 +12,13 @@
 #include "nsCOMPtr.h"
 #include "nsIObserver.h"
 #include "nsIWeakReferenceUtils.h"
+#include "nsILoadInfo.h"
 #include "nsINetUtil.h"
 #include "nsIChannelEventSink.h"
 #include "nsCategoryCache.h"
 #include "nsISpeculativeConnect.h"
 #include "nsWeakReference.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/RWLock.h"
 #include "mozilla/net/ProtocolHandlerInfo.h"
 #include "prtime.h"
@@ -27,6 +27,7 @@
 #include "nsTHashSet.h"
 #include "nsWeakReference.h"
 #include "nsNetCID.h"
+#include "SimpleURIUnknownSchemes.h"
 
 // We don't want to expose this observer topic.
 // Intended internal use only for remoting offline/inline events.
@@ -39,7 +40,6 @@ class nsIPrefBranch;
 class nsIProtocolProxyService2;
 class nsIProxyInfo;
 class nsPISocketTransportService;
-
 namespace mozilla {
 class MemoryReportingProcess;
 namespace net {
@@ -47,6 +47,7 @@ class NeckoChild;
 class nsAsyncRedirectVerifyHelper;
 class SocketProcessHost;
 class SocketProcessMemoryReporter;
+union NetAddr;
 
 class nsIOService final : public nsIIOService,
                           public nsIObserver,
@@ -148,6 +149,16 @@ class nsIOService final : public nsIIOService,
   static bool ShouldAddAdditionalSearchHeaders(nsIURI* aURI, bool* val);
 #endif
 
+  // Returns true if this is an essential domain and a fallback domain
+  // mapping exists.
+  bool GetFallbackDomain(const nsACString& aDomain,
+                         nsACString& aFallbackDomain);
+
+  NS_IMETHODIMP GetOverridenIpAddressSpace(
+      nsILoadInfo::IPAddressSpace* aIpAddressSpace, const NetAddr& aAddr);
+
+  bool ShouldSkipDomainForLNA(const nsACString& aDomain);
+
  private:
   // These shouldn't be called directly:
   // - construct using GetInstance
@@ -181,8 +192,7 @@ class nsIOService final : public nsIIOService,
       const mozilla::Maybe<mozilla::dom::ClientInfo>& aLoadingClientInfo,
       const mozilla::Maybe<mozilla::dom::ServiceWorkerDescriptor>& aController,
       uint32_t aSecurityFlags, nsContentPolicyType aContentPolicyType,
-      uint32_t aSandboxFlags, bool aSkipCheckForBrokenURLOrZeroSized,
-      nsIChannel** result);
+      uint32_t aSandboxFlags, nsIChannel** result);
 
   nsresult NewChannelFromURIWithProxyFlagsInternal(nsIURI* aURI,
                                                    nsIURI* aProxyURI,
@@ -201,6 +211,10 @@ class nsIOService final : public nsIIOService,
 
   bool UsesExternalProtocolHandler(const nsACString& aScheme)
       MOZ_REQUIRES_SHARED(mLock);
+
+  void UpdateAddressSpaceOverrideList(const char* aPrefName,
+                                      nsTArray<nsCString>& aTargetList);
+  void UpdateSkipDomainsList();
 
  private:
   mozilla::Atomic<bool, mozilla::Relaxed> mOffline{true};
@@ -231,6 +245,12 @@ class nsIOService final : public nsIIOService,
   RWLock mLock{"nsIOService::mLock"};
   nsTArray<int32_t> mRestrictedPortList MOZ_GUARDED_BY(mLock);
   nsTArray<nsCString> mForceExternalSchemes MOZ_GUARDED_BY(mLock);
+
+  nsTArray<nsCString> mPublicAddressSpaceOverridesList MOZ_GUARDED_BY(mLock);
+  nsTArray<nsCString> mPrivateAddressSpaceOverridesList MOZ_GUARDED_BY(mLock);
+  nsTArray<nsCString> mLocalAddressSpaceOverrideList MOZ_GUARDED_BY(mLock);
+  nsTArray<nsCString> mLNASkipDomainsList MOZ_GUARDED_BY(mLock);
+
   nsTHashMap<nsCString, RuntimeProtocolHandler> mRuntimeProtocolHandlers
       MOZ_GUARDED_BY(mLock);
 
@@ -266,6 +286,13 @@ class nsIOService final : public nsIIOService,
   nsTHashSet<nsCString> mIOServiceTopicList;
 
   nsCOMPtr<nsIObserverService> mObserverService;
+
+  SimpleURIUnknownSchemes mSimpleURIUnknownSchemes;
+
+  // Maps essential domains to a fallback domain that can be used
+  // to retry that request when it fails.
+  // Only accessible via main thread.
+  nsTHashMap<nsCStringHashKey, nsCString> mEssentialDomainMapping;
 
  public:
   // Used for all default buffer sizes that necko allocates.

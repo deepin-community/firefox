@@ -7,7 +7,8 @@ import { BrowserTestUtils } from "resource://testing-common/BrowserTestUtils.sys
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
+  CustomizableUI:
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
 });
 
 async function promiseAnimationFrame(window) {
@@ -103,7 +104,7 @@ async function clickBrowserAction(window, extensionId, modifiers) {
     );
   } else {
     let widget = getBrowserActionWidget(extensionId).forWindow(window);
-    widget.node.firstElementChild.click();
+    widget.node.querySelector(".unified-extensions-item-action-button").click();
   }
 }
 

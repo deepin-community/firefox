@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "OmxCoreLibLinker.h"
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/Preferences.h"
+
 #include "MainThreadUtils.h"
-#include "prlink.h"
 #include "PlatformDecoderModule.h"
+#include "mozilla/Preferences.h"
+#include "prlink.h"
 
 #ifdef LOG
 #  undef LOG
@@ -74,7 +74,7 @@ bool OmxCoreLibLinker::Link() {
   }
 
   // try known paths
-  for (size_t i = 0; i < ArrayLength(sLibNames); i++) {
+  for (size_t i = 0; i < std::size(sLibNames); i++) {
     if (TryLinkingLibrary(sLibNames[i])) {
       sLinkStatus = LinkStatus_SUCCEEDED;
       return true;

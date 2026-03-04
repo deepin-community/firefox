@@ -23,7 +23,6 @@
 #include "mozilla/ProfileBufferControlledChunkManager.h"
 #include "mozilla/ProfilerBufferSize.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/Unused.h"
 #include "nsTArray.h"
 #include "nsThreadUtils.h"
 
@@ -154,8 +153,9 @@ class ProfileBufferGlobalController final {
 };
 
 /* static */
-DataMutexBase<ProfileBufferGlobalController::ParentChunkManagerAndPendingUpdate,
-              baseprofiler::detail::BaseProfilerMutex>
+MOZ_RUNINIT DataMutexBase<
+    ProfileBufferGlobalController::ParentChunkManagerAndPendingUpdate,
+    baseprofiler::detail::BaseProfilerMutex>
     ProfileBufferGlobalController::sParentChunkManagerAndPendingUpdate{
         "ProfileBufferGlobalController::sParentChunkManagerAndPendingUpdate"};
 
@@ -206,12 +206,10 @@ class ProfilerParentTracker final {
   Maybe<ProfileBufferGlobalController> mMaybeController;
 };
 
-static const Json::StaticString logRoot{"bufferGlobalController"};
-
 template <typename F>
 void ProfileBufferGlobalController::Log(F&& aF) {
   ProfilingLog::Access([&](Json::Value& aLog) {
-    Json::Value& root = aLog[logRoot];
+    Json::Value& root = aLog[Json::StaticString{"bufferGlobalController"}];
     if (!root.isObject()) {
       root = Json::Value(Json::objectValue);
       root[Json::StaticString{"logBegin" TIMESTAMP_JSON_SUFFIX}] =
@@ -493,7 +491,7 @@ void ProfileBufferGlobalController::HandleChunkManagerNonFinalUpdate(
       ProfilerParentTracker::ForChild(
           oldest.mProcessId,
           [timestamp = oldest.mTimeStamp](ProfilerParent* profilerParent) {
-            Unused << profilerParent->SendDestroyReleasedChunksAtOrBefore(
+            (void)profilerParent->SendDestroyReleasedChunksAtOrBefore(
                 timestamp);
           });
     }
@@ -507,13 +505,13 @@ ProfilerParentTracker* ProfilerParentTracker::GetInstance() {
 
   // The main instance pointer, it will be initialized at most once, before
   // XPCOMShutdownThreads.
-  static UniquePtr<ProfilerParentTracker> instance = nullptr;
+  static StaticAutoPtr<ProfilerParentTracker> instance;
   if (MOZ_UNLIKELY(!instance)) {
     if (PastShutdownPhase(ShutdownPhase::XPCOMShutdownThreads)) {
       return nullptr;
     }
 
-    instance = MakeUnique<ProfilerParentTracker>();
+    instance = new ProfilerParentTracker();
 
     // The tracker should get destroyed before threads are shutdown, because its
     // destruction closes extant channels, which could trigger promise
@@ -719,13 +717,13 @@ void ProfilerParent::Init() {
         ipcParams.filters().AppendElement(filter);
       }
 
-      Unused << SendEnsureStarted(ipcParams);
+      (void)SendEnsureStarted(ipcParams);
       RequestChunkManagerUpdate();
       return;
     }
   }
 
-  Unused << SendStop();
+  (void)SendStop();
 }
 #endif  // MOZ_GECKO_PROFILER
 
@@ -984,7 +982,7 @@ void ProfilerParent::ClearAllPages() {
   }
 
   ProfilerParentTracker::Enumerate([](ProfilerParent* profilerParent) {
-    Unused << profilerParent->SendClearAllPages();
+    (void)profilerParent->SendClearAllPages();
   });
 }
 

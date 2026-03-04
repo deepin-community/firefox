@@ -35,7 +35,7 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(false, false).then(continueToNextStepSync);
+  verifyInitializationStatus(false, false, false).then(continueToNextStepSync);
   yield undefined;
 
   info("Getting usage");
@@ -47,7 +47,7 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(true, false).then(continueToNextStepSync);
+  verifyInitializationStatus(true, false, false).then(continueToNextStepSync);
   yield undefined;
 
   info("Clearing");
@@ -57,14 +57,14 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(false, false).then(continueToNextStepSync);
+  verifyInitializationStatus(false, false, false).then(continueToNextStepSync);
   yield undefined;
 
   info("Installing package");
 
   // The profile contains just one empty IndexedDB database. The file
   // create_db.js in the package was run locally, specifically it was
-  // temporarily added to xpcshell.ini and then executed:
+  // temporarily added to xpcshell.toml and then executed:
   // mach xpcshell-test --interactive dom/quota/test/xpcshell/create_db.js
   installPackage("basics_profile");
 
@@ -77,7 +77,7 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(true, false).then(continueToNextStepSync);
+  verifyInitializationStatus(true, false, false).then(continueToNextStepSync);
   yield undefined;
 
   info("Clearing");
@@ -94,7 +94,7 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(false, false).then(continueToNextStepSync);
+  verifyInitializationStatus(false, false, false).then(continueToNextStepSync);
   yield undefined;
 
   info("Initializing");
@@ -109,7 +109,7 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(true, false).then(continueToNextStepSync);
+  verifyInitializationStatus(true, false, false).then(continueToNextStepSync);
   yield undefined;
 
   info("Initializing origin");
@@ -135,7 +135,7 @@ function* testSteps() {
 
   info("Verifying initialization status");
 
-  verifyInitializationStatus(true, false).then(continueToNextStepSync);
+  verifyInitializationStatus(true, false, false).then(continueToNextStepSync);
 
   yield undefined;
 

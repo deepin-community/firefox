@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Adresler için otomatik doldurmayı etkinleştir
 policy-AutofillCreditCardEnabled = Ödeme yöntemleri için otomatik doldurmayı etkinleştir.
 policy-AutoLaunchProtocolsFromOrigins = Listelenen kaynaklardan kullanıcıya sormadan kullanılabilecek harici protokollerin listesini tanımla.
 policy-BackgroundAppUpdate2 = Arka plan güncelleyicisini aç veya kapat.
+policy-Backup = Profil verilerini yedeklemeyi veya geri yüklemeyi devre dışı bırak.
 policy-BlockAboutAddons = Eklenti yöneticisine (about:addons) erişimi engelle.
 policy-BlockAboutConfig = about:config sayfasına erişimi engelle.
 policy-BlockAboutProfiles = about:profiles sayfasına erişimi engelle.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Web sayfalarını { -pocket-brand-name }’a kaydetme ö
 policy-DisablePrivateBrowsing = Gizli gezintiyi devre dışı bırak.
 policy-DisableProfileImport = Başka tarayıcılardaki verileri içe aktarmaya olanak veren menü komutunu devre dışı bırak.
 policy-DisableProfileRefresh = about:support sayfasındaki “{ -brand-short-name } tarayıcısını yenile” düğmesini devre dışı bırak.
+policy-DisableRemoteImprovements = { -brand-short-name } tarayıcısının güncellemeler arasında performans, kararlılık ve özellik değişiklikleri uygulamasını önle.
 policy-DisableSafeMode = Güvenli kipte yeniden başlatma özelliğini devre dışı bırak. Not: Güvenli kipe girmek için kullanılan Shift tuşu, Windows'ta ancak Grup İlkesi ile devre dışı bırakılabilir.
 policy-DisableSecurityBypass = Kullanıcının belli güvenlik uyarılarını görmezden gelmesini engelle.
 policy-DisableSetAsDesktopBackground = Resimler için “Masaüstü arka planı olarak ayarla” menü komutunu devre dışı bırak.
@@ -78,7 +80,8 @@ policy-Extensions = Uzantıları yükle, kaldır veya kilitle. Yükleme seçene�
 policy-ExtensionSettings = Uzantı kurulumunun tüm yönlerini yönet.
 policy-ExtensionUpdate = Otomatik uzantı güncellemelerini aç veya kapat.
 policy-FirefoxHome2 = { -firefox-home-brand-name }'i yapılandır.
-policy-FirefoxSuggest = { -firefox-suggest-brand-name }’i yapılandır.
+policy-FirefoxSuggest = { -firefox-suggest-brand-name }’ni yapılandır.
+policy-GenerativeAI = Üretken yapay zekâ özelliklerini yapılandır.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Adres çubuğuna tek bir sözcük yazıldığında arama yapmak yerine doğrudan intranet sitesine git.
 policy-Handlers = Varsayılan uygulama işleyicilerini yapılandır.
 policy-HardwareAcceleration = false ise donanım ivmelenmesini kapat.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Belirtilen sitelerdeki
 ##
 
 policy-LocalFileLinks = Belirli web sitelerinin yerel dosyalara bağlantı vermesine izin ver.
+policy-LocalNetworkAccess = Yerel ağ erişim denetimlerini aç veya kapat.
 policy-ManagedBookmarks = Yönetici tarafından yönetilen ve kullanıcı tarafından değiştirilemeyen yer imlerinin listesini yapılandır.
 policy-ManualAppUpdateOnly = Yalnızca elle güncellemeye izin ver ve kullanıcıyı güncellemeler hakkında bilgilendirme.
 policy-PrimaryPassword = Ana parola kullanılmasını zorunlu tut veya yasakla.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = TLS için post-quantum anahtar anlaşmas
 policy-PDFjs = Dahili { -brand-short-name } PDF görüntüleyicisi olan PDF.js’i devre dışı bırak veya yapılandır.
 policy-Permissions2 = Kamera, mikrofon, konum, bildirim ve otomatik oynatma izinlerini yapılandır.
 policy-PictureInPicture = Görüntü içinde görüntü özelliğini aç veya kapat.
+policy-PopupBlocking2 = Belirli sitelerin açılır pencere göstermesine ve üçüncü taraf çerçeveler tarafından yeniden yönlendirilmesine izin ver.
 policy-PopupBlocking = Belirli web sitelerin varsayılan olarak açılır pencere açmasına izin ver.
 policy-Preferences = Bir tercihler alt kümesinin değerini ayarlayıp kilitle.
 policy-PrivateBrowsingModeAvailability = Gizli gezinti modunun kullanılabilirliğini ayarla.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Arama önerilerini etkinleştir veya devre dışı
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = PKCS #11 modülü ekle veya sil.
 policy-ShowHomeButton = Araç çubuğunda giriş sayfası düğmesini göster.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Başlangıçta Kullanım Koşulları ve Gizlilik Bildirimi’ni gösterme. Bu tarayıcıya erişim izni verdiğiniz tüm kişiler adına Kullanım Koşulları’nı kabul ettiğinizi ve kabul etme yetkiniz olduğunu onaylamış olursunuz.
 policy-SSLVersionMax = Maksimum SSL sürümünü ayarla.
 policy-SSLVersionMin = Minimum SSL sürümünü ayarla.
 policy-StartDownloadsInTempDirectory = İndirmeleri varsayılan indirme dizini yerine geçici bir yerel konumda başlat.
@@ -137,6 +144,9 @@ policy-SupportMenu = Yardım menüsüne özel bir destek menüsü öğesi ekle.
 policy-TranslateEnabled = Web sayfası çevirilerini etkinleştir veya devre dışı bırak.
 policy-UserMessaging = Kullanıcıya belirli mesajları gösterme.
 policy-UseSystemPrintDialog = Sistem yazdırma iletişim kutusunu kullanarak yazdır.
+policy-VisualSearchEnabled = Görsel aramayı aç veya kapat.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Web sitelerinin ziyaret edilmesini engelle. Biçimle ilgili daha fazla bilgi için belgelendirmeye bakın.
 policy-Windows10SSO = Microsoft, iş ve okul hesapları için Windows çoklu oturum açmaya izin ver.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Microsoft Entra hesapları için çoklu oturum açmaya (SSO) izin ver.

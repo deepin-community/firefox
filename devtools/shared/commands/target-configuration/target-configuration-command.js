@@ -48,9 +48,8 @@ class TargetConfigurationCommand {
   async updateConfiguration(configuration) {
     if (this._hasTargetWatcherSupport()) {
       const front = await this.getFront();
-      const updatedConfiguration = await front.updateConfiguration(
-        configuration
-      );
+      const updatedConfiguration =
+        await front.updateConfiguration(configuration);
       // Update the client-side copy of the DevTools configuration
       this._configuration = updatedConfiguration;
     } else {
@@ -78,9 +77,9 @@ class TargetConfigurationCommand {
    * we won't be using the target configuration actor and report all keys
    * as not supported.
    *
-   * @param {Object} configurationKey
+   * @param {object} configurationKey
    *                 Name of the configuration you would like to set.
-   * @return {Promise<Boolean>} True, if this configuration can be set via this API.
+   * @return {Promise<boolean>} True, if this configuration can be set via this API.
    */
   async supports(configurationKey) {
     if (!this._hasTargetWatcherSupport()) {
@@ -88,36 +87,6 @@ class TargetConfigurationCommand {
     }
     const front = await this.getFront();
     return !!front.traits.supportedOptions[configurationKey];
-  }
-
-  /**
-   * Change orientation type and angle (that can be accessed through screen.orientation in
-   * the content page) and simulates the "orientationchange" event when the device screen
-   * was rotated.
-   * Note that this will only be effective if the Responsive Design Mode is enabled.
-   *
-   * @param {Object} options
-   * @param {String} options.type: The orientation type of the rotated device.
-   * @param {Number} options.angle: The rotated angle of the device.
-   * @param {Boolean} options.isViewportRotated: Whether or not screen orientation change
-   *                 is a result of rotating the viewport. If true, an "orientationchange"
-   *                 event will be dispatched in the content window.
-   */
-  async simulateScreenOrientationChange({ type, angle, isViewportRotated }) {
-    // We need to call the method on the parent process
-    await this.updateConfiguration({
-      rdmPaneOrientation: { type, angle },
-    });
-
-    // Don't dispatch the "orientationchange" event if orientation change is a result
-    // of switching to a new device, location change, or opening RDM.
-    if (!isViewportRotated) {
-      return;
-    }
-
-    const responsiveFront =
-      await this._commands.targetCommand.targetFront.getFront("responsive");
-    await responsiveFront.dispatchOrientationChangeEvent();
   }
 }
 

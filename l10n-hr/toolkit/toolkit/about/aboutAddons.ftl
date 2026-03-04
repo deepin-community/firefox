@@ -37,7 +37,7 @@ show-unsigned-extensions-button =
 show-all-extensions-button =
     .label = Prikaži sva proširenja
 detail-version =
-    .label = Inačica
+    .label = Verzija
 detail-last-updated =
     .label = Zadnje aktualiziranje
 addon-detail-description-expand = Prikaži više
@@ -64,7 +64,7 @@ detail-private-browsing-label = Pokreni u privatnim prozorima
 detail-private-disallowed-label = Nije dopušteno u privatnim prozorima
 detail-private-disallowed-description2 = Ovaj dodatak se ne pokreće tijekom privatnog pregledavanja. <a data-l10n-name="learn-more">Saznaj više</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
-detail-private-required-label = Zahtjeva pristup u privatnim prozorima
+detail-private-required-label = Zahtijeva pristup u privatnim prozorima
 detail-private-required-description2 = Ovo proširenje ima pristup tvojim internetskim aktivnostima tijekom privatnog pregledavanja. <a data-l10n-name="learn-more">Saznaj više</a>
 detail-private-browsing-on =
     .label = Dozvoli
@@ -81,9 +81,9 @@ detail-repository =
 detail-repository-value =
     .value = { detail-repository.label }
 detail-check-for-updates =
-    .label = Provjeri dostupnost dopuna
-    .accesskey = u
-    .tooltiptext = Traži nove inačice za ovaj dodatak
+    .label = Traži nove verzije
+    .accesskey = T
+    .tooltiptext = Traži nove verzije za ovaj dodatak
 detail-show-preferences =
     .label =
         { PLATFORM() ->
@@ -139,9 +139,9 @@ addon-category-available-updates-title =
 addon-category-recent-updates = Nedavna aktualiziranja
 addon-category-recent-updates-title =
     .title = Nedavna aktualiziranja
-addon-category-sitepermission = Dozvole web-mjesta
+addon-category-sitepermission = Dozvole web stranice
 addon-category-sitepermission-title =
-    .title = Dozvole web-mjesta
+    .title = Dozvole web stranice
 # String displayed in about:addons in the Site Permissions section
 # Variables:
 #  $host (string) - DNS host name for which the webextension enables permissions
@@ -165,11 +165,13 @@ extensions-warning-update-security-button = Aktiviraj
 extensions-warning-imported-addons2 =
     .message = Završite instaliranje dodataka uvezenih u { -brand-short-name }.
 extensions-warning-imported-addons-button = Instaliraj proširenja
+extensions-warning-safe-mode3 =
+    .message = Modus ispravljanja grešaka je deaktivirao sve dodatke.
 
 ## Strings connected to add-on updates
 
-addon-updates-check-for-updates = Provjeri dostupnost dopuna
-    .accesskey = P
+addon-updates-check-for-updates = Traži nove verzije
+    .accesskey = T
 addon-updates-view-updates = Prikaži nedavna aktualiziranja
     .accesskey = P
 
@@ -201,6 +203,10 @@ addon-updates-manual-updates-found = Prikaži dostupne dopune
 
 addon-install-from-file = Instaliraj dodatak iz datoteke…
     .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Instaliraj ili aktualiziraj dodatak iz datoteke …
+    .accesskey = I
 addon-install-from-file-dialog-title = Odaberi dodatak koji želiš instalirati
 addon-install-from-file-filter-name = Dodaci
 addon-open-about-debugging = Otklanjanje grešaka u dodacima
@@ -225,7 +231,7 @@ shortcuts-modifier-mac = Uključi Ctrl, Alt ili ⌘
 shortcuts-modifier-other = Uključi Ctrl ili Alt
 shortcuts-invalid = Nepodržana kombinacija
 shortcuts-letter = Upiši slovo
-shortcuts-system = Nije moguće izmijeniti { -brand-short-name } prečac
+shortcuts-system = Nije moguće zamijeniti { -brand-short-name } prečac
 # String displayed in warning label when there is a duplicate shortcut
 shortcuts-duplicate = Duplikat prečice
 # String displayed when a keyboard shortcut is already assigned to more than one add-on
@@ -274,6 +280,16 @@ discopane-notice-recommendations2 =
         Neki prijedlozi su specifični za tebe, jer se temelje na drugim već instaliranim
         proširenjima, na postavkama profila ili na statistici korištenja.
 discopane-notice-learn-more = Saznaj više
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Tvoje teme kolorita su uklonjene.
+    .message = { -brand-product-name } je aktualizirao svoju zbirku kolorita. Uklonili smo stare verzije s popisa „Spremljene teme”. Preuzmi nove verzije na stranici s dodacima.
+colorway-removal-notice-learn-more = Saznaj više
+colorway-removal-notice-button = Nabavi aktualizirane teme kolorita
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Tvoje postavke kontrasta u Windowsu nadjačavaju { -brand-short-name } teme. Isključi te postavke kako bi mogao/la koristiti teme u { -brand-short-name(case: "loc") }.
 privacy-policy = Politika privatnosti
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -294,6 +310,16 @@ find-more-themes = Pronađi više tema
 # used for screen readers.
 addon-options-button =
     .aria-label = Više mogućnosti
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Proširenja i teme ti omogućuju prilagoditi { -brand-product-name }. Mogu poboljšati privatnost,
+    povećati produktivnost, poboljšati medije, promijeniti izgled { -brand-product-name }a i
+    još više. Ove male softverske programe često razvija treća strana. Ovo je
+    odabir koji Firefox <a data-l10n-name="learn-more-trigger">preporučuje</a>
+    za iznimnu sigurnost, performansu i funkcionalnost.
 
 ## Add-on actions
 
@@ -330,7 +356,7 @@ sitepermission-disabled-heading = Onemogućeno
 always-activate-button = Uvijek aktiviraj
 never-activate-button = Nikada ne aktiviraj
 addon-detail-author-label = Autor
-addon-detail-version-label = Inačica
+addon-detail-version-label = Verzija
 addon-detail-last-updated-label = Zadnje aktualiziranje
 addon-detail-homepage-label = Početna stranica
 addon-detail-rating-label = Ocjena
@@ -373,12 +399,16 @@ addon-detail-updates-label = Dozvoli automatska aktualiziranja
 addon-detail-updates-radio-default = Standardno
 addon-detail-updates-radio-on = Uključeno
 addon-detail-updates-radio-off = Isključeno
-addon-detail-update-check-label = Provjeri dostupnost dopuna
+addon-detail-update-check-label = Traži nove verzije
 install-update-button = Aktualiziraj
 # aria-label associated to the updates row to help screen readers to announce the group
 # of input controls being entered.
 addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Dopušteno u privatnim prozorima
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
@@ -420,6 +450,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Na ovom proširenju izvršen je pregled udovoljava li našim standardima za sigurnost i performanse
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Službeno proširenje koje je izradila Mozilla. Udovoljava standardima sigurnosti i performansi
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Ovo je proširenje pregledano kako bi udovoljilo našim standardima za sigurnost i performancu.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox preporučuje samo proširenja koja udovoljavaju našim standardima za sigurnost i performanse
 
 ##
 
@@ -427,7 +475,11 @@ available-updates-heading = Dostupne dopune
 recent-updates-heading = Nedavna aktualiziranja
 release-notes-loading = Učitavanje…
 release-notes-error = Došlo je do greške pri učitavanju napomena o izdanju.
-addon-permissions-empty = Ovaj dodatak ne zahtjeva nikakve dozvole.
+addon-permissions-heading = Dozvole
+addon-permissions-empty2 = Ovo proširenje ne zahtijeva dozvole.
+addon-permissions-required-label = Potrebno:
+addon-permissions-optional-label = Opcionalno:
+addon-permissions-empty = Ovo proširenje ne zahtijeva dozvole
 addon-permissions-required = Dozvole potrebne za osnovnu funkcionalnost:
 addon-permissions-optional = Opcionalne dozvole za dodatnu funkcionalnost:
 addon-permissions-learnmore = Saznaj više o dozvolama
@@ -454,6 +506,9 @@ shortcuts-heading = Upravljaj prečacima dodataka
 default-heading-search-label = Pronađi daljnje dodatke
 addons-heading-search-input =
     .placeholder = Pretraži addons.mozilla.org
+addons-heading-search-button =
+    .title = Pretraži addons.mozilla.org
+    .aria-label = Pretraži addons.mozilla.org
 addon-page-options-button =
     .title = Alati za sve dodatke
 
@@ -476,14 +531,32 @@ details-notification-unsigned-and-disabled-link = Više informacija
 details-notification-unsigned = { $name } nije mogao biti verificiran za upotrebu u { -brand-short-name }. Nastavi s oprezom.
 details-notification-unsigned2 =
     .message = { $name } nije mogao biti verificiran za upotrebu u { -brand-short-name }. Nastavi s oprezom.
+details-notification-hard-blocked-extension =
+    .message = Ovo proširenje je blokirano jer krši Mozillina pravila te je deaktivirano.
+details-notification-hard-blocked-other =
+    .message = Ovaj dodatak je blokiran jer krši Mozillina pravila te je deaktiviran.
 details-notification-unsigned-link = Više informacija
 details-notification-blocked = Dodatak { $name } je blokiran zbog problema sa sigurnosti ili stabilnosti.
-details-notification-blocked2 =
-    .message = Dodatak { $name } je blokiran zbog problema sa sigurnosti ili stabilnosti.
+details-notification-blocked-link2 = Pogledaj detalje
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Ovo je proširenje blokirano i deaktivirano. Možeš ga aktivirati, ali to može biti rizično.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Ovo je proširenje blokirano. Njegovo korištenje može biti rizično.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Ovaj je dodatak blokiran i deaktiviran. Možeš ga aktivirati, ali to može biti rizično.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Ovaj dodatak je blokiran. Njegovo korištenje može biti rizično.
+details-notification-soft-blocked-extension-disabled =
+    .message = Ovo proširenje je ograničeno jer krši Mozillina pravila te je deaktivirano. Možeš ga aktivirati, ali to može biti riskantno.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ovo proširenje krši Mozillina pravila. Korištenje može biti riskantno.
+details-notification-soft-blocked-other-disabled =
+    .message = Ovaj dodatak je ograničen jer krši Mozillina pravila te je deaktiviran. Možeš ga aktivirati, ali to može biti riskantno.
+details-notification-soft-blocked-other-enabled =
+    .message = Ovaj dodatak krši Mozillina pravila. Korištenje može biti riskantno.
+details-notification-softblocked-link2 = Pogledaj detalje
 details-notification-blocked-link = Više informacija
 details-notification-softblocked = Dodatak { $name } je poznat po problemima sa sigurnosti ili stabilnosti.
-details-notification-softblocked2 =
-    .message = Dodatak { $name } je poznat po problemima sa sigurnosti ili stabilnosti.
 details-notification-softblocked-link = Više informacija
 details-notification-gmp-pending = { $name } će ubrzo biti instaliran.
 details-notification-gmp-pending2 =
@@ -497,3 +570,45 @@ plugins-openh264-name = OpenH264 Video Codec je omogućio Cisco Systems, Inc.
 plugins-openh264-description = Ovaj priključak je automatski instalirala Mozilla da bi se zadovoljili uvjeti WebRTC specifikacije i omogućili WebRTC pozivi s uređajima koji zahtijevaju H.264 video kodek. Posjeti http://www.openh264.org/ za prikaz izvornog koda kodeka i za daljnje informacije o implementaciji.
 plugins-widevine-name = Widevine Content Decryption Module omogućuje Google Inc.
 plugins-widevine-description = Ovaj dodatak omogućuje reprodukciju kodiranih medija u skladu sa Encrypted Media Extensions specifikacijom. Stranice obično koriste kodirane medije za zaštitu od kopiranja vrhunskog medijskog sadržaja. Posjetite https://www.w3.org/TR/encrypted-media/ za više informacija o Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Potrebna zbirka podataka:
+addon-permissions-optional-data-collection = Opcionalna zbirka podataka:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Dozvole i podaci
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Koristi ga proširenje { $extensionName }
+addon-permissions-data-collection-heading = Prikupljanje podataka
+addon-permissions-data-collection-empty = Programer kaže da ovo proširenje ne zahtijeva prikupljanje podataka.
+addon-data-collection-provided = Informacije od programera proširenja
+addon-data-collection-learnmore = Saznaj više o prikupljanju podataka
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } koristi ovo na about:inference
+mlmodel-link-preview = { -brand-short-name } koristi ovo za generiranje ključnih točaka prilikom pregleda poveznica
+mlmodel-pdfjs = { -brand-short-name } koristi ovo za stvaranje alternativnog teksta za slike koje dodaješ u PDF datoteke
+mlmodel-smart-tab-topic-engine = { -brand-short-name } koristi ovo za predlaganje imena za tvoje grupe kartica
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } koristi ovo za predlaganje kartica za tvoje grupe kartica
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Umjetna inteligencija na uređaju
+addon-category-mlmodel-title =
+    .title = Umjetna inteligencija na uređaju
+mlmodel-heading = Upravljaj modelima umjetne inteligencije na uređaju
+mlmodel-description = Neke funkcije i proširenja u { -brand-short-name(case: "loc") } pokreću UI modeli koji rade lokalno na tvom uređaju. Ovaj pristup štiti tvoju privatnost i, u mnogim slučajevima, ubrzava performansu. <a data-l10n-name="learn-more">Saznaj više</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Ukloni
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Veličina datoteke
+mlmodel-addon-detail-last-used-label = Zadnji put korišteno
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Korišteno od
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Kartica modela
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Prikaži na Hugging Face

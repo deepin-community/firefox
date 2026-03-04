@@ -19,14 +19,12 @@
 
 // This include is required in order for content_decryption_module to work
 // on Unix systems.
-#include <stddef.h>
 
 #include <string>
 #include <vector>
 
-#include "content_decryption_module.h"
-
 #include "ClearKeyUtils.h"
+#include "content_decryption_module.h"
 
 class ClearKeySession {
  public:

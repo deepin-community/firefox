@@ -21,19 +21,20 @@ import org.mozilla.focus.helpers.FeatureSettingsHelper
 import org.mozilla.focus.helpers.MainActivityFirstrunTestRule
 import org.mozilla.focus.helpers.MockWebServerHelper
 import org.mozilla.focus.helpers.RetryTestRule
-import org.mozilla.focus.helpers.TestAssetHelper.getGenericAsset
+import org.mozilla.focus.helpers.TestAssetHelper.genericAsset
 import org.mozilla.focus.helpers.TestAssetHelper.getGenericTabAsset
 import org.mozilla.focus.helpers.TestHelper.clickSnackBarActionButton
 import org.mozilla.focus.helpers.TestHelper.getStringResource
 import org.mozilla.focus.helpers.TestHelper.openAppFromExternalLink
 import org.mozilla.focus.helpers.TestHelper.verifySnackBarText
+import org.mozilla.focus.helpers.TestSetup
 import org.mozilla.focus.testAnnotations.SmokeTest
 
 /**
  * Open multiple sessions and verify that the trash icon changes to a tabs counter
  */
 @RunWith(AndroidJUnit4ClassRunner::class)
-class MultitaskingTest {
+class MultitaskingTest : TestSetup() {
     private lateinit var webServer: MockWebServer
     private val store = InstrumentationRegistry.getInstrumentation()
         .targetContext
@@ -42,8 +43,8 @@ class MultitaskingTest {
         .store
     private val featureSettingsHelper = FeatureSettingsHelper()
 
-    @get: Rule
-    var mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
+    @get:Rule
+    val mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
 
     @Rule
     @JvmField
@@ -51,7 +52,8 @@ class MultitaskingTest {
 
     @Before
     @Throws(Exception::class)
-    fun startWebServer() {
+    override fun setUp() {
+        super.setUp()
         featureSettingsHelper.setCfrForTrackingProtectionEnabled(false)
         webServer = MockWebServer().apply {
             dispatcher = MockWebServerHelper.AndroidAssetDispatcher()
@@ -69,11 +71,11 @@ class MultitaskingTest {
     @SmokeTest
     @Test
     fun testVisitingMultipleSites() {
-        val tab1 = getGenericTabAsset(webServer, 1)
-        val tab2 = getGenericTabAsset(webServer, 2)
-        val tab3 = getGenericTabAsset(webServer, 3)
+        val tab1 = webServer.getGenericTabAsset(1)
+        val tab2 = webServer.getGenericTabAsset(2)
+        val tab3 = webServer.getGenericTabAsset(3)
         val eraseBrowsingSnackBarText = getStringResource(R.string.feedback_erase2)
-        val customTabPage = getGenericAsset(webServer)
+        val customTabPage = webServer.genericAsset
 
         // Load website: Erase button visible, Tabs button not
         searchScreen {
@@ -105,9 +107,9 @@ class MultitaskingTest {
     @SmokeTest
     @Test
     fun closeTabButtonTest() {
-        val tab1 = getGenericTabAsset(webServer, 1)
-        val tab2 = getGenericTabAsset(webServer, 2)
-        val tab3 = getGenericTabAsset(webServer, 3)
+        val tab1 = webServer.getGenericTabAsset(1)
+        val tab2 = webServer.getGenericTabAsset(2)
+        val tab3 = webServer.getGenericTabAsset(3)
 
         searchScreen {
         }.loadPage(tab1.url) {
@@ -130,8 +132,8 @@ class MultitaskingTest {
     @SmokeTest
     @Test
     fun verifyTabsTrayListTest() {
-        val tab1 = getGenericTabAsset(webServer, 1)
-        val tab2 = getGenericTabAsset(webServer, 2)
+        val tab1 = webServer.getGenericTabAsset(1)
+        val tab2 = webServer.getGenericTabAsset(2)
 
         searchScreen {
         }.loadPage(tab1.url) {

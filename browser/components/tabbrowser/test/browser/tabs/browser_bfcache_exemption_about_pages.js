@@ -40,7 +40,7 @@ async function navigateTo(browser, urls, expectedPersist) {
       "pageshow"
     );
     info(`Navigating back from uri=${browser.currentURI.spec}`);
-    browser.goBack();
+    browser.goBack(false);
     await pageShowPromise;
     info(`Got pageshow event`);
     // Now go forward
@@ -71,7 +71,7 @@ async function navigateTo(browser, urls, expectedPersist) {
       pageShowCheck
     );
     info(`Navigating back from uri=${browser.currentURI.spec}`);
-    browser.goBack();
+    browser.goBack(false);
     await pageShowPromise;
     info(`Got pageshow event`);
     // Check that the page did not get persisted
@@ -85,6 +85,12 @@ async function navigateTo(browser, urls, expectedPersist) {
     );
   }
 }
+
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
 
 add_task(async function testAboutPagesExemptFromBfcache() {
   // If Fission is disabled, the pref is no-op.

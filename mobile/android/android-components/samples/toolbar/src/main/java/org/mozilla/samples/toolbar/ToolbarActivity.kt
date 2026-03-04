@@ -11,19 +11,22 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import mozilla.components.browser.domains.autocomplete.CustomDomainsProvider
 import mozilla.components.browser.domains.autocomplete.ShippedDomainsProvider
@@ -36,6 +39,15 @@ import mozilla.components.browser.menu.item.SimpleBrowserMenuItem
 import mozilla.components.browser.menu2.BrowserMenuController
 import mozilla.components.browser.toolbar.BrowserToolbar
 import mozilla.components.browser.toolbar.display.DisplayToolbar
+import mozilla.components.compose.base.theme.AcornTheme
+import mozilla.components.compose.browser.toolbar.concept.Action.ActionButtonRes
+import mozilla.components.compose.browser.toolbar.store.BrowserEditToolbarAction
+import mozilla.components.compose.browser.toolbar.store.BrowserToolbarAction
+import mozilla.components.compose.browser.toolbar.store.BrowserToolbarInteraction.BrowserToolbarEvent
+import mozilla.components.compose.browser.toolbar.store.BrowserToolbarState
+import mozilla.components.compose.browser.toolbar.store.BrowserToolbarStore
+import mozilla.components.compose.browser.toolbar.store.DisplayState
+import mozilla.components.compose.browser.toolbar.store.Mode
 import mozilla.components.concept.menu.Side
 import mozilla.components.concept.menu.candidate.DividerMenuCandidate
 import mozilla.components.concept.menu.candidate.DrawableMenuIcon
@@ -45,9 +57,14 @@ import mozilla.components.concept.toolbar.Toolbar
 import mozilla.components.feature.toolbar.ToolbarAutocompleteFeature
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
 import mozilla.components.support.ktx.android.view.hideKeyboard
+import mozilla.components.support.ktx.android.view.setupPersistentInsets
 import mozilla.components.support.ktx.util.URLStringUtils
-import mozilla.components.ui.tabcounter.TabCounter
+import mozilla.components.ui.tabcounter.TabCounterView
+import org.mozilla.samples.toolbar.compose.BrowserToolbar
 import org.mozilla.samples.toolbar.databinding.ActivityToolbarBinding
+import org.mozilla.samples.toolbar.middleware.BrowserToolbarMiddleware
+import org.mozilla.samples.toolbar.middleware.BrowserToolbarMiddleware.Companion.Dependencies
+import kotlin.coroutines.cancellation.CancellationException
 import mozilla.components.browser.menu.R as menuR
 import mozilla.components.browser.toolbar.R as toolbarR
 import mozilla.components.ui.colors.R as colorsR
@@ -66,6 +83,8 @@ class ToolbarActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityToolbarBinding.inflate(layoutInflater)
 
+        window.setupPersistentInsets()
+
         shippedDomainsProvider.initialize(this)
         customDomainsProvider.initialize(this)
 
@@ -81,6 +100,8 @@ class ToolbarActivity : AppCompatActivity() {
             ToolbarConfiguration.PRIVATE_MODE -> setupDefaultToolbar(private = true)
             ToolbarConfiguration.FENIX -> setupFenixToolbar()
             ToolbarConfiguration.FENIX_CUSTOMTAB -> setupFenixCustomTabToolbar()
+            ToolbarConfiguration.COMPOSE_TOOLBAR -> setupComposeToolbar()
+            ToolbarConfiguration.COMPOSE_CUSTOMTAB -> setupComposeCustomTabToolbar()
         }
 
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
@@ -105,6 +126,8 @@ class ToolbarActivity : AppCompatActivity() {
      * A very simple toolbar with mostly default values.
      */
     private fun setupDefaultToolbar(private: Boolean = false) {
+        showToolbar()
+
         binding.toolbar.setBackgroundColor(
             ContextCompat.getColor(this, colorsR.color.photonBlue80),
         )
@@ -118,11 +141,13 @@ class ToolbarActivity : AppCompatActivity() {
      * A toolbar that looks like Firefox Focus on tablets.
      */
     private fun setupFocusTabletToolbar() {
+        showToolbar()
+
         // //////////////////////////////////////////////////////////////////////////////////////////
         // Use the iconic gradient background
         // //////////////////////////////////////////////////////////////////////////////////////////
 
-        val background = ContextCompat.getDrawable(this, R.drawable.focus_background)
+        val background = AppCompatResources.getDrawable(this, R.drawable.focus_background)
         binding.toolbar.background = background
 
         // //////////////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +216,8 @@ class ToolbarActivity : AppCompatActivity() {
      * A custom browser menu.
      */
     private fun setupCustomMenu() {
+        showToolbar()
+
         binding.toolbar.setBackgroundColor(
             ContextCompat.getColor(this, colorsR.color.photonBlue80),
         )
@@ -224,11 +251,13 @@ class ToolbarActivity : AppCompatActivity() {
      * A toolbar that looks like Firefox Focus on phones.
      */
     private fun setupFocusPhoneToolbar() {
+        showToolbar()
+
         // //////////////////////////////////////////////////////////////////////////////////////////
         // Use the iconic gradient background
         // //////////////////////////////////////////////////////////////////////////////////////////
 
-        val background = ContextCompat.getDrawable(this, R.drawable.focus_background)
+        val background = AppCompatResources.getDrawable(this, R.drawable.focus_background)
         binding.toolbar.background = background
 
         // //////////////////////////////////////////////////////////////////////////////////////////
@@ -299,7 +328,7 @@ class ToolbarActivity : AppCompatActivity() {
     }
 
     private class FakeTabCounterToolbarButton : Toolbar.Action {
-        override fun createView(parent: ViewGroup): View = TabCounter(parent.context).apply {
+        override fun createView(parent: ViewGroup): View = TabCounterView(parent.context).apply {
             setCount(2)
             setBackgroundResource(
                 parent.context.theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless),
@@ -314,6 +343,8 @@ class ToolbarActivity : AppCompatActivity() {
      */
     @Suppress("MagicNumber")
     fun setupFenixToolbar() {
+        showToolbar()
+
         binding.toolbar.setBackgroundColor(0xFFFFFFFF.toInt())
 
         binding.toolbar.display.indicators = listOf(
@@ -323,14 +354,14 @@ class ToolbarActivity : AppCompatActivity() {
         )
 
         binding.toolbar.display.colors = binding.toolbar.display.colors.copy(
-            securityIconInsecure = 0xFF20123a.toInt(),
-            securityIconSecure = 0xFF20123a.toInt(),
+            siteInfoIconInsecure = 0xFF20123a.toInt(),
+            siteInfoIconSecure = 0xFF20123a.toInt(),
             text = 0xFF0c0c0d.toInt(),
             menu = 0xFF20123a.toInt(),
-            separator = 0x1E15141a.toInt(),
+            separator = 0x1E15141a,
             trackingProtection = 0xFF20123a.toInt(),
             emptyIcon = 0xFF20123a.toInt(),
-            hint = 0x1E15141a.toInt(),
+            hint = 0x1E15141a,
         )
 
         binding.toolbar.display.urlFormatter = { url ->
@@ -338,7 +369,7 @@ class ToolbarActivity : AppCompatActivity() {
         }
 
         binding.toolbar.display.setUrlBackground(
-            ContextCompat.getDrawable(this, R.drawable.fenix_url_background),
+            AppCompatResources.getDrawable(this, R.drawable.fenix_url_background),
         )
         binding.toolbar.display.hint = "Search or enter address"
         binding.toolbar.display.setOnUrlLongClickListener {
@@ -368,7 +399,7 @@ class ToolbarActivity : AppCompatActivity() {
 
         binding.toolbar.addBrowserAction(FakeTabCounterToolbarButton())
 
-        binding.toolbar.display.setOnSiteSecurityClickedListener {
+        binding.toolbar.display.setOnSiteInfoClickedListener {
             Toast.makeText(this, "Site security", Toast.LENGTH_SHORT).show()
         }
 
@@ -379,10 +410,10 @@ class ToolbarActivity : AppCompatActivity() {
         )
 
         binding.toolbar.edit.setUrlBackground(
-            ContextCompat.getDrawable(this, R.drawable.fenix_url_background),
+            AppCompatResources.getDrawable(this, R.drawable.fenix_url_background),
         )
         binding.toolbar.edit.setIcon(
-            ContextCompat.getDrawable(this, iconsR.drawable.mozac_ic_search_24)!!,
+            AppCompatResources.getDrawable(this, iconsR.drawable.mozac_ic_search_24)!!,
             "Search",
         )
 
@@ -400,6 +431,8 @@ class ToolbarActivity : AppCompatActivity() {
     @OptIn(DelicateCoroutinesApi::class) // GlobalScope usage
     @Suppress("MagicNumber")
     fun setupFenixCustomTabToolbar() {
+        showToolbar()
+
         binding.toolbar.setBackgroundColor(0xFFFFFFFF.toInt())
 
         binding.toolbar.display.indicators = listOf(
@@ -408,12 +441,12 @@ class ToolbarActivity : AppCompatActivity() {
         )
 
         binding.toolbar.display.colors = binding.toolbar.display.colors.copy(
-            securityIconSecure = 0xFF20123a.toInt(),
-            securityIconInsecure = 0xFF20123a.toInt(),
+            siteInfoIconSecure = 0xFF20123a.toInt(),
+            siteInfoIconInsecure = 0xFF20123a.toInt(),
             text = 0xFF0c0c0d.toInt(),
             title = 0xFF0c0c0d.toInt(),
             menu = 0xFF20123a.toInt(),
-            separator = 0x1E15141a.toInt(),
+            separator = 0x1E15141a,
             trackingProtection = 0xFF20123a.toInt(),
         )
 
@@ -430,7 +463,7 @@ class ToolbarActivity : AppCompatActivity() {
 
         binding.toolbar.url = "https://www.mozilla.org/en-US/firefox/mobile/"
 
-        val drawableIcon = ContextCompat.getDrawable(this, iconsR.drawable.mozac_ic_cross_24)
+        val drawableIcon = AppCompatResources.getDrawable(this, iconsR.drawable.mozac_ic_cross_24)
 
         drawableIcon?.apply {
             setTint(0xFF20123a.toInt())
@@ -444,7 +477,7 @@ class ToolbarActivity : AppCompatActivity() {
             binding.toolbar.addNavigationAction(button)
         }
 
-        val drawable = ContextCompat.getDrawable(this, iconsR.drawable.mozac_ic_share_android_24)?.apply {
+        val drawable = AppCompatResources.getDrawable(this, iconsR.drawable.mozac_ic_share_android_24)?.apply {
             setTint(0xFF20123a.toInt())
         }
 
@@ -454,7 +487,7 @@ class ToolbarActivity : AppCompatActivity() {
 
         binding.toolbar.addBrowserAction(button)
 
-        binding.toolbar.display.setOnSiteSecurityClickedListener {
+        binding.toolbar.display.setOnSiteInfoClickedListener {
             Toast.makeText(this, "Site security", Toast.LENGTH_SHORT).show()
         }
 
@@ -462,6 +495,79 @@ class ToolbarActivity : AppCompatActivity() {
             delay(2000)
             binding.toolbar.title = "Mobile browsers for iOS and Android | Firefox"
         }
+    }
+
+    private fun setupComposeToolbar() {
+        showToolbar(isCompose = true)
+
+        val store = BrowserToolbarStore(
+            middleware = listOf(
+                BrowserToolbarMiddleware(
+                    initialDependencies = Dependencies(
+                        context = this,
+                    ),
+                ),
+            ),
+        )
+
+        binding.composeToolbar.setContent {
+            AcornTheme {
+                BrowserToolbar(
+                    store = store,
+                    onTextEdit = { text ->
+                        store.dispatch(BrowserEditToolbarAction.SearchQueryUpdated(query = text))
+                    },
+                    onTextCommit = {
+                        store.dispatch(BrowserToolbarAction.ExitEditMode)
+                    },
+                    url = "https://www.mozilla.org/en-US/firefox/mobile/",
+                )
+            }
+        }
+    }
+
+    private fun setupComposeCustomTabToolbar() {
+        showToolbar(isCompose = true)
+
+        binding.composeToolbar.setContent {
+            AcornTheme {
+                val store = remember {
+                    BrowserToolbarStore(
+                        initialState = BrowserToolbarState(
+                            mode = Mode.DISPLAY,
+                            displayState = DisplayState(
+                                browserActionsStart = listOf(
+                                    ActionButtonRes(
+                                        drawableResId = iconsR.drawable.mozac_ic_cross_24,
+                                        contentDescription = R.string.page_action_clear_input_description,
+                                        onClick = object : BrowserToolbarEvent {},
+                                    ),
+                                ),
+                                browserActionsEnd = listOf(
+                                    ActionButtonRes(
+                                        drawableResId = iconsR.drawable.mozac_ic_arrow_clockwise_24,
+                                        contentDescription = R.string.page_action_refresh_description,
+                                        onClick = object : BrowserToolbarEvent {},
+                                    ),
+                                ),
+                            ),
+                        ),
+                    )
+                }
+
+                BrowserToolbar(
+                    store = store,
+                    onTextEdit = {},
+                    onTextCommit = {},
+                    url = "https://www.mozilla.org/en-US/firefox/mobile/",
+                )
+            }
+        }
+    }
+
+    private fun showToolbar(isCompose: Boolean = false) {
+        binding.toolbar.isVisible = !isCompose
+        binding.composeToolbar.isVisible = isCompose
     }
 
     // For testing purposes
@@ -489,18 +595,16 @@ class ToolbarActivity : AppCompatActivity() {
 
     private var loading = MutableLiveData<Boolean>()
 
-    @Suppress("TooGenericExceptionCaught", "LongMethod", "ComplexMethod")
+    @Suppress("TooGenericExceptionCaught", "CognitiveComplexMethod")
     private fun simulateReload(view: UrlBoxProgressView? = null) {
         job?.cancel()
 
         loading.value = true
 
-        job = CoroutineScope(Dispatchers.Main).launch {
+        job = lifecycleScope.launch {
             try {
                 loop@ for (progress in PROGRESS_RANGE step RELOAD_STEP_SIZE) {
-                    if (!isActive) {
-                        break@loop
-                    }
+                    ensureActive()
 
                     if (view == null) {
                         binding.toolbar.displayProgress(progress)
@@ -509,6 +613,13 @@ class ToolbarActivity : AppCompatActivity() {
                     }
 
                     delay(progress * RELOAD_STEP_SIZE.toLong())
+                }
+            } catch (e: CancellationException) {
+                // Handle cancellation specifically
+                if (view == null) {
+                    binding.toolbar.displayProgress(0)
+                } else {
+                    view.progress = 0
                 }
             } catch (t: Throwable) {
                 if (view == null) {
@@ -530,7 +641,9 @@ class ToolbarActivity : AppCompatActivity() {
         binding.toolbar.invalidateActions()
     }
 
-    private fun Resources.getThemedDrawable(@DrawableRes resId: Int) = ResourcesCompat.getDrawable(this, resId, theme)
+    private fun Resources.getThemedDrawable(
+        @DrawableRes resId: Int,
+    ) = ResourcesCompat.getDrawable(this, resId, theme)
 
     companion object {
         private val PROGRESS_RANGE = 0..100

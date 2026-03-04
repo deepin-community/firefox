@@ -73,7 +73,7 @@ add_task(async function test_fog_timespan_works() {
   await sleep(10);
   Glean.testOnly.canWeTimeIt.stop();
 
-  Assert.ok(Glean.testOnly.canWeTimeIt.testGetValue("test-ping") > 0);
+  Assert.greater(Glean.testOnly.canWeTimeIt.testGetValue("test-ping"), 0);
 });
 
 add_task(async function test_fog_timespan_throws_on_stop_wout_start() {
@@ -164,12 +164,27 @@ add_task(async function test_fog_event_works() {
   };
   Assert.deepEqual(expectedExtra, events[1].extra);
 
+  // Passing `null` works.
+  Glean.testOnlyIpc.eventWithExtra.record(null);
+  events = Glean.testOnlyIpc.eventWithExtra.testGetValue();
+  Assert.equal(3, events.length, "Recorded another event.");
+  Assert.equal(events[2].extra, null);
+
   // Invalid extra keys don't crash, the event is not recorded,
   // but an error is recorded.
   let extra3 = {
     extra1_nonexistent_extra: "this does not crash",
   };
   Glean.testOnlyIpc.eventWithExtra.record(extra3);
+  Assert.throws(
+    () => Glean.testOnlyIpc.eventWithExtra.testGetValue(),
+    /DataError/,
+    "Should throw because of a recording error."
+  );
+
+  // Supplying extras when there aren't any defined results in the event not
+  // being recorded, but an error is.
+  Glean.testOnlyIpc.noExtraEvent.record(extra3);
   Assert.throws(
     () => Glean.testOnlyIpc.eventWithExtra.testGetValue(),
     /DataError/,
@@ -196,7 +211,7 @@ add_task(async function test_fog_memory_distribution_works() {
 add_task(async function test_fog_custom_distribution_works() {
   Glean.testOnlyIpc.aCustomDist.accumulateSamples([7, 268435458]);
 
-  let data = Glean.testOnlyIpc.aCustomDist.testGetValue("store1");
+  let data = Glean.testOnlyIpc.aCustomDist.testGetValue("test-ping");
   Assert.equal(2, data.count, "Count of entries is correct");
   Assert.equal(7 + 268435458, data.sum, "Sum's correct");
   for (let [bucket, count] of Object.entries(data.values)) {
@@ -242,6 +257,119 @@ add_task(function test_recursive_testBeforeNextSubmit() {
   GleanPings.onePingOnly.testBeforeNextSubmit(() => {});
 });
 
+add_task(function test_testBeforeNextSubmit_error() {
+  Assert.ok("onePingOnly" in GleanPings);
+
+  let submitted = false;
+  GleanPings.onePingOnly.testBeforeNextSubmit(() => {
+    submitted = true;
+    throw new Error("oh no");
+  });
+
+  Assert.throws(
+    () => GleanPings.onePingOnly.submit(),
+    /oh no/,
+    "testBeforeNextSubmit error thrown from submit"
+  );
+
+  Assert.ok(submitted, "Did submit ping");
+});
+
+add_task(async function test_testSubmission() {
+  Assert.ok("onePingOnly" in GleanPings);
+
+  let submitReason = null;
+  await GleanPings.onePingOnly.testSubmission(
+    reason => (submitReason = reason),
+    () => GleanPings.onePingOnly.submit("raison d'être")
+  );
+
+  Assert.equal(
+    submitReason,
+    "raison d'être",
+    "ping callback called with correct reason"
+  );
+});
+
+add_task(async function test_testSubmission_async() {
+  Assert.ok("onePingOnly" in GleanPings);
+
+  const orderOfOperations = [];
+
+  // We are going to intentionally block submission so that we can delay it
+  // until after testSubmission returns a promise.
+  const blocker = Promise.withResolvers();
+
+  const testPromise = GleanPings.onePingOnly.testSubmission(
+    () => orderOfOperations.push("test-callback"),
+    async () => {
+      orderOfOperations.push("await-blocker");
+      await blocker.promise;
+      orderOfOperations.push("submit");
+      GleanPings.onePingOnly.submit();
+    }
+  );
+  orderOfOperations.push("test-submission-queued");
+
+  blocker.resolve();
+  await testPromise;
+
+  Assert.deepEqual(orderOfOperations, [
+    "await-blocker",
+    "test-submission-queued",
+    "submit",
+    "test-callback",
+  ]);
+});
+
+add_task(async function test_testSubmission_error() {
+  Assert.ok("onePingOnly" in GleanPings);
+
+  await Assert.rejects(
+    GleanPings.onePingOnly.testSubmission(
+      () => {
+        throw new Error("uh oh");
+      },
+      () => GleanPings.onePingOnly.submit()
+    ),
+    /NS_ERROR_XPC_JAVASCRIPT_ERROR_WITH_DETAILS/,
+    "testSubmission callback threw"
+  );
+});
+
+add_task(async function test_testSubmission_unsubmitted() {
+  Assert.ok("onePingOnly" in GleanPings);
+
+  let submitted = false;
+  await Assert.rejects(
+    GleanPings.onePingOnly.testSubmission(
+      () => (submitted = true),
+      () => {}
+    ),
+    /Ping did not submit immediately/,
+    "Threw immediately because the ping did not submit"
+  );
+
+  Assert.ok(!submitted, "callback not called");
+});
+
+add_task(async function test_testSubmission_timeout() {
+  Assert.ok("onePingOnly" in GleanPings);
+
+  let submitted = false;
+  await Assert.rejects(
+    GleanPings.onePingOnly.testSubmission(
+      () => (submitted = true),
+      () => {},
+      1
+    ),
+    /Ping was not submitted after timeout/,
+    "Threw after a timeout"
+  );
+
+  Assert.ok(!submitted, "callback not called");
+});
+
 add_task(async function test_fog_timing_distribution_works() {
   let t1 = Glean.testOnly.whatTimeIsIt.start();
   let t2 = Glean.testOnly.whatTimeIsIt.start();
@@ -255,25 +383,28 @@ add_task(async function test_fog_timing_distribution_works() {
 
   Glean.testOnly.whatTimeIsIt.stopAndAccumulate(t2); // 10ms
   Glean.testOnly.whatTimeIsIt.stopAndAccumulate(t3); // 5ms
+  // samples are measured in microseconds, since that's the unit listed in metrics.yaml
+  Glean.testOnly.whatTimeIsIt.accumulateSingleSample(5000); // 5ms
+  Glean.testOnly.whatTimeIsIt.accumulateSamples([2000, 8000]); // 10ms
 
   let data = Glean.testOnly.whatTimeIsIt.testGetValue();
 
   // Cancelled timers should not be counted.
-  Assert.equal(2, data.count, "Count of entries is correct");
+  Assert.equal(5, data.count, "Count of entries is correct");
 
   const NANOS_IN_MILLIS = 1e6;
   // bug 1701949 - Sleep gets close, but sometimes doesn't wait long enough.
   const EPSILON = 40000;
 
   // Variance in timing makes getting the sum impossible to know.
-  Assert.greater(data.sum, 15 * NANOS_IN_MILLIS - EPSILON);
+  Assert.greater(data.sum, 30 * NANOS_IN_MILLIS - EPSILON);
 
   // No guarantees from timers means no guarantees on buckets.
-  // But we can guarantee it's only two samples.
+  // But we can guarantee it's only five samples.
   Assert.equal(
-    2,
+    5,
     Object.entries(data.values).reduce((acc, [, count]) => acc + count, 0),
-    "Only two buckets with samples"
+    "Only five buckets with samples"
   );
 });
 
@@ -303,7 +434,7 @@ add_task(async function test_fog_labels_conform() {
     "wednesday",
     Glean.testOnly.mabelsLabelMaker.camelCase.testGetValue()
   );
-  const veryLong = "1".repeat(72);
+  const veryLong = "1".repeat(112);
   Glean.testOnly.mabelsLabelMaker[veryLong].set("seventy-two");
   Assert.throws(
     () => Glean.testOnly.mabelsLabelMaker[veryLong].testGetValue(),
@@ -340,7 +471,7 @@ add_task(async function test_fog_labeled_boolean_works() {
     undefined,
     Glean.testOnly.mabelsLikeBalloons.__other__.testGetValue()
   );
-  Glean.testOnly.mabelsLikeBalloons["1".repeat(72)].set(true);
+  Glean.testOnly.mabelsLikeBalloons["1".repeat(112)].set(true);
   Assert.throws(
     () => Glean.testOnly.mabelsLikeBalloons.__other__.testGetValue(),
     /DataError/,
@@ -369,7 +500,7 @@ add_task(async function test_fog_labeled_counter_works() {
     undefined,
     Glean.testOnly.mabelsKitchenCounters.__other__.testGetValue()
   );
-  Glean.testOnly.mabelsKitchenCounters["1".repeat(72)].add(1);
+  Glean.testOnly.mabelsKitchenCounters["1".repeat(112)].add(1);
   Assert.throws(
     () => Glean.testOnly.mabelsKitchenCounters.__other__.testGetValue(),
     /DataError/,
@@ -398,7 +529,7 @@ add_task(async function test_fog_labeled_string_works() {
     undefined,
     Glean.testOnly.mabelsBalloonStrings.__other__.testGetValue()
   );
-  Glean.testOnly.mabelsBalloonStrings["1".repeat(72)].set("valid");
+  Glean.testOnly.mabelsBalloonStrings["1".repeat(112)].set("valid");
   Assert.throws(
     () => Glean.testOnly.mabelsBalloonStrings.__other__.testGetValue(),
     /DataError/
@@ -433,7 +564,7 @@ add_task(async function test_fog_url_works() {
   const value = "https://www.example.com/fog";
   Glean.testOnlyIpc.aUrl.set(value);
 
-  Assert.equal(value, Glean.testOnlyIpc.aUrl.testGetValue("store1"));
+  Assert.equal(value, Glean.testOnlyIpc.aUrl.testGetValue("test-ping"));
 });
 
 add_task(async function test_fog_text_works() {
@@ -461,12 +592,6 @@ add_task(async function test_fog_text_works_unusual_character() {
 });
 
 add_task(async function test_fog_object_works() {
-  if (!Glean.testOnly.balloons) {
-    // FIXME(bug 1883857): object metric type not available, e.g. in artifact builds.
-    // Skipping this test.
-    return;
-  }
-
   Assert.equal(
     undefined,
     Glean.testOnly.balloons.testGetValue(),
@@ -517,51 +642,60 @@ add_task(async function test_fog_object_works() {
     { colour: "orange" },
   ];
   Assert.deepEqual(expected, result);
-
-  // These values are coerced to null or removed.
-  balloons = [
-    { colour: "inf", diameter: Infinity },
-    { colour: "negative-inf", diameter: -1 / 0 },
-    { colour: "nan", diameter: NaN },
-    { colour: "undef", diameter: undefined },
-  ];
-  Glean.testOnly.balloons.set(balloons);
-  result = Glean.testOnly.balloons.testGetValue();
-  expected = [
-    { colour: "inf" },
-    { colour: "negative-inf" },
-    { colour: "nan" },
-    { colour: "undef" },
-  ];
-  Assert.deepEqual(expected, result);
-
-  // colour != color.
-  let invalid = [{ color: "orange" }, { color: "red", diameter: "small" }];
-  Glean.testOnly.balloons.set(invalid);
-  Assert.throws(
-    () => Glean.testOnly.balloons.testGetValue(),
-    /invalid_value/,
-    "Should throw because last object was invalid."
-  );
-
-  Services.fog.testResetFOG();
-  // set again to ensure it's stored
-  balloons = [
-    { colour: "red", diameter: 5 },
-    { colour: "blue", diameter: 7 },
-  ];
-  Glean.testOnly.balloons.set(balloons);
-  result = Glean.testOnly.balloons.testGetValue();
-  Assert.deepEqual(balloons, result);
-
-  invalid = [{ colour: "red", diameter: 5, extra: "field" }];
-  Glean.testOnly.balloons.set(invalid);
-  Assert.throws(
-    () => Glean.testOnly.balloons.testGetValue(),
-    /invalid_value/,
-    "Should throw because last object was invalid."
-  );
 });
+
+add_task(
+  // FIXME(bug 1947194): JOG object metrics don't do schema validation yet
+  {
+    skip_if: () =>
+      Services.prefs.getBoolPref("telemetry.fog.artifact_build", false),
+  },
+  async function test_fog_object_verifies_structure() {
+    // These values are coerced to null or removed.
+    let balloons = [
+      { colour: "inf", diameter: Infinity },
+      { colour: "negative-inf", diameter: -1 / 0 },
+      { colour: "nan", diameter: NaN },
+      { colour: "undef", diameter: undefined },
+    ];
+    Glean.testOnly.balloons.set(balloons);
+    let result = Glean.testOnly.balloons.testGetValue();
+    let expected = [
+      { colour: "inf" },
+      { colour: "negative-inf" },
+      { colour: "nan" },
+      { colour: "undef" },
+    ];
+    Assert.deepEqual(expected, result);
+
+    // colour != color.
+    let invalid = [{ color: "orange" }, { color: "red", diameter: "small" }];
+    Glean.testOnly.balloons.set(invalid);
+    Assert.throws(
+      () => Glean.testOnly.balloons.testGetValue(),
+      /invalid_value/,
+      "Should throw because last object was invalid."
+    );
+
+    Services.fog.testResetFOG();
+    // set again to ensure it's stored
+    balloons = [
+      { colour: "red", diameter: 5 },
+      { colour: "blue", diameter: 7 },
+    ];
+    Glean.testOnly.balloons.set(balloons);
+    result = Glean.testOnly.balloons.testGetValue();
+    Assert.deepEqual(balloons, result);
+
+    invalid = [{ colour: "red", diameter: 5, extra: "field" }];
+    Glean.testOnly.balloons.set(invalid);
+    Assert.throws(
+      () => Glean.testOnly.balloons.testGetValue(),
+      /invalid_value/,
+      "Should throw because last object was invalid."
+    );
+  }
+);
 
 add_task(async function test_fog_complex_object_works() {
   if (!Glean.testOnly.crashStack) {
@@ -613,20 +747,23 @@ add_task(async function test_fog_complex_object_works() {
   result = Glean.testOnly.crashStack.testGetValue();
   Assert.deepEqual(stack, result);
 
-  stack = {
-    status: "OK",
-    modules: [],
-  };
-  Glean.testOnly.crashStack.set(stack);
-  result = Glean.testOnly.crashStack.testGetValue();
-  Assert.deepEqual({ status: "OK" }, result);
+  // FIXME(bug 1947194): JOG object metrics don't do schema validation yet
+  if (!Services.prefs.getBoolPref("telemetry.fog.artifact_build", false)) {
+    stack = {
+      status: "OK",
+      modules: [],
+    };
+    Glean.testOnly.crashStack.set(stack);
+    result = Glean.testOnly.crashStack.testGetValue();
+    Assert.deepEqual({ status: "OK" }, result);
 
-  stack = {
-    status: "OK",
-  };
-  Glean.testOnly.crashStack.set(stack);
-  result = Glean.testOnly.crashStack.testGetValue();
-  Assert.deepEqual(stack, result);
+    stack = {
+      status: "OK",
+    };
+    Glean.testOnly.crashStack.set(stack);
+    result = Glean.testOnly.crashStack.testGetValue();
+    Assert.deepEqual(stack, result);
+  }
 });
 
 add_task(
@@ -679,19 +816,19 @@ add_task(async function test_fog_labeled_custom_distribution_works() {
     Glean.testOnly.mabelsCustomLabelLengths.monospace.testGetValue();
   Assert.equal(2, monospace.count);
   Assert.equal(43, monospace.sum);
-  Assert.deepEqual({ 0: 0, 1: 2, 268435456: 0 }, monospace.values);
+  Assert.deepEqual({ 1: 2 }, monospace.values);
   let sanserif =
     Glean.testOnly.mabelsCustomLabelLengths.sanserif.testGetValue();
   Assert.equal(1, sanserif.count);
   Assert.equal(13, sanserif.sum);
-  Assert.deepEqual({ 0: 0, 1: 1, 268435456: 0 }, sanserif.values);
+  Assert.deepEqual({ 1: 1 }, sanserif.values);
   // What about invalid/__other__?
   Assert.equal(
     undefined,
     Glean.testOnly.mabelsCustomLabelLengths.__other__.testGetValue()
   );
   Glean.testOnly.mabelsCustomLabelLengths[
-    "1".repeat(72)
+    "1".repeat(112)
   ].accumulateSingleSample(3);
   Assert.throws(
     () => Glean.testOnly.mabelsCustomLabelLengths.__other__.testGetValue(),
@@ -749,3 +886,239 @@ add_task(async function test_labeled_timing_distribution_works() {
     "Only two buckets with samples"
   );
 });
+
+add_task(async function test_fog_labeled_quantity_works() {
+  Assert.equal(
+    undefined,
+    Glean.testOnly.buttonJars.up.testGetValue(),
+    "New labels with no values should return undefined"
+  );
+  Glean.testOnly.buttonJars.up.set(2);
+  Glean.testOnly.buttonJars.curling.set(0);
+  Assert.equal(2, Glean.testOnly.buttonJars.up.testGetValue());
+  Assert.equal(0, Glean.testOnly.buttonJars.curling.testGetValue());
+  // What about invalid/__other__?
+  Assert.equal(undefined, Glean.testOnly.buttonJars.__other__.testGetValue());
+  Glean.testOnly.buttonJars["1".repeat(112)].set(0);
+  Assert.throws(
+    () => Glean.testOnly.buttonJars.__other__.testGetValue(),
+    /DataError/,
+    "Should throw because of a recording error."
+  );
+});
+
+add_task(async function test_submit_throws() {
+  GleanPings.onePingOnly.testBeforeNextSubmit(() => {
+    throw new Error("inside callback");
+  });
+
+  Assert.throws(
+    () => GleanPings.onePingOnly.submit(),
+    /inside callback/,
+    "Should throw inside callback"
+  );
+});
+
+add_task(function test_collection_disabled_pings_work() {
+  // This test should work equally for full builds and artifact builds.
+
+  Assert.ok("collectionDisabledPing" in GleanPings);
+
+  // collection-enabled=false pings are disabled by default.
+  // No data is collected for metrics going into that ping.
+  Glean.testOnly.collectionDisabledCounter.add(1);
+  Assert.equal(
+    undefined,
+    Glean.testOnly.collectionDisabledCounter.testGetValue()
+  );
+
+  // After enabling a ping we can record data into it
+  GleanPings.collectionDisabledPing.setEnabled(true);
+  Glean.testOnly.collectionDisabledCounter.add(2);
+  Assert.equal(2, Glean.testOnly.collectionDisabledCounter.testGetValue());
+
+  let submitted = false;
+  GleanPings.collectionDisabledPing.testBeforeNextSubmit(() => {
+    submitted = true;
+    Assert.equal(2, Glean.testOnly.collectionDisabledCounter.testGetValue());
+  });
+  GleanPings.collectionDisabledPing.submit();
+  Assert.ok(submitted, "Ping was submitted, callback was called.");
+  Assert.equal(
+    undefined,
+    Glean.testOnly.collectionDisabledCounter.testGetValue()
+  );
+});
+
+add_task(function test_dual_labeled_counter_works() {
+  Glean.testOnly.keyedCategories.get("to the city", "lasered").add(1);
+  Glean.testOnly.keyedCategories.get("to the city", "cut").add(4);
+  Glean.testOnly.keyedCategories.get("to my heart", "polished").add(1);
+
+  Assert.equal(
+    1,
+    Glean.testOnly.keyedCategories.get("to the city", "lasered").testGetValue()
+  );
+  Assert.equal(
+    4,
+    Glean.testOnly.keyedCategories.get("to the city", "cut").testGetValue()
+  );
+  Assert.equal(
+    1,
+    Glean.testOnly.keyedCategories.get("to my heart", "polished").testGetValue()
+  );
+
+  Assert.equal(
+    undefined,
+    Glean.testOnly.keyedCategories
+      .get("to the city", "__other__")
+      .testGetValue()
+  );
+  Glean.testOnly.keyedCategories.get("to the city", "cryptographic").add(3);
+  Assert.equal(
+    3,
+    Glean.testOnly.keyedCategories
+      .get("to the city", "__other__")
+      .testGetValue()
+  );
+});
+
+add_task(
+  {
+    skip_if: () =>
+      Services.prefs.getBoolPref("telemetry.fog.artifact_build", true),
+  },
+  async function test_labeled_metrics_test_get_value_works() {
+    Services.fog.testResetFOG();
+
+    // LabeledBoolean
+    Glean.testOnly.mabelsLikeBalloons.test1.set(true);
+    Glean.testOnly.mabelsLikeBalloons.test2.set(false);
+
+    const booleanValue = Glean.testOnly.mabelsLikeBalloons.testGetValue();
+    Assert.deepEqual(
+      {
+        test1: true,
+        test2: false,
+      },
+      booleanValue
+    );
+
+    // LabeledCounter
+    Glean.testOnly.mabelsLabeledCounters.clean.add(1);
+
+    const counterValue = Glean.testOnly.mabelsLabeledCounters.testGetValue();
+    Assert.deepEqual(
+      {
+        clean: 1,
+      },
+      counterValue
+    );
+
+    // LabeledString
+    Glean.testOnly.mabelsBalloonStrings.test.set("string!");
+
+    const stringValue = Glean.testOnly.mabelsBalloonStrings.testGetValue();
+    Assert.deepEqual(
+      {
+        test: "string!",
+      },
+      stringValue
+    );
+
+    // LabeledQuantity
+    Glean.testOnly.buttonJars.up.set(1);
+    Glean.testOnly.buttonJars.curling.set(10);
+
+    const quantityValue = Glean.testOnly.buttonJars.testGetValue();
+    Assert.deepEqual(
+      {
+        up: 1,
+        curling: 10,
+      },
+      quantityValue
+    );
+
+    // LabeledCustomDistribution
+    Glean.testOnly.mabelsCustomLabelLengths.monospace.accumulateSamples([
+      1, 42,
+    ]);
+    Glean.testOnly.mabelsCustomLabelLengths.sanserif.accumulateSingleSample(13);
+
+    const customDistributionValue =
+      Glean.testOnly.mabelsCustomLabelLengths.testGetValue();
+    Assert.deepEqual(
+      {
+        monospace: {
+          count: 2,
+          sum: 43,
+          values: {
+            1: 2,
+          },
+        },
+        sanserif: {
+          count: 1,
+          sum: 13,
+          values: {
+            1: 1,
+          },
+        },
+      },
+      customDistributionValue
+    );
+
+    // LabeledMemoryDistribution
+    Glean.testOnly.whatDoYouRemember.twenty_years_ago.accumulate(7);
+    Glean.testOnly.whatDoYouRemember.twenty_years_ago.accumulate(17);
+
+    const memoryDistributionValue =
+      Glean.testOnly.whatDoYouRemember.testGetValue();
+    const [first, second] = Object.keys(
+      memoryDistributionValue.twenty_years_ago.values
+    );
+    Assert.deepEqual(
+      {
+        twenty_years_ago: {
+          count: 2,
+          sum: 24 * 1024 * 1024,
+          values: {
+            [first]: 1,
+            [second]: 1,
+          },
+        },
+      },
+      memoryDistributionValue
+    );
+
+    // LabeledTimingDistribution
+    let t1 = Glean.testOnly.whereHasTheTimeGone.west.start();
+    let t2 = Glean.testOnly.whereHasTheTimeGone.west.start();
+    await sleep(5);
+    let t3 = Glean.testOnly.whereHasTheTimeGone.west.start();
+    Glean.testOnly.whereHasTheTimeGone.west.cancel(t1);
+    await sleep(5);
+    Glean.testOnly.whereHasTheTimeGone.west.stopAndAccumulate(t2); // 10ms
+    Glean.testOnly.whereHasTheTimeGone.west.stopAndAccumulate(t3); // 5ms
+
+    const timingDistributionValue =
+      Glean.testOnly.whereHasTheTimeGone.testGetValue();
+    const NANOS_IN_MILLIS = 1e6;
+    // bug 1701949 - Sleep gets close, but sometimes doesn't wait long enough.
+    const EPSILON = 40000;
+
+    // Variance in timing makes getting the sum impossible to know.
+    const sum = timingDistributionValue.west.sum;
+    Assert.greater(sum, 15 * NANOS_IN_MILLIS - EPSILON);
+    Assert.equal(2, Object.keys(timingDistributionValue.west.values).length);
+    Assert.deepEqual(
+      {
+        west: {
+          sum,
+          count: 2,
+          values: timingDistributionValue.west.values,
+        },
+      },
+      timingDistributionValue
+    );
+  }
+);

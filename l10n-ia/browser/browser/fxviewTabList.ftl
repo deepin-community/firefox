@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Mover al fin
     .accesskey = f
 fxviewtabrow-move-tab-window = Displaciar a nove fenestra
     .accesskey = f
+fxviewtabrow-send-to-device = Inviar a apparato
+    .accesskey = n
 fxviewtabrow-send-tab = Inviar scheda a un apparato
     .accesskey = n
 fxviewtabrow-pin-tab = Appuncta scheda
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Non plus silentiar le scheda
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Optiones pro { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Silentiar { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Reactivar audio { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

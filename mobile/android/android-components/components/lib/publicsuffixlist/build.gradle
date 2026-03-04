@@ -3,47 +3,32 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
     id 'mozac.PublicSuffixListPlugin'
 }
 
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'mozac.PublicSuffixListPlugin'
+apply from: '../../../common-config.gradle'
+apply from: '../../../publish.gradle'
 
 android {
-    defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
+    namespace = 'mozilla.components.lib.publicsuffixlist'
+}
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    buildFeatures {
-        viewBinding true
-    }
-
-    namespace 'mozilla.components.lib.publicsuffixlist'
+publicSuffixList {
+    sourceFile = file("${gradle.mozconfig.topsrcdir}/netwerk/dns/effective_tld_names.dat")
 }
 
 dependencies {
-    implementation ComponentsDependencies.kotlin_coroutines
-    implementation ComponentsDependencies.androidx_annotation
+    implementation libs.androidx.annotation
+    implementation libs.kotlinx.coroutines
 
-    testImplementation project(':support-test')
-    testImplementation ComponentsDependencies.androidx_test_core
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation ComponentsDependencies.testing_robolectric
-    testImplementation ComponentsDependencies.testing_coroutines
+    testImplementation project(':components:support-test')
+
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.robolectric
 }
 
-apply from: '../../../android-lint.gradle'
-apply from: '../../../publish.gradle'
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

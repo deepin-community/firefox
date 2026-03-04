@@ -6,11 +6,19 @@ use inherent::inherent;
 use std::convert::TryInto;
 use std::sync::Arc;
 
-use super::{CommonMetricData, DistributionData, MemoryUnit, MetricId};
+use super::{
+    BaseMetricId, ChildMetricMeta, CommonMetricData, DistributionData, MemoryUnit, MetricId,
+};
 
 use glean::traits::MemoryDistribution;
 
 use crate::ipc::{need_ipc, with_ipc_payload};
+
+#[cfg(feature = "with_gecko")]
+use super::profiler_utils::{
+    truncate_vector_for_marker, DistributionMetricMarker, DistributionValues,
+    TelemetryProfilerCategory,
+};
 
 /// A memory distribution metric.
 ///
@@ -18,26 +26,26 @@ use crate::ipc::{need_ipc, with_ipc_payload};
 #[derive(Clone)]
 pub enum MemoryDistributionMetric {
     Parent {
-        /// The metric's ID.
-        ///
-        /// **TEST-ONLY** - Do not use unless gated with `#[cfg(test)]`.
+        /// The metric's ID. Used for testing and profiler markers. Memory
+        /// distribution metrics can be labeled, so we may have either a
+        /// metric ID or sub-metric ID.
         id: MetricId,
         inner: Arc<glean::private::MemoryDistributionMetric>,
     },
-    Child(MemoryDistributionMetricIpc),
+    Child(ChildMetricMeta),
 }
-#[derive(Clone, Debug)]
-pub struct MemoryDistributionMetricIpc(pub MetricId);
+
+define_metric_namer!(MemoryDistributionMetric);
 
 impl MemoryDistributionMetric {
     /// Create a new memory distribution metric.
-    pub fn new(id: MetricId, meta: CommonMetricData, memory_unit: MemoryUnit) -> Self {
+    pub fn new(id: BaseMetricId, meta: CommonMetricData, memory_unit: MemoryUnit) -> Self {
         if need_ipc() {
-            MemoryDistributionMetric::Child(MemoryDistributionMetricIpc(id))
+            MemoryDistributionMetric::Child(ChildMetricMeta::from_common_metric_data(id, meta))
         } else {
             let inner = glean::private::MemoryDistributionMetric::new(meta, memory_unit);
             MemoryDistributionMetric::Parent {
-                id,
+                id: id.into(),
                 inner: Arc::new(inner),
             }
         }
@@ -46,9 +54,16 @@ impl MemoryDistributionMetric {
     #[cfg(test)]
     pub(crate) fn child_metric(&self) -> Self {
         match self {
-            MemoryDistributionMetric::Parent { id, .. } => {
-                MemoryDistributionMetric::Child(MemoryDistributionMetricIpc(*id))
-            }
+            MemoryDistributionMetric::Parent { id, inner } => MemoryDistributionMetric::Child(
+                // SAFETY: We can unwrap here, as this code is only run in the
+                // context of a test. If this code is used elsewhere, the
+                // `unwrap` should be replaced with proper error handling of
+                // the `None` case.
+                ChildMetricMeta::from_metric_identifier(
+                    (*id).base_metric_id().unwrap(),
+                    inner.as_ref(),
+                ),
+            ),
             MemoryDistributionMetric::Child(_) => {
                 panic!("Can't get a child metric from a child metric")
             }
@@ -59,23 +74,69 @@ impl MemoryDistributionMetric {
     pub(crate) fn metric_id(&self) -> MetricId {
         match self {
             MemoryDistributionMetric::Parent { id, .. } => *id,
-            MemoryDistributionMetric::Child(c) => c.0,
+            MemoryDistributionMetric::Child(meta) => meta.id.into(),
         }
     }
 
     pub fn accumulate_samples(&self, samples: Vec<u64>) {
-        match self {
-            MemoryDistributionMetric::Parent { inner, .. } => {
+        #[cfg(feature = "with_gecko")]
+        let marker_samples = truncate_vector_for_marker(&samples);
+
+        #[allow(unused)]
+        let id = match self {
+            MemoryDistributionMetric::Parent { id, inner } => {
                 inner.accumulate_samples(samples.into_iter().map(|s| s as _).collect());
+                *id
             }
-            MemoryDistributionMetric::Child(c) => {
+            MemoryDistributionMetric::Child(meta) => {
                 with_ipc_payload(move |payload| {
-                    if let Some(v) = payload.memory_samples.get_mut(&c.0) {
+                    if let Some(v) = payload.memory_samples.get_mut(&meta.id) {
                         v.extend(samples);
                     } else {
-                        payload.memory_samples.insert(c.0, samples);
+                        payload.memory_samples.insert(meta.id, samples);
                     }
                 });
+                MetricId::Id(meta.id)
+            }
+        };
+        #[cfg(feature = "with_gecko")]
+        gecko_profiler::lazy_add_marker!(
+            "MemoryDistribution::accumulate",
+            TelemetryProfilerCategory,
+            DistributionMetricMarker::<MemoryDistributionMetric, u64>::new(
+                id,
+                None,
+                DistributionValues::Samples(marker_samples)
+            )
+        );
+    }
+
+    pub fn start_buffer(&self) -> LocalMemoryDistribution<'_> {
+        match self {
+            MemoryDistributionMetric::Parent { inner, .. } => {
+                LocalMemoryDistribution::Parent(inner.start_buffer())
+            }
+            MemoryDistributionMetric::Child(_) => {
+                // TODO(bug 1920957): Buffering not implemented for child processes yet. We don't
+                // want to panic though.
+                log::warn!("Can't get a local memory distribution from a child metric. No data will be recorded.");
+                LocalMemoryDistribution::Child
+            }
+        }
+    }
+}
+
+pub enum LocalMemoryDistribution<'a> {
+    Parent(glean::private::LocalMemoryDistribution<'a>),
+    Child,
+}
+
+impl LocalMemoryDistribution<'_> {
+    pub fn accumulate(&mut self, sample: u64) {
+        match self {
+            LocalMemoryDistribution::Parent(p) => p.accumulate(sample),
+            LocalMemoryDistribution::Child => {
+                log::debug!("Can't accumulate local memory distribution in a child process.")
             }
         }
     }
@@ -95,8 +156,9 @@ impl MemoryDistribution for MemoryDistributionMetric {
     /// Values bigger than 1 Terabyte (2<sup>40</sup> bytes) are truncated
     /// and an `ErrorType::InvalidValue` error is recorded.
     pub fn accumulate(&self, sample: u64) {
-        match self {
-            MemoryDistributionMetric::Parent { inner, .. } => {
+        #[allow(unused)]
+        let id = match self {
+            MemoryDistributionMetric::Parent { id, inner } => {
                 // values are capped at 2**40.
                 // If the value doesn't fit into `i64` it's definitely to large
                 // and cause an error.
@@ -108,42 +170,29 @@ impl MemoryDistribution for MemoryDistributionMetric {
                     i64::MAX
                 });
                 inner.accumulate(sample);
+                *id
             }
-            MemoryDistributionMetric::Child(c) => {
+            MemoryDistributionMetric::Child(meta) => {
                 with_ipc_payload(move |payload| {
-                    if let Some(v) = payload.memory_samples.get_mut(&c.0) {
+                    if let Some(v) = payload.memory_samples.get_mut(&meta.id) {
                         v.push(sample);
                     } else {
-                        payload.memory_samples.insert(c.0, vec![sample]);
+                        payload.memory_samples.insert(meta.id, vec![sample]);
                     }
                 });
+                MetricId::Id(meta.id)
             }
-        }
-    }
-
-    /// **Test-only API.**
-    ///
-    /// Get the currently-stored histogram as a DistributionData of the serialized value.
-    /// This doesn't clear the stored value.
-    ///
-    /// ## Arguments
-    ///
-    /// * `ping_name` - the storage name to look into.
-    ///
-    /// ## Return value
-    ///
-    /// Returns the stored value or `None` if nothing stored.
-    pub fn test_get_value<'a, S: Into<Option<&'a str>>>(
-        &self,
-        ping_name: S,
-    ) -> Option<DistributionData> {
-        let ping_name = ping_name.into().map(|s| s.to_string());
-        match self {
-            MemoryDistributionMetric::Parent { inner, .. } => inner.test_get_value(ping_name),
-            MemoryDistributionMetric::Child(c) => {
-                panic!("Cannot get test value for {:?} in non-parent process!", c.0)
-            }
-        }
+        };
+        #[cfg(feature = "with_gecko")]
+        gecko_profiler::lazy_add_marker!(
+            "MemoryDistribution::accumulate",
+            TelemetryProfilerCategory,
+            DistributionMetricMarker::<MemoryDistributionMetric, u64>::new(
+                id,
+                None,
+                DistributionValues::Sample(sample)
+            )
+        );
     }
 
     /// **Exported for test purposes.**
@@ -164,10 +213,39 @@ impl MemoryDistribution for MemoryDistributionMetric {
             MemoryDistributionMetric::Parent { inner, .. } => {
                 inner.test_get_num_recorded_errors(error)
             }
-            MemoryDistributionMetric::Child(c) => panic!(
+            MemoryDistributionMetric::Child(meta) => panic!(
                 "Cannot get the number of recorded errors for {:?} in non-parent process!",
-                c.0
+                meta.id
             ),
+        }
+    }
+}
+
+#[inherent]
+impl glean::TestGetValue for MemoryDistributionMetric {
+    type Output = DistributionData;
+
+    /// **Test-only API.**
+    ///
+    /// Get the currently-stored histogram as a DistributionData of the serialized value.
+    /// This doesn't clear the stored value.
+    ///
+    /// ## Arguments
+    ///
+    /// * `ping_name` - the storage name to look into.
+    ///
+    /// ## Return value
+    ///
+    /// Returns the stored value or `None` if nothing stored.
+    pub fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
+        match self {
+            MemoryDistributionMetric::Parent { inner, .. } => inner.test_get_value(ping_name),
+            MemoryDistributionMetric::Child(meta) => {
+                panic!(
+                    "Cannot get test value for {:?} in non-parent process!",
+                    meta.id
+                )
+            }
         }
     }
 }
@@ -182,11 +260,11 @@ mod test {
         let _lock = lock_test();
 
         let metric = MemoryDistributionMetric::new(
-            0.into(),
+            BaseMetricId(0),
             CommonMetricData {
                 name: "memory_distribution_metric".into(),
                 category: "telemetry".into(),
-                send_in_pings: vec!["store1".into()],
+                send_in_pings: vec!["test-ping".into()],
                 disabled: false,
                 ..Default::default()
             },
@@ -195,9 +273,10 @@ mod test {
 
         metric.accumulate(42);
 
-        let metric_data = metric.test_get_value("store1").unwrap();
+        let metric_data = metric
+            .test_get_value(Some("test-ping".to_string()))
+            .unwrap();
         assert_eq!(1, metric_data.values[&42494]);
-        assert_eq!(0, metric_data.values[&44376]);
         assert_eq!(43008, metric_data.sum);
     }
 
@@ -216,9 +295,10 @@ mod test {
             child_metric.accumulate(13 * 9);
         }
 
-        let metric_data = parent_metric.test_get_value("store1").unwrap();
+        let metric_data = parent_metric
+            .test_get_value(Some("test-ping".to_string()))
+            .unwrap();
         assert_eq!(1, metric_data.values[&42494]);
-        assert_eq!(0, metric_data.values[&44376]);
         assert_eq!(43008, metric_data.sum);
 
         // Single-process IPC machine goes brrrrr...

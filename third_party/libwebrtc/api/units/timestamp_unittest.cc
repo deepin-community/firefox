@@ -10,8 +10,10 @@
 
 #include "api/units/timestamp.h"
 
+#include <cstdint>
 #include <limits>
 
+#include "api/units/time_delta.h"
 #include "test/gtest.h"
 
 namespace webrtc {
@@ -35,6 +37,7 @@ TEST(TimestampTest, ConstExpr) {
   EXPECT_EQ(kTimestampSeconds.seconds(), kValue);
   EXPECT_EQ(kTimestampMs.ms(), kValue);
   EXPECT_EQ(kTimestampUs.us(), kValue);
+  EXPECT_EQ(kTimestampUs.ns(), kValue * 1000);
 }
 
 TEST(TimestampTest, GetBackSameValues) {

@@ -37,8 +37,9 @@ about-networking-bytes-received = 接收的位元組數
 about-networking-logging = 紀錄
 about-networking-dns-lookup = DNS 查詢
 about-networking-dns-lookup-button = 解析
-about-networking-dns-domain = 網域:
+about-networking-dns-domain = 網域：
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = RCWN 統計
 about-networking-rcwn-status = RCWN 狀態
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = 此頁面已移動至 <a data-l10n-name="
 
 about-networking-networkid-is-up = 網路已連線
 about-networking-networkid-status-known = 已知網路連線狀態
-
-##
-

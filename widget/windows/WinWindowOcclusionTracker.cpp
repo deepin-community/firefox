@@ -22,9 +22,10 @@
 #include "mozilla/Logging.h"
 #include "mozilla/StaticPrefs_widget.h"
 #include "mozilla/StaticPtr.h"
-#include "nsBaseWidget.h"
+#include "nsIWidget.h"
 #include "nsWindow.h"
 #include "transport/runnable_utils.h"
+#include "WinEventObserver.h"
 #include "WinUtils.h"
 
 namespace mozilla::widget {
@@ -341,12 +342,6 @@ void WinWindowOcclusionTracker::Ensure() {
     if (sTracker->mThread->StartWithOptions(options)) {
       // Success!
       sTracker->mHasAttemptedShutdown = false;
-
-      // Take this opportunity to ensure that mDisplayStatusObserver and
-      // mSessionChangeObserver exist. They might have failed to be
-      // created when sTracker was created.
-      sTracker->EnsureDisplayStatusObserver();
-      sTracker->EnsureSessionChangeObserver();
       return;
     }
     // Restart failed, so null out our sTracker and try again with a new
@@ -428,14 +423,6 @@ void WinWindowOcclusionTracker::ShutDown() {
 }
 
 void WinWindowOcclusionTracker::Destroy() {
-  if (mDisplayStatusObserver) {
-    mDisplayStatusObserver->Destroy();
-    mDisplayStatusObserver = nullptr;
-  }
-  if (mSessionChangeObserver) {
-    mSessionChangeObserver->Destroy();
-    mSessionChangeObserver = nullptr;
-  }
   if (mSerializedTaskDispatcher) {
     mSerializedTaskDispatcher->Destroy();
   }
@@ -452,27 +439,7 @@ bool WinWindowOcclusionTracker::IsInWinWindowOcclusionThread() {
          sTracker->mThread->thread_id() == PlatformThread::CurrentId();
 }
 
-void WinWindowOcclusionTracker::EnsureDisplayStatusObserver() {
-  if (mDisplayStatusObserver) {
-    return;
-  }
-  if (StaticPrefs::
-          widget_windows_window_occlusion_tracking_display_state_enabled()) {
-    mDisplayStatusObserver = DisplayStatusObserver::Create(this);
-  }
-}
-
-void WinWindowOcclusionTracker::EnsureSessionChangeObserver() {
-  if (mSessionChangeObserver) {
-    return;
-  }
-  if (StaticPrefs::
-          widget_windows_window_occlusion_tracking_session_lock_enabled()) {
-    mSessionChangeObserver = SessionChangeObserver::Create(this);
-  }
-}
-
-void WinWindowOcclusionTracker::Enable(nsBaseWidget* aWindow, HWND aHwnd) {
+void WinWindowOcclusionTracker::Enable(nsIWidget* aWindow, HWND aHwnd) {
   MOZ_ASSERT(NS_IsMainThread());
   LOG(LogLevel::Info, "WinWindowOcclusionTracker::Enable() aWindow %p aHwnd %p",
       aWindow, aHwnd);
@@ -492,7 +459,7 @@ void WinWindowOcclusionTracker::Enable(nsBaseWidget* aWindow, HWND aHwnd) {
   mSerializedTaskDispatcher->PostTaskToCalculator(runnable.forget());
 }
 
-void WinWindowOcclusionTracker::Disable(nsBaseWidget* aWindow, HWND aHwnd) {
+void WinWindowOcclusionTracker::Disable(nsIWidget* aWindow, HWND aHwnd) {
   MOZ_ASSERT(NS_IsMainThread());
   LOG(LogLevel::Info,
       "WinWindowOcclusionTracker::Disable() aWindow %p aHwnd %p", aWindow,
@@ -512,7 +479,7 @@ void WinWindowOcclusionTracker::Disable(nsBaseWidget* aWindow, HWND aHwnd) {
   mSerializedTaskDispatcher->PostTaskToCalculator(runnable.forget());
 }
 
-void WinWindowOcclusionTracker::OnWindowVisibilityChanged(nsBaseWidget* aWindow,
+void WinWindowOcclusionTracker::OnWindowVisibilityChanged(nsIWidget* aWindow,
                                                           bool aVisible) {
   MOZ_ASSERT(NS_IsMainThread());
   LOG(LogLevel::Info,
@@ -533,8 +500,7 @@ WinWindowOcclusionTracker::WinWindowOcclusionTracker(
   MOZ_ASSERT(NS_IsMainThread());
   LOG(LogLevel::Info, "WinWindowOcclusionTracker::WinWindowOcclusionTracker()");
 
-  EnsureDisplayStatusObserver();
-  EnsureSessionChangeObserver();
+  WinEventWindow::Ensure();
 
   mSerializedTaskDispatcher = new SerializedTaskDispatcher();
 }
@@ -729,7 +695,7 @@ void WinWindowOcclusionTracker::UpdateOcclusionState(
     if (!widget) {
       continue;
     }
-    auto* baseWidget = static_cast<nsBaseWidget*>(widget.get());
+    auto* baseWidget = static_cast<nsIWidget*>(widget.get());
     baseWidget->NotifyOcclusionState(occlState);
     if (baseWidget->SizeMode() != nsSizeMode_Minimized) {
       mNumVisibleRootWindows++;
@@ -737,11 +703,10 @@ void WinWindowOcclusionTracker::UpdateOcclusionState(
   }
 }
 
-void WinWindowOcclusionTracker::OnSessionChange(WPARAM aStatusCode,
-                                                Maybe<bool> aIsCurrentSession) {
+void WinWindowOcclusionTracker::OnSessionChange(WPARAM aStatusCode) {
   MOZ_ASSERT(NS_IsMainThread());
-
-  if (aIsCurrentSession.isNothing() || !*aIsCurrentSession) {
+  if (!StaticPrefs::
+          widget_windows_window_occlusion_tracking_session_lock_enabled()) {
     return;
   }
 
@@ -763,6 +728,11 @@ void WinWindowOcclusionTracker::OnSessionChange(WPARAM aStatusCode,
 
 void WinWindowOcclusionTracker::OnDisplayStateChanged(bool aDisplayOn) {
   MOZ_ASSERT(NS_IsMainThread());
+  if (!StaticPrefs::
+          widget_windows_window_occlusion_tracking_display_state_enabled()) {
+    return;
+  }
+
   LOG(LogLevel::Info,
       "WinWindowOcclusionTracker::OnDisplayStateChanged() aDisplayOn %d",
       aDisplayOn);
@@ -799,7 +769,7 @@ void WinWindowOcclusionTracker::MarkNonIconicWindowsOccluded() {
     if (!widget) {
       continue;
     }
-    auto* baseWidget = static_cast<nsBaseWidget*>(widget.get());
+    auto* baseWidget = static_cast<nsIWidget*>(widget.get());
     auto state = (baseWidget->SizeMode() == nsSizeMode_Minimized)
                      ? OcclusionState::HIDDEN
                      : OcclusionState::OCCLUDED;
@@ -880,7 +850,6 @@ void WinWindowOcclusionTracker::WindowOcclusionCalculator::Initialize() {
   MOZ_ASSERT(!mVirtualDesktopManager);
   CALC_LOG(LogLevel::Info, "Initialize()");
 
-#ifndef __MINGW32__
   RefPtr<IVirtualDesktopManager> desktopManager;
   HRESULT hr = ::CoCreateInstance(
       CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER,
@@ -889,7 +858,6 @@ void WinWindowOcclusionTracker::WindowOcclusionCalculator::Initialize() {
     return;
   }
   mVirtualDesktopManager = desktopManager;
-#endif
 }
 
 void WinWindowOcclusionTracker::WindowOcclusionCalculator::Shutdown() {
@@ -1138,10 +1106,12 @@ void WinWindowOcclusionTracker::WindowOcclusionCalculator::
 }
 
 void WinWindowOcclusionTracker::WindowOcclusionCalculator::
-    RegisterGlobalEventHook(DWORD aEventMin, DWORD aEventMax) {
+    RegisterGlobalEventHook(DWORD aEventMin, DWORD aEventMax,
+                            DWORD aSkipFlags) {
+  MOZ_ASSERT(!aSkipFlags || aSkipFlags == WINEVENT_SKIPOWNPROCESS);
   HWINEVENTHOOK eventHook =
       ::SetWinEventHook(aEventMin, aEventMax, nullptr, &EventHookCallback, 0, 0,
-                        WINEVENT_OUTOFCONTEXT);
+                        WINEVENT_OUTOFCONTEXT | aSkipFlags);
   mGlobalEventHooks.push_back(eventHook);
 }
 
@@ -1172,8 +1142,13 @@ void WinWindowOcclusionTracker::WindowOcclusionCalculator::
   RegisterGlobalEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND);
 
   // Detects objects getting shown and hidden. Used to know when the task bar
-  // and alt tab are showing preview windows so we can unocclude windows.
-  RegisterGlobalEventHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE);
+  // and alt tab are showing preview windows so we can unocclude windows. We
+  // Don't need to know about these events when generated by our own process
+  // and our accessibiliy engine can generate a lot of them if content mutates
+  // heavily. We can thus avoid some unnecessary work by skipping these for our
+  // own process.
+  RegisterGlobalEventHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_HIDE,
+                          WINEVENT_SKIPOWNPROCESS);
 
   // Detects object state changes, e.g., enable/disable state, native window
   // maximize and native window restore events.

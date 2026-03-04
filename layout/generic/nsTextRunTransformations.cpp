@@ -21,6 +21,7 @@
 #include "nsLineBreaker.h"
 #include "nsSpecialCasingData.h"
 #include "nsStyleConsts.h"
+#include "nsStyleUtil.h"
 #include "nsTextFrameUtils.h"
 #include "nsUnicharUtils.h"
 #include "nsUnicodeProperties.h"
@@ -261,33 +262,25 @@ static LanguageSpecificCasingBehavior GetCasingFor(const nsAtom* aLang) {
   if (!aLang) {
     return eLSCB_None;
   }
-  if (aLang == nsGkAtoms::tr || aLang == nsGkAtoms::az ||
-      aLang == nsGkAtoms::ba || aLang == nsGkAtoms::crh ||
-      aLang == nsGkAtoms::tt) {
+  if (nsStyleUtil::MatchesLanguagePrefix(aLang, u"tr") ||
+      nsStyleUtil::MatchesLanguagePrefix(aLang, u"az") ||
+      nsStyleUtil::MatchesLanguagePrefix(aLang, u"ba") ||
+      nsStyleUtil::MatchesLanguagePrefix(aLang, u"crh") ||
+      nsStyleUtil::MatchesLanguagePrefix(aLang, u"tt")) {
     return eLSCB_Turkish;
   }
-  if (aLang == nsGkAtoms::nl) {
+  if (nsStyleUtil::MatchesLanguagePrefix(aLang, u"nl")) {
     return eLSCB_Dutch;
   }
-  if (aLang == nsGkAtoms::el) {
+  if (nsStyleUtil::MatchesLanguagePrefix(aLang, u"el")) {
     return eLSCB_Greek;
   }
-  if (aLang == nsGkAtoms::ga) {
+  if (nsStyleUtil::MatchesLanguagePrefix(aLang, u"ga")) {
     return eLSCB_Irish;
   }
-  if (aLang == nsGkAtoms::lt_) {
+  if (nsStyleUtil::MatchesLanguagePrefix(aLang, u"lt")) {
     return eLSCB_Lithuanian;
   }
-
-  // Is there a region subtag we should ignore?
-  nsAtomString langStr(const_cast<nsAtom*>(aLang));
-  int index = langStr.FindChar('-');
-  if (index > 0) {
-    langStr.Truncate(index);
-    RefPtr<nsAtom> truncatedLang = NS_Atomize(langStr);
-    return GetCasingFor(truncatedLang);
-  }
-
   return eLSCB_None;
 }
 
@@ -681,14 +674,7 @@ bool nsCaseTransformTextRunFactory::TransformString(
             break;
           }
 
-          // Bug 1476304: we exclude Georgian letters U+10D0..10FF because of
-          // lack of widespread font support for the corresponding Mtavruli
-          // characters at this time (July 2018).
-          // This condition is to be removed once the major platforms ship with
-          // fonts that support U+1C90..1CBF.
-          if (ch < 0x10D0 || ch > 0x10FF) {
-            ch = ToUpperCase(ch);
-          }
+          ch = ToUpperCase(ch);
           break;
 
         case StyleTextTransform::CAPITALIZE._0: {
@@ -770,10 +756,11 @@ bool nsCaseTransformTextRunFactory::TransformString(
               // Bug 930504. Some platforms do not have fonts for Mathematical
               // Alphanumeric Symbols. Hence we only perform the transform if a
               // character is actually available.
+              auto* fontGroup = aTextRun->GetFontGroup();
+              fontGroup->EnsureFontList();
               FontMatchType matchType;
-              RefPtr<gfxFont> mathFont =
-                  aTextRun->GetFontGroup()->FindFontForChar(
-                      ch2, 0, 0, intl::Script::COMMON, nullptr, &matchType);
+              RefPtr<gfxFont> mathFont = fontGroup->FindFontForChar(
+                  ch2, 0, 0, intl::Script::COMMON, nullptr, &matchType);
               if (mathFont) {
                 ch = ch2;
               }
@@ -831,7 +818,7 @@ bool nsCaseTransformTextRunFactory::TransformString(
           // clang-format on
 
           size_t index;
-          const uint16_t len = MOZ_ARRAY_LENGTH(kSmallKanas);
+          const uint16_t len = std::size(kSmallKanas);
           if (mozilla::BinarySearch(kSmallKanas, 0, len, ch, &index)) {
             ch = kFullSizeKanas[index];
           }

@@ -6,8 +6,6 @@
 
 #include "TrackBuffersManager.h"
 
-#include <limits>
-
 #include "ContainerParser.h"
 #include "MP4Demuxer.h"
 #include "MediaInfo.h"
@@ -47,6 +45,7 @@ mozilla::LogModule* GetMediaSourceSamplesLog() {
 namespace mozilla {
 
 using dom::SourceBufferAppendMode;
+using media::Interval;
 using media::TimeInterval;
 using media::TimeIntervals;
 using media::TimeUnit;
@@ -95,7 +94,6 @@ TrackBuffersManager::TrackBuffersManager(MediaSourceDecoder* aParentDecoder,
           "TrackBuffersManager::mParentDecoder", aParentDecoder,
           false /* strict */)),
       mAbstractMainThread(aParentDecoder->AbstractMainThread()),
-      mEnded(false),
       mVideoEvictionThreshold(Preferences::GetUint(
           "media.mediasource.eviction_threshold.video", 150 * 1024 * 1024)),
       mAudioEvictionThreshold(Preferences::GetUint(
@@ -118,7 +116,7 @@ RefPtr<TrackBuffersManager::AppendPromise> TrackBuffersManager::AppendData(
   RefPtr<MediaByteBuffer> data(aData);
   MSE_DEBUG("Appending %zu bytes", data->Length());
 
-  mEnded = false;
+  Reopen();
 
   return InvokeAsync(static_cast<AbstractThread*>(GetTaskQueueSafe().get()),
                      this, __func__, &TrackBuffersManager::DoAppendData,
@@ -155,7 +153,7 @@ void TrackBuffersManager::QueueTask(SourceBufferTask* aTask) {
             "TrackBuffersManager::QueueTask", this,
             &TrackBuffersManager::QueueTask, aTask));
     MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-    Unused << rv;
+    (void)rv;
     return;
   }
   mQueue.Push(aTask);
@@ -231,10 +229,9 @@ void TrackBuffersManager::ProcessTasks() {
       }
       mSourceBufferAttributes = MakeUnique<SourceBufferAttributes>(
           task->As<AppendBufferTask>()->mAttributes);
-      mAppendWindow = TimeInterval(
-          TimeUnit::FromSeconds(
-              mSourceBufferAttributes->GetAppendWindowStart()),
-          TimeUnit::FromSeconds(mSourceBufferAttributes->GetAppendWindowEnd()));
+      mAppendWindow =
+          Interval<double>(mSourceBufferAttributes->GetAppendWindowStart(),
+                           mSourceBufferAttributes->GetAppendWindowEnd());
       ScheduleSegmentParserLoop();
       break;
     case Type::RangeRemoval: {
@@ -325,7 +322,7 @@ TrackBuffersManager::RangeRemoval(TimeUnit aStart, TimeUnit aEnd) {
   MOZ_ASSERT(NS_IsMainThread());
   MSE_DEBUG("From %.2f to %.2f", aStart.ToSeconds(), aEnd.ToSeconds());
 
-  mEnded = false;
+  Reopen();
 
   return InvokeAsync(static_cast<AbstractThread*>(GetTaskQueueSafe().get()),
                      this, __func__,
@@ -462,7 +459,25 @@ TimeIntervals TrackBuffersManager::Buffered() const {
 
 int64_t TrackBuffersManager::GetSize() const { return mSizeSourceBuffer; }
 
-void TrackBuffersManager::Ended() { mEnded = true; }
+void TrackBuffersManager::SetEnded(
+    const dom::Optional<dom::MediaSourceEndOfStreamError>& aError) {
+  MOZ_ASSERT(NS_IsMainThread());
+  MutexAutoLock lock(mMutex);
+  if (!aError.WasPassed()) {
+    // error is not set.
+    // Notify the media element that it now has all of the media data.
+    // https://w3c.github.io/media-source/#dfn-end-of-stream
+    mHaveAllData = true;
+  }
+  mEnded = true;
+}
+
+void TrackBuffersManager::Reopen() {
+  MOZ_ASSERT(NS_IsMainThread());
+  MutexAutoLock lock(mMutex);
+  mHaveAllData = false;
+  mEnded = false;
+}
 
 void TrackBuffersManager::Detach() {
   MOZ_ASSERT(NS_IsMainThread());
@@ -1726,6 +1741,10 @@ void TrackBuffersManager::OnDemuxFailed(TrackType aTrack,
       }
       break;
     default:
+      // https://w3c.github.io/media-source/#sourcebuffer-segment-parser-loop
+      // 2. If the [[input buffer]] contains bytes that violate the
+      //    SourceBuffer byte stream format specification, then run the append
+      //    error algorithm and abort this algorithm.
       RejectProcessing(aError, __func__);
       break;
   }
@@ -2154,16 +2173,26 @@ void TrackBuffersManager::ProcessFrames(TrackBuffer& aSamples,
     }
 
     // 7. Let frame end timestamp equal the sum of presentation timestamp and
-    // frame duration. This is sampleInterval.mEnd
-
+    // frame duration.
+    // "presentation timestamp" and "frame duration" are double precision
+    // representations.
+    Interval<double> frameStartAndEnd(
+        sampleInterval.mStart.ToSeconds(),
+        sampleInterval.mStart.ToSeconds() + sampleDuration.ToSeconds());
     // 8. If presentation timestamp is less than appendWindowStart, then set the
     // need random access point flag to true, drop the coded frame, and jump to
     // the top of the loop to start processing the next coded frame.
     // 9. If frame end timestamp is greater than appendWindowEnd, then set the
     // need random access point flag to true, drop the coded frame, and jump to
     // the top of the loop to start processing the next coded frame.
-    if (!mAppendWindow.ContainsStrict(sampleInterval)) {
-      if (mAppendWindow.IntersectsStrict(sampleInterval)) {
+    if (!mAppendWindow.ContainsStrict(frameStartAndEnd)) {
+      // Calculate the intersection using the same denominator as will be used
+      // for the sample time and duration so that a truncated sample is
+      // collected only if its truncated duration would be non-zero.
+      TimeInterval appendWindow(
+          TimeUnit::FromSecondsWithBaseOf(mAppendWindow.mStart, sampleTime),
+          TimeUnit::FromSecondsWithBaseOf(mAppendWindow.mEnd, sampleTime));
+      if (appendWindow.IntersectsStrict(sampleInterval)) {
         // 8. Note: Some implementations MAY choose to collect some of these
         //    coded frames with presentation timestamp less than
         //    appendWindowStart and use them to generate a splice at the first
@@ -2183,9 +2212,7 @@ void TrackBuffersManager::ProcessFrames(TrackBuffer& aSamples,
         //    not be a normative requirement. In conjunction with collecting
         //    coded frames that span appendWindowStart, implementations MAY thus
         //    support gapless audio splicing.
-        TimeInterval intersection = mAppendWindow.Intersection(sampleInterval);
-        intersection.mStart = intersection.mStart.ToBase(sample->mTime);
-        intersection.mEnd = intersection.mEnd.ToBase(sample->mTime);
+        TimeInterval intersection = appendWindow.Intersection(sampleInterval);
         sample->mOriginalPresentationWindow = Some(sampleInterval);
         MSE_DEBUGV("will truncate frame from [%" PRId64 "%s,%" PRId64
                    "%s] to [%" PRId64 "%s,%" PRId64 "%s]",
@@ -2203,16 +2230,13 @@ void TrackBuffersManager::ProcessFrames(TrackBuffer& aSamples,
         sample->mTimecode = decodeTimestamp;
         previouslyDroppedSample = sample;
         MSE_DEBUGV("frame [%" PRId64 "%s,%" PRId64
-                   "%s] outside appendWindow [%" PRId64 "%s,%" PRId64
-                   "%s] dropping",
+                   "%s] outside appendWindow [%f.6%s,%f.6%s] dropping",
                    sampleInterval.mStart.ToMicroseconds(),
                    sampleInterval.mStart.ToString().get(),
                    sampleInterval.mEnd.ToMicroseconds(),
-                   sampleInterval.mEnd.ToString().get(),
-                   mAppendWindow.mStart.ToMicroseconds(),
-                   mAppendWindow.mStart.ToString().get(),
-                   mAppendWindow.mEnd.ToMicroseconds(),
-                   mAppendWindow.mEnd.ToString().get());
+                   sampleInterval.mEnd.ToString().get(), mAppendWindow.mStart,
+                   appendWindow.mStart.ToString().get(), mAppendWindow.mEnd,
+                   appendWindow.mEnd.ToString().get());
         if (samples.Length()) {
           // We are creating a discontinuity in the samples.
           // Insert the samples processed so far.
@@ -2339,14 +2363,11 @@ void TrackBuffersManager::InsertFrames(TrackBuffer& aSamples,
              aSamples.Length(), aTrackData.mInfo->mMimeType.get(),
              aIntervals.GetStart().ToMicroseconds(),
              aIntervals.GetEnd().ToMicroseconds());
-  if (profiler_thread_is_being_profiled_for_markers()) {
-    nsPrintfCString markerString(
-        "Processing %zu %s frames(start:%" PRId64 " end:%" PRId64 ")",
-        aSamples.Length(), aTrackData.mInfo->mMimeType.get(),
-        aIntervals.GetStart().ToMicroseconds(),
-        aIntervals.GetEnd().ToMicroseconds());
-    PROFILER_MARKER_TEXT("InsertFrames", MEDIA_PLAYBACK, {}, markerString);
-  }
+  PROFILER_MARKER_FMT("InsertFrames", MEDIA_PLAYBACK, {},
+                      "Processing {} {}frames(start:{} end:{})",
+                      aSamples.Length(), aTrackData.mInfo->mMimeType.get(),
+                      aIntervals.GetStart().ToMicroseconds(),
+                      aIntervals.GetEnd().ToMicroseconds());
 
   // 11. Let spliced audio frame be an unset variable for holding audio splice
   // information
@@ -2511,7 +2532,7 @@ uint32_t TrackBuffersManager::RemoveFrames(const TimeIntervals& aIntervals,
       bool found = false;
       TimeUnit startTime = intersection.GetStart(&found);
       MOZ_DIAGNOSTIC_ASSERT(found, "Must intersect with added coded frames");
-      Unused << found;
+      (void)found;
       // Signal that this frame should be truncated when decoded.
       if (!sample->mOriginalPresentationWindow) {
         sample->mOriginalPresentationWindow = Some(sampleInterval);

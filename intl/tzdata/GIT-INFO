@@ -1,5 +1,5 @@
-commit 6f877dbcd7930f92fe8f97929e2ca683e7d443a2
-Author: yumaoka <y.umaoka@gmail.com>
-Date:   Thu Feb 8 15:05:36 2024 -0500
+commit d6a3a85e988251a7e4966035e618c6d203f1bb7c
+Author: Almaz <mingaleev@google.com>
+Date:   Fri Apr 11 18:26:16 2025 +0100
 
-    ICU-22659 tzdata2024a updates in ICU Data repo
+    ICU-23096 Update ICU data to TZDB 2025b. (#45)

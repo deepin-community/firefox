@@ -71,6 +71,7 @@ storage-table-headers-cookies-expires = Expires / Max-Age
 storage-table-headers-cookies-size = ขนาด
 storage-table-headers-cookies-last-accessed = เข้าถึงล่าสุด
 storage-table-headers-cookies-creation-time = สร้างเมื่อ
+storage-table-headers-cookies-update-time = ปรับปรุง
 storage-table-headers-cache-status = สถานะ
 storage-table-headers-extension-storage-area = พื้นที่เก็บข้อมูล
 
@@ -107,3 +108,11 @@ storage-idb-delete-blocked = ฐานข้อมูล “{ $dbName }” จ�
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = ไม่สามารถลบฐานข้อมูล “{ $dbName }”
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = ไม่สามารถสร้างคุกกี้ได้: “{ $errorString }”
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = ไม่สามารถอัปเดตคุกกี้ได้: “{ $errorString }”

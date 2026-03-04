@@ -25,13 +25,6 @@ type-browser = ब्राउज़र
 type-worker = श्रमिक
 type-other = अन्य
 
-## Values for the Energy Impact column
-##
-## Variables:
-##   $value (Number) - Value of the energy impact, eg. 0.25 (low),
-##                     5.38 (medium), 105.38 (high)
-
-
 ## Values for the Memory column
 ##
 ## Variables:
@@ -47,4 +40,3 @@ close-tab =
     .title = टैब को बंद करें
 show-addon =
     .title = ऐड-ऑन प्रबंधक में दिखाएँ
-

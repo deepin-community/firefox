@@ -5,8 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFEDropShadowElement.h"
-#include "mozilla/dom/SVGFEDropShadowElementBinding.h"
+
 #include "mozilla/SVGFilterInstance.h"
+#include "mozilla/dom/SVGFEDropShadowElementBinding.h"
 #include "nsIFrame.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEDropShadow)
@@ -133,18 +134,18 @@ void SVGFEDropShadowElement::GetSourceImageNames(
 
 SVGElement::NumberAttributesInfo SVGFEDropShadowElement::GetNumberInfo() {
   return NumberAttributesInfo(mNumberAttributes, sNumberInfo,
-                              ArrayLength(sNumberInfo));
+                              std::size(sNumberInfo));
 }
 
 SVGElement::NumberPairAttributesInfo
 SVGFEDropShadowElement::GetNumberPairInfo() {
   return NumberPairAttributesInfo(mNumberPairAttributes, sNumberPairInfo,
-                                  ArrayLength(sNumberPairInfo));
+                                  std::size(sNumberPairInfo));
 }
 
 SVGElement::StringAttributesInfo SVGFEDropShadowElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 }  // namespace mozilla::dom

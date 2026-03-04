@@ -21,6 +21,7 @@ namespace mozilla {
 
 namespace ipc {
 class CSPInfo;
+class PolicyContainerArgs;
 class PrincipalInfo;
 }  // namespace ipc
 
@@ -37,9 +38,11 @@ class ClientInfo final {
   UniquePtr<IPCClientInfo> mData;
 
  public:
-  ClientInfo(const nsID& aId, ClientType aType,
+  ClientInfo(const nsID& aId, const Maybe<nsID>& aAgentClusterId,
+             ClientType aType,
              const mozilla::ipc::PrincipalInfo& aPrincipalInfo,
-             const TimeStamp& aCreationTime);
+             const TimeStamp& aCreationTime, const nsCString& aURL,
+             mozilla::dom::FrameType aFrameType);
 
   ClientInfo(const ClientInfo& aRight);
 
@@ -104,8 +107,9 @@ class ClientInfo final {
   // Get a main-thread nsIPrincipal for the client.
   Result<nsCOMPtr<nsIPrincipal>, nsresult> GetPrincipal() const;
 
-  const Maybe<mozilla::ipc::CSPInfo>& GetCspInfo() const;
-  void SetCspInfo(const mozilla::ipc::CSPInfo& aCSPInfo);
+  const Maybe<mozilla::ipc::PolicyContainerArgs>& GetPolicyContainerArgs()
+      const;
+  void SetPolicyContainerArgs(const mozilla::ipc::PolicyContainerArgs& aPolicy);
 
   const Maybe<mozilla::ipc::CSPInfo>& GetPreloadCspInfo() const;
   void SetPreloadCspInfo(const mozilla::ipc::CSPInfo& aPreloadCSPInfo);

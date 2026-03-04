@@ -30,7 +30,6 @@ QuicSocketControl::QuicSocketControl(const nsCString& aHostName, int32_t aPort,
 
 void QuicSocketControl::SetCertVerificationResult(PRErrorCode errorCode) {
   COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
-  SetUsedPrivateDNS(GetProviderFlags() & nsISocketProvider::USED_PRIVATE_DNS);
 
   if (errorCode) {
     mFailedVerification = true;
@@ -122,6 +121,10 @@ QuicSocketControl::GetRetryEchConfig(nsACString& aEchConfig) {
 void QuicSocketControl::SetRetryEchConfig(const nsACString& aEchConfig) {
   COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
   mRetryEchConfig = aEchConfig;
+}
+
+bool QuicSocketControl::IsBuiltCertChainRootBuiltInRoot() const {
+  return mIsBuiltCertChainRootBuiltInRoot;
 }
 
 }  // namespace net

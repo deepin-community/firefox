@@ -8,29 +8,30 @@
 
 #include "mozilla/ServoCSSRuleList.h"
 
+#include "mozilla/ServoBindings.h"
+#include "mozilla/StyleSheet.h"
+#include "mozilla/dom/CSSContainerRule.h"
 #include "mozilla/dom/CSSCounterStyleRule.h"
+#include "mozilla/dom/CSSCustomMediaRule.h"
 #include "mozilla/dom/CSSFontFaceRule.h"
 #include "mozilla/dom/CSSFontFeatureValuesRule.h"
 #include "mozilla/dom/CSSFontPaletteValuesRule.h"
 #include "mozilla/dom/CSSImportRule.h"
+#include "mozilla/dom/CSSKeyframesRule.h"
 #include "mozilla/dom/CSSLayerBlockRule.h"
 #include "mozilla/dom/CSSLayerStatementRule.h"
-#include "mozilla/dom/CSSKeyframesRule.h"
-#include "mozilla/dom/CSSContainerRule.h"
 #include "mozilla/dom/CSSMarginRule.h"
 #include "mozilla/dom/CSSMediaRule.h"
 #include "mozilla/dom/CSSMozDocumentRule.h"
 #include "mozilla/dom/CSSNamespaceRule.h"
+#include "mozilla/dom/CSSNestedDeclarations.h"
 #include "mozilla/dom/CSSPageRule.h"
+#include "mozilla/dom/CSSPositionTryRule.h"
 #include "mozilla/dom/CSSPropertyRule.h"
 #include "mozilla/dom/CSSScopeRule.h"
 #include "mozilla/dom/CSSStartingStyleRule.h"
 #include "mozilla/dom/CSSStyleRule.h"
 #include "mozilla/dom/CSSSupportsRule.h"
-#include "mozilla/dom/CSSPositionTryRule.h"
-#include "mozilla/IntegerRange.h"
-#include "mozilla/ServoBindings.h"
-#include "mozilla/StyleSheet.h"
 #include "mozilla/dom/Document.h"
 
 using namespace mozilla::dom;
@@ -106,6 +107,8 @@ css::Rule* ServoCSSRuleList::GetRule(uint32_t aIndex) {
       CASE_RULE_UNLOCKED(Scope, Scope)
       CASE_RULE_UNLOCKED(StartingStyle, StartingStyle)
       CASE_RULE_LOCKED(PositionTry, PositionTry)
+      CASE_RULE_LOCKED(NestedDeclarations, NestedDeclarations)
+      CASE_RULE_UNLOCKED(CustomMedia, CustomMedia)
 #undef CASE_RULE_LOCKED
 #undef CASE_RULE_UNLOCKED
 #undef CASE_RULE_WITH_PREFIX
@@ -209,25 +212,15 @@ nsresult ServoCSSRuleList::InsertRule(const nsACString& aRule,
   // StyleSheet::ReparseSheet just mints a new loader, but that'd be wrong in
   // this case I think, since such a load will bypass CSP checks.
   if (Document* doc = mStyleSheet->GetAssociatedDocument()) {
-    loader = doc->CSSLoader();
+    loader = &doc->EnsureCSSLoader();
   }
+  auto containingState = css::Rule::ContainingRuleState::From(mParentRule);
   StyleCssRuleType type;
-  uint32_t containingTypes = 0;
-  Maybe<StyleCssRuleType> parseRelativeRuleType;
-  for (css::Rule* rule = mParentRule; rule; rule = rule->GetParentRule()) {
-    const auto ruleType = rule->Type();
-    containingTypes |= (1 << uint32_t(ruleType));
-    if (parseRelativeRuleType.isNothing() &&
-        (ruleType == StyleCssRuleType::Style ||
-         ruleType == StyleCssRuleType::Scope)) {
-      // Only the closest applicable type to this rule matters.
-      parseRelativeRuleType = Some(ruleType);
-    }
-  }
   nsresult rv = Servo_CssRules_InsertRule(
-      mRawRules, mStyleSheet->RawContents(), &aRule, aIndex, containingTypes,
-      parseRelativeRuleType.ptrOr(nullptr), loader, allowImportRules,
-      mStyleSheet, &type);
+      mRawRules, mStyleSheet->RawContents(), &aRule, aIndex,
+      containingState.mContainingTypes,
+      containingState.mParseRelativeType.ptrOr(nullptr), loader,
+      allowImportRules, mStyleSheet, &type);
   NS_ENSURE_SUCCESS(rv, rv);
   mRules.InsertElementAt(aIndex, uintptr_t(type));
   return rv;
@@ -294,6 +287,8 @@ void ServoCSSRuleList::SetRawContents(RefPtr<StyleLockedCssRules> aNewRules,
       RULE_CASE_UNLOCKED(Scope, Scope)
       RULE_CASE_UNLOCKED(StartingStyle, StartingStyle)
       RULE_CASE_LOCKED(PositionTry, PositionTry)
+      RULE_CASE_LOCKED(NestedDeclarations, NestedDeclarations)
+      RULE_CASE_UNLOCKED(CustomMedia, CustomMedia)
       case StyleCssRuleType::Keyframe:
         MOZ_ASSERT_UNREACHABLE("keyframe rule cannot be here");
         break;

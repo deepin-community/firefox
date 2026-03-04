@@ -13,12 +13,14 @@ interface nsIAppStartup : nsISupports
     /**
      * Create the hidden window.
      */
+    [noscript]
     void createHiddenWindow();
 
     /**
      * Destroys the hidden window. This will have no effect if the hidden window
      * has not yet been created.
      */
+    [noscript]
     void destroyHiddenWindow();
 
     /**
@@ -71,9 +73,12 @@ interface nsIAppStartup : nsISupports
      * Run a new instance of this app with a specified profile
      * @param aProfile
      *        The profile we want to use.
+     * @param aArgs
+     *        Optional command line arguments to pass to the new instance.
      * @see nsIAppStartup::quit
      */
-    void createInstanceWithProfile(in nsIToolkitProfile aProfile);
+    void createInstanceWithProfile(in nsIToolkitProfile aProfile,
+                                   [optional] in Array<AString> aArgs);
 
     /**
      * If the last startup crashed then increment a counter.
@@ -201,6 +206,13 @@ interface nsIAppStartup : nsISupports
     [infallible] readonly attribute boolean shuttingDown;
 
     /**
+     * True if the application is attempting to quit (Quit has been called). This
+     * is an early signal that we are headed to shutdown. It becomes true just
+     * before we start closing windows.
+     */
+    [infallible] readonly attribute boolean attemptingQuit;
+
+    /**
      * True if the application is in the process of starting up.
      *
      * Startup is complete once all observers of final-ui-startup have returned.
@@ -247,9 +259,4 @@ interface nsIAppStartup : nsISupports
      * Properties may not be available depending on platform or application
      */
     [implicit_jscontext] jsval getStartupInfo();
-
-    /**
-     * True if startup was interrupted by an interactive prompt.
-     */
-    attribute boolean interrupted;
 };

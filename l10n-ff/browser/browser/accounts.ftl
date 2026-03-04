@@ -20,10 +20,8 @@ account-send-to-all-devices-titlecase = Neldu to kaɓirɗi kon fof
 
 # Redirects to a marketing page.
 account-send-tab-to-device-singledevice-status = Alaa kaɓirgel seŋii
-
 # Redirects to a marketing page.
 account-send-tab-to-device-singledevice-learnmore = Humpito baɗte Neldude Tabbe…
-
 # Redirects to an FxAccounts page that tells to you to connect another device.
 account-send-tab-to-device-connectdevice = Seŋ Masiŋ Goɗɗo…
 
@@ -33,9 +31,6 @@ account-send-tab-to-device-connectdevice = Seŋ Masiŋ Goɗɗo…
 account-send-tab-to-device-verify-status = Konte Ƴeewtaaka
 account-send-tab-to-device-verify = Ƴeewto konte maa
 
-## These strings are used in a notification shown when a new device joins the Firefox account.
-
-
 ## These strings are used in a notification shown when we're opening
 ## a single tab another device sent us to display.
 ## The body for this notification is the URL of the received tab.
@@ -44,7 +39,6 @@ account-single-tab-arriving-title = Tabbere heɓaama
 # Variables:
 #   $deviceName (String): the device name.
 account-single-tab-arriving-from-device-title = Tabbere { $deviceName }
-
 # Used when a tab from a remote device arrives but the URL must be truncated.
 # Should display the URL with an indication that it's been truncated.
 # Variables:
@@ -57,7 +51,6 @@ account-single-tab-arriving-truncated-url = { $url }…
 ##   $tabCount (Number): the number of tabs received
 
 account-multiple-tabs-arriving-title = Tabbe keɓaama
-
 # Variables:
 #   $deviceName (String): the device name.
 account-multiple-tabs-arriving-from-single-device =

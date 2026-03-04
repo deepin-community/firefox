@@ -45,13 +45,13 @@ add_setup(async function init() {
   await QuickSuggestTestUtils.ensureQuickSuggestInit({
     remoteSettingsRecords: REMOTE_SETTINGS_DATA,
     prefs: [
-      ["suggest.quicksuggest.nonsponsored", true],
+      ["suggest.quicksuggest.all", true],
       ["suggest.quicksuggest.sponsored", false],
     ],
   });
 });
 
-add_tasks_with_rust(async function basic() {
+add_task(async function basic() {
   for (const suggestion of REMOTE_SETTINGS_DATA[0].attachment) {
     const fullKeyword = suggestion.keywords[0];
     const firstWord = fullKeyword.split(" ")[0];
@@ -75,23 +75,23 @@ add_tasks_with_rust(async function basic() {
         providers: [UrlbarProviderQuickSuggest.name],
         isPrivate: false,
       }),
-      matches:
-        UrlbarPrefs.get("quickSuggestRustEnabled") && !fullKeyword.includes(" ")
-          ? [QuickSuggestTestUtils.mdnResult(suggestion)]
-          : [],
+      matches: !fullKeyword.includes(" ")
+        ? [QuickSuggestTestUtils.mdnResult(suggestion)]
+        : [],
     });
   }
 });
 
 // Check wheather the MDN suggestions will be hidden by the pref.
-add_tasks_with_rust(async function disableByLocalPref() {
+add_task(async function disableByLocalPref() {
   const suggestion = REMOTE_SETTINGS_DATA[0].attachment[0];
   const keyword = suggestion.keywords[0];
 
   const prefs = [
     "suggest.mdn",
+    "mdn.featureGate",
     "quicksuggest.enabled",
-    "suggest.quicksuggest.nonsponsored",
+    "suggest.quicksuggest.all",
   ];
 
   for (const pref of prefs) {
@@ -122,7 +122,7 @@ add_tasks_with_rust(async function disableByLocalPref() {
 
 // Check wheather the MDN suggestions will be shown by the setup of Nimbus
 // variable.
-add_tasks_with_rust(async function nimbus() {
+add_task(async function nimbus() {
   const defaultPrefs = Services.prefs.getDefaultBranch("browser.urlbar.");
 
   const suggestion = REMOTE_SETTINGS_DATA[0].attachment[0];
@@ -178,7 +178,7 @@ add_tasks_with_rust(async function nimbus() {
   await QuickSuggestTestUtils.forceSync();
 });
 
-add_tasks_with_rust(async function mixedCaseQuery() {
+add_task(async function mixedCaseQuery() {
   const suggestion = REMOTE_SETTINGS_DATA[0].attachment[1];
   const keyword = "InPuT";
 
@@ -188,5 +188,57 @@ add_tasks_with_rust(async function mixedCaseQuery() {
       isPrivate: false,
     }),
     matches: [QuickSuggestTestUtils.mdnResult(suggestion)],
+  });
+});
+
+// Tests the "Not relevant" command: a dismissed suggestion shouldn't be added.
+add_task(async function notRelevant() {
+  await doDismissOneTest({
+    result: QuickSuggestTestUtils.mdnResult(
+      REMOTE_SETTINGS_DATA[0].attachment[0]
+    ),
+    command: "not_relevant",
+    feature: QuickSuggest.getFeature("MDNSuggestions"),
+    queriesForDismissals: [
+      {
+        query: REMOTE_SETTINGS_DATA[0].attachment[0].keywords[0],
+      },
+    ],
+    queriesForOthers: [
+      {
+        query: REMOTE_SETTINGS_DATA[0].attachment[1].keywords[0],
+        expectedResults: [
+          QuickSuggestTestUtils.mdnResult(
+            REMOTE_SETTINGS_DATA[0].attachment[1]
+          ),
+        ],
+      },
+    ],
+  });
+});
+
+// Tests the "Not interested" command: all MDN suggestions should be disabled
+// and not added anymore.
+add_task(async function notInterested() {
+  await doDismissAllTest({
+    result: QuickSuggestTestUtils.mdnResult(
+      REMOTE_SETTINGS_DATA[0].attachment[0]
+    ),
+    command: "not_interested",
+    feature: QuickSuggest.getFeature("MDNSuggestions"),
+    pref: "suggest.mdn",
+    queries: [
+      {
+        query: REMOTE_SETTINGS_DATA[0].attachment[0].keywords[0],
+      },
+      {
+        query: REMOTE_SETTINGS_DATA[0].attachment[1].keywords[0],
+        expectedResults: [
+          QuickSuggestTestUtils.mdnResult(
+            REMOTE_SETTINGS_DATA[0].attachment[1]
+          ),
+        ],
+      },
+    ],
   });
 });

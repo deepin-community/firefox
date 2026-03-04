@@ -36,6 +36,9 @@ certificate-viewer-key-size = Dimension de clâf
 certificate-viewer-inc-locality = Localitât di costituzion
 certificate-viewer-locality = Localitât
 certificate-viewer-location = Ubicazion
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Non regjistri
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID regjistri
 certificate-viewer-method = Metodi
 certificate-viewer-modulus = Modul
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Informazions autoritât (AIA)
 certificate-viewer-certificate-policies = Politichis dal certificât
 certificate-viewer-embedded-scts = SCTs integrâts
 certificate-viewer-crl-endpoints = Ponts terminâi CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Discjame
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (certificât)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (cjadene)
     .download = { $fileName }-cjadene.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Cheste estension e je stade segnade come critiche. Chest al significhe che i clients a scugnin refudâ il certificât se no rivin a interpretâlu.
@@ -112,6 +113,8 @@ certificate-viewer-export = Espuarte
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (no cognossût)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certificât
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -34,24 +34,21 @@
 #include "mozilla/gfx/DataSurfaceHelpers.h"
 #include "mozilla/gfx/Tools.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/UniquePtrExtensions.h"
+#include "mozilla/SVGImageContext.h"
 #include "nsGfxCIID.h"
 #include "gfxContext.h"
 #include "WinUtils.h"
 #include "WinWindowOcclusionTracker.h"
 #include "nsIWidgetListener.h"
-#include "mozilla/Unused.h"
 #include "nsDebug.h"
 #include "WindowRenderer.h"
 #include "mozilla/layers/WebRenderLayerManager.h"
+#include "ImageRegion.h"
 
-#include "mozilla/gfx/GPUProcessManager.h"
 #include "mozilla/layers/CompositorBridgeParent.h"
 #include "mozilla/layers/CompositorBridgeChild.h"
+#include "mozilla/webrender/RenderThread.h"
 #include "InProcessWinCompositorWidget.h"
-
-#include "nsUXThemeData.h"
-#include "nsUXThemeConstants.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -99,32 +96,20 @@ static IconMetrics sIconMetrics[] = {
  **************************************************************/
 
 // GetRegionToPaint returns the invalidated region that needs to be painted
-LayoutDeviceIntRegion nsWindow::GetRegionToPaint(bool aForceFullRepaint,
-                                                 PAINTSTRUCT ps, HDC aDC) {
-  if (aForceFullRepaint) {
-    RECT paintRect;
-    ::GetClientRect(mWnd, &paintRect);
-    return LayoutDeviceIntRegion(WinUtils::ToIntRect(paintRect));
-  }
-
+LayoutDeviceIntRegion nsWindow::GetRegionToPaint(const PAINTSTRUCT& ps,
+                                                 HDC aDC) const {
+  LayoutDeviceIntRegion fullRegion(WinUtils::ToIntRect(ps.rcPaint));
   HRGN paintRgn = ::CreateRectRgn(0, 0, 0, 0);
-  if (paintRgn != nullptr) {
-    int result = GetRandomRgn(aDC, paintRgn, SYSRGN);
-    if (result == 1) {
+  if (paintRgn) {
+    if (GetRandomRgn(aDC, paintRgn, SYSRGN) == 1) {
       POINT pt = {0, 0};
       ::MapWindowPoints(nullptr, mWnd, &pt, 1);
       ::OffsetRgn(paintRgn, pt.x, pt.y);
+      fullRegion.AndWith(WinUtils::ConvertHRGNToRegion(paintRgn));
     }
-    LayoutDeviceIntRegion rgn(WinUtils::ConvertHRGNToRegion(paintRgn));
     ::DeleteObject(paintRgn);
-    return rgn;
   }
-  return LayoutDeviceIntRegion(WinUtils::ToIntRect(ps.rcPaint));
-}
-
-nsIWidgetListener* nsWindow::GetPaintListener() {
-  if (mDestroyCalled) return nullptr;
-  return mAttachedWidgetListener ? mAttachedWidgetListener : mWidgetListener;
+  return fullRegion;
 }
 
 void nsWindow::ForcePresent() {
@@ -135,16 +120,30 @@ void nsWindow::ForcePresent() {
   }
 }
 
-bool nsWindow::OnPaint(uint32_t aNestingLevel) {
+bool nsWindow::OnPaint() {
+  struct FallbackPaintContext {
+    RefPtr<gfxASurface> mTargetSurface;
+    RefPtr<DrawTarget> mDt;
+    gfxContext mGfxContext;
+    AutoLayerManagerSetup mSetup;
+
+    explicit FallbackPaintContext(nsWindow* aWindow,
+                                  RefPtr<gfxASurface> aTargetSurface,
+                                  RefPtr<DrawTarget> aDt)
+        : mTargetSurface(std::move(aTargetSurface)),
+          mDt(std::move(aDt)),
+          mGfxContext(mDt),
+          mSetup(aWindow, &mGfxContext) {}
+  };
+
   gfx::DeviceResetReason resetReason = gfx::DeviceResetReason::OK;
   if (gfxWindowsPlatform::GetPlatform()->DidRenderingDeviceReset(
           &resetReason)) {
     gfxCriticalNote << "(nsWindow) Detected device reset: " << (int)resetReason;
 
     gfxWindowsPlatform::GetPlatform()->UpdateRenderMode();
-
-    GPUProcessManager::GPUProcessManager::NotifyDeviceReset(
-        resetReason, gfx::DeviceResetDetectPlace::WIDGET);
+    wr::RenderThread::PostHandleDeviceReset(gfx::DeviceResetDetectPlace::WIDGET,
+                                            resetReason);
 
     gfxCriticalNote << "(nsWindow) Finished device reset.";
     return false;
@@ -163,192 +162,126 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   WindowRenderer* renderer = GetWindowRenderer();
   KnowsCompositor* knowsCompositor = renderer->AsKnowsCompositor();
   WebRenderLayerManager* layerManager = renderer->AsWebRender();
+  const bool isFallback =
+      renderer->GetBackendType() == LayersBackend::LAYERS_NONE;
+  const bool isTransparent = mTransparencyMode == TransparencyMode::Transparent;
+  MOZ_ASSERT(
+      isFallback || renderer->GetBackendType() == LayersBackend::LAYERS_WR,
+      "Unknown layers backend");
 
-  if (mClearNCEdge) {
-    // We need to clear this edge of the non-client region to black (once).
-    HDC hdc;
-    RECT rect;
-    hdc = ::GetWindowDC(mWnd);
-    ::GetWindowRect(mWnd, &rect);
-    ::MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
-    switch (mClearNCEdge.value()) {
-      case ABE_TOP:
-        rect.bottom = rect.top + kHiddenTaskbarSize;
-        break;
-      case ABE_LEFT:
-        rect.right = rect.left + kHiddenTaskbarSize;
-        break;
-      case ABE_BOTTOM:
-        rect.top = rect.bottom - kHiddenTaskbarSize;
-        break;
-      case ABE_RIGHT:
-        rect.left = rect.right - kHiddenTaskbarSize;
-        break;
-      default:
-        MOZ_ASSERT_UNREACHABLE("Invalid edge value");
-        break;
-    }
-    ::FillRect(hdc, &rect,
-               reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
-    ::ReleaseDC(mWnd, hdc);
+  const bool didResize = mBounds.Size() != mLastPaintBounds.Size();
 
-    mClearNCEdge.reset();
-  }
-
-  if (knowsCompositor && layerManager &&
-      !mBounds.IsEqualEdges(mLastPaintBounds)) {
+  if (didResize && knowsCompositor && layerManager) {
     // Do an early async composite so that we at least have something on the
     // screen in the right place, even if the content is out of date.
     layerManager->ScheduleComposite(wr::RenderReasons::WIDGET);
   }
   mLastPaintBounds = mBounds;
 
-  // For layered translucent windows all drawing should go to memory DC and no
-  // WM_PAINT messages are normally generated. To support asynchronous painting
-  // we force generation of WM_PAINT messages by invalidating window areas with
-  // RedrawWindow, InvalidateRect or InvalidateRgn function calls.
-  const bool usingMemoryDC =
-      renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
-      mTransparencyMode == TransparencyMode::Transparent;
-
-  HDC hDC = nullptr;
-  if (usingMemoryDC) {
-    // BeginPaint/EndPaint must be called to make Windows think that invalid
-    // area is painted. Otherwise it will continue sending the same message
-    // endlessly.
-    ::BeginPaint(mWnd, &ps);
-    ::EndPaint(mWnd, &ps);
-
-    // We're guaranteed to have a widget proxy since we called
-    // GetLayerManager().
-    hDC = mBasicLayersSurface->GetTransparentDC();
-  } else {
-    hDC = ::BeginPaint(mWnd, &ps);
-  }
-
-  const bool forceRepaint = mTransparencyMode == TransparencyMode::Transparent;
-  const LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
-
   RefPtr<nsWindow> strongThis(this);
-
-  if (nsIWidgetListener* listener = GetPaintListener()) {
-    // Note that this might kill the listener.
-    listener->WillPaintWindow(this);
-  }
-
-  bool didPaint = false;
+  // BeginPaint/EndPaint must be called to make Windows think that invalid
+  // area is painted. Otherwise it will continue sending the same message
+  // endlessly. Note that we need to call it after WillPaintWindow, which
+  // informs us of our transparent region, but also before clearing the
+  // nc-area, since ::BeginPaint might send WM_NCPAINT messages[1].
+  // [1]:
+  // https://learn.microsoft.com/en-us/windows/win32/gdi/the-wm-paint-message
+  HDC hDC = ::BeginPaint(mWnd, &ps);
   auto endPaint = MakeScopeExit([&] {
-    if (!usingMemoryDC) {
-      ::EndPaint(mWnd, &ps);
-    }
-    if (didPaint) {
-      mLastPaintEndTime = TimeStamp::Now();
-      if (nsIWidgetListener* listener = GetPaintListener()) {
-        listener->DidPaintWindow();
-      }
-      if (aNestingLevel == 0 && ::GetUpdateRect(mWnd, nullptr, false)) {
-        OnPaint(1);
-      }
-    }
+    ::EndPaint(mWnd, &ps);
+    mLastPaintEndTime = TimeStamp::Now();
   });
 
-  if (region.IsEmpty() || !GetPaintListener()) {
-    return false;
+  Maybe<FallbackPaintContext> fallback;
+  if (isFallback) {
+    uint32_t flags = isTransparent ? gfxWindowsSurface::FLAG_IS_TRANSPARENT : 0;
+    RefPtr<gfxASurface> targetSurface = new gfxWindowsSurface(hDC, flags);
+    RECT paintRect;
+    ::GetClientRect(mWnd, &paintRect);
+    RefPtr<DrawTarget> dt = gfxPlatform::CreateDrawTargetForSurface(
+        targetSurface, IntSize(paintRect.right - paintRect.left,
+                               paintRect.bottom - paintRect.top));
+    if (!dt || !dt->IsValid()) {
+      gfxWarning() << "nsWindow::OnPaint failed in CreateDrawTargetForSurface";
+      return false;
+    }
+
+    fallback.emplace(this, std::move(targetSurface), std::move(dt));
   }
 
-  if (knowsCompositor && layerManager) {
+  LayoutDeviceIntRegion region = GetRegionToPaint(ps, hDC);
+  if (!mClearedRegion.IsEmpty()) {
+    // Don't consider regions that Windows has told us to repaint as clear, even
+    // if we've cleared them before.
+    mClearedRegion.SubOut(region);
+  }
+
+  auto ComputeAndClearTranslucentRegion = [&]() {
+    if (!isTransparent) {
+      return;
+    }
+    const LayoutDeviceIntRegion translucentRegion = GetTranslucentRegion();
+    auto regionToClear = translucentRegion;
+    if (!mClearedRegion.IsEmpty()) {
+      regionToClear.SubOut(mClearedRegion);
+    }
+    mClearedRegion = std::move(translucentRegion);
+    auto black = reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
+    // We could use RegionToHRGN, but at least for simple regions (and
+    // possibly for complex ones too?) FillRect is faster; see bug 1946365
+    // comment 12.
+    for (auto it = regionToClear.RectIter(); !it.Done(); it.Next()) {
+      if (fallback) {
+        // Make sure to use the fallback DT if needed, rather than calling
+        // ::FillRect directly. Not doing so could cause flicker, as Windows
+        // doesn't guarantee atomicity even between ::BeginPaint and
+        // ::EndPaint, see bug 1958631.
+        fallback->mDt->ClearRect(Rect(it.Get().ToUnknownRect()));
+      } else {
+        auto rect = WinUtils::ToWinRect(it.Get());
+        ::FillRect(hDC, &rect, black);
+      }
+    }
+    region.OrWith(regionToClear);
+  };
+
+  // This is a bit subtle: For fallback windows, we paint directly into the DC,
+  // so we need to clear it before PaintWindow().
+  //
+  // For composited windows, we first need to paint (so that we know the
+  // translucent area, which is computed from the display list), then we clear
+  // it.
+  //
+  // We don't track the transparent region for popups (meaning we always rely on
+  // the whole client area being cleared) so this works out.
+  if (fallback) {
+    ComputeAndClearTranslucentRegion();
+  }
+
+  if (auto* listener = GetPaintListener()) {
+    listener->PaintWindow(this);
+  }
+
+  if (!fallback) {
+    ComputeAndClearTranslucentRegion();
+  }
+
+  if (knowsCompositor && layerManager && !region.IsEmpty()) {
     layerManager->SendInvalidRegion(region.ToUnknownRegion());
     layerManager->ScheduleComposite(wr::RenderReasons::WIDGET);
   }
 
-  // Should probably pass in a real region here, using GetRandomRgn
-  // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/gdi/clipping_4q0e.asp
 #ifdef WIDGET_DEBUG_OUTPUT
   debug_DumpPaintEvent(stdout, this, region.ToUnknownRegion(), "noname",
                        (int32_t)mWnd);
 #endif  // WIDGET_DEBUG_OUTPUT
 
-  bool result = true;
-  switch (renderer->GetBackendType()) {
-    case LayersBackend::LAYERS_NONE: {
-      RefPtr<gfxASurface> targetSurface;
-
-      // don't support transparency for non-GDI rendering, for now
-      if (TransparencyMode::Transparent == mTransparencyMode) {
-        // This mutex needs to be held when EnsureTransparentSurface is
-        // called.
-        MutexAutoLock lock(mBasicLayersSurface->GetTransparentSurfaceLock());
-        targetSurface = mBasicLayersSurface->EnsureTransparentSurface();
-      }
-
-      RefPtr<gfxWindowsSurface> targetSurfaceWin;
-      if (!targetSurface) {
-        uint32_t flags = (mTransparencyMode == TransparencyMode::Opaque)
-                             ? 0
-                             : gfxWindowsSurface::FLAG_IS_TRANSPARENT;
-        targetSurfaceWin = new gfxWindowsSurface(hDC, flags);
-        targetSurface = targetSurfaceWin;
-      }
-
-      RECT paintRect;
-      ::GetClientRect(mWnd, &paintRect);
-      RefPtr<DrawTarget> dt = gfxPlatform::CreateDrawTargetForSurface(
-          targetSurface, IntSize(paintRect.right - paintRect.left,
-                                 paintRect.bottom - paintRect.top));
-      if (!dt || !dt->IsValid()) {
-        gfxWarning()
-            << "nsWindow::OnPaint failed in CreateDrawTargetForSurface";
-        return false;
-      }
-
-      // don't need to double buffer with anything but GDI
-      BufferMode doubleBuffering = mozilla::layers::BufferMode::BUFFER_NONE;
-      switch (mTransparencyMode) {
-        case TransparencyMode::Transparent:
-          // If we're rendering with translucency, we're going to be
-          // rendering the whole window; make sure we clear it first
-          dt->ClearRect(Rect(dt->GetRect()));
-          break;
-        default:
-          // If we're not doing translucency, then double buffer
-          doubleBuffering = mozilla::layers::BufferMode::BUFFERED;
-          break;
-      }
-
-      gfxContext thebesContext(dt);
-
-      {
-        AutoLayerManagerSetup setupLayerManager(this, &thebesContext,
-                                                doubleBuffering);
-        if (nsIWidgetListener* listener = GetPaintListener()) {
-          result = listener->PaintWindow(this, region);
-        }
-      }
-
-      if (TransparencyMode::Transparent == mTransparencyMode) {
-        // Data from offscreen drawing surface was copied to memory bitmap of
-        // transparent bitmap. Now it can be read from memory bitmap to apply
-        // alpha channel and after that displayed on the screen.
-        mBasicLayersSurface->RedrawTransparentWindow();
-      }
-    } break;
-    case LayersBackend::LAYERS_WR: {
-      if (nsIWidgetListener* listener = GetPaintListener()) {
-        result = listener->PaintWindow(this, region);
-      }
-      if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT()) {
-        nsCOMPtr<nsIRunnable> event = NewRunnableMethod(
-            "nsWindow::ForcePresent", this, &nsWindow::ForcePresent);
-        NS_DispatchToMainThread(event);
-      }
-    } break;
-    default:
-      NS_ERROR("Unknown layers backend used!");
-      break;
+  if (!isFallback && !gfxEnv::MOZ_DISABLE_FORCE_PRESENT()) {
+    NS_DispatchToMainThread(NewRunnableMethod("nsWindow::ForcePresent", this,
+                                              &nsWindow::ForcePresent));
   }
 
-  didPaint = true;
-  return result;
+  return true;
 }
 
 bool nsWindow::NeedsToTrackWindowOcclusionState() {
@@ -371,6 +304,12 @@ void nsWindow::NotifyOcclusionState(mozilla::widget::OcclusionState aState) {
   if (mFrameState->GetSizeMode() == nsSizeMode_Minimized) {
     isFullyOccluded = false;
   }
+  if (isFullyOccluded && (!mHasBeenShown || nsWindow::sIsRestoringSession)) {
+    // Don't mark a newly-created window as occluded until
+    // it is finished being restored (including sizing) and has been shown once.
+    // (bug 1968297)
+    isFullyOccluded = false;
+  }
 
   // Don't dispatch if the new occlustion state is the same as the current
   // state.
@@ -389,8 +328,7 @@ void nsWindow::NotifyOcclusionState(mozilla::widget::OcclusionState aState) {
   flags._0 = gfx::gfxVars::WebRenderDebugFlags();
   bool debugEnabled = bool(flags & wr::DebugFlags::WINDOW_VISIBILITY_DBG);
   if (debugEnabled && mCompositorWidgetDelegate) {
-    mCompositorWidgetDelegate->NotifyVisibilityUpdated(
-        mFrameState->GetSizeMode(), mIsFullyOccluded);
+    mCompositorWidgetDelegate->NotifyVisibilityUpdated(mIsFullyOccluded);
   }
 
   if (mWidgetListener) {
@@ -416,8 +354,7 @@ void nsWindow::MaybeEnableWindowOcclusion(bool aEnable) {
       flags._0 = gfx::gfxVars::WebRenderDebugFlags();
       bool debugEnabled = bool(flags & wr::DebugFlags::WINDOW_VISIBILITY_DBG);
       if (debugEnabled && mCompositorWidgetDelegate) {
-        mCompositorWidgetDelegate->NotifyVisibilityUpdated(
-            mFrameState->GetSizeMode(), mIsFullyOccluded);
+        mCompositorWidgetDelegate->NotifyVisibilityUpdated(mIsFullyOccluded);
       }
     }
     return;
@@ -437,8 +374,7 @@ void nsWindow::MaybeEnableWindowOcclusion(bool aEnable) {
   flags._0 = gfx::gfxVars::WebRenderDebugFlags();
   bool debugEnabled = bool(flags & wr::DebugFlags::WINDOW_VISIBILITY_DBG);
   if (debugEnabled && mCompositorWidgetDelegate) {
-    mCompositorWidgetDelegate->NotifyVisibilityUpdated(
-        mFrameState->GetSizeMode(), mIsFullyOccluded);
+    mCompositorWidgetDelegate->NotifyVisibilityUpdated(mIsFullyOccluded);
   }
 }
 
@@ -446,7 +382,7 @@ void nsWindow::MaybeEnableWindowOcclusion(bool aEnable) {
 // call for RequesetFxrOutput as soon as the compositor for this widget is
 // available.
 void nsWindow::CreateCompositor() {
-  nsBaseWidget::CreateCompositor();
+  nsIWidget::CreateCompositor();
 
   MaybeEnableWindowOcclusion(/* aEnable */ true);
 
@@ -458,7 +394,7 @@ void nsWindow::CreateCompositor() {
 void nsWindow::DestroyCompositor() {
   MaybeEnableWindowOcclusion(/* aEnable */ false);
 
-  nsBaseWidget::DestroyCompositor();
+  nsIWidget::DestroyCompositor();
 }
 
 void nsWindow::RequestFxrOutput() {
@@ -482,8 +418,9 @@ LayoutDeviceIntSize nsWindowGfx::GetIconMetrics(IconSizeType aSizeType) {
   return LayoutDeviceIntSize(width, height);
 }
 
-nsresult nsWindowGfx::CreateIcon(imgIContainer* aContainer, bool aIsCursor,
-                                 LayoutDeviceIntPoint aHotspot,
+nsresult nsWindowGfx::CreateIcon(imgIContainer* aContainer,
+                                 nsISVGPaintContext* aSVGPaintContext,
+                                 bool aIsCursor, LayoutDeviceIntPoint aHotspot,
                                  LayoutDeviceIntSize aScaledSize,
                                  HICON* aIcon) {
   MOZ_ASSERT(aHotspot.x >= 0 && aHotspot.y >= 0);
@@ -491,55 +428,104 @@ nsresult nsWindowGfx::CreateIcon(imgIContainer* aContainer, bool aIsCursor,
              (aScaledSize.width == 0 && aScaledSize.height == 0));
 
   // Get the image data
-  RefPtr<SourceSurface> surface = aContainer->GetFrame(
-      imgIContainer::FRAME_CURRENT,
-      imgIContainer::FLAG_SYNC_DECODE | imgIContainer::FLAG_ASYNC_NOTIFY);
-  NS_ENSURE_TRUE(surface, NS_ERROR_NOT_AVAILABLE);
-
-  IntSize frameSize = surface->GetSize();
-  if (frameSize.IsEmpty()) {
-    return NS_ERROR_FAILURE;
-  }
-
   IntSize iconSize(aScaledSize.width, aScaledSize.height);
-  if (iconSize == IntSize(0, 0)) {  // use frame's intrinsic size
-    iconSize = frameSize;
-  }
 
   RefPtr<DataSourceSurface> dataSurface;
   bool mappedOK;
   DataSourceSurface::MappedSurface map;
 
-  if (iconSize != frameSize) {
-    // Scale the surface
-    dataSurface =
-        Factory::CreateDataSourceSurface(iconSize, SurfaceFormat::B8G8R8A8);
-    NS_ENSURE_TRUE(dataSurface, NS_ERROR_FAILURE);
-    mappedOK = dataSurface->Map(DataSourceSurface::MapType::READ_WRITE, &map);
-    NS_ENSURE_TRUE(mappedOK, NS_ERROR_FAILURE);
+  if (aContainer->GetType() == imgIContainer::TYPE_VECTOR) {
+    if (iconSize == IntSize(0, 0)) {  // use frame's intrinsic size
+      int32_t width, height;
+      nsresult rv = aContainer->GetWidth(&width);
+      NS_ENSURE_SUCCESS(rv, rv);
 
-    RefPtr<DrawTarget> dt = Factory::CreateDrawTargetForData(
-        BackendType::CAIRO, map.mData, dataSurface->GetSize(), map.mStride,
-        SurfaceFormat::B8G8R8A8);
-    if (!dt) {
-      gfxWarning()
-          << "nsWindowGfx::CreatesIcon failed in CreateDrawTargetForData";
-      return NS_ERROR_OUT_OF_MEMORY;
+      rv = aContainer->GetHeight(&height);
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      NS_ENSURE_TRUE(width > 0 && height > 0, NS_ERROR_FAILURE);
+
+      iconSize = IntSize(width, height);
     }
-    dt->DrawSurface(surface, Rect(0, 0, iconSize.width, iconSize.height),
-                    Rect(0, 0, frameSize.width, frameSize.height),
-                    DrawSurfaceOptions(),
-                    DrawOptions(1.0f, CompositionOp::OP_SOURCE));
-  } else if (surface->GetFormat() != SurfaceFormat::B8G8R8A8) {
-    // Convert format to SurfaceFormat::B8G8R8A8
-    dataSurface = gfxUtils::CopySurfaceToDataSourceSurfaceWithFormat(
-        surface, SurfaceFormat::B8G8R8A8);
-    NS_ENSURE_TRUE(dataSurface, NS_ERROR_FAILURE);
-    mappedOK = dataSurface->Map(DataSourceSurface::MapType::READ, &map);
-  } else {
+
+    RefPtr<DrawTarget> drawTarget =
+        gfxPlatform::GetPlatform()->CreateOffscreenContentDrawTarget(
+            iconSize, SurfaceFormat::B8G8R8A8);
+    if (!drawTarget || !drawTarget->IsValid()) {
+      NS_ERROR("Failed to create valid DrawTarget");
+      return NS_ERROR_FAILURE;
+    }
+
+    gfxContext context(drawTarget);
+
+    SVGImageContext svgContext;
+    svgContext.SetViewportSize(
+        Some(CSSIntSize(iconSize.width, iconSize.height)));
+    svgContext.SetColorScheme(Some(LookAndFeel::SystemColorScheme()));
+    SVGImageContext::MaybeStoreContextPaint(svgContext, aSVGPaintContext,
+                                            aContainer);
+
+    mozilla::image::ImgDrawResult res = aContainer->Draw(
+        &context, iconSize, image::ImageRegion::Create(iconSize),
+        imgIContainer::FRAME_CURRENT, SamplingFilter::POINT, svgContext,
+        imgIContainer::FLAG_SYNC_DECODE, 1.0);
+
+    if (res != mozilla::image::ImgDrawResult::SUCCESS) {
+      return NS_ERROR_FAILURE;
+    }
+
+    RefPtr<SourceSurface> surface = drawTarget->Snapshot();
+    NS_ENSURE_TRUE(surface, NS_ERROR_NOT_AVAILABLE);
+
     dataSurface = surface->GetDataSurface();
     NS_ENSURE_TRUE(dataSurface, NS_ERROR_FAILURE);
     mappedOK = dataSurface->Map(DataSourceSurface::MapType::READ, &map);
+  } else {
+    RefPtr<SourceSurface> surface = aContainer->GetFrame(
+        imgIContainer::FRAME_CURRENT,
+        imgIContainer::FLAG_SYNC_DECODE | imgIContainer::FLAG_ASYNC_NOTIFY);
+    NS_ENSURE_TRUE(surface, NS_ERROR_NOT_AVAILABLE);
+
+    IntSize frameSize = surface->GetSize();
+    if (frameSize.IsEmpty()) {
+      return NS_ERROR_FAILURE;
+    }
+
+    if (iconSize == IntSize(0, 0)) {  // use frame's intrinsic size
+      iconSize = frameSize;
+    }
+
+    if (iconSize != frameSize) {
+      // Scale the surface
+      dataSurface =
+          Factory::CreateDataSourceSurface(iconSize, SurfaceFormat::B8G8R8A8);
+      NS_ENSURE_TRUE(dataSurface, NS_ERROR_FAILURE);
+      mappedOK = dataSurface->Map(DataSourceSurface::MapType::READ_WRITE, &map);
+      NS_ENSURE_TRUE(mappedOK, NS_ERROR_FAILURE);
+
+      RefPtr<DrawTarget> dt = Factory::CreateDrawTargetForData(
+          BackendType::CAIRO, map.mData, dataSurface->GetSize(), map.mStride,
+          SurfaceFormat::B8G8R8A8);
+      if (!dt) {
+        gfxWarning()
+            << "nsWindowGfx::CreatesIcon failed in CreateDrawTargetForData";
+        return NS_ERROR_OUT_OF_MEMORY;
+      }
+      dt->DrawSurface(surface, Rect(0, 0, iconSize.width, iconSize.height),
+                      Rect(0, 0, frameSize.width, frameSize.height),
+                      DrawSurfaceOptions(),
+                      DrawOptions(1.0f, CompositionOp::OP_SOURCE));
+    } else if (surface->GetFormat() != SurfaceFormat::B8G8R8A8) {
+      // Convert format to SurfaceFormat::B8G8R8A8
+      dataSurface = gfxUtils::CopySurfaceToDataSourceSurfaceWithFormat(
+          surface, SurfaceFormat::B8G8R8A8);
+      NS_ENSURE_TRUE(dataSurface, NS_ERROR_FAILURE);
+      mappedOK = dataSurface->Map(DataSourceSurface::MapType::READ, &map);
+    } else {
+      dataSurface = surface->GetDataSurface();
+      NS_ENSURE_TRUE(dataSurface, NS_ERROR_FAILURE);
+      mappedOK = dataSurface->Map(DataSourceSurface::MapType::READ, &map);
+    }
   }
   NS_ENSURE_TRUE(dataSurface && mappedOK, NS_ERROR_FAILURE);
   MOZ_ASSERT(dataSurface->GetFormat() == SurfaceFormat::B8G8R8A8);

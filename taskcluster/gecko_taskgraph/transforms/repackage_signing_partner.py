@@ -14,22 +14,21 @@ from voluptuous import Optional
 from gecko_taskgraph.transforms.task import task_description_schema
 from gecko_taskgraph.util.attributes import copy_attributes_from_dependent_job
 from gecko_taskgraph.util.partners import get_partner_config_by_kind
-from gecko_taskgraph.util.scriptworker import get_signing_cert_scope_per_platform
+from gecko_taskgraph.util.scriptworker import get_signing_type_per_platform
 
 transforms = TransformSequence()
 
-repackage_signing_description_schema = Schema(
-    {
-        Optional("label"): str,
-        Optional("extra"): object,
-        Optional("attributes"): task_description_schema["attributes"],
-        Optional("dependencies"): task_description_schema["dependencies"],
-        Optional("shipping-product"): task_description_schema["shipping-product"],
-        Optional("shipping-phase"): task_description_schema["shipping-phase"],
-        Optional("priority"): task_description_schema["priority"],
-        Optional("task-from"): task_description_schema["task-from"],
-    }
-)
+repackage_signing_description_schema = Schema({
+    Optional("label"): str,
+    Optional("extra"): object,
+    Optional("attributes"): task_description_schema["attributes"],
+    Optional("dependencies"): task_description_schema["dependencies"],
+    Optional("shipping-product"): task_description_schema["shipping-product"],
+    Optional("shipping-phase"): task_description_schema["shipping-phase"],
+    Optional("priority"): task_description_schema["priority"],
+    Optional("task-from"): task_description_schema["task-from"],
+    Optional("run-on-repo-type"): task_description_schema["run-on-repo-type"],
+})
 
 
 @transforms.add
@@ -80,10 +79,9 @@ def make_repackage_signing_description(config, jobs):
         attributes = copy_attributes_from_dependent_job(dep_job)
         attributes["repackage_type"] = "repackage-signing"
 
-        signing_cert_scope = get_signing_cert_scope_per_platform(
+        signing_type = get_signing_type_per_platform(
             build_platform, is_shippable, config
         )
-        scopes = [signing_cert_scope]
 
         if "win" in build_platform:
             upstream_artifacts = [
@@ -93,7 +91,10 @@ def make_repackage_signing_description(config, jobs):
                     "paths": [
                         get_artifact_path(dep_job, f"{repack_id}/target.installer.exe"),
                     ],
-                    "formats": ["autograph_authenticode_202404", "autograph_gpg"],
+                    "formats": [
+                        "gcp_prod_autograph_authenticode_202412",
+                        "gcp_prod_autograph_gpg",
+                    ],
                 }
             ]
 
@@ -103,19 +104,20 @@ def make_repackage_signing_description(config, jobs):
                 "repack_stub_installer"
             )
             if build_platform.startswith("win32") and repack_stub_installer:
-                upstream_artifacts.append(
-                    {
-                        "taskId": {"task-reference": "<repackage>"},
-                        "taskType": "repackage",
-                        "paths": [
-                            get_artifact_path(
-                                dep_job,
-                                f"{repack_id}/target.stub-installer.exe",
-                            ),
-                        ],
-                        "formats": ["autograph_authenticode_202404", "autograph_gpg"],
-                    }
-                )
+                upstream_artifacts.append({
+                    "taskId": {"task-reference": "<repackage>"},
+                    "taskType": "repackage",
+                    "paths": [
+                        get_artifact_path(
+                            dep_job,
+                            f"{repack_id}/target.stub-installer.exe",
+                        ),
+                    ],
+                    "formats": [
+                        "gcp_prod_autograph_authenticode_202412",
+                        "gcp_prod_autograph_gpg",
+                    ],
+                })
         elif "mac" in build_platform:
             upstream_artifacts = [
                 {
@@ -124,7 +126,7 @@ def make_repackage_signing_description(config, jobs):
                     "paths": [
                         get_artifact_path(dep_job, f"{repack_id}/target.dmg"),
                     ],
-                    "formats": ["autograph_gpg"],
+                    "formats": ["gcp_prod_autograph_gpg"],
                 }
             ]
         elif "linux" in build_platform:
@@ -133,9 +135,9 @@ def make_repackage_signing_description(config, jobs):
                     "taskId": {"task-reference": "<repack>"},
                     "taskType": "repackage",
                     "paths": [
-                        get_artifact_path(dep_job, f"{repack_id}/target.tar.bz2"),
+                        get_artifact_path(dep_job, f"{repack_id}/target.tar.xz"),
                     ],
-                    "formats": ["autograph_gpg"],
+                    "formats": ["gcp_prod_autograph_gpg"],
                 }
             ]
 
@@ -145,13 +147,13 @@ def make_repackage_signing_description(config, jobs):
             "worker-type": "linux-signing",
             "worker": {
                 "implementation": "scriptworker-signing",
+                "signing-type": signing_type,
                 "upstream-artifacts": upstream_artifacts,
-                "max-run-time": 3600,
             },
-            "scopes": scopes,
             "dependencies": dependencies,
             "attributes": attributes,
             "run-on-projects": dep_job.attributes.get("run_on_projects"),
+            "run-on-repo-type": job.get("run-on-repo-type", ["git", "hg"]),
             "extra": {
                 "repack_id": repack_id,
             },

@@ -9,15 +9,14 @@
 #ifndef mozilla_dom_MediaQueryList_h
 #define mozilla_dom_MediaQueryList_h
 
-#include "nsISupports.h"
-#include "nsCycleCollectionParticipant.h"
-#include "nsCOMPtr.h"
-#include "nsTArray.h"
-#include "mozilla/LinkedList.h"
-#include "mozilla/Attributes.h"
-#include "nsWrapperCache.h"
 #include "mozilla/DOMEventTargetHelper.h"
+#include "mozilla/LinkedList.h"
 #include "mozilla/dom/MediaQueryListBinding.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsISupports.h"
+#include "nsTArray.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla::dom {
 
@@ -53,8 +52,8 @@ class MediaQueryList final : public DOMEventTargetHelper,
   // WebIDL methods
   void GetMedia(nsACString& aMedia) const;
   bool Matches();
-  void AddListener(EventListener* aListener, ErrorResult& aRv);
-  void RemoveListener(EventListener* aListener, ErrorResult& aRv);
+  void AddListener(EventListener* aListener);
+  void RemoveListener(EventListener* aListener);
 
   IMPL_EVENT_HANDLER(change)
 

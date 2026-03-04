@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = చూడండి
 download-cert-view-text = CA ధృవీకరణపత్రాన్ని పరీక్షించు
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = జారీచేసినది: { $issue
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = నిల్వ ఉన్నది: { $storedOn }
-client-auth-cert-remember-box =
-    .label = ఈ నిర్ణయాన్ని గుర్తుంచుకోండి
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = ధృవీకరణపత్రం బ్యాక్అప్ సంకేతపదం(మరలా):
 set-password-reminder = ముఖ్యమైనది: మీరు మీ ధృవీకరణపత్రం బ్యాక్అప్ సంకేతపదాన్ని మరిచిపోయినట్లైతే, మీరు ఈ బ్యాక్అప్‌ను తర్వాత తిరిగిపొందలేరు. దయచేసి దీనిని భద్రమైన స్థానమునందు వుంచుకోండి.
-
-## Protected authentication alert
-

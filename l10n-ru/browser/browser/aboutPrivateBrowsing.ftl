@@ -26,8 +26,8 @@ about-private-browsing-hide-activity = Скрывайте свою активн�
 about-private-browsing-get-privacy = Получите защиту приватности в любой части Интернета
 about-private-browsing-hide-activity-1 = Скрывайте активность и местоположение в любой части Интернета с помощью { -mozilla-vpn-brand-name }. Одним щелчком мыши создавайте безопасное соединение даже при использовании общедоступной сети Wi-Fi.
 about-private-browsing-prominent-cta = Сохраняйте приватность с { -mozilla-vpn-brand-name }
-about-private-browsing-focus-promo-cta = Загрузить { -focus-brand-name }
-about-private-browsing-focus-promo-header = { -focus-brand-name }: Приватный просмотр сети на лету
+about-private-browsing-focus-promo-cta = Скачивание { -focus-brand-name }
+about-private-browsing-focus-promo-header = { -focus-brand-name }: приватный просмотр сети на лету
 about-private-browsing-focus-promo-text = Наше специальное мобильное приложение для приватного просмотра каждый раз удаляет вашу историю и куки.
 
 ## The following strings will be used for experiments in Fx99 and Fx100

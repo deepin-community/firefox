@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Warp ynskeakelje, in projekt om de p
 experimental-features-ime-search =
     .label = Adresbalke: resultaten toane wylst opstellen mei IME
 experimental-features-ime-search-description = In IME (Input Method Editor) is in helpmiddel wêrmei't jo komplekse symboalen, lykas yn East-Aziatyske of Yndyske skreaune talen brûkt wurdt, mei in standert toetseboerd ynfiere kinne. As jo dit eksperimint ynskeakelje, bliuwt it adresbalkepaniel iepen, wêrby sykresultaten en -suggestjes toand wurde, wylst jo IME brûke om tekst yn te fieren. Merk op dat de IME ien paniel toane kin dat de adresbalkeresultaten ôfdekt; dêrom wurdt dizze foarkar allinnich foarsteld foar IME wêrby dit type paniel net brûkt wurdt.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Picture-in-picture: automatysk iepenje by wikseljen ljepblêd
-experimental-features-auto-pip-description = Skeakelje Picture-in-Picture yn foar aktive fideo’s by it wikseljen fan ljepblêden.
-genai-settings-chat-title =
-    .label = AI-chatbot
-# Updated sidebar settings
-sidebar-title =
-    .label = Sidebalke
-sidebar-description = Benaderje ienfâldich jo skiednis, ljepblêden fan oare apparaten, sidebalke-útwreidingen en mear wylst jo sneupe. <a data-l10n-name="connect">Kommentaar diele</a>
-vertical-tabs-title =
-    .label = Fertikale ljepblêden
-vertical-tabs-description = Ferpleats jo ljepblêden fan de boppekant fan de browser nei de sydkant. Fereasket dat jo ek de sydbalke probearje. <a data-l10n-name="connect">Kommentaar diele</a>
-experimental-features-group-browsing =
-    .label = Navigearje
-experimental-features-group-developer-tools =
-    .label = Untwikkelersark
-experimental-features-group-webpage-display =
-    .label = Websitewerjefte
-experimental-features-group-customize-browsing =
-    .label = Pas jo browser oan
-experimental-features-group-customize-browsing-description = As jo dizze funksjes probearje, <a data-l10n-name="connect">diel dan jo miening op Connect</a>

@@ -12,9 +12,6 @@ about-webrtc-document-title = WebRTC ներքին
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = պահել about:webrtc-ը որպես
 
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
-
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC արձանագրում
@@ -80,7 +77,7 @@ about-webrtc-nominated = Նշանակված
 # the localized javascript string representation of "true" or are left blank.
 # This represents an attribute of an ICE candidate.
 about-webrtc-selected = Նշված
-about-webrtc-save-page-label = Պահպանել էջը
+about-webrtc-save-page-label = Պահել էջը
 about-webrtc-debug-mode-msg-label = Վրիպազերծման կերպ
 about-webrtc-debug-mode-off-state-label = Վրիպազերծման կերպ
 about-webrtc-debug-mode-on-state-label = Կանգնեցնել վրիպազերծումը
@@ -106,11 +103,6 @@ about-webrtc-log-section-hide-msg = Թաքցնել մատյանը
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (փակված) { $now }
-
-## These are used to indicate what direction media is flowing.
-## Variables:
-##  $codecs - a list of media codecs
-
 
 ##
 
@@ -163,20 +155,12 @@ about-webrtc-pc-configuration-hide-msg = Թաքցնել կարգավորումը
 
 ##
 
-
-## These are displayed on the button that shows or hides the
-## user modified configuration disclosure
-
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-custom-webrtc-configuration-heading = Օգտատիրոջ կողմից սահմանված WebRTC նախապատվություններ
 
 ##
 
-
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
-
-about-webrtc-save-page-msg = էջը պահպանվել է՝ { $path }
+about-webrtc-save-page-msg = էջը պահվել է՝ { $path }
 about-webrtc-debug-mode-off-state-msg = հետևելու մատյանը կարող է գտնվել՝ { $path }
 about-webrtc-debug-mode-on-state-msg = վրիպազերծման կերպը ակտիվ է, հետևելու մատյանը՝ { $path }
 about-webrtc-aec-logging-off-state-msg = մատյանի կորզված ֆայլերը այստեղ են՝ { $path }
@@ -184,7 +168,7 @@ about-webrtc-aec-logging-off-state-msg = մատյանի կորզված ֆայլ�
 # bug reports.
 # Variables:
 #  $path (String) - The path to which the file is saved.
-about-webrtc-save-page-complete-msg = Էջը պահպանվել է՝ { $path }
+about-webrtc-save-page-complete-msg = Էջը պահվել է՝ { $path }
 # Jitter is the variance in the arrival time of packets.
 # See: https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-jitter
 # Variables:
@@ -206,14 +190,3 @@ about-webrtc-sdp-set-at-timestamp-local = Կայել Տեղային SDP-ը { NUM
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-remote = Կայել Հեռակա SDP-ը { NUMBER($timestamp, useGrouping: "false") } ժամադրոշմում
-
-## These are displayed on the button that shows or hides the SDP information disclosure
-
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-

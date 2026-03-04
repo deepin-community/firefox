@@ -61,9 +61,7 @@ typedef struct r_malloc_chunk_ {
 static UINT4 mem_usage;      /* Includes our header */
 static UINT4 mem_stats[256]; /* Does not include our header */
 
-void *r_malloc(type,size)
-  int type;
-  size_t size;
+void *r_malloc(int type, size_t size)
   {
     size_t total;
     r_malloc_chunk *chunk = 0;
@@ -85,10 +83,7 @@ void *r_malloc(type,size)
     return(chunk->memory);
   }
 
-void *r_calloc(type,number,size)
-  int type;
-  size_t number;
-  size_t size;
+void *r_calloc(int type, size_t number, size_t size)
   {
     void *ret = 0;
     size_t total;
@@ -103,8 +98,7 @@ void *r_calloc(type,number,size)
     return(ret);
   }
 
-void r_free(ptr)
-  void *ptr;
+void r_free(void *ptr)
   {
     r_malloc_chunk *chunk = 0;
 
@@ -121,37 +115,7 @@ void r_free(ptr)
     free(chunk);
   }
 
-void *r_realloc(ptr,size)
-  void *ptr;
-  size_t size;
-  {
-    r_malloc_chunk *chunk = 0, *nchunk = 0;
-    size_t total;
-
-    if(!ptr) return(r_malloc(255,size));
-
-    chunk=(r_malloc_chunk *)GET_CHUNK_ADDR_FROM_MEM_ADDR(ptr);
-#ifdef SANITY_CHECKS
-    assert(chunk->hdr==HDR_FLAG);
-#endif
-
-    total=size + sizeof(r_malloc_chunk);
-
-    if(!(nchunk=realloc(chunk,total)))
-      return(0);
-
-    mem_usage-=CHUNK_SIZE(nchunk->size);
-    mem_stats[nchunk->type]-=nchunk->size;
-
-    nchunk->size=size;
-    mem_usage+=CHUNK_SIZE(nchunk->size);
-    mem_stats[nchunk->type]+=nchunk->size;
-
-    return(nchunk->memory);
-  }
-
-char *r_strdup(str)
-  const char *str;
+char *r_strdup(const char *str)
   {
     int len;
     char *nstr = 0;
@@ -169,30 +133,3 @@ char *r_strdup(str)
     return(nstr);
   }
 
-int r_mem_get_usage(usagep)
-  UINT4 *usagep;
-  {
-    *usagep=mem_usage;
-
-    return(0);
-  }
-
-int r_memory_dump_stats()
-  {
-    int i;
-
-    printf("Total memory usage: %d\n",mem_usage);
-    printf("Memory usage by bucket\n");
-    for(i=0;i<256;i++){
-      if(mem_stats[i]){
-        printf("%d\t%d\n",i,mem_stats[i]);
-      }
-    }
-    return(0);
-  }
-
-void *r_malloc_compat(size)
-  size_t size;
-  {
-    return(r_malloc(255,size));
-  }

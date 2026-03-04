@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Нова картица
     .accesskey = Н
@@ -72,9 +76,16 @@ move-to-new-window =
 tab-context-close-multiple-tabs =
     .label = Затвори више картица
     .accesskey = ш
+tab-context-close-duplicate-tabs =
+    .label = Затвори дупликате картица
+    .accesskey = у
 tab-context-share-url =
     .label = Дели…
     .accesskey = е
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Нова картица надесно
+    .accesskey = в
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -102,7 +113,6 @@ tab-context-move-tabs =
            *[other] Премести картице
         }
     .accesskey = П
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->

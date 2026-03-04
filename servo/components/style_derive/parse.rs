@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use crate::cg;
 use crate::to_css::{CssBitflagAttrs, CssVariantAttrs};
-use derive_common::cg;
 use proc_macro2::{Span, TokenStream};
 use quote::TokenStreamExt;
 use syn::{self, DeriveInput, Ident, Path};
@@ -89,7 +89,6 @@ fn parse_bitflags(bitflags: &CssBitflagAttrs) -> TokenStream {
 
 fn parse_non_keyword_variant(
     where_clause: &mut Option<syn::WhereClause>,
-    name: &syn::Ident,
     variant: &VariantInfo,
     variant_attrs: &CssVariantAttrs,
     parse_attrs: &ParseVariantAttrs,
@@ -104,7 +103,6 @@ fn parse_non_keyword_variant(
         1,
         "We only support deriving parse for simple variants"
     );
-    let variant_name = &variant.ast().ident;
     let binding_ast = &bindings[0].ast();
     let ty = &binding_ast.ty;
 
@@ -131,15 +129,21 @@ fn parse_non_keyword_variant(
         quote! { <#ty as crate::parser::Parse>::parse(context, input) }
     };
 
+    let variant_name = &variant.ast().ident;
+    let variant_name = match variant.prefix {
+        Some(p) => quote! { #p::#variant_name },
+        None => quote! { #variant_name },
+    };
+
     parse = if skip_try {
         quote! {
             let v = #parse?;
-            return Ok(#name::#variant_name(v));
+            return Ok(#variant_name(v));
         }
     } else {
         quote! {
-            if let Ok(v) = input.try(|input| #parse) {
-                return Ok(#name::#variant_name(v));
+            if let Ok(v) = input.try_parse(|input| #parse) {
+                return Ok(#variant_name(v));
             }
         }
     };
@@ -240,14 +244,8 @@ pub fn derive(mut input: DeriveInput) -> TokenStream {
     let mut parse_non_keywords = quote! {};
     for (i, (variant, css_attrs, parse_attrs)) in non_keywords.iter().enumerate() {
         let skip_try = !has_keywords && i == non_keywords.len() - 1;
-        let parse_variant = parse_non_keyword_variant(
-            &mut where_clause,
-            name,
-            variant,
-            css_attrs,
-            parse_attrs,
-            skip_try,
-        );
+        let parse_variant =
+            parse_non_keyword_variant(&mut where_clause, variant, css_attrs, parse_attrs, skip_try);
         parse_non_keywords.extend(parse_variant);
     }
 
@@ -256,7 +254,7 @@ pub fn derive(mut input: DeriveInput) -> TokenStream {
             quote! {
                 let location = input.current_source_location();
                 let ident = input.expect_ident()?;
-                match_ignore_ascii_case! { &ident,
+                cssparser::match_ignore_ascii_case! { &ident,
                     #match_keywords
                     _ => Err(location.new_unexpected_token_error(
                         cssparser::Token::Ident(ident.clone())
@@ -319,7 +317,7 @@ pub fn derive(mut input: DeriveInput) -> TokenStream {
             /// Parse this keyword from a string slice.
             #[inline]
             pub fn from_ident(ident: &str) -> Result<Self, ()> {
-                match_ignore_ascii_case! { ident,
+                cssparser::match_ignore_ascii_case! { ident,
                     #match_keywords
                     _ => Err(()),
                 }

@@ -6,12 +6,12 @@
 
 #include "SVGAnimatedNumber.h"
 
+#include "SMILFloatType.h"
+#include "SVGAttrTearoffTable.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/SMILValue.h"
 #include "mozilla/SVGContentUtils.h"
 #include "nsContentUtils.h"
-#include "SMILFloatType.h"
-#include "SVGAttrTearoffTable.h"
 
 using namespace mozilla::dom;
 
@@ -42,8 +42,8 @@ class MOZ_RAII AutoChangeNumberNotifier {
   SVGElement* const mSVGElement;
 };
 
-static SVGAttrTearoffTable<SVGAnimatedNumber,
-                           SVGAnimatedNumber::DOMAnimatedNumber>
+constinit static SVGAttrTearoffTable<SVGAnimatedNumber,
+                                     SVGAnimatedNumber::DOMAnimatedNumber>
     sSVGAnimatedNumberTearoffTable;
 
 static bool GetValueFromString(const nsAString& aString,
@@ -55,15 +55,16 @@ static bool GetValueFromString(const nsAString& aString,
     return false;
   }
 
-  RangedPtr<const char16_t> iter = SVGContentUtils::GetStartRangedPtr(token);
-  const RangedPtr<const char16_t> end = SVGContentUtils::GetEndRangedPtr(token);
+  nsAString::const_iterator iter, end;
+  token.BeginReading(iter);
+  token.EndReading(end);
 
   if (!SVGContentUtils::ParseNumber(iter, end, aValue)) {
     return false;
   }
 
   if (aPercentagesAllowed) {
-    const nsAString& units = Substring(iter.get(), end.get());
+    const nsAString& units = Substring(iter, end);
     if (units.EqualsLiteral("%")) {
       aValue /= 100;
       return true;

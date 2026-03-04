@@ -4,6 +4,9 @@
 
 "use strict";
 
+// eslint-disable-next-line mozilla/reject-some-requires
+const DESCRIPTOR_TYPES = require("resource://devtools/client/fronts/descriptors/descriptor-types.js");
+
 class NetworkCommand {
   /**
    * This class helps listen, inspect and control network requests.
@@ -12,7 +15,7 @@ class NetworkCommand {
    *        The context to inspect identified by this descriptor.
    * @param {WatcherFront} watcherFront
    *        If available, a reference to the related Watcher Front.
-   * @param {Object} commands
+   * @param {object} commands
    *        The commands object with all interfaces defined from devtools/shared/commands/
    */
   constructor({ descriptorFront, watcherFront, commands }) {
@@ -27,15 +30,19 @@ class NetworkCommand {
    * @param {object} data data payload would like to sent to backend
    */
   async sendHTTPRequest(data) {
-    // By default use the top-level target, but we might at some point
-    // allow using another target.
-    const networkContentFront =
-      await this.commands.targetCommand.targetFront.getFront("networkContent");
+    // By default use the currently selected target.
+    // So depending on the console and iframe selectors, the request may be sent
+    // from different documents and be drastically different.
+    const targetFront =
+      this.descriptorFront.descriptorType == DESCRIPTOR_TYPES.EXTENSION
+        ? this.commands.targetCommand.selectedTargetFront
+        : this.commands.targetCommand.targetFront;
+    const networkContentFront = await targetFront.getFront("networkContent");
     const { channelId } = await networkContentFront.sendHTTPRequest(data);
     return { channelId };
   }
 
-  /*
+  /**
    * Get the list of blocked URL filters.
    *
    * A URL filter is a RegExp string so that one filter can match many URLs.
@@ -69,7 +76,7 @@ class NetworkCommand {
   /**
    * Block only one additional URL filter
    *
-   * @param {String} url
+   * @param {string} url
    *        URL filter to block.
    *        See getBlockedUrls for definition of URL filters.
    */
@@ -81,7 +88,7 @@ class NetworkCommand {
   /**
    * Stop blocking only one specific URL filter
    *
-   * @param {String} url
+   * @param {string} url
    *        URL filter to unblock.
    *        See getBlockedUrls for definition of URL filters.
    */

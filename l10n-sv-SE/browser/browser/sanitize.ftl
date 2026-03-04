@@ -59,10 +59,7 @@ history-section-label = Historik
 item-history-and-downloads =
     .label = Besökta sidor och filhämtningshistorik
     .accesskey = B
-item-history-form-data-downloads =
-    .label = Historik
-    .accesskey = H
-item-history-form-data-downloads-description = Rensar webbplats och nedladdningshistorik, sparad formulärinformation och sökningar
+item-history-and-downloads-description2 = Rensar webbplats- och nedladdningshistorik
 item-cookies =
     .label = Kakor
     .accesskey = K
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Webbplatsinställningar
     .accesskey = W
+item-formdata-prefs =
+    .label = Sparad formulärinfo
+    .accesskey = S
+item-formdata-description = Rensar saker som namn, e-post och andra objekt som du anger i formulär
 item-site-prefs-description = Återställer dina behörigheter och webbplatsinställningar till ursprungliga inställningar
 data-section-label = Data
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = All historik kommer att tas bort.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Alla markerade poster kommer att tas bort.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Beräknar…

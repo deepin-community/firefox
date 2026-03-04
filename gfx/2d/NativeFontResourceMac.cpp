@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <unordered_map>
-#include <unordered_set>
 #include "NativeFontResourceMac.h"
 #include "UnscaledFontMac.h"
 #include "Types.h"
@@ -23,7 +22,8 @@ namespace mozilla {
 namespace gfx {
 
 #define FONT_NAME_MAX 32
-static StaticDataMutex<std::unordered_map<void*, nsAutoCStringN<FONT_NAME_MAX>>>
+MOZ_RUNINIT static StaticDataMutex<
+    std::unordered_map<void*, nsAutoCStringN<FONT_NAME_MAX>>>
     sWeakFontDataMap("WeakFonts");
 
 void FontDataDeallocate(void*, void* info) {
@@ -81,7 +81,7 @@ void NativeFontResourceMac::RegisterMemoryReporter() {
 
 /* static */
 already_AddRefed<NativeFontResourceMac> NativeFontResourceMac::Create(
-    uint8_t* aFontData, uint32_t aDataLength) {
+    const uint8_t* aFontData, uint32_t aDataLength) {
   uint8_t* fontData = (uint8_t*)malloc(aDataLength);
   if (!fontData) {
     return nullptr;

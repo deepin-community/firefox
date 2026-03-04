@@ -8,15 +8,14 @@
 
 #include "GetDirectoryListingTask.h"
 #include "GetFilesTask.h"
-
-#include "nsIFile.h"
-#include "nsString.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/DirectoryBinding.h"
 #include "mozilla/dom/FileSystemBase.h"
 #include "mozilla/dom/FileSystemUtils.h"
 #include "mozilla/dom/OSFileSystem.h"
 #include "mozilla/dom/WorkerPrivate.h"
+#include "nsIFile.h"
+#include "nsString.h"
 
 namespace mozilla::dom {
 
@@ -50,7 +49,7 @@ already_AddRefed<Directory> Directory::Constructor(const GlobalObject& aGlobal,
                                                    const nsAString& aRealPath,
                                                    ErrorResult& aRv) {
   nsCOMPtr<nsIFile> path;
-  aRv = NS_NewLocalFile(aRealPath, true, getter_AddRefs(path));
+  aRv = NS_NewLocalFile(aRealPath, getter_AddRefs(path));
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }

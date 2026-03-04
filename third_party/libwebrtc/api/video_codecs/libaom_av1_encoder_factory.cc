@@ -10,20 +10,38 @@
 
 #include "api/video_codecs/libaom_av1_encoder_factory.h"
 
-#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
-#include <utility>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/cleanup/cleanup.h"
+#include "api/array_view.h"
+#include "api/scoped_refptr.h"
+#include "api/units/data_rate.h"
+#include "api/units/data_size.h"
+#include "api/units/time_delta.h"
+#include "api/video/resolution.h"
+#include "api/video/video_frame_buffer.h"
+#include "api/video_codecs/video_codec.h"
+#include "api/video_codecs/video_encoder_factory_interface.h"
 #include "api/video_codecs/video_encoder_interface.h"
+#include "api/video_codecs/video_encoding_general.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/numerics/rational.h"
 #include "rtc_base/strings/string_builder.h"
 #include "third_party/libaom/source/libaom/aom/aom_codec.h"
 #include "third_party/libaom/source/libaom/aom/aom_encoder.h"
+#include "third_party/libaom/source/libaom/aom/aom_image.h"
 #include "third_party/libaom/source/libaom/aom/aomcx.h"
 
 #define SET_OR_RETURN(param_id, param_value)                          \
@@ -62,10 +80,16 @@ constexpr std::array<VideoFrameBuffer::Type, 2> kSupportedInputFormats = {
     VideoFrameBuffer::Type::kI420, VideoFrameBuffer::Type::kNV12};
 
 constexpr std::array<Rational, 7> kSupportedScalingFactors = {
-    {{8, 1}, {4, 1}, {2, 1}, {1, 1}, {1, 2}, {1, 4}, {1, 8}}};
+    {{.numerator = 8, .denominator = 1},
+     {.numerator = 4, .denominator = 1},
+     {.numerator = 2, .denominator = 1},
+     {.numerator = 1, .denominator = 1},
+     {.numerator = 1, .denominator = 2},
+     {.numerator = 1, .denominator = 4},
+     {.numerator = 1, .denominator = 8}}};
 
-absl::optional<Rational> GetScalingFactor(const Resolution& from,
-                                          const Resolution& to) {
+std::optional<Rational> GetScalingFactor(const Resolution& from,
+                                         const Resolution& to) {
   auto it = absl::c_find_if(kSupportedScalingFactors, [&](const Rational& r) {
     return (from.width * r.numerator / r.denominator) == to.width &&
            (from.height * r.numerator / r.denominator) == to.height;
@@ -87,7 +111,7 @@ class LibaomAv1Encoder : public VideoEncoderInterface {
       const VideoEncoderFactoryInterface::StaticEncoderSettings& settings,
       const std::map<std::string, std::string>& encoder_specific_settings);
 
-  void Encode(rtc::scoped_refptr<webrtc::VideoFrameBuffer> frame_buffer,
+  void Encode(scoped_refptr<VideoFrameBuffer> frame_buffer,
               const TemporalUnitSettings& tu_settings,
               std::vector<FrameEncodeSettings> frame_settings) override;
 
@@ -96,10 +120,10 @@ class LibaomAv1Encoder : public VideoEncoderInterface {
   aom_codec_ctx_t ctx_;
   aom_codec_enc_cfg_t cfg_;
 
-  absl::optional<VideoCodecMode> current_content_type_;
-  std::array<absl::optional<int>, kMaxSpatialLayersWtf> current_effort_level_;
+  std::optional<VideoCodecMode> current_content_type_;
+  std::array<std::optional<int>, kMaxSpatialLayersWtf> current_effort_level_;
   int max_number_of_threads_;
-  std::array<absl::optional<Resolution>, 8> last_resolution_in_buffer_;
+  std::array<std::optional<Resolution>, 8> last_resolution_in_buffer_;
 };
 
 template <typename T>
@@ -147,7 +171,7 @@ bool LibaomAv1Encoder::InitEncode(
   cfg_.rc_undershoot_pct = 50;
   cfg_.rc_overshoot_pct = 50;
   auto* cbr =
-      absl::get_if<VideoEncoderFactoryInterface::StaticEncoderSettings::Cbr>(
+      std::get_if<VideoEncoderFactoryInterface::StaticEncoderSettings::Cbr>(
           &settings.rc_mode);
   cfg_.rc_buf_initial_sz = cbr ? cbr->target_buffer_size.ms() : 600;
   cfg_.rc_buf_optimal_sz = cbr ? cbr->target_buffer_size.ms() : 600;
@@ -251,11 +275,11 @@ ThreadTilesAndSuperblockSizeInfo GetThreadingTilesAndSuperblockSize(
 }
 
 bool ValidateEncodeParams(
-    const webrtc::VideoFrameBuffer& frame_buffer,
-    const VideoEncoderInterface::TemporalUnitSettings& tu_settings,
+    const VideoFrameBuffer& /* frame_buffer */,
+    const VideoEncoderInterface::TemporalUnitSettings& /* tu_settings */,
     const std::vector<VideoEncoderInterface::FrameEncodeSettings>&
         frame_settings,
-    const std::array<absl::optional<Resolution>, 8>& last_resolution_in_buffer,
+    const std::array<std::optional<Resolution>, 8>& last_resolution_in_buffer,
     aom_rc_mode rc_mode) {
   if (frame_settings.empty()) {
     RTC_LOG(LS_ERROR) << "No frame settings provided.";
@@ -325,7 +349,7 @@ bool ValidateEncodeParams(
 
       // Figure out which frame resolution a certain buffer will hold when the
       // frame described by `settings` is encoded.
-      absl::optional<Resolution> referenced_resolution;
+      std::optional<Resolution> referenced_resolution;
       bool keyframe_on_previous_layer = false;
 
       // Will some other frame in this temporal unit update the buffer?
@@ -366,9 +390,9 @@ bool ValidateEncodeParams(
     }
 
     if ((rc_mode == AOM_CBR &&
-         absl::holds_alternative<Cqp>(settings.rate_options)) ||
+         std::holds_alternative<Cqp>(settings.rate_options)) ||
         (rc_mode == AOM_Q &&
-         absl::holds_alternative<Cbr>(settings.rate_options))) {
+         std::holds_alternative<Cbr>(settings.rate_options))) {
       RTC_LOG(LS_ERROR) << "Invalid rate options, encoder configured with "
                         << (rc_mode == AOM_CBR ? "AOM_CBR" : "AOM_Q");
       return false;
@@ -497,7 +521,7 @@ aom_svc_ref_frame_config_t GetSvcRefFrameConfig(
   }
 
   char buf[256];
-  rtc::SimpleStringBuilder sb(buf);
+  SimpleStringBuilder sb(buf);
   sb << " spatial_id=" << settings.spatial_id;
   sb << "  ref_idx=[ ";
   for (auto r : ref_frame_config.ref_idx) {
@@ -519,7 +543,7 @@ aom_svc_ref_frame_config_t GetSvcRefFrameConfig(
 }
 
 aom_svc_params_t GetSvcParams(
-    const webrtc::VideoFrameBuffer& frame_buffer,
+    const VideoFrameBuffer& frame_buffer,
     const std::vector<VideoEncoderInterface::FrameEncodeSettings>&
         frame_settings) {
   aom_svc_params_t svc_params = {};
@@ -542,8 +566,9 @@ aom_svc_params_t GetSvcParams(
 
   for (const VideoEncoderInterface::FrameEncodeSettings& settings :
        frame_settings) {
-    absl::optional<Rational> scaling_factor = GetScalingFactor(
-        {frame_buffer.width(), frame_buffer.height()}, settings.resolution);
+    std::optional<Rational> scaling_factor = GetScalingFactor(
+        {.width = frame_buffer.width(), .height = frame_buffer.height()},
+        settings.resolution);
     RTC_CHECK(scaling_factor);
     svc_params.scaling_factor_num[settings.spatial_id] =
         scaling_factor->numerator;
@@ -560,7 +585,7 @@ aom_svc_params_t GetSvcParams(
                         << " den="
                         << svc_params.scaling_factor_den[settings.spatial_id];
 
-    absl::visit(
+    std::visit(
         [&](auto&& arg) {
           using T = std::decay_t<decltype(arg)>;
           if constexpr (std::is_same_v<T, Cbr>) {
@@ -600,7 +625,7 @@ aom_svc_params_t GetSvcParams(
   }
 
   char buf[512];
-  rtc::SimpleStringBuilder sb(buf);
+  SimpleStringBuilder sb(buf);
   sb << "GetSvcParams" << " layer bitrates kbps";
   for (int s = 0; s < svc_params.number_spatial_layers; ++s) {
     sb << " S" << s << "=[ ";
@@ -616,10 +641,9 @@ aom_svc_params_t GetSvcParams(
   return svc_params;
 }
 
-void LibaomAv1Encoder::Encode(
-    rtc::scoped_refptr<webrtc::VideoFrameBuffer> frame_buffer,
-    const TemporalUnitSettings& tu_settings,
-    std::vector<FrameEncodeSettings> frame_settings) {
+void LibaomAv1Encoder::Encode(scoped_refptr<VideoFrameBuffer> frame_buffer,
+                              const TemporalUnitSettings& tu_settings,
+                              std::vector<FrameEncodeSettings> frame_settings) {
   absl::Cleanup on_return = [&] {
     // On return call `EncodeComplete` with EncodingError result unless they
     // were already called with an EncodedData result.
@@ -650,7 +674,7 @@ void LibaomAv1Encoder::Encode(
   if (cfg_.rc_end_usage == AOM_CBR) {
     DataRate accum_rate = DataRate::Zero();
     for (const FrameEncodeSettings& settings : frame_settings) {
-      accum_rate += absl::get<Cbr>(settings.rate_options).target_bitrate;
+      accum_rate += std::get<Cbr>(settings.rate_options).target_bitrate;
     }
     cfg_.rc_target_bitrate = accum_rate.kbps();
     RTC_LOG(LS_WARNING) << __FUNCTION__
@@ -715,7 +739,7 @@ void LibaomAv1Encoder::Encode(
     // not being encoded?
     TimeDelta duration = TimeDelta::Millis(1);
     if (layer_enabled) {
-      if (const Cbr* cbr = absl::get_if<Cbr>(&settings.rate_options)) {
+      if (const Cbr* cbr = std::get_if<Cbr>(&settings.rate_options)) {
         duration = cbr->duration;
       } else {
         // TD: What should duration be when Cqp is used?
@@ -764,10 +788,10 @@ void LibaomAv1Encoder::Encode(
                aom_codec_get_cx_data(&ctx_, &iter)) {
       if (pkt->kind == AOM_CODEC_CX_FRAME_PKT && pkt->data.frame.sz > 0) {
         SET_OR_RETURN(AOME_GET_LAST_QUANTIZER_64, &result.encoded_qp);
-        result.frame_type = pkt->data.frame.flags & AOM_EFLAG_FORCE_KF
+        result.frame_type = pkt->data.frame.flags & AOM_FRAME_IS_KEY
                                 ? FrameType::kKeyframe
                                 : FrameType::kDeltaFrame;
-        rtc::ArrayView<uint8_t> output_buffer =
+        ArrayView<uint8_t> output_buffer =
             settings.frame_output->GetBitstreamOutputBuffer(
                 DataSize::Bytes(pkt->data.frame.sz));
         if (output_buffer.size() != pkt->data.frame.sz) {

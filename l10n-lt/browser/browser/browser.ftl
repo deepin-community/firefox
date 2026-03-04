@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -593,6 +590,17 @@ urlbar-result-action-copy-to-clipboard = Kopijuoti
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Adresynas
+urlbar-searchmode-tabs =
+    .label = Kortelės
+urlbar-searchmode-history =
+    .label = Žurnalas
+urlbar-searchmode-actions =
+    .label = Veiksmai
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -878,9 +886,6 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>Atverti ankstesnes korteles?</strong> Galite atkurti savo ankstesnį seansą iš „{ -brand-short-name }“ programos meniu <img data-l10n-name="icon"/>, iš žurnalo.
 restore-session-startup-suggestion-button = Parodyti instrukciją
 
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = „{ -brand-short-name }“ automatiškai siunčia tam tikrus duomenis į „{ -vendor-short-name }“ programos gerinimo tikslais.
@@ -905,10 +910,6 @@ unified-extensions-button-permissions-needed =
         Priedai
         Reikia leidimų
 
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
 ## Private browsing reset button
 
 reset-pbm-toolbar-button =
@@ -930,9 +931,6 @@ refresh-blocked-redirect-label = „{ -brand-short-name }“ neleido šiam tinkl
 refresh-blocked-allow =
     .label = Leisti
     .accesskey = L
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

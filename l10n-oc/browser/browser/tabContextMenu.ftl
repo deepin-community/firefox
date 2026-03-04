@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Onglet novèl
     .accesskey = O
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Tampar los onglets situats a esquèrra
     .accesskey = e
+close-tabs-to-the-start-vertical =
+    .label = Tampar los onglets al dessús
+    .accesskey = T
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Tampar los onglets situats a drecha
     .accesskey = d
+close-tabs-to-the-end-vertical =
+    .label = Tampar los onglets en dessús
+    .accesskey = a
 close-other-tabs =
     .label = Tampar los autres onglets
     .accesskey = T
@@ -78,6 +88,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Partejar
     .accesskey = P
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Onglet novèl a drecha
+    .accesskey = n
+tab-context-new-tab-open-vertical =
+    .label = Onglet novèl en dejós
+    .accesskey = n
+tab-context-new-group =
+    .label = Grop novèl
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -113,3 +133,10 @@ tab-context-send-tabs-to-device =
            *[other] Enviar { $tabCount } onglets al periferic
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Descargar l’onglet
+           *[other] Descargar { $tabCount } onglets
+        }
+    .accesskey = D

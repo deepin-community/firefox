@@ -87,7 +87,8 @@ class TracerCommand extends EventEmitter {
       logMethod,
       // Force enabling DOM Mutation logging as soon as we selected the sidebar log output
       traceDOMMutations:
-        logMethod == TRACER_LOG_METHODS.DEBUGGER_SIDEBAR
+        logMethod == TRACER_LOG_METHODS.DEBUGGER_SIDEBAR ||
+        logMethod == TRACER_LOG_METHODS.PROFILER
           ? ["add", "attributes", "remove"]
           : null,
       traceValues: Services.prefs.getBoolPref(
@@ -104,10 +105,6 @@ class TracerCommand extends EventEmitter {
       ),
       traceFunctionReturn: Services.prefs.getBoolPref(
         "devtools.debugger.javascript-tracing-function-return",
-        false
-      ),
-      useNativeTracing: Services.prefs.getBoolPref(
-        "devtools.debugger.javascript-tracing-native",
         false
       ),
     };

@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import assert from 'assert';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   computeExecutablePath,
@@ -29,7 +29,7 @@ describe('Firefox', () => {
         buildId: '123',
         cacheDir: '.cache',
       }),
-      path.join('.cache', 'firefox', 'linux-123', 'firefox', 'firefox')
+      path.join('.cache', 'firefox', 'linux-123', 'firefox', 'firefox'),
     );
   });
 
@@ -42,7 +42,7 @@ describe('Firefox', () => {
 
     beforeEach(async () => {
       tmpDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'puppeteer-browsers-test')
+        path.join(os.tmpdir(), 'puppeteer-browsers-test'),
       );
       await install({
         cacheDir: tmpDir,

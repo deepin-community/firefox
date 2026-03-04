@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = ਭੂਰਾ
     .title = ਰੰਗ ਸਕੀਮ ਭੂਰਾ
 about-reader-color-scheme-auto = ਆਟੋ
     .title = ਰੰਗ ਸਕੀਮ ਆਪਣੇ-ਆਪ
-about-reader-color-theme-light = ਹਲਕਾ
-    .title = ਰੰਗ ਥੀਮ ਹਲਕਾ
-about-reader-color-theme-dark = ਗੂੜ੍ਹਾ
-    .title = ਰੰਗ ਥੀਮ ਗੂੜ੍ਹਾ
-about-reader-color-theme-sepia = ਭੂਰਾ
-    .title = ਰੰਗ ਥੀਮ ਭੂਰਾ
-about-reader-color-theme-auto = ਆਟੋ
-    .title = ਰੰਗ ਥੀਮ ਆਟੋ
-about-reader-color-theme-gray = ਸਲੇਟੀ
-    .title = ਰੰਗ ਥੀਮ ਸਲੇਟੀ
-about-reader-color-theme-contrast = ਕਨਟਰਾਸਟ
-    .title = ਰੰਗ ਥੀਮ ਕਨਟਰਾਸਟ
-about-reader-color-theme-custom = ਕਸਟਮ ਰੰਗ
-    .title = ਰੰਗ ਥੀਮ ਪਸੰਦੀਦਾ
 about-reader-color-light-theme = ਹਲਕਾ
     .title = ਹਲਕਾ ਥੀਮ
 about-reader-color-dark-theme = ਗੂੜ੍ਹਾ
@@ -49,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } ਮਿੰਟ
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = ਫ਼ੋਂਟ ਦਾ ਆਕਾਰ ਘਟਾਓ
@@ -74,7 +60,6 @@ about-reader-font-type-monospace = ਮੋਨੋਸਪੇਸ
 
 about-reader-toolbar-close = ਰੀਡਰ ਝਲਕ ਬੰਦ ਕਰੋ
 about-reader-toolbar-type-controls = ਟਾਈਪ ਕੰਟਰੋਲ
-about-reader-toolbar-color-controls = ਰੰਗ
 about-reader-toolbar-text-layout-controls = ਲਿਖਤ ਅਤੇ ਖਾਕਾ
 about-reader-toolbar-theme-controls = ਥੀਮ
 about-reader-toolbar-savetopocket = { -pocket-brand-name } ਨਾਲ ਸੰਭਾਲੋ
@@ -89,20 +74,24 @@ about-reader-customtheme-tab = ਕਸਟਮ
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = ਲਿਖਤ
-    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
-about-reader-custom-colors-background = ਬੈਕਗਰਾਊਂਡ
-    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
-about-reader-custom-colors-unvisited-links = ਨਾ-ਖੋਲ੍ਹੇ ਲਿੰਕ
-    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
-about-reader-custom-colors-visited-links = ਖੋਲ੍ਹੇ ਗਏ ਲਿੰਕ
-    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
-about-reader-custom-colors-selection-highlight = ਉੱਚਾ ਪੜ੍ਹੇ ਲਈ ਹਾਈਲਾਈਟਰ
-    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
-about-reader-custom-colors-reset-button = ਮੂਲ ਨੂੰ ਬਹਾਲ ਕਰੋ
 about-reader-reset-button = ਮੂਲ ਨੂੰ ਬਹਾਲ ਕਰੋ
+about-reader-custom-colors-foreground2 =
+    .label = ਲਿਖਤ
+    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
+about-reader-custom-colors-background2 =
+    .label = ਬੈਕਗਰਾਊਂਡ
+    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
+about-reader-custom-colors-unvisited-links2 =
+    .label = ਨਾ-ਖੋਲ੍ਹੇ ਲਿੰਕ
+    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
+about-reader-custom-colors-visited-links2 =
+    .label = ਖੋਲ੍ਹੇ ਗਏ ਲਿੰਕ
+    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
+about-reader-custom-colors-selection-highlight2 =
+    .label = ਉੱਚਾ ਪੜ੍ਹੇ ਲਈ ਹਾਈਲਾਈਟਰ
+    .title = ਰੰਗ ਨੂੰ ਸੋਧੋ
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = ਲਿਖਤ
 about-reader-text-size-label = ਲਿਖਤ ਦਾ ਆਕਾਰ
@@ -119,9 +108,6 @@ about-reader-content-width-label =
 about-reader-line-spacing-label =
     .label = ਲਾਈਨਾਂ ਦਾ ਫ਼ਾਸਲਾ
 about-reader-advanced-layout-header = ਤਕਨੀਕੀ
-about-reader-slider-label-width-narrow = ਤੰਗ
-about-reader-slider-label-width-wide = ਚੌੜਾ
-about-reader-slider-label-spacing-narrow = ਤੰਗ
 about-reader-character-spacing-label =
     .label = ਅੱਖਰਾਂ ਵਿਚਾਲੇ ਫ਼ਾਸਲਾ
 about-reader-word-spacing-label =
@@ -133,3 +119,5 @@ about-reader-text-alignment-center =
     .title = ਲਿਖਤ ਨੂੰ ਕੇਂਦਰ ਵਿੱਚ ਇਕਸਾਰ ਕਰੋ
 about-reader-text-alignment-right =
     .title = ਲਿਖਤ ਨੂੰ ਸੱਜੇ ਪਾਸੇ ਇਕਸਾਰ ਕਰੋ
+about-reader-text-alignment-justify =
+    .title = ਲਿਖਤ ਨੂੰ ਇਕਸਾਰ ਕਰੋ

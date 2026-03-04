@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Llwythi i lawr
 appmenuitem-passwords =
     .label = Cyfrineiriau
+appmenuitem-extensions-and-themes =
+    .label = Estyniadau a Themâu
+appmenuitem-extensions =
+    .label = Estyniadau
 appmenuitem-addons-and-themes =
     .label = Ychwanegion a Themâu
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Cydweddu a chadw data
 appmenu-fxa-signed-in-label = Mewngofnodi
 appmenu-fxa-setup-sync =
     .label = Cychwyn Cydweddu…
+appmenu-fxa-setup-sync-new = Troi Ymlaen
 appmenuitem-save-page =
     .label = Cadw Tudalen Fel…
+appmenuitem-fxa-sync-off-title = Mae Sync i ffwrdd
+appmenuitem-fxa-sync-off-description = Diogelu a chael mynediad i'ch nodau tudalen, cyfrineiriau, a rhagor yn unrhyw le.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Agor panel y proffiliwr
+    .tooltiptext = Agor panel y proffiliwr
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Y rhagosodiad ar gyfer ymchwilio i wallau sain a fideo yn { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Cyfrwng
+profiler-popup-presets-ml-description = Ei ragosod ar gyfer ymchwilio i wallau dysgu peirianyddol yn { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Dysgu Peirianyddol
 profiler-popup-presets-networking-description = Y rhagosodiad ar gyfer ymchwilio i wallau graffeg yn { -brand-shorter-name }
 profiler-popup-presets-networking-label =
     .label = Rhwydweithio
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Rhagosodiad ar gyfer dadfygio yn { -brand-shorter-name }. Gorbenion uchel, peidiwch â'i ddefnyddio ar gyfer gwaith perfformiad ond yn hytrach ei ddefnyddio ar gyfer canolbwyntio ar ddeall ymddygiad porwyr.
 profiler-popup-presets-debug-label =
     .label = Dadfygio
+profiler-popup-presets-web-compat-description = Rhagosodiad sy'n cael eu hargymell ar gyfer dadfygio materion cydweddu gwe mewn gwefannau, yn hytrach nag olrhain perfformiad.
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = Cyfaddas
 
@@ -233,9 +249,9 @@ appmenu-help-more-troubleshooting-info =
     .label = Rhagor o Wybodaeth Datrys Problemau
     .accesskey = D
 appmenu-help-report-site-issue =
-    .label = Adrodd ar Fater Gwefan…
+    .label = Adrodd am Fater Gwefan…
 appmenu-help-share-ideas =
-    .label = Rhannwch syniadau ac adborth…
+    .label = Rhannu syniadau ac adborth…
     .accesskey = R
 appmenu-help-switch-device =
     .label = Newid i ddyfais newydd
@@ -254,7 +270,7 @@ appmenu-help-exit-troubleshoot-mode =
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
 appmenu-help-report-deceptive-site =
-    .label = Adroddwch ar wefan twyllodrus…
+    .label = Adrodd am wefan twyllodrus…
     .accesskey = t
 appmenu-help-not-deceptive =
     .label = Nid yw hon yn wefan twyllodrus…
@@ -268,7 +284,7 @@ appmenu-developer-tools-subheader = Offer y Porwr
 appmenu-developer-tools-extensions =
     .label = Estyniadau ar gyfer Datblygwyr
 appmenuitem-report-broken-site =
-    .label = Adrodd ar wefan wedi torri
+    .label = Adrodd am wefan wedi torri
 
 ## Panel for privacy and security products
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Cael rhybuddion tor-data
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Cuddiwch eich e-bost a'ch ffôn go iawn
+appmenuitem-services-relay-description = Agor dangosfwrdd e-bost enwarall
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Cael diogelwch dyfais gyfan
 appmenuitem-vpn-description = Diogelwch eich preifatrwydd ar-lein
+appmenu-services-header = Gwasanaethau
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Rhowch gynnig ar offer diogelu eraill gan Mozilla:
+appmenu-other-protection-header = Rhowch gynnig ar offer diogelu eraill gan { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Proffiliau eraill
+appmenu-manage-profiles =
+    .label = Rheoli proffiliau
+appmenu-copy-profile =
+    .label = Copïo'r proffil hwn
+appmenu-create-profile =
+    .label = Proffil newydd
+appmenu-edit-profile =
+    .aria-label = Golygu proffil
+appmenu-profiles-2 =
+    .label = Proffiliau

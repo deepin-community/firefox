@@ -10,9 +10,7 @@
 #include "AudibilityMonitor.h"
 #include "MediaEventSource.h"
 #include "MediaInfo.h"
-#include "MediaSegment.h"
 #include "MediaSink.h"
-
 #include "mozilla/AbstractThread.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MozPromise.h"
@@ -36,13 +34,13 @@ class MediaQueue;
 
 class DecodedStream : public MediaSink {
  public:
-  DecodedStream(MediaDecoderStateMachine* aStateMachine,
+  DecodedStream(AbstractThread* aOwnerThread,
                 nsMainThreadPtrHandle<SharedDummyTrack> aDummyTrack,
                 CopyableTArray<RefPtr<ProcessedMediaTrack>> aOutputTracks,
+                AbstractCanonical<PrincipalHandle>* aCanonicalOutputPrincipal,
                 double aVolume, double aPlaybackRate, bool aPreservesPitch,
                 MediaQueue<AudioData>& aAudioQueue,
-                MediaQueue<VideoData>& aVideoQueue,
-                RefPtr<AudioDeviceInfo> aAudioDevice);
+                MediaQueue<VideoData>& aVideoQueue);
 
   RefPtr<EndedPromise> OnEnded(TrackType aType) override;
   media::TimeUnit GetEndTime(TrackType aType) const override;

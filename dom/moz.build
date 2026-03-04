@@ -8,8 +8,6 @@
 with Files("**"):
     BUG_COMPONENT = ("Core", "DOM: Core & HTML")
 
-JAR_MANIFESTS += ["jar.mn"]
-
 interfaces = [
     "base",
     "events",
@@ -36,10 +34,14 @@ DIRS += [
     "webgpu",
     "chrome-webidl",
     "clients",
+    "closewatcher",
     "commandhandler",
+    "compression",
+    "cookiestore",
     "credentialmanagement",
     "crypto",
     "debugger",
+    "documentpip",
     "encoding",
     "events",
     "fetch",
@@ -52,9 +54,11 @@ DIRS += [
     "grid",
     "html",
     "jsurl",
+    "onnx",
     "mathml",
     "media",
     "midi",
+    "mls",
     "notification",
     "power",
     "push",
@@ -79,6 +83,7 @@ DIRS += [
     "smil",
     "streams",
     "url",
+    "urlpattern",
     "webauthn",
     "webidl",
     "webshare",

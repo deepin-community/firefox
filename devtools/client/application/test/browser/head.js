@@ -1,7 +1,6 @@
 /* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
-/* eslint-env browser */
 /* eslint no-unused-vars: [2, {"vars": "local"}] */
 
 "use strict";
@@ -24,8 +23,6 @@ async function enableServiceWorkerDebugging() {
   // SW debugging in multi-e10s.
   await pushPref("dom.ipc.processCount", 1);
 
-  // Enable service workers in the debugger
-  await pushPref("devtools.debugger.features.windowless-service-workers", true);
   // Disable randomly spawning processes during tests
   await pushPref("dom.ipc.processPrelaunch.enabled", false);
 
@@ -129,8 +126,9 @@ async function waitForWorkerRegistration(swTab) {
 function selectPage(panel, page) {
   /**
    * Select a page by simulating a user click in the sidebar.
+   *
    * @param {string} page The page we want to select (see `PAGE_TYPES`)
-   **/
+   */
   info(`Selecting application page: ${page}`);
   const doc = panel.panelWin.document;
   const navItem = doc.querySelector(`.js-sidebar-${page}`);

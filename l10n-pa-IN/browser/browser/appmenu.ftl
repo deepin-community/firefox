@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = ਡਾਊਨਲੋਡ
 appmenuitem-passwords =
     .label = ਪਾਸਵਰਡ
+appmenuitem-extensions-and-themes =
+    .label = ਇਕਸਟੈਨਸ਼ਨਾਂ ਅਤੇ ਥੀਮ
+appmenuitem-extensions =
+    .label = ਇਕਸਟੈਨਸ਼ਨਾਂ
 appmenuitem-addons-and-themes =
     .label = ਐਡ-ਆਨ ਅਤੇ ਥੀਮ
 appmenuitem-print =
@@ -48,10 +52,10 @@ appmenuitem-exit2 =
            *[other] ਬਾਹਰ
         }
 appmenu-menu-button-closed2 =
-    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਖੋਲ੍ਹੋ
+    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਨੂੰ ਖੋਲ੍ਹੋ
     .label = { -brand-short-name }
 appmenu-menu-button-opened2 =
-    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਬੰਦ ਕਰੋ
+    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਨੂੰ ਬੰਦ ਕਰੋ
     .label = { -brand-short-name }
 # Settings is now used to access the browser settings across all platforms,
 # instead of Options or Preferences.
@@ -75,7 +79,7 @@ appmenu-remote-tabs-turn-on-sync =
     .label = …ਸਿੰਕ ਚਾਲੂ ਕਰੋ
 # This is shown after the tabs list if we can display more tabs by clicking on the button
 appmenu-remote-tabs-showmore =
-    .label = ਹੋਰ ਟੈਬਾਂ ਵੇਖਾਓ
+    .label = ਹੋਰ ਟੈਬਾਂ ਨੂੰ ਵੇਖਾਓ
     .tooltiptext = ਇਸ ਡਿਵਾਈਸ ਤੋਂ ਹੋਰ ਟੈਬਾਂ ਨੂੰ ਵੇਖੋ
 # This is shown as the label for an element to show inactive tabs from this device.
 appmenu-remote-tabs-show-inactive-tabs =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = ਡਾਟਾ ਸਿੰਕ ਕਰੋ ਤੇ ਸ
 appmenu-fxa-signed-in-label = ਸਾਈਨ ਇਨ
 appmenu-fxa-setup-sync =
     .label = ਸਿੰਕ ਕਰਨਾ ਚਾਲੂ ਕਰੋ…
+appmenu-fxa-setup-sync-new = ਚਾਲੂ ਕਰੋ
 appmenuitem-save-page =
     .label = …ਸਫ਼ੇ ਨੂੰ ਇੰਝ ਸੰਭਾਲੋ
+appmenuitem-fxa-sync-off-title = ਸਿੰਕ ਬੰਦ ਹੈ
+appmenuitem-fxa-sync-off-description = ਆਪਣੇ ਬੁੱਕਮਾਰਕਾਂ, ਪਾਸਵਰਡਾਂ ਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਬਣਾਓ ਅਤੇ ਕਿਤੋਂ ਵੀ ਵਰਤੋਂ।
 
 ## What's New panel in App menu.
 
@@ -145,7 +152,7 @@ profiler-popup-settings =
     .value = ਸੈਟਿੰਗਾਂ
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
-    .label = …ਸੈਟਿੰਗਾਂ ਸੋਧੋ
+    .label = …ਸੈਟਿੰਗਾਂ ਨੂੰ ਸੋਧੋ
 profiler-popup-recording-screen = ਰਿਕਾਰਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…
 profiler-popup-start-recording-button =
     .label = ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਕਰੋ
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = ਪਰੋਫ਼ਾਇਲਰ ਪੈਨਲ ਨੂੰ ਖੋਲ੍ਹੋ
+    .tooltiptext = ਪਰੋਫ਼ਾਇਲਰ ਪੈਨਲ ਨੂੰ ਖੋਲ੍ਹੋ
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = { -brand-shorter-name } ਵਿੱਚ ਆਡੀਓ ਤੇ ਵੀਡੀਓ ਬੱਗਾਂ ਦੀ ਜਾਂਚ ਲਈ ਪਹਿਲਾਂ ਨਿਯਤ ਸਮੂਹ।
 profiler-popup-presets-media-label =
     .label = ਮੀਡਿਆ
+profiler-popup-presets-ml-description = { -brand-shorter-name } ਵਿੱਚ ਮਸ਼ੀਨੀ ਸਿਖਲਾਈ ਬੱਗ ਦੀ ਜਾਂਚ ਲਈ ਪ੍ਰੀਸੈੱਟ ਹੈ।
+profiler-popup-presets-ml-label =
+    .label = ਮਸ਼ੀਨ ਸਿਖਲਾਈ
 profiler-popup-presets-networking-description = { -brand-shorter-name } ਵਿੱਚ ਨੈੱਟਵਰਕਿੰਗ ਬੱਗਾਂ ਦੀ ਜਾਂਚ ਲਈ ਪਹਿਲਾਂ ਨਿਯਤ ਸਮੂਹ।
 profiler-popup-presets-networking-label =
     .label = ਨੈੱਟਵਰਕਿੰਗ
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = { -brand-shorter-name } ਵਿੱਚ ਡੀਬੱਗ ਕਰਨ ਲਈ ਮੌਜੂਦ। ਵੱਧ ਮੇਹਨਤ, ਕਾਰਗੁਜ਼ਾਰੀ ਵਾਲੇ ਕੰਮ ਲਈ ਨਾ ਵਰਤੋਂ, ਪਰ ਫੋਕਸ ਕਰਨ ਜਾਂ ਬਰਾਊਜ਼ਰ ਦੇ ਰਵੱਈਏ ਨੂੰ ਸਮਝਣ ਲਈ ਵਰਤੋਂ।
 profiler-popup-presets-debug-label =
     .label = ਡੀਬੱਗ
+profiler-popup-presets-web-compat-description = ਕਾਰਗੁਜ਼ਾਰੀ ਨੂੰ ਸੂਹ ਲੈਣ ਦੀ ਬਜਾਏ ਵੈੱਬਸਾਈਟਾਂ ਨਾਲ ਵੈੱਬ ਅਨੁਕੂਲਤਾ ਮਸਲਿਆਂ ਨੂੰ ਡੀਬੱਗ ਕਰਨ ਲਈ ਸਿਫ਼ਾਰਸ਼ੀ ਪ੍ਰੀਸੈੱਟ ਹੈ।
+profiler-popup-presets-web-compat-label =
+    .label = ਵੈੱਬ ਕੰਪੈਟ
 profiler-popup-presets-custom-label =
     .label = ਕਸਟਮ
 
@@ -277,5 +293,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = ਡਾਟਾ ਉਲੰਘਣਾਵਾਂ ਬਾਰੇ ਚੇਤਾਵਨੀਆਂ ਲਵੋ
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = ਆਪਣੇ ਅਸਲ ਈਮੇਲ ਅਤੇ ਫ਼ੋਨ ਨੂੰ ਲੁਕਾਓ
+appmenuitem-services-relay-description = ਈਮੇਲ ਮਾਸਕ ਡੈਸ਼ਬੋਰਡ ਨੂੰ ਚਲਾਓ
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = ਆਪਣੀ ਆਨਲਾਈਨ ਸਰਗਰਮੀ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰੋ
+appmenu-services-header = ਮੇਰੀਆਂ ਸੇਵਾਵਾਂ
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Mozilla ਦੇ ਹੋਰ ਸੁਰੱਖਿਆ ਟੂਲਾਂ ਨੂੰ ਅਜ਼ਮਾਓ:
+appmenu-other-protection-header = { -vendor-short-name } ਵਲੋਂ ਹੋਰ ਸੁਰੱਖਿਆ ਦੇਣ ਵਾਲੇ ਟੂਲਾਂ ਨੂੰ ਅਜ਼ਮਾਓ:
+
+## Profiles panel
+
+appmenu-other-profiles = ਹੋਰ ਪਰੋਫਾਇਲ
+appmenu-manage-profiles =
+    .label = ਪਰੋਫਾਇਲਾਂ ਦਾ ਬੰਦੋਬਸਤ ਕਰੋ
+appmenu-copy-profile =
+    .label = ਇਸ ਪਰੋਫ਼ਾਈਲ ਨੂੰ ਕਾਪੀ ਕਰੋ
+appmenu-create-profile =
+    .label = ਨਵਾਂ ਪਰੋਫਾਇਲ
+appmenu-edit-profile =
+    .aria-label = ਪਰੋਫਾਇਲ ਨੂੰ ਸੋਧੋ
+appmenu-profiles-2 =
+    .label = ਪਰੋਫਾਇਲ

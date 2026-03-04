@@ -8,10 +8,123 @@
 
 "use strict";
 
-add_task(async function test_preexisting_crlite_data() {
+const CHECK_AT_TIME = new Date("2020-01-01T00:00:00Z").getTime() / 1000;
+
+async function test_crlite_preexisting(ctMode) {
+  Services.prefs.setIntPref(
+    "security.pki.certificate_transparency.mode",
+    ctMode
+  );
+
+  let certdb = Cc["@mozilla.org/security/x509certdb;1"].getService(
+    Ci.nsIX509CertDB
+  );
+
+  let validCert = constructCertFromFile(
+    "test_crlite_filters/valid.example.com.pem"
+  );
+  await checkCertErrorGenericAtTime(
+    certdb,
+    validCert,
+    PRErrorCodeSuccess,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
+    CHECK_AT_TIME,
+    false,
+    "valid.example.com",
+    0
+  );
+
+  let revokedCert = constructCertFromFile(
+    "test_crlite_filters/revoked.example.com.pem"
+  );
+  await checkCertErrorGenericAtTime(
+    certdb,
+    revokedCert,
+    SEC_ERROR_REVOKED_CERTIFICATE,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
+    CHECK_AT_TIME,
+    false,
+    "revoked.example.com",
+    0
+  );
+
+  let revokedInDeltaCert = constructCertFromFile(
+    "test_crlite_filters/revoked-in-delta.example.com.pem"
+  );
+  await checkCertErrorGenericAtTime(
+    certdb,
+    revokedInDeltaCert,
+    SEC_ERROR_REVOKED_CERTIFICATE,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
+    CHECK_AT_TIME,
+    false,
+    "revoked-in-delta.example.com",
+    0
+  );
+
+  // This certificate has no embedded SCTs, but it should be considered revoked
+  // if the appropriate SCT is side-loaded.
+  let revokedNoSctCert = constructCertFromFile(
+    "test_crlite_filters/revoked-no-sct.example.com.pem"
+  );
+
+  let sctFile = do_get_file(
+    "test_crlite_filters/revoked-no-sct.example.com.sct",
+    false
+  );
+  let sctBytes = readBinaryFile(sctFile);
+  let sctList = new Uint8Array(2 + 2 + sctBytes.length);
+  sctList[0] = (2 + sctBytes.length) / 256;
+  sctList[1] = (2 + sctBytes.length) % 256;
+  sctList[2] = sctBytes.length / 256;
+  sctList[3] = sctBytes.length % 256;
+  sctList.set(sctBytes, 4);
+
+  await checkCertErrorGenericAtTime(
+    certdb,
+    revokedNoSctCert,
+    PRErrorCodeSuccess,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
+    CHECK_AT_TIME,
+    false,
+    "revoked-no-sct.example.com",
+    0,
+    [] // no side-loaded SCTs
+  );
+
+  await checkCertErrorGenericAtTime(
+    certdb,
+    revokedNoSctCert,
+    ctMode == CT_MODE_DISABLE
+      ? PRErrorCodeSuccess
+      : SEC_ERROR_REVOKED_CERTIFICATE,
+    Ci.nsIX509CertDB.verifyUsageTLSServer,
+    CHECK_AT_TIME,
+    false,
+    "revoked-no-sct.example.com",
+    0,
+    sctList
+  );
+}
+
+add_task(async function () {
   Services.prefs.setIntPref(
     "security.pki.crlite_mode",
     CRLiteModeEnforcePrefValue
+  );
+
+  let securityStateDirectory = do_get_profile();
+  securityStateDirectory.append("security_state");
+
+  // For simplicity, re-use the filters from test_crlite_filters.js.
+  do_get_file("test_crlite_filters/20200101-0-filter").copyTo(
+    securityStateDirectory,
+    "crlite.filter"
+  );
+
+  do_get_file("test_crlite_filters/20200101-1-filter.delta").copyTo(
+    securityStateDirectory,
+    "20201017-1-filter.delta"
   );
 
   let certStorage = Cc["@mozilla.org/security/certstorage;1"].getService(
@@ -21,188 +134,28 @@ add_task(async function test_preexisting_crlite_data() {
   let certdb = Cc["@mozilla.org/security/x509certdb;1"].getService(
     Ci.nsIX509CertDB
   );
-  // These need to be available to be able to find them during path building
-  // for certificate verification.
-  let issuerCert = constructCertFromFile("test_crlite_filters/issuer.pem");
+
+  // These need to be available for path building.
+  let ca = addCertFromFile(certdb, "test_crlite_filters/ca.pem", "C,C,");
+  ok(ca, "ca certificate should decode successfully");
+
+  let issuerCert = constructCertFromFile("test_crlite_filters/int.pem");
   ok(issuerCert, "issuer certificate should decode successfully");
-  let noSCTCertIssuer = constructCertFromFile(
-    "test_crlite_filters/no-sct-issuer.pem"
-  );
-  ok(
-    noSCTCertIssuer,
-    "issuer certificate for certificate without SCTs should decode successfully"
-  );
 
-  let validCert = constructCertFromFile("test_crlite_filters/valid.pem");
-  let revokedCert = constructCertFromFile("test_crlite_filters/revoked.pem");
-
-  // We didn't load a data.bin file, so the filter is not considered fresh and
-  // we should get a "no filter" result. We later test that CRLite considers
-  // this cert to be revoked. So success here shows that CRLite is not
-  // consulted when the filter is stale.
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "us-datarecovery.com",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
-
-  // Add an empty stash to ensure the filter is considered to be fresh.
+  // Mark CRLite filter as fresh
   await new Promise(resolve => {
-    certStorage.addCRLiteStash(new Uint8Array([]), (rv, _) => {
+    certStorage.testNoteCRLiteUpdateTime((rv, _) => {
       Assert.equal(rv, Cr.NS_OK, "marked filter as fresh");
       resolve();
     });
   });
 
-  // NB: by not specifying Ci.nsIX509CertDB.FLAG_LOCAL_ONLY, this tests that
-  // the implementation does not fall back to OCSP fetching, because if it
-  // did, the implementation would attempt to connect to a server outside the
-  // test infrastructure, which would result in a crash in the test
-  // environment, which would be treated as a test failure.
-  await checkCertErrorGenericAtTime(
-    certdb,
-    validCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "vpn.worldofspeed.org",
-    0
-  );
+  info(`testing with CT disabled`);
+  await test_crlite_preexisting(CT_MODE_DISABLE);
 
-  // NB: by not specifying Ci.nsIX509CertDB.FLAG_LOCAL_ONLY, this tests that
-  // the implementation does not fall back to OCSP fetching, because if it
-  // did, the implementation would attempt to connect to a server outside the
-  // test infrastructure, which would result in a crash in the test
-  // environment, which would be treated as a test failure.
-  await checkCertErrorGenericAtTime(
-    certdb,
-    validCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "vpn.worldofspeed.org",
-    0
-  );
+  info(`testing with CT in telemetry only mode`);
+  await test_crlite_preexisting(CT_MODE_COLLECT_TELEMETRY);
 
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedCert,
-    SEC_ERROR_REVOKED_CERTIFICATE,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "us-datarecovery.com",
-    0
-  );
-
-  let revokedInStashCert = constructCertFromFile(
-    "test_crlite_filters/revoked-in-stash.pem"
-  );
-  // The stash may not have loaded yet, so await a task that ensures the stash
-  // loading task has completed.
-  await new Promise(resolve => {
-    certStorage.hasPriorData(
-      Ci.nsICertStorage.DATA_TYPE_CRLITE_FILTER_INCREMENTAL,
-      (rv, _) => {
-        Assert.equal(rv, Cr.NS_OK, "hasPriorData should succeed");
-        resolve();
-      }
-    );
-  });
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedInStashCert,
-    SEC_ERROR_REVOKED_CERTIFICATE,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "stokedmoto.com",
-    0
-  );
-
-  let revokedInStash2Cert = constructCertFromFile(
-    "test_crlite_filters/revoked-in-stash-2.pem"
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    revokedInStash2Cert,
-    SEC_ERROR_REVOKED_CERTIFICATE,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "icsreps.com",
-    0
-  );
-
-  // This certificate has no embedded SCTs, so it is not guaranteed to be in
-  // CT, so CRLite can't be guaranteed to give the correct answer, so it is
-  // not consulted, and the implementation falls back to OCSP. Since the real
-  // OCSP responder can't be reached, this results in a
-  // SEC_ERROR_OCSP_SERVER_ERROR.
-  let noSCTCert = constructCertFromFile("test_crlite_filters/no-sct.pem");
-  // NB: this will cause an OCSP request to be sent to localhost:80, but
-  // since an OCSP responder shouldn't be running on that port, this should
-  // fail safely.
-  Services.prefs.setCharPref("network.dns.localDomains", "ocsp.digicert.com");
-  Services.prefs.setBoolPref("security.OCSP.require", true);
-  Services.prefs.setIntPref("security.OCSP.enabled", 1);
-  await checkCertErrorGenericAtTime(
-    certdb,
-    noSCTCert,
-    SEC_ERROR_OCSP_SERVER_ERROR,
-    certificateUsageSSLServer,
-    new Date("2020-10-20T00:00:00Z").getTime() / 1000,
-    false,
-    "mail233.messagelabs.com",
-    0
-  );
-  Services.prefs.clearUserPref("network.dns.localDomains");
-  Services.prefs.clearUserPref("security.OCSP.require");
-  Services.prefs.clearUserPref("security.OCSP.enabled");
-
-  let notCoveredCert = constructCertFromFile(
-    "test_crlite_filters/notcovered.pem"
-  );
-  await checkCertErrorGenericAtTime(
-    certdb,
-    notCoveredCert,
-    PRErrorCodeSuccess,
-    certificateUsageSSLServer,
-    new Date("2022-01-07T00:00:00Z").getTime() / 1000,
-    false,
-    "peekaboophonics.com",
-    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
-  );
+  info(`testing with CT enabled`);
+  await test_crlite_preexisting(CT_MODE_ENFORCE);
 });
-
-function run_test() {
-  let securityStateDirectory = do_get_profile();
-  securityStateDirectory.append("security_state");
-  // For simplicity, re-use the filter from test_crlite_filters.js.
-  let crilteFile = do_get_file("test_crlite_filters/20201017-0-filter");
-  crilteFile.copyTo(securityStateDirectory, "crlite.filter");
-  // This stash file and the following cert storage file were obtained by
-  // running just the task `test_crlite_filters_and_check_revocation` in
-  // test_crlite_filters.js, causing it to hang (by adding something like
-  // `add_test(() => {});`), and then copying the files from the temporary
-  // profile directory.
-  let stashFile = do_get_file("test_crlite_preexisting/crlite.stash");
-  stashFile.copyTo(securityStateDirectory, "crlite.stash");
-  let coverageFile = do_get_file("test_crlite_preexisting/crlite.coverage");
-  coverageFile.copyTo(securityStateDirectory, "crlite.coverage");
-  let enrollmentFile = do_get_file("test_crlite_preexisting/crlite.enrollment");
-  enrollmentFile.copyTo(securityStateDirectory, "crlite.enrollment");
-  let certStorageFile = do_get_file(
-    "test_crlite_preexisting/crlite.enrollment"
-  );
-  certStorageFile.copyTo(securityStateDirectory, "crlite.enrollment");
-
-  run_next_test();
-}

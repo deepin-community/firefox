@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "gfxCoreTextShaper.h"
 #include "gfxMacFont.h"
 #include "gfxFontUtils.h"
@@ -39,7 +38,7 @@ CFDictionaryRef gfxCoreTextShaper::CreateAttrDict(bool aRightToLeft) {
   CFTypeRef attrs[] = {kCTFontAttributeName, kCTWritingDirectionAttributeName};
   CFTypeRef values[] = {mCTFont[0], dirArray};
   CFDictionaryRef attrDict = ::CFDictionaryCreate(
-      kCFAllocatorDefault, attrs, values, ArrayLength(attrs),
+      kCFAllocatorDefault, attrs, values, std::size(attrs),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
   ::CFRelease(dirArray);
   return attrDict;
@@ -571,7 +570,7 @@ CTFontDescriptorRef gfxCoreTextShaper::CreateFontFeaturesDescriptor(
     CFTypeRef values[] = {type, selector};
     featureSettings[i] = ::CFDictionaryCreate(
         kCFAllocatorDefault, (const void**)keys, (const void**)values,
-        ArrayLength(keys), &kCFTypeDictionaryKeyCallBacks,
+        std::size(keys), &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks);
 
     ::CFRelease(selector);
@@ -580,7 +579,7 @@ CTFontDescriptorRef gfxCoreTextShaper::CreateFontFeaturesDescriptor(
 
   CFArrayRef featuresArray =
       ::CFArrayCreate(kCFAllocatorDefault, (const void**)featureSettings,
-                      aCount,  // not ArrayLength(featureSettings), as we
+                      aCount,  // not std::size(featureSettings), as we
                                // may not have used all the allocated slots
                       &kCFTypeArrayCallBacks);
 
@@ -592,7 +591,7 @@ CTFontDescriptorRef gfxCoreTextShaper::CreateFontFeaturesDescriptor(
   const CFTypeRef attrValues[] = {featuresArray};
   CFDictionaryRef attributesDict = ::CFDictionaryCreate(
       kCFAllocatorDefault, (const void**)attrKeys, (const void**)attrValues,
-      ArrayLength(attrKeys), &kCFTypeDictionaryKeyCallBacks,
+      std::size(attrKeys), &kCFTypeDictionaryKeyCallBacks,
       &kCFTypeDictionaryValueCallBacks);
   ::CFRelease(featuresArray);
 

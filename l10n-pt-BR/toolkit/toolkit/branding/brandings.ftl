@@ -31,6 +31,9 @@
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
 -fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-mdn-brand-name = MDN Web Docs
+-yelp-brand-name = Yelp
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
@@ -40,7 +43,7 @@
 -firefox-suggest-brand-name = Sugestões Firefox
 # ”Home" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
--firefox-home-brand-name = Tela inicial do Firefox
+-firefox-home-brand-name = Página inicial do Firefox
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxview-brand-name = Firefox View

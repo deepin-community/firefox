@@ -14,7 +14,9 @@
   type,
   stage,
   io,
-  use_struct
+  use_struct,
+  enable
+
 
 
 
@@ -24,8 +26,8 @@
 }) {
   let code = '';
 
-  if (attribute.includes('subgroup')) {
-    code += 'enable subgroups;\n';
+  if (enable) {
+    code += `enable ${enable};\n`;
   }
 
   if (use_struct) {

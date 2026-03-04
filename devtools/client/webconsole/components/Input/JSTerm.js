@@ -7,6 +7,11 @@
 const { debounce } = require("resource://devtools/shared/debounce.js");
 const isMacOS = Services.appinfo.OS === "Darwin";
 
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  getFocusableElements: "resource://devtools/client/shared/focus.mjs",
+});
+
 loader.lazyRequireGetter(this, "Debugger", "Debugger");
 loader.lazyRequireGetter(
   this,
@@ -37,12 +42,6 @@ loader.lazyRequireGetter(
 );
 loader.lazyRequireGetter(
   this,
-  "getFocusableElements",
-  "resource://devtools/client/shared/focus.js",
-  true
-);
-loader.lazyRequireGetter(
-  this,
   "l10n",
   "resource://devtools/client/webconsole/utils/messages.js",
   true
@@ -63,7 +62,7 @@ loader.lazyRequireGetter(
 const {
   Component,
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const {
   connect,
@@ -131,7 +130,6 @@ class JSTerm extends Component {
       editorPrettifiedAt: PropTypes.number,
       showEditorOnboarding: PropTypes.bool,
       autocomplete: PropTypes.bool,
-      showEvaluationContextSelector: PropTypes.bool,
       autocompletePopupPosition: PropTypes.string,
       inputEnabled: PropTypes.bool,
     };
@@ -173,6 +171,7 @@ class JSTerm extends Component {
 
     /**
      * Last input value.
+     *
      * @type string
      */
     this.lastInputValue = "";
@@ -522,24 +521,42 @@ class JSTerm extends Component {
       cm.on("paste", (_, event) => this.props.onPaste(event));
       cm.on("drop", (_, event) => this.props.onPaste(event));
 
-      this.node.addEventListener("keydown", event => {
-        if (event.keyCode === KeyCodes.DOM_VK_ESCAPE) {
-          if (this.autocompletePopup.isOpen) {
-            this.clearCompletion();
-            event.preventDefault();
-            event.stopPropagation();
-          }
-
+      this.#abortController = new AbortController();
+      const signal = this.#abortController.signal;
+      doc.addEventListener(
+        "visibilitychange",
+        () => {
           if (
-            this.props.autocompleteData &&
-            this.props.autocompleteData.getterPath
+            doc.visibilityState == "hidden" &&
+            this.autocompletePopup.isOpen
           ) {
-            this.props.autocompleteClear();
-            event.preventDefault();
-            event.stopPropagation();
+            this.autocompletePopup.hidePopup();
           }
-        }
-      });
+        },
+        { signal }
+      );
+      this.node.addEventListener(
+        "keydown",
+        event => {
+          if (event.keyCode === KeyCodes.DOM_VK_ESCAPE) {
+            if (this.autocompletePopup.isOpen) {
+              this.clearCompletion();
+              event.preventDefault();
+              event.stopPropagation();
+            }
+
+            if (
+              this.props.autocompleteData &&
+              this.props.autocompleteData.getterPath
+            ) {
+              this.props.autocompleteClear();
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          }
+        },
+        { signal }
+      );
 
       this.resizeObserver = new ResizeObserver(() => {
         // If we don't have the node reference, or if the node isn't connected
@@ -572,10 +589,13 @@ class JSTerm extends Component {
     );
   }
 
+  // AbortController to cancel all event listener on destroy.
+  #abortController = null;
+
   /**
    * Do all the imperative work needed after a Redux store update.
    *
-   * @param {Object} nextProps: props passed from shouldComponentUpdate.
+   * @param {object} nextProps: props passed from shouldComponentUpdate.
    */
   imperativeUpdate(nextProps) {
     if (!nextProps) {
@@ -634,7 +654,7 @@ class JSTerm extends Component {
 
   /**
    *
-   * @param {Number|null} editorWidth: The width to set the node to. If null, removes any
+   * @param {number | null} editorWidth: The width to set the node to. If null, removes any
    *                                   `width` property on node style.
    */
   setEditorWidth(editorWidth) {
@@ -666,9 +686,9 @@ class JSTerm extends Component {
       // We only want to get visible focusable element, and for that we can assert that
       // the offsetParent isn't null. We can do that because we don't have fixed position
       // element in the console.
-      const items = getFocusableElements(el).filter(
-        ({ offsetParent }) => offsetParent !== null
-      );
+      const items = lazy
+        .getFocusableElements(el)
+        .filter(({ offsetParent }) => offsetParent !== null);
       const inputIndex = items.indexOf(inputField);
 
       if (items.length === 0 || (inputIndex > -1 && items.length === 1)) {
@@ -745,6 +765,7 @@ class JSTerm extends Component {
 
   /**
    * Gets the value from the input field
+   *
    * @returns string
    */
   _getValue() {
@@ -890,7 +911,7 @@ class JSTerm extends Component {
    * Fired after a key is handled through a key map.
    *
    * @param {CodeMirror} cm: codeMirror instance
-   * @param {String} key: The key that was handled
+   * @param {string} key: The key that was handled
    */
   _onEditorKeyHandled(cm, key) {
     // The autocloseBracket addon handle closing brackets keys when they're typed, but
@@ -1050,7 +1071,7 @@ class JSTerm extends Component {
    * Takes the data returned by the server and update the autocomplete popup state (i.e.
    * its visibility and items).
    *
-   * @param {Object} data
+   * @param {object} data
    *        The autocompletion data as returned by the webconsole actor's autocomplete
    *        service. Should be of the following shape:
    *        {
@@ -1197,6 +1218,7 @@ class JSTerm extends Component {
   /**
    * Clear the current completion information, cancel any pending autocompletion update
    * and close the autocomplete popup, if needed.
+   *
    * @fires autocomplete-updated
    */
   clearCompletion() {
@@ -1268,7 +1290,7 @@ class JSTerm extends Component {
    * current completion text. This is more than the current input + the completion text,
    * as there are special cases for element access and case-insensitive matches.
    *
-   * @return {Object}: An object of the following shape:
+   * @return {object}: An object of the following shape:
    *         - {String} expression: The complete expression
    *         - {String} completionText: the completion text only, which should be used
    *                    with the next property
@@ -1453,7 +1475,7 @@ class JSTerm extends Component {
    * Calculates and returns the width of a single character of the input box.
    * This will be used in opening the popup at the correct offset.
    *
-   * @returns {Number|null}: Width off the "x" char, or null if the input does not exist.
+   * @returns {number | null}: Width off the "x" char, or null if the input does not exist.
    */
   _getInputCharWidth() {
     return this.editor ? this.editor.defaultCharWidth() : null;
@@ -1471,6 +1493,11 @@ class JSTerm extends Component {
     if (this.autocompletePopup) {
       this.autocompletePopup.destroy();
       this.autocompletePopup = null;
+    }
+
+    if (this.#abortController) {
+      this.#abortController.abort();
+      this.#abortController = null;
     }
 
     if (this.editor) {
@@ -1499,7 +1526,7 @@ class JSTerm extends Component {
   }
 
   renderEvaluationContextSelector() {
-    if (this.props.editorMode || !this.props.showEvaluationContextSelector) {
+    if (this.props.editorMode) {
       return null;
     }
 
@@ -1579,7 +1606,6 @@ function mapStateToProps(state) {
     getValueFromHistory: direction => getHistoryValue(state, direction),
     autocompleteData: getAutocompleteState(state),
     showEditorOnboarding: state.ui.showEditorOnboarding,
-    showEvaluationContextSelector: state.ui.showEvaluationContextSelector,
     autocompletePopupPosition: state.prefs.eagerEvaluation ? "top" : "bottom",
     editorPrettifiedAt: state.ui.editorPrettifiedAt,
   };

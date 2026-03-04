@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Desa l'enllaç al { -pocket-brand-name }
     .accesskey = k
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Copia l'adreça electrònica
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Copia l'enllaç
     .accesskey = l
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Copia l'enllaç sense seguiment del lloc
-    .accesskey = u
+main-context-menu-preview-link =
+    .label = Previsualitza l'enllaç
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Copia l’enllaç net
+    .accesskey = l
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Visualitza la descripció
     .accesskey = d
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Cerca la imatge amb { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Anomena i desa el vídeo…
     .accesskey = v
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Envia l'àudio per correu…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Envia al dispositiu
+    .accesskey = n
 main-context-menu-save-to-pocket =
     .label = Desa la pàgina al { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Envia la pàgina al dispositiu
     .accesskey = d
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Utilitza un inici de sessió desat
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Afegeix una paraula clau per a aquesta cerca…
     .accesskey = p
+main-context-menu-add-engine =
+    .label = Afegeix un motor de cerca
+    .accesskey = m
 main-context-menu-link-send-to-device =
     .label = Envia l'enllaç al dispositiu
     .accesskey = d
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Mostra la contrasenya
     .accesskey = M
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nou

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2020, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -14,7 +14,7 @@
 #include <string>
 #include <tuple>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
@@ -35,9 +35,9 @@ using ::testing::ValuesIn;
 namespace {
 const int kNumIterations = 10000;
 
-typedef uint64_t (*SSI16Func)(const int16_t *src, int src_stride, int width,
-                              int height, int *sum);
-typedef libaom_test::FuncParam<SSI16Func> TestFuncs;
+using SSI16Func = uint64_t (*)(const int16_t *src, int src_stride, int width,
+                               int height, int *sum);
+using TestFuncs = libaom_test::FuncParam<SSI16Func>;
 
 class SumSSETest : public ::testing::TestWithParam<TestFuncs> {
  public:

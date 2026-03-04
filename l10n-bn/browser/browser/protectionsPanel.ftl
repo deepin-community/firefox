@@ -6,10 +6,6 @@ protections-panel-sendreportview-error = রিপোর্টি পাঠা�
 # A link shown when ETP is disabled for a site. Opens the breakage report subview when clicked.
 protections-panel-sitefixedsendreport-label = সাইট ঠিক হয়েছে? রিপোর্ট পাঠাও
 
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
 ##
 
 # The text a screen reader speaks when focused on the info button.
@@ -17,12 +13,6 @@ protections-panel-etp-more-info =
     .aria-label = উন্নত ট্র্যাকিং সুরক্ষা সম্পর্কে আরও তথ্য
 protections-panel-etp-on-header = উন্নত ট্র্যাকিং সুরক্ষা এই সাইটের জন্য চালু আছে
 protections-panel-etp-off-header = উন্নত ট্র্যাকিং সুরক্ষা এই সাইটের জন্য বন্ধ আছে
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = সাইট কাজ করছে না?
 # The heading/title of the sub-panel view
@@ -88,7 +78,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = একটি অচল সাইট রিপোর্ট করুন
 protections-panel-content-blocking-breakage-report-view-description = নির্দিষ্ট কিছু ট্র্যাকার ব্লক করলে কিছু ওয়েবসাইটে সমস্যা হতে পারে। এই সমস্যা রিপোর্ট করা { -brand-short-name } কে সবার জন্য আরও ভাল করতে সহায়তা করে। এই রিপোর্ট পাঠানোর মাধ্যমে একটি URL এবং Mozilla তে আপনার ব্রাউজার সেটিংস সম্পর্কিত তথ্য প্রেরণ করবে। <label data-l10n-name="learn-more">আরও জানুন</label>
-protections-panel-content-blocking-breakage-report-view-description2 = নির্দিষ্ট কিছু ট্র্যাকার ব্লক করলে কিছু ওয়েবসাইটে সমস্যা হতে পারে। এই সমস্যা রিপোর্ট করা { -brand-short-name } কে সবার জন্য আরও ভাল করতে সহায়তা করে। এই রিপোর্ট পাঠানোর মাধ্যমে একটি URL এবং { -vendor-short-name } তে আপনার ব্রাউজার সেটিংস সম্পর্কিত তথ্য প্রেরণ করবে।
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

@@ -140,7 +140,6 @@
   margin-right: -33px;
   margin-left: 5px;
   padding: 0;
-
 }
 .network-monitor .headers-panel-container .accordion .properties-view tr.treeRow .treeValueCell {
   display: inline;
@@ -177,8 +176,8 @@
 .network-monitor .tabpanel-summary-label {
   display: inline-block;
   padding-inline-end: 3px;
-  min-width: 90px;
-  color: var(--theme-icon-dimmed-color);
+  min-width: 150px;
+  color: var(--theme-text-color-alt);
 }
 
 .network-monitor .tabpanel-summary-value {
@@ -187,21 +186,13 @@
   unicode-bidi: plaintext;
 }
 
-.network-monitor .tabpanel-summary-value  strong {
+.network-monitor .tabpanel-summary-value strong {
   margin-right: 3px;
 }
 
-.theme-dark .network-monitor .tabpanel-summary-value {
-  color: var(--theme-selection-color);
-}
-
 .network-monitor .tracking-protection {
-  color: var(--theme-icon-dimmed-color);
+  color: var(--theme-text-color-alt);
   max-width: 200px;
-}
-
-.network-monitor .tracking-protection .learn-more-link:not(:hover)::before {
-  color: var(--theme-icon-dimmed-color);
 }
 
 .network-monitor .headers-summary-label,

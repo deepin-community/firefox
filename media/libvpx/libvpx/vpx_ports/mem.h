@@ -14,7 +14,7 @@
 #include "vpx_config.h"
 #include "vpx/vpx_integer.h"
 
-#if (defined(__GNUC__) && __GNUC__) || defined(__SUNPRO_C)
+#if defined(__GNUC__) || defined(__SUNPRO_C)
 #define DECLARE_ALIGNED(n, typ, val) typ val __attribute__((aligned(n)))
 #elif defined(_MSC_VER)
 #define DECLARE_ALIGNED(n, typ, val) __declspec(align(n)) typ val
@@ -34,8 +34,8 @@
 #endif
 
 /* Shift down with rounding */
-#define ROUND_POWER_OF_TWO(value, n) (((value) + (1 << ((n)-1))) >> (n))
-#define ROUND64_POWER_OF_TWO(value, n) (((value) + (1ULL << ((n)-1))) >> (n))
+#define ROUND_POWER_OF_TWO(value, n) (((value) + (1 << ((n) - 1))) >> (n))
+#define ROUND64_POWER_OF_TWO(value, n) (((value) + (1ULL << ((n) - 1))) >> (n))
 
 #define ALIGN_POWER_OF_TWO(value, n) \
   (((value) + ((1 << (n)) - 1)) & ~((1 << (n)) - 1))

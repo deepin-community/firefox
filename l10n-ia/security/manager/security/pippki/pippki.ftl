@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Vider
 download-cert-view-text = Examinar le certificato de CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,19 +82,24 @@ client-auth-cert-details-issued-by = Emittite per: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Immagazinate sur: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Memorisar iste decision
+client-auth-cert-remember-label = Memorar iste decision:
+client-auth-cert-remember-never =
+    .label = Un vice
+client-auth-cert-remember-always =
+    .label = Permanentemente
+client-auth-cert-remember-temporarily =
+    .label = Pro iste session
 
 ## Set password (p12) dialog
 
 set-password-window =
-    .title = Elige un contrasigno de salveguarda de certificato
-set-password-message = Le contrasigno de salveguarda del certificato que tu ha definite hic protege le file de salveguarda que tu es a crear.  Tu debe definir iste contrasigno pro proceder con le salveguarda.
+    .title = Elige un contrasigno pro le copia de securitate del certificato
+set-password-message = Le contrasigno pro le copia de securitate del certificato que tu defini hic protege le file de copia de securitate que tu es sur le puncto de crear. Tu debe definir iste contrasigno pro continuar con le copia de securitate.
 set-password-backup-pw =
-    .value = Contrasigno de salveguarda del certificato:
+    .value = Contrasigno del copia de securitate del certificato:
 set-password-repeat-backup-pw =
-    .value = Contrasigno de salveguarda del certificato (novemente):
-set-password-reminder = Importante: Si tu oblida le contrasigno de tu copia de reserva del certificato, tu non potera restaurar iste copia de reserva plus tarde. Per favor guarda lo in un loco secur.
+    .value = Contrasigno del copia de securitate del certificato (novemente):
+set-password-reminder = Importante: Si tu oblida le contrasigno de tu copia de securitate del certificato, tu non potera restaurar iste copia de securitate plus tarde. Per favor guarda lo in un loco secur.
 
 ## Protected authentication alert
 

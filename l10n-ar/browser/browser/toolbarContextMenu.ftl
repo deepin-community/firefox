@@ -34,6 +34,12 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] أعِد فتح الألسنة المغلقة
         }
     .accesskey = ع
+toolbar-context-turn-on-vertical-tabs =
+    .label = فعِّل الألسنة العمودية
+toolbar-context-turn-off-vertical-tabs =
+    .label = عطّل الألسنة العمودية
+toolbar-context-customize-sidebar =
+    .label = تخصيص الشريط الجانبي
 toolbar-context-menu-manage-extension =
     .label = أدِر الامتداد
     .accesskey = د
@@ -58,6 +64,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
 toolbar-context-menu-always-open-downloads-panel =
     .label = إظهار اللوحة عند بدء التنزيل
     .accesskey = ع
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = أظهر دائمًا في شريط الأدوات
+    .accesskey = ه
 toolbar-context-menu-remove-from-toolbar =
     .label = احذف من شريط الأدوات
     .accesskey = ح

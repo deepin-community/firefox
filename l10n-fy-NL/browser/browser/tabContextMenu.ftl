@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nij ljepblêd
     .accesskey = i
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Ljepblêden oan de linkerkant slute
     .accesskey = i
+close-tabs-to-the-start-vertical =
+    .label = Boppesteande ljepblêden slute
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Ljepblêden oan de rjochterkant slute
     .accesskey = j
+close-tabs-to-the-end-vertical =
+    .label = Understeande ljepblêden slute
+    .accesskey = U
 close-other-tabs =
     .label = Oare ljepblêden slute
     .accesskey = O
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Ferpleatse nei nij finster
     .accesskey = f
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Ferpleatse nei { $profileName }
 tab-context-close-multiple-tabs =
     .label = Mear ljepblêden slute
     .accesskey = M
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Diele
     .accesskey = e
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nij ljepblêd rjochts
+    .accesskey = j
+tab-context-new-tab-open-vertical =
+    .label = Nij ljepblêd hjirûnder
+    .accesskey = j
+tab-context-new-group =
+    .label = Nije groep
+    .accesskey = g
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -106,6 +130,15 @@ tab-context-move-tabs =
            *[other] Ljepblêden ferpleatse
         }
     .accesskey = f
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Nei apparaat ferstjoere
+            [one] { $tabCount } ljepblêd nei apparaat ferstjoere
+           *[other] { $tabCount } ljepblêden nei apparaat ferstjoere
+        }
+    .accesskey = s
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -113,3 +146,11 @@ tab-context-send-tabs-to-device =
            *[other] { $tabCount } ljepblêden nei apparaat ferstjoere
         }
     .accesskey = s
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Ljepblêd ûntlade
+            [one] { $tabCount } ljepblêd ûntlade
+           *[other] { $tabCount } ljepblêden ûntlade
+        }
+    .accesskey = l

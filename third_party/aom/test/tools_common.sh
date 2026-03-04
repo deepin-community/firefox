@@ -1,5 +1,5 @@
 #!/bin/sh
-## Copyright (c) 2016, Alliance for Open Media. All rights reserved
+## Copyright (c) 2016, Alliance for Open Media. All rights reserved.
 ##
 ## This source code is subject to the terms of the BSD 2 Clause License and
 ## the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -17,6 +17,7 @@ AOM_TEST_TOOLS_COMMON_SH=included
 set -e
 devnull='> /dev/null 2>&1'
 AOM_TEST_PREFIX=""
+TOOLS_COMMON_DIR=$(cd "$(dirname "$0")"; pwd)
 
 elog() {
   echo "$@" 1>&2
@@ -90,8 +91,7 @@ cmake_version() {
 # version used by the cmake build when git is unavailable.
 source_version() {
   if git --version > /dev/null 2>&1; then
-    (cd "$(dirname "${0}")"
-    git describe)
+    git -C "${TOOLS_COMMON_DIR}" describe
   else
     cmake_version
   fi
@@ -481,6 +481,7 @@ AV1_IVF_FILE="${AV1_IVF_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.ivf}"
 AV1_OBU_ANNEXB_FILE="${AV1_OBU_ANNEXB_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.annexb.obu}"
 AV1_OBU_SEC5_FILE="${AV1_OBU_SEC5_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.section5.obu}"
 AV1_WEBM_FILE="${AV1_WEBM_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.webm}"
+AV1_RAW_FILE="${AV1_WEBM_FILE:-${AOM_TEST_OUTPUT_DIR}/av1.rawfile}"
 
 YUV_RAW_INPUT="${LIBAOM_TEST_DATA_PATH}/hantro_collage_w352h288.yuv"
 YUV_RAW_INPUT_WIDTH=352

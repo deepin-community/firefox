@@ -5,9 +5,11 @@
 package org.mozilla.fenix.experiments
 
 import android.content.Context
+import mozilla.appservices.remotesettings.RemoteSettingsService
 import mozilla.components.service.nimbus.NimbusApi
 import mozilla.components.service.nimbus.NimbusAppInfo
 import mozilla.components.service.nimbus.NimbusBuilder
+import mozilla.components.service.nimbus.NimbusServerSettings
 import mozilla.components.service.nimbus.messaging.FxNimbusMessaging
 import mozilla.components.service.nimbus.messaging.NimbusSystem
 import mozilla.components.support.base.log.logger.Logger
@@ -34,13 +36,33 @@ private val logger = Logger("service/Nimbus")
 /**
  * Create the Nimbus singleton object for the Fenix app.
  */
-fun createNimbus(context: Context, urlString: String?): NimbusApi {
+fun createNimbus(
+    context: Context,
+    urlString: String?,
+    remoteSettingsService: RemoteSettingsService?,
+): NimbusApi {
     // These values can be used in the JEXL expressions when targeting experiments.
     val customTargetingAttributes = CustomAttributeProvider.getCustomTargetingAttributes(context)
 
     val isAppFirstRun = context.settings().isFirstNimbusRun
     if (isAppFirstRun) {
         context.settings().isFirstNimbusRun = false
+    }
+
+    val recordedNimbusContext = RecordedNimbusContext.create(
+        context = context,
+        isFirstRun = isAppFirstRun,
+    )
+
+    val serverSettings: NimbusServerSettings? = remoteSettingsService?.let { service ->
+        NimbusServerSettings(
+            remoteSettingsService = service,
+            collection = if (context.settings().nimbusUsePreview) {
+                "nimbus-preview"
+            } else {
+                "nimbus-mobile-experiments"
+            },
+        )
     }
 
     // The name "fenix" here corresponds to the app_name defined for the family of apps
@@ -63,17 +85,14 @@ fun createNimbus(context: Context, urlString: String?): NimbusApi {
         errorReporter = context::reportError
         initialExperiments = R.raw.initial_experiments
         timeoutLoadingExperiment = TIME_OUT_LOADING_EXPERIMENT_FROM_DISK_MS
-        usePreviewCollection = context.settings().nimbusUsePreview
         sharedPreferences = context.settings().preferences
         isFirstRun = isAppFirstRun
         featureManifest = FxNimbus
         onFetchCallback = {
             context.settings().nimbusExperimentsFetched = true
         }
-        recordedContext = RecordedNimbusContext(
-            isFirstRun = isAppFirstRun,
-        )
-    }.build(appInfo).also { nimbusApi ->
+        recordedContext = recordedNimbusContext
+    }.build(appInfo, serverSettings).also { nimbusApi ->
         nimbusApi.recordIsReady(FxNimbus.features.nimbusIsReady.value().eventCount)
     }
 }

@@ -148,6 +148,3 @@ perftools-presets-power-label = بجلی
 perftools-presets-power-description = گھٹ اوور ہیڈ دے نال { -brand-shorter-name } وِچ پاور استعمال بگز دی چھان بین کیتے پری سیٹ۔
 perftools-presets-debug-label = ڈیبگ
 perftools-presets-custom-label = مخصوص
-
-##
-

@@ -2,7 +2,7 @@
  * http://creativecommons.org/publicdomain/zero/1.0/ */
 
 async function testSidebarKeyToggle(key, options, expectedSidebarId) {
-  EventUtils.synthesizeMouseAtCenter(gURLBar.textbox, {});
+  EventUtils.synthesizeMouseAtCenter(gURLBar, {});
   let promiseShown = BrowserTestUtils.waitForEvent(window, "SidebarShown");
   EventUtils.synthesizeKey(key, options);
   await promiseShown;
@@ -28,7 +28,7 @@ add_task(async function test_sidebar_in_customize_mode() {
   // the sidebar button widget doesn't appear checked, and that the sidebar
   // button toggle is inert while in customize mode.
   let { CustomizableUI } = ChromeUtils.importESModule(
-    "resource:///modules/CustomizableUI.sys.mjs"
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
   );
   registerCleanupFunction(() => SidebarController.hide());
 
@@ -43,6 +43,10 @@ add_task(async function test_sidebar_in_customize_mode() {
     registerCleanupFunction(function () {
       CustomizableUI.removeWidgetFromArea("sidebar-button");
     });
+  }
+
+  if (Services.prefs.getBoolPref("sidebar.revamp", false)) {
+    Services.prefs.setBoolPref("sidebar.verticalTabs", true);
   }
 
   let widgetIcon = CustomizableUI.getWidget("sidebar-button")
@@ -104,9 +108,15 @@ add_task(async function test_sidebar_in_customize_mode() {
 
   await SidebarController.toggle();
   ok(!SidebarController.isOpen, "Sidebar is closed");
-  Assert.equal(
-    getBGAlpha(),
-    0,
-    "Sidebar widget background should appear unchecked"
-  );
+  if (!Services.prefs.getBoolPref("sidebar.revamp", false)) {
+    Assert.equal(
+      getBGAlpha(),
+      0,
+      "Sidebar widget background should appear unchecked"
+    );
+  }
+
+  if (Services.prefs.getBoolPref("sidebar.verticalTabs", false)) {
+    Services.prefs.clearUserPref("sidebar.verticalTabs");
+  }
 });

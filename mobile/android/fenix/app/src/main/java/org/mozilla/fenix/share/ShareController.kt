@@ -17,6 +17,7 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.VisibleForTesting
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -82,10 +83,12 @@ interface ShareController {
  * @param sendTabUseCases Instance of [SendTabUseCases] which allows sending tabs to account devices.
  * @param saveToPdfUseCase Instance of [SessionUseCases.SaveToPdfUseCase] to generate a PDF of a given tab.
  * @param printUseCase Instance of [SessionUseCases.PrintContentUseCase] to print content of a given tab.
+ * @param sentFromFirefoxManager Instance of [SentFromFirefoxManager] to facilitate "Sent from" nimbus experiment.
  * @param navController [NavController] used for navigation.
  * @param recentAppsStorage Instance of [RecentAppsStorage] for storing and retrieving the most recent apps.
  * @param viewLifecycleScope [CoroutineScope] used for retrieving the most recent apps in the background.
- * @param dispatcher Dispatcher used to execute suspending functions.
+ * @param mainDispatcher Dispatcher for executing tasks on the Main thread.
+ * @param ioDispatcher Dispatcher for executing I/O-bound tasks, like updating local storage.
  * @param fxaEntrypoint The entrypoint if we need to authenticate, it will be reported in telemetry.
  * @param dismiss Callback signalling sharing can be closed.
  */
@@ -98,10 +101,12 @@ class DefaultShareController(
     private val sendTabUseCases: SendTabUseCases,
     private val saveToPdfUseCase: SessionUseCases.SaveToPdfUseCase,
     private val printUseCase: SessionUseCases.PrintContentUseCase,
+    private val sentFromFirefoxManager: SentFromFirefoxManager,
     private val navController: NavController,
     private val recentAppsStorage: RecentAppsStorage,
     private val viewLifecycleScope: CoroutineScope,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val fxaEntrypoint: FxAEntryPoint = FenixFxAEntryPoint.ShareMenu,
     private val dismiss: (ShareController.Result) -> Unit,
 ) : ShareController {
@@ -119,7 +124,12 @@ class DefaultShareController(
     }
 
     override fun handleShareToApp(app: AppShareOption) {
-        Events.shareToApp.record(getShareToAppSafeExtra(app.packageName))
+        Events.shareToApp.record(
+            getShareToAppSafeExtra(
+                appPackage = app.packageName,
+                sentFromFirefoxEnabled = sentFromFirefoxManager.featureEnabled,
+            ),
+        )
         if (app.packageName == ACTION_COPY_LINK_TO_CLIPBOARD) {
             copyClipboard()
             dismiss(ShareController.Result.SUCCESS)
@@ -127,12 +137,16 @@ class DefaultShareController(
             return
         }
 
-        viewLifecycleScope.launch(dispatcher) {
+        viewLifecycleScope.launch(ioDispatcher) {
             recentAppsStorage.updateRecentApp(app.activityName)
         }
 
         val intent = Intent(ACTION_SEND).apply {
-            putExtra(EXTRA_TEXT, getShareText())
+            val sharedText = sentFromFirefoxManager.maybeAppendShareText(
+                packageName = app.packageName,
+                shareText = getShareText(),
+            )
+            putExtra(EXTRA_TEXT, sharedText)
             putExtra(EXTRA_SUBJECT, getShareSubject())
             type = "text/plain"
             flags = FLAG_ACTIVITY_NEW_DOCUMENT + FLAG_ACTIVITY_MULTIPLE_TASK
@@ -206,7 +220,7 @@ class DefaultShareController(
         shareOperation: () -> Deferred<Boolean>,
     ) {
         // Use GlobalScope to allow the continuation of this method even if the share fragment is closed.
-        GlobalScope.launch(Dispatchers.Main) {
+        GlobalScope.launch(mainDispatcher) {
             val result = if (shareOperation.invoke().await()) {
                 showSuccess(destination)
                 ShareController.Result.SUCCESS
@@ -243,7 +257,8 @@ class DefaultShareController(
     @VisibleForTesting
     fun getShareText() = shareData.joinToString("\n\n") { data ->
         val url = data.url.orEmpty()
-        if (url.isExtensionUrl()) {
+        val text = data.text.orEmpty()
+        val shareUrl = if (url.isExtensionUrl()) {
             // Sharing moz-extension:// URLs is not practical in general, as
             // they will only work on the current device.
 
@@ -252,10 +267,11 @@ class DefaultShareController(
             // now and needs a clean fix once we have a reader specific protocol
             // e.g. ext+reader://
             // https://github.com/mozilla-mobile/android-components/issues/2879
-            Uri.parse(url).getQueryParameter("url") ?: url
+            url.toUri().getQueryParameter("url") ?: url
         } else {
             url
         }
+        listOfNotNull(text, shareUrl).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
     @VisibleForTesting

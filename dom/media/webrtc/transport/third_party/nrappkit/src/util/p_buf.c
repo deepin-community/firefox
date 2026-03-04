@@ -40,16 +40,16 @@
 
 #include <string.h>
 #include <stddef.h>
-#include "nr_common.h"
+#include <sys/queue.h>
+#include <csi_platform.h>
+#include <r_log.h>
 #include "p_buf.h"
 
 
 static int nr_p_buf_destroy_chain(nr_p_buf_head *head);
 static int nr_p_buf_destroy(nr_p_buf *buf);
 
-int nr_p_buf_ctx_create(size,ctxp)
-  int size;
-  nr_p_buf_ctx **ctxp;
+int nr_p_buf_ctx_create(int size, nr_p_buf_ctx **ctxp)
   {
     int _status;
     nr_p_buf_ctx *ctx=0;
@@ -69,8 +69,7 @@ int nr_p_buf_ctx_create(size,ctxp)
     return(_status);
   }
 
-int nr_p_buf_ctx_destroy(ctxp)
-  nr_p_buf_ctx **ctxp;
+int nr_p_buf_ctx_destroy(nr_p_buf_ctx **ctxp)
   {
     nr_p_buf_ctx *ctx = 0;
 
@@ -87,9 +86,7 @@ int nr_p_buf_ctx_destroy(ctxp)
     return(0);
   }
 
-int nr_p_buf_alloc(ctx,bufp)
-  nr_p_buf_ctx *ctx;
-  nr_p_buf **bufp;
+int nr_p_buf_alloc(nr_p_buf_ctx *ctx, nr_p_buf **bufp)
   {
     int _status;
     nr_p_buf *buf=0;
@@ -120,18 +117,14 @@ int nr_p_buf_alloc(ctx,bufp)
     return(_status);
   }
 
-int nr_p_buf_free(ctx,buf)
-  nr_p_buf_ctx *ctx;
-  nr_p_buf *buf;
+int nr_p_buf_free(nr_p_buf_ctx *ctx, nr_p_buf *buf)
   {
     STAILQ_INSERT_TAIL(&ctx->free_list,buf,entry);
 
     return(0);
   }
 
-int nr_p_buf_free_chain(ctx,head)
-  nr_p_buf_ctx *ctx;
-  nr_p_buf_head *head;
+int nr_p_buf_free_chain(nr_p_buf_ctx *ctx, nr_p_buf_head *head)
   {
     nr_p_buf *n1 = 0, *n2 = 0;
 
@@ -147,12 +140,12 @@ int nr_p_buf_free_chain(ctx,head)
     return(0);
   }
 
-
-int nr_p_buf_write_to_chain(ctx,chain,data,len)
-  nr_p_buf_ctx *ctx;
-  nr_p_buf_head *chain;
-  UCHAR *data;
-  UINT4 len;
+int nr_p_buf_write_to_chain(
+  nr_p_buf_ctx *ctx,
+  nr_p_buf_head *chain,
+  UCHAR *data,
+  UINT4 len
+  )
   {
     int r,_status;
     nr_p_buf *buf = 0;
@@ -183,8 +176,7 @@ int nr_p_buf_write_to_chain(ctx,chain,data,len)
     return(_status);
   }
 
-static int nr_p_buf_destroy_chain(head)
-  nr_p_buf_head *head;
+static int nr_p_buf_destroy_chain(nr_p_buf_head *head)
   {
     nr_p_buf *n1 = 0, *n2 = 0;
 
@@ -200,8 +192,7 @@ static int nr_p_buf_destroy_chain(head)
     return(0);
   }
 
-static int nr_p_buf_destroy(buf)
-  nr_p_buf *buf;
+static int nr_p_buf_destroy(nr_p_buf *buf)
   {
     if(!buf)
       return(0);
@@ -211,5 +202,3 @@ static int nr_p_buf_destroy(buf)
 
     return(0);
   }
-
-

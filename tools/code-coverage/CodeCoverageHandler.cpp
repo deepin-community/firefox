@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <stdio.h>
 #ifdef XP_WIN
 #  include <process.h>
 #  define getpid _getpid
@@ -73,8 +72,8 @@ void CodeCoverageHandler::FlushCounters(const bool initialized) {
 
   nsCOMPtr<nsIFile> file;
 
-  nsresult rv = NS_NewNativeLocalFile(nsDependentCString(outDir), false,
-                                      getter_AddRefs(file));
+  nsresult rv =
+      NS_NewNativeLocalFile(nsDependentCString(outDir), getter_AddRefs(file));
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 
   rv = file->AppendNative(

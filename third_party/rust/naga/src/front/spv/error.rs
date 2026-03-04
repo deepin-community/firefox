@@ -1,9 +1,18 @@
-use super::ModuleState;
-use crate::{arena::Handle, front::atomic_upgrade};
+use alloc::{
+    format,
+    string::{String, ToString},
+};
+
 use codespan_reporting::diagnostic::Diagnostic;
 use codespan_reporting::files::SimpleFile;
 use codespan_reporting::term;
-use termcolor::{NoColor, WriteColor};
+
+use super::ModuleState;
+use crate::{
+    arena::Handle,
+    error::{replace_control_chars, ErrorWrite},
+    front::atomic_upgrade,
+};
 
 #[derive(Clone, Debug, thiserror::Error)]
 pub enum Error {
@@ -47,7 +56,13 @@ pub enum Error {
     UnsupportedBinaryOperator(spirv::Word),
     #[error("Naga supports OpTypeRuntimeArray in the StorageBuffer storage class only")]
     UnsupportedRuntimeArrayStorageClass,
-    #[error("unsupported matrix stride {stride} for a {columns}x{rows} matrix with scalar width={width}")]
+    #[error(
+        "unsupported matrix stride {} for a {}x{} matrix with scalar width={}",
+        stride,
+        columns,
+        rows,
+        width
+    )]
     UnsupportedMatrixStride {
         stride: u32,
         columns: u8,
@@ -92,6 +107,8 @@ pub enum Error {
     InvalidGlobalVar(crate::Expression),
     #[error("invalid image/sampler expression {0:?}")]
     InvalidImageExpression(crate::Expression),
+    #[error("image write without format is not currently supported. See https://github.com/gfx-rs/wgpu/issues/6797")]
+    InvalidImageWriteType,
     #[error("invalid image base type {0:?}")]
     InvalidImageBaseType(Handle<crate::Type>),
     #[error("invalid image {0:?}")]
@@ -140,13 +157,13 @@ pub enum Error {
 }
 
 impl Error {
-    pub fn emit_to_writer(&self, writer: &mut impl WriteColor, source: &str) {
+    pub fn emit_to_writer(&self, writer: &mut impl ErrorWrite, source: &str) {
         self.emit_to_writer_with_path(writer, source, "glsl");
     }
 
-    pub fn emit_to_writer_with_path(&self, writer: &mut impl WriteColor, source: &str, path: &str) {
+    pub fn emit_to_writer_with_path(&self, writer: &mut impl ErrorWrite, source: &str, path: &str) {
         let path = path.to_string();
-        let files = SimpleFile::new(path, source);
+        let files = SimpleFile::new(path, replace_control_chars(source));
         let config = term::Config::default();
         let diagnostic = Diagnostic::error().with_message(format!("{self:?}"));
 
@@ -154,8 +171,14 @@ impl Error {
     }
 
     pub fn emit_to_string(&self, source: &str) -> String {
-        let mut writer = NoColor::new(Vec::new());
-        self.emit_to_writer(&mut writer, source);
-        String::from_utf8(writer.into_inner()).unwrap()
+        let mut writer = crate::error::DiagnosticBuffer::new();
+        self.emit_to_writer(writer.inner_mut(), source);
+        writer.into_string()
+    }
+}
+
+impl From<atomic_upgrade::Error> for Error {
+    fn from(source: atomic_upgrade::Error) -> Self {
+        Error::AtomicUpgradeError(source)
     }
 }

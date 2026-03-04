@@ -47,6 +47,7 @@ async function negotiateLangPackForLanguageMismatch() {
 
   /**
    * Figure out a langpack to recommend.
+   *
    * @type {LangPack | null}
    */
   const langPack =
@@ -163,6 +164,7 @@ const mockable = {
 
   /**
    * Use the AddonManager to install an addon from the URL.
+   *
    * @param {LangPack} langPack
    */
   async installLangPack(langPack) {
@@ -375,9 +377,8 @@ async function getAvailableLocales() {
   // for lastFallbackLocale for it to be useful.
   if (defaultLocale != lastFallbackLocale) {
     let lastFallbackId = `langpack-${lastFallbackLocale}@firefox.mozilla.org`;
-    let lastFallbackInstalled = await lazy.AddonManager.getAddonByID(
-      lastFallbackId
-    );
+    let lastFallbackInstalled =
+      await lazy.AddonManager.getAddonByID(lastFallbackId);
     if (!lastFallbackInstalled) {
       return availableLocales.filter(locale => locale != lastFallbackLocale);
     }

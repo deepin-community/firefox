@@ -8,7 +8,6 @@
 #define _nsXULAppAPI_h__
 
 #include "js/TypeDecls.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/ProcessType.h"
 #include "mozilla/TimeStamp.h"
 #include "nscore.h"
@@ -21,6 +20,7 @@ class JSString;
 class MessageLoop;
 class nsIDirectoryServiceProvider;
 class nsIFile;
+class nsISerialEventTarget;
 class nsISupports;
 struct JSContext;
 struct XREChildData;
@@ -233,37 +233,13 @@ nsresult XRE_GetBinaryPath(nsIFile** aResult);
  *
  * NS_EXTENSION_LOCATION excludes binary XPCOM components but allows other
  * manifest instructions.
- *
- * NS_SKIN_LOCATION specifies a location to search for chrome manifest files
- * which are only allowed to register skin packages.
  */
 enum NSLocationType {
   NS_APP_LOCATION,
   NS_EXTENSION_LOCATION,
-  NS_SKIN_LOCATION,
-  NS_BOOTSTRAPPED_LOCATION
 };
 
 nsresult XRE_AddManifestLocation(NSLocationType aType, nsIFile* aLocation);
-
-/**
- * Register XPCOM components found in a JAR.
- * This is similar to XRE_AddManifestLocation except the file specified
- * must be a zip archive with a manifest named chrome.manifest
- * This method may be called at any time before or after XRE_main or
- * XRE_InitEmbedding.
- *
- * @param aFiles An array of files or directories.
- * @param aFileCount the number of items in the aFiles array.
- * @note appdir/components is registered automatically.
- *
- * NS_COMPONENT_LOCATION specifies a location to search for binary XPCOM
- * components as well as component/chrome manifest files.
- *
- * NS_SKIN_LOCATION specifies a location to search for chrome manifest files
- * which are only allowed to register skin packages.
- */
-nsresult XRE_AddJarManifestLocation(NSLocationType aType, nsIFile* aLocation);
 
 /**
  * Parse an INI file (application.ini or override.ini) into an existing
@@ -278,14 +254,7 @@ const char* XRE_GeckoProcessTypeToString(GeckoProcessType aProcessType);
 const char* XRE_ChildProcessTypeToAnnotation(GeckoProcessType aProcessType);
 
 #if defined(MOZ_WIDGET_ANDROID)
-struct XRE_AndroidChildFds {
-  int mPrefsFd;
-  int mPrefMapFd;
-  int mIpcFd;
-  int mCrashFd;
-};
-
-void XRE_SetAndroidChildFds(JNIEnv* env, const XRE_AndroidChildFds& fds);
+void XRE_SetAndroidChildFds(JNIEnv* env, jintArray fds);
 #endif  // defined(MOZ_WIDGET_ANDROID)
 
 nsresult XRE_InitChildProcess(int aArgc, char* aArgv[],
@@ -347,7 +316,7 @@ nsresult XRE_DeinitCommandLine();
 
 void XRE_ShutdownChildProcess();
 
-MessageLoop* XRE_GetIOMessageLoop();
+nsISerialEventTarget* XRE_GetAsyncIOEventTarget();
 
 bool XRE_SendTestShellCommand(JSContext* aCx, JSString* aCommand,
                               JS::Value* aCallback);
@@ -355,8 +324,6 @@ bool XRE_ShutdownTestShell();
 
 void XRE_InstallX11ErrorHandler();
 void XRE_CleanupX11ErrorHandler();
-
-void XRE_TelemetryAccumulate(int aID, uint32_t aSample);
 
 void XRE_StartupTimelineRecord(int aEvent, mozilla::TimeStamp aWhen);
 

@@ -7,60 +7,60 @@
 
 autofill-manage-addresses-title = Kanonge ma ki gwoko
 autofill-manage-addresses-list-header = Kanonge
-
 autofill-manage-credit-cards-title = Kad me bank ma ki gwoko
 autofill-manage-credit-cards-list-header = Kad me bank
-
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Kwany
 autofill-manage-add-button = Med…
 autofill-manage-edit-button = Yub…
 
-##
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Med kanonge manyen
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Yub kanonge
-
 autofill-address-given-name = Nying Muno
 autofill-address-additional-name = Nying Mukene
 autofill-address-family-name = Nying Kwon
 autofill-address-organization = Dul
 autofill-address-street = Kanonge me yoo gudo
 
-## address-level-3 (Sublocality) names
-
-
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Boma
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = But lobo
 autofill-address-state = District
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
+# Postal code field.
 autofill-address-zip = Kod me ZIP
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Med kanonge manyen
 autofill-address-country = Lobo onyo But lobo
 autofill-address-tel = Cim
 autofill-address-email = Email
-
 autofill-cancel-button = Juki
 autofill-save-button = Gwoki
 autofill-country-warning-message = Pongo pwom pire kene kombedi tye pi lobo mogo keken.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Med kad me bank manyen
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Yub kad me bank
-
 autofill-card-number = Namba me kad
 autofill-card-invalid-number = Tim ber iket namba kad matye atir
 autofill-card-name-on-card = Nying ma i kad

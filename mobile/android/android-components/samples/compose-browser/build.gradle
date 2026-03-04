@@ -2,16 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+plugins {
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+}
+
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 
 android {
+    compileSdk { version = release(config.compileSdkMajorVersion) { minorApiLevel = config.compileSdkMinorVersion } }
+
     defaultConfig {
         applicationId "org.mozilla.samples.compose.browser"
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
+        minSdk config.minSdkVersion
+        targetSdk config.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -22,20 +27,16 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
     buildFeatures {
-        compose true
+        compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = Versions.compose_compiler
-    }
-
-    namespace 'org.mozilla.samples.compose.browser'
+    namespace = 'org.mozilla.samples.compose.browser'
 }
 
 tasks.register("updateBorderifyExtensionVersion", Copy) { task ->
@@ -47,39 +48,37 @@ tasks.register("updateTestExtensionVersion", Copy) { task ->
 }
 
 dependencies {
-    implementation platform(ComponentsDependencies.androidx_compose_bom)
-    implementation project(':concept-engine')
-    implementation project(':concept-awesomebar')
-    implementation project(':concept-tabstray')
+    implementation project(':components:browser-engine-gecko')
+    implementation project(':components:browser-icons')
+    implementation project(':components:browser-state')
+    implementation project(':components:compose-awesomebar')
+    implementation project(':components:compose-base')
+    implementation project(':components:compose-browser-toolbar')
+    implementation project(':components:compose-engine')
+    implementation project(':components:compose-tabstray')
+    implementation project(':components:concept-awesomebar')
+    implementation project(':components:concept-engine')
+    implementation project(':components:concept-tabstray')
+    implementation project(':components:feature-awesomebar')
+    implementation project(':components:feature-fxsuggest')
+    implementation project(':components:feature-search')
+    implementation project(':components:feature-session')
+    implementation project(':components:feature-tabs')
+    implementation project(':components:service-location')
+    implementation project(':components:support-appservices')
+    implementation project(':components:support-ktx')
+    implementation project(':components:support-remotesettings')
+    implementation project(':components:ui-icons')
 
-    implementation project(':browser-engine-gecko')
-    implementation project(':browser-state')
-    implementation project(':browser-icons')
-
-    implementation project(':compose-awesomebar')
-    implementation project(':compose-browser-toolbar')
-    implementation project(':compose-engine')
-    implementation project(':compose-tabstray')
-
-    implementation project(':feature-awesomebar')
-    implementation project(':feature-fxsuggest')
-    implementation project(':feature-search')
-    implementation project(':feature-session')
-    implementation project(':feature-tabs')
-
-    implementation project(':service-location')
-    implementation project(':support-rusthttp')
-
-    implementation project(':ui-icons')
-
-    implementation ComponentsDependencies.androidx_activity
-    implementation ComponentsDependencies.androidx_appcompat
-    implementation ComponentsDependencies.androidx_core_ktx
-    implementation ComponentsDependencies.androidx_compose_ui
-    implementation ComponentsDependencies.androidx_compose_ui_tooling
-    implementation ComponentsDependencies.androidx_compose_foundation
-    implementation ComponentsDependencies.androidx_compose_material
-    implementation ComponentsDependencies.androidx_compose_navigation
+    implementation libs.androidx.activity
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.core.ktx
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.compose.foundation
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.ui.tooling
+    implementation libs.androidx.navigation.compose
 }
 
 preBuild.dependsOn updateBorderifyExtensionVersion

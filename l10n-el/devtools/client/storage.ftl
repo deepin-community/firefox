@@ -71,6 +71,7 @@ storage-table-headers-cookies-expires = Λήξη/Μέγιστος χρόνος
 storage-table-headers-cookies-size = Μέγεθος
 storage-table-headers-cookies-last-accessed = Τελευταία πρόσβαση
 storage-table-headers-cookies-creation-time = Δημιουργήθηκε
+storage-table-headers-cookies-update-time = Ενημέρωση
 storage-table-headers-cache-status = Κατάσταση
 storage-table-headers-extension-storage-area = Περιοχή αποθήκευσης
 
@@ -107,3 +108,11 @@ storage-idb-delete-blocked = Η βάση δεδομένων «{ $dbName }» θα
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = Δεν ήταν δυνατή η διαγραφή της βάσης δεδομένων «{ $dbName }».
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = Δεν ήταν δυνατή η δημιουργία του cookie: «{ $errorString }».
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = Δεν ήταν δυνατή η ενημέρωση του cookie: «{ $errorString }».

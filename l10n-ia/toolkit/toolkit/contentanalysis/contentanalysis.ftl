@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Scansion in curso
 contentanalysis-slow-agent-dialog-body-file = { $agent } recense “{ $filename }” contra le politicas del datos de tu organisation. Isto pote prender un momento.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } verifica le conformitate de “{ $filename }” e { $count } altere elemento con le politicas de datos de tu organisation. Isto pote prender un momento.
+       *[other] { $agent } verifica le conformitate de “{ $filename }” e { $count } altere elementos con le politicas de datos de tu organisation. Isto pote prender un momento.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } recense lo que tu collava contra le politicas del datos de tu organisation. Isto pote prender un momento.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = area de transferentia
 contentanalysis-operationtype-dropped-text = texto deponite
 contentanalysis-operationtype-print = imprimer
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = cargamento de “{ $filename }”
+contentanalysis-upload-description = incargamento de “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = discargamento de “{ $filename }”
 contentanalysis-warndialogtitle = Iste contento pote esser non secur
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +51,6 @@ contentanalysis-genericresponse-message = Le analyse de contento respondeva con 
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Tu organisation usa un software de prevention de perdita de datos que ha blocate iste contento: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Un error occurreva communicante con le software de prevention del perdita de datos. Transferentia denegate pro le ressource: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Un error occurreva communicante con  { $agent }. Transferentia denegate pro ressource: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Connexion a { $agent } impossibile. Transferentia denegate pro ressource: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Verification de firma pro { $agent } fallite. Transferentia denegate pro le ressource: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,16 +69,24 @@ contentanalysis-error-message-upload-file = Cargamento de “{ $filename }” re
 contentanalysis-error-message-dropped-text = Traher e deponer refusate.
 contentanalysis-error-message-clipboard = Collar refusate.
 contentanalysis-error-message-print = Imprimer refusate.
-contentanalysis-block-dialog-title-upload-file = Tu non ha permisso de cargar iste file
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Le connexion a { $agent } ha expirate. { $contentName } ha essite blocate.
+contentanalysis-block-dialog-title-upload-file = Tu non ha le permission de incargar iste file
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
-contentanalysis-block-dialog-body-upload-file = Sub le politicas de protection de datos de tu organisation, tu non ha le permisso de cargar le file  “{ $filename }”. Contacta tu administrator pro altere informationes.
-contentanalysis-block-dialog-title-clipboard = Tu non ha permisso de collar iste contento
-contentanalysis-block-dialog-body-clipboard = Sub le politicas de protection de datos de tu organisation, tu non ha le permisso de collar iste contento. Contacta tu administrator pro altere informationes.
-contentanalysis-block-dialog-title-dropped-text = Tu non ha permisso de deponer iste contento
-contentanalysis-block-dialog-body-dropped-text = Sub le politicas de protection de datos de tu organisation, tu non ha le permisso de traher e deponer iste contento. Contacta tu administrator pro altere informationes.
-contentanalysis-block-dialog-title-print = Tu non ha permisso de imprimer iste documento
-contentanalysis-block-dialog-body-print = Sub le politicas de protection de datos de tu organisation, tu non ha le permisso de imprimer iste documento. Contacta tu administrator pro altere informationes.
+contentanalysis-block-dialog-body-upload-file = Sub le politicas de protection de datos de tu organisation, tu non ha le permission de incargar le file  “{ $filename }”. Contacta tu administrator pro plus informationes.
+contentanalysis-block-dialog-title-download-file = Tu non ha le permission de discargar iste file
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Sub le politicas de protection de datos de tu organisation, tu non ha le permission de discargar le file  “{ $filename }”. Contacta tu administrator pro plus informationes.
+contentanalysis-block-dialog-title-clipboard = Tu non ha le permission de collar iste contento
+contentanalysis-block-dialog-body-clipboard = Sub le politicas de protection de datos de tu organisation, tu non ha le permission de collar iste contento. Contacta tu administrator pro plus informationes.
+contentanalysis-block-dialog-title-dropped-text = Tu non ha le permission de deponer iste contento
+contentanalysis-block-dialog-body-dropped-text = Sub le politicas de protection de datos de tu organisation, tu non ha le permission de traher e deponer iste contento. Contacta tu administrator pro plus informationes.
+contentanalysis-block-dialog-title-print = Tu non ha le permission de imprimer iste documento
+contentanalysis-block-dialog-body-print = Sub le politicas de protection de datos de tu organisation, tu non ha le permission de imprimer iste documento. Contacta tu administrator pro plus informationes.
 contentanalysis-inprogress-quit-title = Quitar { -brand-shorter-name }?
 contentanalysis-inprogress-quit-message = Plure actiones es in curso. Si tu quita { -brand-shorter-name }, iste actiones non sera completate.
 contentanalysis-inprogress-quit-yesbutton = Si, quitar

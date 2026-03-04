@@ -90,7 +90,10 @@ export function showSourceTreeItemContextMenu(
         id: "node-menu-overrides",
         label: L10N.getStr(`overridesContextItem.${overrideStr}`),
         accesskey: L10N.getStr(`overridesContextItem.${overrideStr}.accesskey`),
-        disabled: false,
+        // Network overrides are disabled for original files.
+        disabled: source.isOriginal,
+        // Network overrides are disabled for remote debugging (bug 1881441).
+        visible: panel.toolbox.commands.descriptorFront.isLocalTab,
         click: () =>
           handleLocalOverride(dispatch, panel.toolbox, source, isOverridden),
       };
@@ -121,7 +124,13 @@ export function showSourceTreeItemContextMenu(
           accesskey: setDirectoryRootKey,
           disabled: false,
           click: () =>
-            dispatch(setProjectDirectoryRoot(item.uniquePath, itemName)),
+            dispatch(
+              setProjectDirectoryRoot(
+                item.uniquePath,
+                itemName,
+                getItemProjectDirectoryRootName(item)
+              )
+            ),
         });
       }
 
@@ -130,6 +139,29 @@ export function showSourceTreeItemContextMenu(
 
     showMenu(event, menuOptions);
   };
+}
+
+/**
+ * Compute the string which will be displayed as tooltip on the project directory root header
+ */
+function getItemProjectDirectoryRootName(item) {
+  if (item.thread) {
+    return item.thread.name;
+  }
+
+  // Go up the source tree to get to the group item
+  let groupItem = item;
+  while (!groupItem.groupName) {
+    groupItem = groupItem.parent;
+  }
+
+  // Group's origin is the base URL
+  const origin = groupItem.origin;
+  const path = item != groupItem ? item.path : "";
+  // The group item's parent is always a thread item
+  const threadName = groupItem.parent.thread.name;
+
+  return `${origin}${path} on ${threadName}`;
 }
 
 async function saveLocalFile(dispatch, source) {

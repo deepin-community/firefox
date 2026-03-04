@@ -15,23 +15,21 @@
 #ifndef mozilla_ServoStyleConstsForwards_h
 #  define mozilla_ServoStyleConstsForwards_h
 
-#  include "nsColor.h"
-#  include "nsCoord.h"
-#  include "mozilla/AtomArray.h"
-#  include "mozilla/IntegerRange.h"
-#  include "mozilla/Span.h"
+#  include <atomic>
+
+#  include "NonCustomCSSPropertyId.h"
 #  include "Units.h"
-#  include "mozilla/gfx/Types.h"
+#  include "mozilla/AtomArray.h"
 #  include "mozilla/CORSMode.h"
 #  include "mozilla/MemoryReporting.h"
-#  include "mozilla/ServoTypes.h"
 #  include "mozilla/ServoBindingTypes.h"
-#  include "mozilla/Vector.h"
-#  include "nsCSSPropertyID.h"
-#  include "nsCompatibility.h"
-#  include "nsIURI.h"
+#  include "mozilla/ServoTypes.h"
+#  include "mozilla/gfx/Types.h"
 #  include "mozilla/image/Resolution.h"
-#  include <atomic>
+#  include "nsColor.h"
+#  include "nsCompatibility.h"
+#  include "nsCoord.h"
+#  include "nsIURI.h"
 
 struct RawServoAnimationValueTable;
 
@@ -44,16 +42,23 @@ class nsPresContext;
 class nsSimpleContentList;
 class imgRequestProxy;
 struct nsCSSValueSharedList;
-
+struct AnchorPosResolutionParams;
+struct AnchorPosOffsetResolutionParams;
 class gfxFontFeatureValueSet;
-struct gfxFontFeature;
 struct GeckoFontMetrics;
 namespace mozilla {
+
+// Forward declaration for `StyleLengthPercentageUnion::AsCalc`, which
+// references the type below in the generated code.
+struct StyleCalcLengthPercentage;
+
 namespace gfx {
 struct FontVariation;
+struct FontFeature;
 }  // namespace gfx
 }  // namespace mozilla
-typedef mozilla::gfx::FontVariation gfxFontVariation;
+using gfxFontVariation = mozilla::gfx::FontVariation;
+using gfxFontFeature = mozilla::gfx::FontFeature;
 
 enum nsCSSUnit : uint32_t;
 enum nsChangeHint : uint32_t;
@@ -84,6 +89,7 @@ using ComputedKeyframeValues = nsTArray<PropertyStyleAnimationValuePair>;
 
 class ComputedStyle;
 enum class LogicalAxis : uint8_t;
+enum class PhysicalAxis : uint8_t;
 class SeenPtrs;
 class SharedFontList;
 class StyleSheet;
@@ -94,10 +100,10 @@ class StyleParserState;
 template <typename T>
 struct StyleForgottenArcSlicePtr;
 
-struct AnimatedPropertyID;
 struct AnimationPropertySegment;
 struct AspectRatio;
 struct ComputedTiming;
+struct CSSPropertyId;
 struct URLExtraData;
 
 enum HalfCorner : uint8_t;
@@ -105,6 +111,9 @@ enum class LogicalSide : uint8_t;
 enum class PseudoStyleType : uint8_t;
 enum class OriginFlags : uint8_t;
 enum class UseBoxSizing : uint8_t;
+
+template <typename L>
+union StyleGenericCalcNode;
 
 namespace css {
 class Loader;
@@ -120,13 +129,8 @@ enum class CallerType : uint32_t;
 
 class Element;
 class Document;
-class ImageTracker;
 
 }  // namespace dom
-
-namespace ipc {
-class ByteBuf;
-}  // namespace ipc
 
 // Replacement for a Rust Box<T> for a non-dynamically-sized-type.
 //
@@ -182,7 +186,6 @@ struct StyleBox {
 // Work-around weird cbindgen renaming / avoiding moving stuff outside its
 // namespace.
 
-using StyleImageTracker = dom::ImageTracker;
 using StyleLoader = css::Loader;
 using StyleLoaderReusableStyleSheets = css::LoaderReusableStyleSheets;
 using StyleCallerType = dom::CallerType;

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 
 from mozharness.base.script import PostScriptAction
 from mozharness.mozilla.testing.per_test_base import SingleTestMixin
@@ -25,7 +23,7 @@ class VerifyToolsMixin(SingleTestMixin):
     """Utility functions for test verification."""
 
     def __init__(self):
-        super(VerifyToolsMixin, self).__init__()
+        super().__init__()
 
     @property
     def verify_enabled(self):

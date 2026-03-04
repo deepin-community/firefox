@@ -20,6 +20,7 @@
 #include "jsfriendapi.h"
 #include "jsmath.h"
 
+#include "builtin/String.h"
 #include "frontend/CompilationStencil.h"
 #include "frontend/ParserAtom.h"  // frontend::WellKnownParserAtoms
 #include "gc/GC.h"
@@ -37,11 +38,13 @@
 #include "js/Wrapper.h"
 #include "js/WrapperCallbacks.h"
 #include "vm/DateTime.h"
+#include "vm/JSFunction.h"
 #include "vm/JSObject.h"
 #include "vm/JSScript.h"
 #include "vm/PromiseObject.h"  // js::PromiseObject
 #include "vm/SharedImmutableStringsCache.h"
 #include "vm/Warnings.h"  // js::WarnNumberUC
+#include "wasm/WasmPI.h"
 #include "wasm/WasmSignalHandlers.h"
 
 #include "debugger/DebugAPI-inl.h"
@@ -139,15 +142,16 @@ JSRuntime::JSRuntime(JSRuntime* parentRuntime)
       liveSABs(0),
       beforeWaitCallback(nullptr),
       afterWaitCallback(nullptr),
+      offthreadBaselineCompilationEnabled_(false),
       offthreadIonCompilationEnabled_(true),
-      parallelParsingEnabled_(true),
       autoWritableJitCodeActive_(false),
       oomCallback(nullptr),
       debuggerMallocSizeOf(ReturnZeroSize),
       stackFormat_(parentRuntime ? js::StackFormat::Default
                                  : js::StackFormat::SpiderMonkey),
       wasmInstances(mutexid::WasmRuntimeInstances),
-      moduleAsyncEvaluatingPostOrder(ASYNC_EVALUATING_POST_ORDER_INIT) {
+      moduleAsyncEvaluatingPostOrder(0),
+      pendingAsyncModuleEvaluations(0) {
   JS_COUNT_CTOR(JSRuntime);
   liveRuntimesCount++;
 
@@ -214,10 +218,6 @@ void JSRuntime::destroyRuntime() {
 
   watchtowerTestingLog.ref().reset();
 
-  // Caches might hold on ScriptData which are saved in the ScriptDataTable.
-  // Clear all stencils from caches to remove ScriptDataTable entries.
-  caches().purgeStencils();
-
   if (gc.wasInitialized()) {
     /*
      * Finish any in-progress GCs first.
@@ -231,12 +231,12 @@ void JSRuntime::destroyRuntime() {
     sourceHook = nullptr;
 
     /*
-     * Cancel any pending, in progress or completed Ion compilations and
-     * parse tasks. Waiting for wasm and compression tasks is done
+     * Cancel any pending, in progress or completed baseline/Ion compilations
+     * and parse tasks. Waiting for wasm and compression tasks is done
      * synchronously (on the main thread or during parse tasks), so no
      * explicit canceling is needed for these.
      */
-    CancelOffThreadIonCompile(this);
+    CancelOffThreadCompile(this);
     CancelOffThreadDelazify(this);
     CancelOffThreadCompressions(this);
 
@@ -292,6 +292,8 @@ void JSRuntime::setTelemetryCallback(
 
 void JSRuntime::setUseCounter(JSObject* obj, JSUseCounter counter) {
   if (useCounterCallback) {
+    // A use counter callback cannot GC.
+    JS::AutoSuppressGCAnalysis suppress;
     (*useCounterCallback)(obj, counter);
   }
 }
@@ -334,11 +336,6 @@ void JSRuntime::addSizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf,
   rtSizes->gc.nurseryMallocedBuffers +=
       gc.nursery().sizeOfMallocedBuffers(mallocSizeOf);
   gc.storeBuffer().addSizeOfExcludingThis(mallocSizeOf, &rtSizes->gc);
-
-  rtSizes->gc.nurseryMallocedBlockCache +=
-      gc.nursery().sizeOfMallocedBlockCache(mallocSizeOf);
-  rtSizes->gc.nurseryTrailerBlockSets +=
-      gc.nursery().sizeOfTrailerBlockSets(mallocSizeOf);
 
   if (isMainRuntime()) {
     rtSizes->sharedImmutableStringsCache +=
@@ -387,16 +384,37 @@ void JSRuntime::addSizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf,
       wasmInstances.lock()->sizeOfExcludingThis(mallocSizeOf);
 }
 
-static bool HandleInterrupt(JSContext* cx, bool invokeCallback) {
+static bool InvokeInterruptCallbacks(JSContext* cx) {
+  bool stop = false;
+  for (JSInterruptCallback cb : cx->interruptCallbacks()) {
+    if (!cb(cx)) {
+      stop = true;
+    }
+  }
+  return stop;
+}
+
+static bool HandleInterrupt(JSContext* cx, bool invokeCallback,
+                            bool oomStackTrace) {
   MOZ_ASSERT(!cx->zone()->isAtomsZone());
 
   cx->runtime()->gc.gcIfRequested();
 
-  // A worker thread may have requested an interrupt after finishing an Ion
-  // compilation.
-  jit::AttachFinishedCompilations(cx);
+  if (oomStackTrace) {
+    // Capture OOM stack trace this way because we don't have memory to handle
+    // it the way ComputeStackString does.
+    cx->captureOOMStackTrace();
+  } else {
+    // We can handle OOM interrupts while handling exceptions, when it isn't
+    // safe to attach finished compilations
 
-  // Don't call the interrupt callback if we only interrupted for GC or Ion.
+    // A worker thread may have requested an interrupt after finishing an
+    // offthread compilation.
+    jit::AttachFinishedCompilations(cx);
+  }
+
+  // Don't call the interrupt callback if we only interrupted for GC, Ion, or
+  // OOM.
   if (!invokeCallback) {
     return true;
   }
@@ -408,14 +426,7 @@ static bool HandleInterrupt(JSContext* cx, bool invokeCallback) {
     return true;
   }
 
-  bool stop = false;
-  for (JSInterruptCallback cb : cx->interruptCallbacks()) {
-    if (!cb(cx)) {
-      stop = true;
-    }
-  }
-
-  if (!stop) {
+  if (!InvokeInterruptCallbacks(cx)) {
     // Debugger treats invoking the interrupt callback as a "step", so
     // invoke the onStep handler.
     if (cx->realm()->isDebuggee()) {
@@ -450,6 +461,7 @@ static bool HandleInterrupt(JSContext* cx, bool invokeCallback) {
     chars = u"(stack not available)";
   }
   WarnNumberUC(cx, JSMSG_TERMINATED, chars);
+  cx->reportUncatchableException();
   return false;
 }
 
@@ -481,9 +493,23 @@ bool JSContext::handleInterrupt() {
     bool invokeCallback =
         hasPendingInterrupt(InterruptReason::CallbackUrgent) ||
         hasPendingInterrupt(InterruptReason::CallbackCanWait);
+    bool oomStackTrace = hasPendingInterrupt(InterruptReason::OOMStackTrace);
     interruptBits_ = 0;
     resetJitStackLimit();
-    return HandleInterrupt(this, invokeCallback);
+    return HandleInterrupt(this, invokeCallback, oomStackTrace);
+  }
+  return true;
+}
+
+bool JSContext::handleInterruptNoCallbacks() {
+  MOZ_ASSERT(CurrentThreadCanAccessRuntime(runtime()));
+  if (hasAnyPendingInterrupt() || jitStackLimit == JS::NativeStackLimitMin) {
+    bool oomStackTrace = hasPendingInterrupt(InterruptReason::OOMStackTrace);
+    clearPendingInterrupt(js::InterruptReason::OOMStackTrace);
+    if (!hasAnyPendingInterrupt()) {
+      resetJitStackLimit();
+    }
+    return HandleInterrupt(this, false, oomStackTrace);
   }
   return true;
 }
@@ -502,6 +528,13 @@ bool JSRuntime::setDefaultLocale(const char* locale) {
   if (!newLocale) {
     return false;
   }
+
+#if JS_HAS_INTL_API
+  if (!LocaleHasDefaultCaseMapping(newLocale.get())) {
+    runtimeFuses.ref().defaultLocaleHasDefaultCaseMappingFuse.popFuse(
+        mainContextFromOwnThread());
+  }
+#endif
 
   defaultLocale.ref() = std::move(newLocale);
   return true;
@@ -540,6 +573,13 @@ const char* JSRuntime::getDefaultLocale() {
     *p = '-';
   }
 
+#if JS_HAS_INTL_API
+  if (!LocaleHasDefaultCaseMapping(lang.get())) {
+    runtimeFuses.ref().defaultLocaleHasDefaultCaseMappingFuse.popFuse(
+        mainContextFromOwnThread());
+  }
+#endif
+
   defaultLocale.ref() = std::move(lang);
   return defaultLocale.ref().get();
 }
@@ -554,45 +594,50 @@ SharedScriptDataTableHolder& JSRuntime::scriptDataTableHolder() {
   return scriptDataTableHolder_;
 }
 
-GlobalObject* JSRuntime::getIncumbentGlobal(JSContext* cx) {
+bool JSRuntime::getHostDefinedData(JSContext* cx,
+                                   JS::MutableHandle<JSObject*> data) const {
   MOZ_ASSERT(cx->jobQueue);
 
-  JSObject* obj = cx->jobQueue->getIncumbentGlobal(cx);
-  if (!obj) {
+  return cx->jobQueue->getHostDefinedData(cx, data);
+}
+
+JS_PUBLIC_API JSObject*
+JS::MaybeGetPromiseAllocationSiteFromPossiblyWrappedPromise(
+    HandleObject promise) {
+  if (!promise) {
     return nullptr;
   }
 
-  MOZ_ASSERT(obj->is<GlobalObject>(),
-             "getIncumbentGlobalCallback must return a global!");
-  return &obj->as<GlobalObject>();
+  JSObject* unwrappedPromise = promise;
+  // While the job object is guaranteed to be unwrapped, the promise
+  // might be wrapped. See the comments in EnqueuePromiseReactionJob in
+  // builtin/Promise.cpp for details.
+  if (IsWrapper(promise)) {
+    unwrappedPromise = UncheckedUnwrap(promise);
+  }
+  if (unwrappedPromise->is<PromiseObject>()) {
+    return unwrappedPromise->as<PromiseObject>().allocationSite();
+  }
+  return nullptr;
 }
 
 bool JSRuntime::enqueuePromiseJob(JSContext* cx, HandleFunction job,
                                   HandleObject promise,
-                                  Handle<GlobalObject*> incumbentGlobal) {
+                                  HandleObject hostDefinedData) {
   MOZ_ASSERT(cx->jobQueue,
              "Must select a JobQueue implementation using JS::JobQueue "
              "or js::UseInternalJobQueues before using Promises");
 
-  RootedObject allocationSite(cx);
   if (promise) {
 #ifdef DEBUG
     AssertSameCompartment(job, promise);
 #endif
-
-    RootedObject unwrappedPromise(cx, promise);
-    // While the job object is guaranteed to be unwrapped, the promise
-    // might be wrapped. See the comments in EnqueuePromiseReactionJob in
-    // builtin/Promise.cpp for details.
-    if (IsWrapper(promise)) {
-      unwrappedPromise = UncheckedUnwrap(promise);
-    }
-    if (unwrappedPromise->is<PromiseObject>()) {
-      allocationSite = JS::GetPromiseAllocationSite(unwrappedPromise);
-    }
   }
+
+  RootedObject allocationSite(
+      cx, JS::MaybeGetPromiseAllocationSiteFromPossiblyWrappedPromise(promise));
   return cx->jobQueue->enqueuePromiseJob(cx, promise, job, allocationSite,
-                                         incumbentGlobal);
+                                         hostDefinedData);
 }
 
 void JSRuntime::addUnhandledRejectedPromise(JSContext* cx,
@@ -717,6 +762,32 @@ bool JSRuntime::activeGCInAtomsZone() {
   return (zone->needsIncrementalBarrier() &&
           !gc.isVerifyPreBarriersEnabled()) ||
          zone->wasGCStarted();
+}
+
+void JSRuntime::commitPendingWrapperPreservations() {
+  for (NonAtomZonesIter zone(this); !zone.done(); zone.next()) {
+    commitPendingWrapperPreservations(zone);
+  }
+}
+
+void JSRuntime::commitPendingWrapperPreservations(JS::Zone* zone) {
+  for (JSObject* wrapper : zone->slurpPendingWrapperPreservations()) {
+    JS::Value objectWrapperSlot =
+        JS::GetReservedSlot(wrapper, JS_OBJECT_WRAPPER_SLOT);
+    // This mirrors logic in MaybePreserveDOMWrapper, and should be kept in
+    // sync with that.
+    if (objectWrapperSlot.isUndefined() || !objectWrapperSlot.toPrivate()) {
+      continue;
+    }
+
+    if (IsWrapper(wrapper)) {
+      wrapper = UncheckedUnwrap(wrapper);
+    }
+
+    Rooted<JSObject*> rooted(mainContextFromOwnThread(), wrapper);
+    bool success = preserveWrapperCallback(mainContextFromOwnThread(), rooted);
+    MOZ_RELEASE_ASSERT(success);
+  }
 }
 
 void JSRuntime::incrementNumDebuggeeRealms() {

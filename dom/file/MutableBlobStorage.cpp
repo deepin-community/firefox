@@ -4,17 +4,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "EmptyBlobImpl.h"
 #include "MutableBlobStorage.h"
+
+#include "EmptyBlobImpl.h"
+#include "File.h"
 #include "MemoryBlobImpl.h"
 #include "mozilla/CheckedInt.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/TaskQueue.h"
 #include "mozilla/dom/TemporaryIPCBlobChild.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/TaskQueue.h"
-#include "File.h"
 #include "nsAnonymousTemporaryFile.h"
 #include "nsNetCID.h"
 #include "nsProxyRelease.h"
@@ -339,8 +340,6 @@ void MutableBlobStorage::GetBlobImplWhenReady(
       return;
     }
 
-    MOZ_ASSERT(mActor);
-
     // We want to wait until all the WriteRunnable are completed. The way we do
     // this is to go to the I/O thread and then we come back: the runnables are
     // executed in order and this LastRunnable will be... the last one.
@@ -594,9 +593,19 @@ void MutableBlobStorage::AskForBlob(TemporaryIPCBlobChildCallback* aCallback,
 
   MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mStorageState == eClosed);
+  MOZ_ASSERT(aCallback);
+
+  // If something went wrong in one of the previous WriteRunnable runnables,
+  // it's time to report the error.
+  if (NS_FAILED(mErrorResult)) {
+    MOZ_ASSERT(!mFD);
+    MOZ_ASSERT(!mActor);
+    aCallback->OperationFailed(mErrorResult);
+    return;
+  }
+
   MOZ_ASSERT(mFD);
   MOZ_ASSERT(mActor);
-  MOZ_ASSERT(aCallback);
 
   // Let's pass the FileDescriptor to the parent actor in order to keep the file
   // locked on windows.

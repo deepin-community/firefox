@@ -4,22 +4,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "WorkerDebugger.h"
+
+#include "ScriptLoader.h"
+#include "WorkerCommon.h"
+#include "WorkerError.h"
+#include "WorkerRunnable.h"
+#include "mozilla/AbstractThread.h"
+#include "mozilla/Encoding.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/MessageEvent.h"
 #include "mozilla/dom/MessageEventBinding.h"
 #include "mozilla/dom/RemoteWorkerChild.h"
 #include "mozilla/dom/WindowContext.h"
-#include "mozilla/AbstractThread.h"
-#include "mozilla/Encoding.h"
 #include "nsProxyRelease.h"
 #include "nsQueryObject.h"
 #include "nsThreadUtils.h"
-#include "ScriptLoader.h"
-#include "WorkerCommon.h"
-#include "WorkerError.h"
-#include "WorkerRunnable.h"
-#include "WorkerDebugger.h"
 
 #if defined(XP_WIN)
 #  include <processthreadsapi.h>  // for GetCurrentProcessId()
@@ -209,6 +210,14 @@ WorkerDebugger::GetIsChrome(bool* aResult) {
 }
 
 NS_IMETHODIMP
+WorkerDebugger::GetIsRemote(bool* aResult) {
+  AssertIsOnMainThread();
+
+  *aResult = false;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 WorkerDebugger::GetIsInitialized(bool* aResult) {
   AssertIsOnMainThread();
 
@@ -352,6 +361,18 @@ WorkerDebugger::GetId(nsAString& aResult) {
   }
 
   aResult = mWorkerPrivate->Id();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+WorkerDebugger::GetName(nsAString& aResult) {
+  AssertIsOnMainThread();
+
+  if (!mWorkerPrivate) {
+    return NS_ERROR_UNEXPECTED;
+  }
+
+  aResult = mWorkerPrivate->WorkerName();
   return NS_OK;
 }
 

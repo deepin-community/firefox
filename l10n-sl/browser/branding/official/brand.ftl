@@ -3,17 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Firefox Brand
-##
-## Firefox must be treated as a brand, and kept in English.
-## It cannot be:
-## - Declined to adapt to grammatical case.
-## - Transliterated.
-## - Translated.
-##
-## Reference: https://www.mozilla.org/styleguide/communications/translation/
-
-
 ## Firefox and Mozilla Brand
 ##
 ## Firefox and Mozilla must be treated as a brand.
@@ -30,50 +19,50 @@
 
 -brand-shorter-name =
     { $sklon ->
-       *[imenovalnik] Firefox
         [rodilnik] Firefoxa
         [dajalnik] Firefoxu
         [tozilnik] Firefox
         [mestnik] Firefoxu
         [orodnik] Firefoxom
+       *[imenovalnik] Firefox
     }
 -brand-short-name =
     { $sklon ->
-       *[imenovalnik] Firefox
         [rodilnik] Firefoxa
         [dajalnik] Firefoxu
         [tozilnik] Firefox
         [mestnik] Firefoxu
         [orodnik] Firefoxom
+       *[imenovalnik] Firefox
     }
 -brand-shortcut-name =
     { $sklon ->
-       *[imenovalnik] Firefox
         [rodilnik] Firefoxa
         [dajalnik] Firefoxu
         [tozilnik] Firefox
         [mestnik] Firefoxu
         [orodnik] Firefoxom
+       *[imenovalnik] Firefox
     }
 -brand-full-name = Mozilla Firefox
 # This brand name can be used in messages where the product name needs to
 # remain unchanged across different versions (Nightly, Beta, etc.).
 -brand-product-name =
     { $sklon ->
-       *[imenovalnik] Firefox
         [rodilnik] Firefoxa
         [dajalnik] Firefoxu
         [tozilnik] Firefox
         [mestnik] Firefoxu
         [orodnik] Firefoxom
+       *[imenovalnik] Firefox
     }
 -vendor-short-name =
     { $sklon ->
-       *[imenovalnik] Mozilla
         [rodilnik] Mozille
         [dajalnik] Mozilli
         [tozilnik] Mozillo
         [mestnik] Mozilli
         [orodnik] Mozillo
+       *[imenovalnik] Mozilla
     }
 trademarkInfo = Firefox in logotip Firefoxa sta blagovni znamki Mozilla Foundation.

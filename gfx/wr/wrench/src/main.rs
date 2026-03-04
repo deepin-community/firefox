@@ -13,12 +13,15 @@ extern crate tracy_rs;
 
 mod angle;
 mod blob;
+#[cfg(target_os = "windows")]
+mod composite;
 mod egl;
 mod parse_function;
 mod perf;
 mod png;
 mod premultiply;
 mod rawtest;
+mod rawtests;
 mod reftest;
 mod test_invalidation;
 mod test_shaders;
@@ -26,6 +29,8 @@ mod wrench;
 mod yaml_frame_reader;
 mod yaml_helper;
 
+#[cfg(target_os = "windows")]
+use composite::WrCompositor;
 use gleam::gl;
 #[cfg(feature = "software")]
 use gleam::gl::Gl;
@@ -44,7 +49,7 @@ use std::rc::Rc;
 #[cfg(feature = "software")]
 use std::slice;
 use std::sync::mpsc::{channel, Sender, Receiver};
-use webrender::DebugFlags;
+use webrender::{DebugFlags, LayerCompositor};
 use webrender::api::*;
 use webrender::render_api::*;
 use webrender::api::units::*;
@@ -296,6 +301,25 @@ impl WindowWrapper {
         self.update_software(dim);
         wrench.update(dim);
     }
+
+    #[cfg(target_os = "windows")]
+    pub fn get_d3d11_device(&self) -> *const c_void {
+        match *self {
+            WindowWrapper::WindowedContext(_, _, _) |
+            WindowWrapper::Headless(_, _, _) => unreachable!(),
+            WindowWrapper::Angle(_, ref ctx, _, _) => ctx.get_d3d11_device(),
+        }
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn create_compositor(&self) -> Option<Box<dyn LayerCompositor>> {
+        Some(Box::new(WrCompositor::new(self)) as Box<dyn LayerCompositor>)
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    pub fn create_compositor(&self) -> Option<Box<dyn LayerCompositor>> {
+        None
+    }
 }
 
 #[cfg(feature = "software")]
@@ -317,6 +341,7 @@ fn make_window(
     angle: bool,
     gl_request: glutin::GlRequest,
     software: bool,
+    using_compositor: bool,
 ) -> WindowWrapper {
     let sw_ctx = if software {
         Some(make_software_context())
@@ -336,7 +361,7 @@ fn make_window(
 
         if angle {
             angle::Context::with_window(
-                window_builder, context_builder, events_loop
+                window_builder, context_builder, events_loop, using_compositor,
             ).map(|(_window, _context)| {
                 unsafe {
                     _context
@@ -463,12 +488,11 @@ impl RenderNotifier for Notifier {
 
     fn new_frame_ready(&self,
                        _: DocumentId,
-                       _scrolled: bool,
-                       composite_needed: bool,
-                       _: FramePublishId) {
+                       _: FramePublishId,
+                       params: &FrameReadyParams) {
         // TODO(gw): Refactor wrench so that it can take advantage of cases
         //           where no composite is required when appropriate.
-        self.wake_up(composite_needed);
+        self.wake_up(params.render);
     }
 }
 
@@ -643,17 +667,30 @@ pub fn main() {
         Some(winit::event_loop::EventLoop::new())
     };
 
+    let opengles_version = (3, 0);
+    let opengl_version = (3, 2);
     let gl_request = match args.value_of("renderer") {
         Some("es3") => {
-            glutin::GlRequest::Specific(glutin::Api::OpenGlEs, (3, 0))
+            glutin::GlRequest::Specific(glutin::Api::OpenGlEs, opengles_version)
         }
         Some("gl3") => {
-            glutin::GlRequest::Specific(glutin::Api::OpenGl, (3, 2))
+            glutin::GlRequest::Specific(glutin::Api::OpenGl, opengl_version)
         }
         Some("default") | None => {
-            glutin::GlRequest::GlThenGles {
-                opengl_version: (3, 2),
-                opengles_version: (3, 0),
+            if args.is_present("angle") || cfg!(target_os = "android") {
+                // GlThenGles first attempts to bind OpenGL using eglBindAPI(),
+                // falling back to GLES if that fails. Angle, including Android
+                // devices who use Angle as their GL driver, successfully allow
+                // binding the OpenGL API but will subsequently fail to return
+                // any available configs, meaning context creation will always
+                // fail. To avoid this by deault just request Gles on Angle and
+                // Android. See bug 1928322 and bug 1971545.
+                glutin::GlRequest::Specific(glutin::Api::OpenGlEs, opengles_version)
+            } else {
+                glutin::GlRequest::GlThenGles {
+                    opengl_version,
+                    opengles_version,
+                }
             }
         }
         Some(api) => {
@@ -678,6 +715,8 @@ pub fn main() {
         });
     }
 
+    let using_compositor = args.is_present("compositor");
+
     let mut window = make_window(
         size,
         args.is_present("vsync"),
@@ -685,6 +724,7 @@ pub fn main() {
         args.is_present("angle"),
         gl_request,
         software,
+        using_compositor,
     );
     let dim = window.get_inner_size();
 
@@ -696,6 +736,12 @@ pub fn main() {
         (Some(notifier), Some(rx))
     } else {
         (None, None)
+    };
+
+    let layer_compositor = if using_compositor {
+        window.create_compositor()
+    } else {
+        None
     };
 
     let mut wrench = Wrench::new(
@@ -712,6 +758,7 @@ pub fn main() {
         args.is_present("precache"),
         dump_shader_source,
         notifier,
+        layer_compositor,
     );
 
     if let Some(ui_str) = args.value_of("profiler_ui") {
@@ -740,7 +787,6 @@ pub fn main() {
     } else if let Some(subargs) = args.subcommand_matches("png") {
         let surface = match subargs.value_of("surface") {
             Some("screen") | None => png::ReadSurface::Screen,
-            Some("gpu-cache") => png::ReadSurface::GpuCache,
             _ => panic!("Unknown surface argument value")
         };
         let output_path = subargs.value_of("OUTPUT").map(PathBuf::from);
@@ -933,6 +979,11 @@ fn render<'a>(
                     }
                     VirtualKeyCode::D => {
                         debug_flags.toggle(DebugFlags::PICTURE_CACHING_DBG);
+                        wrench.api.send_debug_cmd(DebugCommand::SetFlags(debug_flags));
+                        do_render = true;
+                    }
+                    VirtualKeyCode::F => {
+                        debug_flags.toggle(DebugFlags::PICTURE_BORDERS);
                         wrench.api.send_debug_cmd(DebugCommand::SetFlags(debug_flags));
                         do_render = true;
                     }

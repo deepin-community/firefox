@@ -13,15 +13,15 @@
 #include "mozilla/Attributes.h"
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/Maybe.h"
-#include "mozilla/NotNull.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/UniquePtr.h"
 #include "mozilla/TimeStamp.h"
+#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/AnimationFrameProvider.h"
 #include "mozilla/dom/ImageBitmapBinding.h"
 #include "mozilla/dom/ImageBitmapSource.h"
 #include "mozilla/dom/PerformanceWorker.h"
 #include "mozilla/dom/SafeRefPtr.h"
+#include "mozilla/dom/TimeoutManager.h"
 #include "mozilla/dom/TrustedTypePolicyFactory.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "nsCOMPtr.h"
@@ -55,6 +55,7 @@ class ClientInfo;
 class ClientSource;
 class Clients;
 class Console;
+class CookieStore;
 class Crypto;
 class DOMString;
 class DebuggerNotificationManager;
@@ -62,10 +63,12 @@ enum class EventCallbackDebuggerNotificationType : uint8_t;
 class EventHandlerNonNull;
 class FontFaceSet;
 class Function;
+class FunctionOrTrustedScriptOrString;
 class IDBFactory;
 class OnErrorEventHandlerNonNull;
 template <typename T>
 class Optional;
+class OwningTrustedScriptURLOrString;
 class Performance;
 class Promise;
 class RequestOrUTF8String;
@@ -75,6 +78,7 @@ class ServiceWorkerDescriptor;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationDescriptor;
 struct StructuredSerializeOptions;
+class TimeoutManager;
 class WorkerDocumentListener;
 class WorkerLocation;
 class WorkerNavigator;
@@ -82,6 +86,7 @@ class WorkerPrivate;
 class VsyncWorkerChild;
 class WebTaskScheduler;
 class WebTaskSchedulerWorker;
+class WebTaskSchedulingState;
 struct RequestInit;
 
 namespace cache {
@@ -102,6 +107,10 @@ class WorkerGlobalScopeBase : public DOMEventTargetHelper,
 
   WorkerGlobalScopeBase(WorkerPrivate* aWorkerPrivate,
                         UniquePtr<ClientSource> aClientSource);
+
+  mozilla::dom::TimeoutManager* GetTimeoutManager() override final {
+    return mTimeoutManager.get();
+  }
 
   virtual bool WrapGlobalObject(JSContext* aCx,
                                 JS::MutableHandle<JSObject*> aReflector) = 0;
@@ -125,7 +134,12 @@ class WorkerGlobalScopeBase : public DOMEventTargetHelper,
 
   StorageAccess GetStorageAccess() final;
 
+  nsICookieJarSettings* GetCookieJarSettings() final;
+
+  nsIURI* GetBaseURI() const final;
+
   Maybe<ClientInfo> GetClientInfo() const final;
+  Maybe<ClientState> GetClientState() const final;
 
   Maybe<ServiceWorkerDescriptor> GetController() const final;
 
@@ -172,10 +186,65 @@ class WorkerGlobalScopeBase : public DOMEventTargetHelper,
 
   ClientSource& MutableClientSourceRef() const { return *mClientSource; }
 
-  // WorkerPrivate wants to be able to forbid script when its state machine
-  // demands it.
-  void WorkerPrivateSaysForbidScript() { StartForbiddingScript(); }
-  void WorkerPrivateSaysAllowScript() { StopForbiddingScript(); }
+  bool IsBackgroundInternal() const override {
+    MOZ_ASSERT(mWorkerPrivate);
+    return mWorkerPrivate->IsRunningInBackground();
+  }
+
+  MOZ_CAN_RUN_SCRIPT bool RunTimeoutHandler(
+      mozilla::dom::Timeout* aTimeout) override;
+  bool IsFrozen() const override {
+    return mWorkerPrivate->IsFrozenForWorkerThread();
+  }
+
+  // workers don't support both frozen and suspended,
+  // either both are true, or both are false.
+  bool IsSuspended() const override {
+    return mWorkerPrivate->IsFrozenForWorkerThread();
+  }
+
+  void UpdateWebSocketCount(int32_t aDelta) override {
+    if (aDelta == 0) {
+      return;
+    }
+
+    MOZ_DIAGNOSTIC_ASSERT(
+        aDelta > 0 || ((aDelta + mNumOfOpenWebSockets) < mNumOfOpenWebSockets));
+
+    mNumOfOpenWebSockets += aDelta;
+  }
+
+  // Increase/Decrease the number of active IndexedDB databases for the
+  // decision making of timeout-throttling.
+  void UpdateActiveIndexedDBDatabaseCount(int32_t aDelta) override {
+    AssertIsOnWorkerThread();
+    mNumOfIndexedDBDatabases += aDelta;
+  }
+
+  bool HasOpenWebSockets() const override { return mNumOfOpenWebSockets; }
+
+  bool HasActiveIndexedDBDatabases() const override {
+    AssertIsOnWorkerThread();
+    return mNumOfIndexedDBDatabases;
+  }
+
+  bool IsPlayingAudio() override {
+    AssertIsOnWorkerThread();
+    return mWorkerPrivate && mWorkerPrivate->IsPlayingAudio();
+  }
+
+  bool HasActivePeerConnections() override {
+    AssertIsOnWorkerThread();
+    return mWorkerPrivate && mWorkerPrivate->HasActivePeerConnections();
+  }
+
+  void TriggerUpdateCCFlag() override {
+    mWorkerPrivate->UpdateCCFlag(WorkerPrivate::CCFlag::EligibleForTimeout);
+  }
+
+  static WorkerGlobalScopeBase* Cast(nsIGlobalObject* obj) {
+    return static_cast<WorkerGlobalScopeBase*>(obj);
+  }
 
  protected:
   ~WorkerGlobalScopeBase();
@@ -194,6 +263,9 @@ class WorkerGlobalScopeBase : public DOMEventTargetHelper,
 #ifdef DEBUG
   PRThread* mWorkerThreadUsedOnlyForAssert;
 #endif
+  mozilla::UniquePtr<mozilla::dom::TimeoutManager> mTimeoutManager;
+  uint32_t mNumOfOpenWebSockets{};
+  uint32_t mNumOfIndexedDBDatabases{};
 };
 
 namespace workerinternals {
@@ -226,6 +298,11 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
   void NoteShuttingDown();
 
   // nsIGlobalObject implementation
+  already_AddRefed<ServiceWorkerContainer> GetServiceWorkerContainer() final;
+
+  RefPtr<ServiceWorker> GetOrCreateServiceWorker(
+      const ServiceWorkerDescriptor& aDescriptor) final;
+
   RefPtr<ServiceWorkerRegistration> GetServiceWorkerRegistration(
       const ServiceWorkerRegistrationDescriptor& aDescriptor) const final;
 
@@ -245,6 +322,12 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
 
   bool IsEligibleForMessaging() final;
 
+  void ReportToConsole(uint32_t aErrorFlags, const nsCString& aCategory,
+                       nsContentUtils::PropertiesFile aFile,
+                       const nsCString& aMessageName,
+                       const nsTArray<nsString>& aParams,
+                       const mozilla::SourceLocation& aLocation) final;
+
   // WorkerGlobalScope WebIDL implementation
   WorkerGlobalScope* Self() { return this; }
 
@@ -257,8 +340,10 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
   FontFaceSet* GetFonts(ErrorResult&);
   FontFaceSet* GetFonts() final { return GetFonts(IgnoreErrors()); }
 
-  void ImportScripts(JSContext* aCx, const Sequence<nsString>& aScriptURLs,
-                     ErrorResult& aRv);
+  MOZ_CAN_RUN_SCRIPT void ImportScripts(
+      JSContext* aCx,
+      const Sequence<OwningTrustedScriptURLOrString>& aScriptURLs,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aRv);
 
   OnErrorEventHandlerNonNull* GetOnerror();
 
@@ -291,24 +376,19 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
   bool CrossOriginIsolated() const final;
 
   MOZ_CAN_RUN_SCRIPT
-  int32_t SetTimeout(JSContext* aCx, Function& aHandler, int32_t aTimeout,
-                     const Sequence<JS::Value>& aArguments, ErrorResult& aRv);
-
-  MOZ_CAN_RUN_SCRIPT
-  int32_t SetTimeout(JSContext* aCx, const nsAString& aHandler,
-                     int32_t aTimeout, const Sequence<JS::Value>&,
-                     ErrorResult& aRv);
+  int32_t SetTimeout(JSContext* aCx,
+                     const FunctionOrTrustedScriptOrString& aHandler,
+                     int32_t aTimeout, const Sequence<JS::Value>& aArguments,
+                     nsIPrincipal* aSubjectPrincipal, ErrorResult& aRv);
 
   MOZ_CAN_RUN_SCRIPT
   void ClearTimeout(int32_t aHandle);
 
   MOZ_CAN_RUN_SCRIPT
-  int32_t SetInterval(JSContext* aCx, Function& aHandler, int32_t aTimeout,
-                      const Sequence<JS::Value>& aArguments, ErrorResult& aRv);
-  MOZ_CAN_RUN_SCRIPT
-  int32_t SetInterval(JSContext* aCx, const nsAString& aHandler,
-                      int32_t aTimeout, const Sequence<JS::Value>&,
-                      ErrorResult& aRv);
+  int32_t SetInterval(JSContext* aCx,
+                      const FunctionOrTrustedScriptOrString& aHandler,
+                      int32_t aTimeout, const Sequence<JS::Value>& aArguments,
+                      nsIPrincipal* aSubjectPrincipal, ErrorResult& aRv);
 
   MOZ_CAN_RUN_SCRIPT
   void ClearInterval(int32_t aHandle);
@@ -339,6 +419,12 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
 
   WebTaskScheduler* Scheduler();
   WebTaskScheduler* GetExistingScheduler() const;
+  void SetWebTaskSchedulingState(WebTaskSchedulingState* aState) override;
+  bool HasScheduledNormalOrHighPriorityWebTasks() const override;
+
+  WebTaskSchedulingState* GetWebTaskSchedulingState() const override {
+    return mWebTaskSchedulingState;
+  }
 
   bool WindowInteractionAllowed() const;
 
@@ -360,15 +446,10 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
 
  private:
   MOZ_CAN_RUN_SCRIPT
-  int32_t SetTimeoutOrInterval(JSContext* aCx, Function& aHandler,
-                               int32_t aTimeout,
-                               const Sequence<JS::Value>& aArguments,
-                               bool aIsInterval, ErrorResult& aRv);
-
-  MOZ_CAN_RUN_SCRIPT
-  int32_t SetTimeoutOrInterval(JSContext* aCx, const nsAString& aHandler,
-                               int32_t aTimeout, bool aIsInterval,
-                               ErrorResult& aRv);
+  int32_t SetTimeoutOrInterval(
+      JSContext* aCx, const FunctionOrTrustedScriptOrString& aHandler,
+      int32_t aTimeout, const Sequence<JS::Value>& aArguments, bool aIsInterval,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aRv);
 
   RefPtr<Crypto> mCrypto;
   RefPtr<WorkerLocation> mLocation;
@@ -379,6 +460,7 @@ class WorkerGlobalScope : public WorkerGlobalScopeBase {
   RefPtr<cache::CacheStorage> mCacheStorage;
   RefPtr<DebuggerNotificationManager> mDebuggerNotificationManager;
   RefPtr<WebTaskSchedulerWorker> mWebTaskScheduler;
+  RefPtr<WebTaskSchedulingState> mWebTaskSchedulingState;
   RefPtr<TrustedTypePolicyFactory> mTrustedTypePolicyFactory;
   uint32_t mWindowInteractionsAllowed = 0;
   bool mIsEligibleForMessaging{true};
@@ -482,6 +564,8 @@ class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   void EventListenerAdded(nsAtom* aType) override;
 
+  already_AddRefed<mozilla::dom::CookieStore> CookieStore();
+
   IMPL_EVENT_HANDLER(message)
   IMPL_EVENT_HANDLER(messageerror)
 
@@ -490,6 +574,8 @@ class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   IMPL_EVENT_HANDLER(push)
   IMPL_EVENT_HANDLER(pushsubscriptionchange)
+
+  IMPL_EVENT_HANDLER(cookiechange)
 
  private:
   ~ServiceWorkerGlobalScope();
@@ -500,6 +586,7 @@ class ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   const nsString mScope;
   RefPtr<ServiceWorkerRegistration> mRegistration;
   SafeRefPtr<extensions::ExtensionBrowser> mExtensionBrowser;
+  RefPtr<mozilla::dom::CookieStore> mCookieStore;
 };
 
 class WorkerDebuggerGlobalScope final : public WorkerGlobalScopeBase {

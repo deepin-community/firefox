@@ -7,6 +7,8 @@ ChromeUtils.defineESModuleGetters(this, {
   AsyncShutdown: "resource://gre/modules/AsyncShutdown.sys.mjs",
   ContentRelevancyManager:
     "resource://gre/modules/ContentRelevancyManager.sys.mjs",
+  SharedRemoteSettingsService:
+    "resource://gre/modules/RustSharedRemoteSettingsService.sys.mjs",
   exposedForTesting: "resource://gre/modules/ContentRelevancyManager.sys.mjs",
   TestUtils: "resource://testing-common/TestUtils.sys.mjs",
   setTimeout: "resource://gre/modules/Timer.sys.mjs",
@@ -39,6 +41,7 @@ add_setup(() => {
 
 add_task(function test_init() {
   Assert.ok(ContentRelevancyManager.initialized, "Init should succeed");
+  Assert.ok(ContentRelevancyManager.enabled, "Enabled flag should be set");
 });
 
 add_task(function test_uninit() {
@@ -60,8 +63,11 @@ add_task(function test_store_manager() {
     fakeRustRelevancyStore
   );
   Assert.equal(fakeRustRelevancyStore.init.callCount, 1);
-  Assert.deepEqual(fakeRustRelevancyStore.init.firstCall.args, ["test-path"]);
-  // store should throw before the manager is enabled
+  Assert.deepEqual(fakeRustRelevancyStore.init.firstCall.args[0], "test-path");
+  Assert.strictEqual(
+    fakeRustRelevancyStore.init.firstCall.args[1],
+    SharedRemoteSettingsService.rustService()
+  );
   Assert.throws(() => storeManager.store, /StoreDisabledError/);
   // Once the manager is enabled, store should return the RustRelevancyStore
   storeManager.enable();
@@ -69,7 +75,6 @@ add_task(function test_store_manager() {
   // Disabling the store should call `close` and make store throw again
   Assert.equal(fakeStore.close.callCount, 0);
   storeManager.disable();
-  Assert.equal(fakeStore.close.callCount, 1);
   Assert.throws(() => storeManager.store, /StoreDisabledError/);
   // Test calling enable() one more time
   storeManager.enable();

@@ -4,6 +4,7 @@
 
 //! Common handling for the specified value CSS url() values.
 
+use crate::derives::*;
 use crate::gecko_bindings::bindings;
 use crate::gecko_bindings::structs;
 use crate::parser::{Parse, ParserContext};
@@ -16,7 +17,7 @@ use servo_arc::Arc;
 use std::collections::HashMap;
 use std::fmt::{self, Write};
 use std::mem::ManuallyDrop;
-use std::sync::RwLock;
+use std::sync::{LazyLock, RwLock};
 use style_traits::{CssWriter, ParseError, ToCss};
 use to_shmem::{SharedMemoryBuilder, ToShmem};
 
@@ -53,14 +54,57 @@ pub struct CssUrlData {
 
 impl PartialEq for CssUrlData {
     fn eq(&self, other: &Self) -> bool {
-        self.serialization == other.serialization &&
-            self.extra_data == other.extra_data &&
-            self.cors_mode == other.cors_mode
+        self.serialization == other.serialization
+            && self.extra_data == other.extra_data
+            && self.cors_mode == other.cors_mode
+    }
+}
+
+/// How an URI might depend on our base URI.
+///
+/// TODO(emilio): See if necko can provide this, but for our case local refs or empty URIs are
+/// totally fine even though they wouldn't be in general...
+#[repr(u8)]
+#[derive(PartialOrd, PartialEq)]
+pub enum NonLocalUriDependency {
+    /// No non-local URI dependencies.
+    No = 0,
+    /// URI is absolute or not dependent on the base uri otherwise.
+    Absolute,
+    /// We might depend on our path depth. E.g. `https://example.com/foo` and
+    /// `https://example.com/bar` both resolve a relative URI like `baz.css` as
+    /// `https://example.com/baz.css`.
+    Path,
+    /// We might depend on our full URI. This is the case for query strings (and, in the general
+    /// case, local refs and empty URIs, but that's not the case for CSS as described below.
+    Full,
+}
+
+impl NonLocalUriDependency {
+    fn scan(specified: &str) -> Self {
+        if specified.is_empty() || specified.starts_with('#') || specified.starts_with("data:") {
+            // In CSS the empty URL is special / invalid. Local and data uris are also fair game.
+            // https://drafts.csswg.org/css-values-4/#url-empty
+            return Self::No;
+        }
+        if specified.starts_with('/')
+            || specified.starts_with("http:")
+            || specified.starts_with("https:")
+        {
+            return Self::Absolute;
+        }
+        if specified.starts_with('?') {
+            // Query string resolves differently for any two different base URIs
+            return Self::Full;
+        }
+        // Might be a relative URI, play it safe.
+        Self::Path
     }
 }
 
 impl CssUrl {
-    fn parse_with_cors_mode<'i, 't>(
+    /// Parse a URL with a particular CORS mode.
+    pub fn parse_with_cors_mode<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
         cors_mode: CorsMode,
@@ -75,6 +119,30 @@ impl CssUrl {
 
     /// Parse a URL from a string value that is a valid CSS token for a URL.
     pub fn parse_from_string(url: String, context: &ParserContext, cors_mode: CorsMode) -> Self {
+        use crate::use_counters::CustomUseCounter;
+        if let Some(counters) = context.use_counters {
+            if !counters
+                .custom
+                .recorded(CustomUseCounter::MaybeHasFullBaseUriDependency)
+            {
+                let dep = NonLocalUriDependency::scan(&url);
+                if dep >= NonLocalUriDependency::Absolute {
+                    counters
+                        .custom
+                        .record(CustomUseCounter::HasNonLocalUriDependency);
+                }
+                if dep >= NonLocalUriDependency::Path {
+                    counters
+                        .custom
+                        .record(CustomUseCounter::MaybeHasPathBaseUriDependency);
+                }
+                if dep >= NonLocalUriDependency::Full {
+                    counters
+                        .custom
+                        .record(CustomUseCounter::MaybeHasFullBaseUriDependency);
+                }
+            }
+        }
         CssUrl(Arc::new(CssUrlData {
             serialization: url.into(),
             extra_data: context.url_data.clone(),
@@ -278,52 +346,6 @@ impl ToComputedValue for SpecifiedUrl {
     }
 }
 
-/// A specified image `url()` value.
-#[derive(Clone, Debug, Eq, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToCss, ToShmem)]
-pub struct SpecifiedImageUrl(pub SpecifiedUrl);
-
-impl SpecifiedImageUrl {
-    /// Parse a URL from a string value that is a valid CSS token for a URL.
-    pub fn parse_from_string(url: String, context: &ParserContext, cors_mode: CorsMode) -> Self {
-        SpecifiedImageUrl(SpecifiedUrl::parse_from_string(url, context, cors_mode))
-    }
-
-    /// Provides an alternate method for parsing that associates the URL
-    /// with anonymous CORS headers.
-    pub fn parse_with_cors_mode<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-        cors_mode: CorsMode,
-    ) -> Result<Self, ParseError<'i>> {
-        Ok(SpecifiedImageUrl(SpecifiedUrl::parse_with_cors_mode(
-            context, input, cors_mode,
-        )?))
-    }
-}
-
-impl Parse for SpecifiedImageUrl {
-    fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        SpecifiedUrl::parse(context, input).map(SpecifiedImageUrl)
-    }
-}
-
-impl ToComputedValue for SpecifiedImageUrl {
-    type ComputedValue = ComputedImageUrl;
-
-    #[inline]
-    fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
-        ComputedImageUrl(self.0.to_computed_value(context))
-    }
-
-    #[inline]
-    fn from_computed_value(computed: &Self::ComputedValue) -> Self {
-        SpecifiedImageUrl(ToComputedValue::from_computed_value(&computed.0))
-    }
-}
-
 /// The computed value of a CSS non-image `url()`.
 ///
 /// The only difference between specified and computed URLs is the
@@ -360,25 +382,7 @@ impl ToCss for ComputedUrl {
     }
 }
 
-/// The computed value of a CSS image `url()`.
-#[derive(Clone, Debug, Eq, MallocSizeOf, PartialEq)]
-#[repr(transparent)]
-pub struct ComputedImageUrl(pub ComputedUrl);
-
-impl ToCss for ComputedImageUrl {
-    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
-    where
-        W: Write,
-    {
-        self.0
-            .serialize_with(bindings::Gecko_GetComputedImageURLSpec, dest)
-    }
-}
-
-lazy_static! {
-    /// A table mapping CssUrlData objects to their lazily created LoadData
-    /// objects.
-    static ref LOAD_DATA_TABLE: RwLock<HashMap<LoadDataKey, Box<LoadData>>> = {
-        Default::default()
-    };
-}
+/// A table mapping CssUrlData objects to their lazily created LoadData
+/// objects.
+static LOAD_DATA_TABLE: LazyLock<RwLock<HashMap<LoadDataKey, Box<LoadData>>>> =
+    LazyLock::new(|| Default::default());

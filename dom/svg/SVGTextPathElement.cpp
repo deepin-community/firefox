@@ -5,12 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGTextPathElement.h"
+
+#include "SVGElement.h"
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/dom/SVGTextContentElementBinding.h"
 #include "mozilla/dom/SVGTextPathElementBinding.h"
-#include "SVGElement.h"
-#include "nsGkAtoms.h"
 #include "nsError.h"
+#include "nsGkAtoms.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(TextPath)
 
@@ -55,7 +56,7 @@ SVGElement::EnumInfo SVGTextPathElement::sEnumInfo[4] = {
     // from SVGTextPathElement:
     {nsGkAtoms::method, sMethodMap, TEXTPATH_METHODTYPE_ALIGN},
     {nsGkAtoms::spacing, sSpacingMap, TEXTPATH_SPACINGTYPE_EXACT},
-    {nsGkAtoms::side_, sSideMap, TEXTPATH_SIDETYPE_LEFT}};
+    {nsGkAtoms::side, sSideMap, TEXTPATH_SIDETYPE_LEFT}};
 
 SVGElement::StringInfo SVGTextPathElement::sStringInfo[2] = {
     {nsGkAtoms::href, kNameSpaceID_None, true},
@@ -82,7 +83,8 @@ void SVGTextPathElement::HrefAsString(nsAString& aHref) {
 NS_IMPL_ELEMENT_CLONE_WITH_INIT(SVGTextPathElement)
 
 already_AddRefed<DOMSVGAnimatedString> SVGTextPathElement::Href() {
-  return mStringAttributes[HREF].IsExplicitlySet()
+  return mStringAttributes[HREF].IsExplicitlySet() ||
+                 !mStringAttributes[XLINK_HREF].IsExplicitlySet()
              ? mStringAttributes[HREF].ToDOMAnimatedString(this)
              : mStringAttributes[XLINK_HREF].ToDOMAnimatedString(this);
 }
@@ -110,16 +112,16 @@ already_AddRefed<DOMSVGAnimatedEnumeration> SVGTextPathElement::Side() {
 
 SVGElement::LengthAttributesInfo SVGTextPathElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 SVGElement::EnumAttributesInfo SVGTextPathElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::StringAttributesInfo SVGTextPathElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 }  // namespace mozilla::dom

@@ -10,11 +10,11 @@
 #include "js/Array.h"               // JS::NewArrayObject
 #include "js/PropertyAndElement.h"  // JS_DefineElement, JS_DefineProperty, JS_GetProperty
 #include "jsapi.h"
+#include "mozilla/SharedLibraries.h"
 #include "mozilla/dom/ToJSValue.h"
 #include "nsITelemetry.h"
 #include "nsUnicharUtils.h"
 #include "nsXULAppAPI.h"
-#include "shared-libraries.h"
 
 namespace mozilla {
 namespace Telemetry {
@@ -173,9 +173,9 @@ static bool SerializeModule(JSContext* aCx,
     if (aModule->mResolvedDosName->GetPath(path) == NS_OK) {
       SharedLibraryInfo info = SharedLibraryInfo::GetInfoFromPath(path.Data());
       if (info.GetSize() > 0) {
-        nsCString breakpadId = info.GetEntry(0).GetBreakpadId();
-        if (!AddLengthLimitedStringProp(aCx, obj, "debugID",
-                                        NS_ConvertASCIItoUTF16(breakpadId))) {
+        nsString breakpadId =
+            NS_ConvertUTF8toUTF16(info.GetEntry(0).GetBreakpadId());
+        if (!AddLengthLimitedStringProp(aCx, obj, "debugID", breakpadId)) {
           return false;
         }
       }
@@ -350,7 +350,7 @@ nsresult UntrustedModulesDataSerializer::GetPerProcObject(
   }
 
   JS::Rooted<JS::Value> jsElapsed(mCx);
-  jsElapsed.setNumber(aData.mElapsed.ToSecondsSigDigits());
+  jsElapsed.setNumber(aData.mElapsed.ToSeconds());
   if (!JS_DefineProperty(mCx, aObj, "elapsed", jsElapsed, JSPROP_ENUMERATE)) {
     return NS_ERROR_FAILURE;
   }

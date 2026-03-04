@@ -5,8 +5,7 @@
 
 ### These strings are used inside the Application panel which is available
 ### by setting the preference `devtools-application-enabled` to true.
-
-
+###
 ### The correct localization of this file might be to keep it in English, or another
 ### language commonly spoken among web developers. You want to make that choice consistent
 ### across the developer tools. A good criteria is the language in which you'd find the
@@ -64,7 +63,7 @@ manifest-empty-intro-link = เรียนรู้วิธีเพิ่ม�
 # Header for the Errors and Warnings section of Manifest inspection displayed in the application panel.
 manifest-item-warnings = ข้อผิดพลาดและคำเตือน
 # Header for the Identity section of Manifest inspection displayed in the application panel.
-manifest-item-identity = ข้อมูลประจำตัว
+manifest-item-identity = ข้อมูลตัวตน
 # Header for the Presentation section of Manifest inspection displayed in the application panel.
 manifest-item-presentation = งานนำเสนอ
 # Header for the Icon section of Manifest inspection displayed in the application panel.

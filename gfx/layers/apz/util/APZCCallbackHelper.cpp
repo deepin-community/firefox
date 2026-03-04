@@ -33,11 +33,11 @@
 #include "mozilla/dom/Document.h"
 #include "nsIInterfaceRequestorUtils.h"
 #include "nsLayoutUtils.h"
+#include "nsMenuPopupFrame.h"
 #include "nsPrintfCString.h"
 #include "nsPIDOMWindow.h"
 #include "nsRefreshDriver.h"
 #include "nsString.h"
-#include "nsView.h"
 
 static mozilla::LazyLogModule sApzHlpLog("apz.helper");
 #define APZCCH_LOG(...) MOZ_LOG(sApzHlpLog, LogLevel::Debug, (__VA_ARGS__))
@@ -476,6 +476,36 @@ void APZCCallbackHelper::InitializeRootDisplayport(PresShell* aPresShell) {
   }
 }
 
+void APZCCallbackHelper::InitializeRootDisplayport(nsIFrame* aFrame) {
+  MOZ_ASSERT(XRE_IsParentProcess(),
+             "The root displayport should be only used in the parent process");
+  MOZ_ASSERT(aFrame && aFrame->IsMenuPopupFrame(),
+             "This function is only available for popup frames.");
+
+  nsIContent* content = aFrame->GetContent();
+  if (!content) {
+    return;
+  }
+
+  uint32_t presShellId;
+  ScrollableLayerGuid::ViewID viewId;
+  if (APZCCallbackHelper::GetOrCreateScrollIdentifiers(content, &presShellId,
+                                                       &viewId)) {
+    MOZ_LOG(sDisplayportLog, LogLevel::Debug,
+            ("Initializing root displayport on scrollId=%" PRIu64, viewId));
+    nsRect baseRect = DisplayPortUtils::GetDisplayportBase(aFrame);
+    DisplayPortUtils::SetDisplayPortBaseIfNotSet(content, baseRect);
+
+    DisplayPortUtils::SetDisplayPortMargins(
+        content, aFrame->PresShell(), DisplayPortMargins::Empty(content),
+        DisplayPortUtils::ClearMinimalDisplayPortProperty::Yes, 0);
+
+    // Unlike normal root displayport, we don't need to walk up the frame tree
+    // to set zero margin displayport for ancestor frames since this popup frame
+    // is the root frame of the popuped window.
+  }
+}
+
 nsPresContext* APZCCallbackHelper::GetPresContextForContent(
     nsIContent* aContent) {
   dom::Document* doc = aContent->GetComposedDoc();
@@ -503,21 +533,22 @@ PresShell* APZCCallbackHelper::GetRootContentDocumentPresShellForContent(
 }
 
 nsEventStatus APZCCallbackHelper::DispatchWidgetEvent(WidgetGUIEvent& aEvent) {
-  nsEventStatus status = nsEventStatus_eConsumeNoDefault;
   if (aEvent.mWidget) {
-    aEvent.mWidget->DispatchEvent(&aEvent, status);
+    return aEvent.mWidget->DispatchEvent(&aEvent);
   }
-  return status;
+  return nsEventStatus_eConsumeNoDefault;
 }
 
 nsEventStatus APZCCallbackHelper::DispatchSynthesizedMouseEvent(
-    EventMessage aMsg, const LayoutDevicePoint& aRefPoint, Modifiers aModifiers,
-    int32_t aClickCount, PrecedingPointerDown aPrecedingPointerDownState,
-    nsIWidget* aWidget) {
+    EventMessage aMsg, const LayoutDevicePoint& aRefPoint, uint32_t aPointerId,
+    Modifiers aModifiers, int32_t aClickCount,
+    PrecedingPointerDown aPrecedingPointerDownState, nsIWidget* aWidget,
+    SynthesizeForTests aSynthesizeForTests) {
   MOZ_ASSERT(aMsg == eMouseMove || aMsg == eMouseDown || aMsg == eMouseUp ||
              aMsg == eMouseLongTap);
 
   WidgetMouseEvent event(true, aMsg, aWidget, WidgetMouseEvent::eReal);
+  event.mFlags.mIsSynthesizedForTests = static_cast<bool>(aSynthesizeForTests);
   event.mRefPoint = LayoutDeviceIntPoint::Truncate(aRefPoint.x, aRefPoint.y);
   event.mButton = MouseButton::ePrimary;
   event.mButtons = aMsg == eMouseDown ? MouseButtonsFlag::ePrimaryFlag
@@ -539,6 +570,7 @@ nsEventStatus APZCCallbackHelper::DispatchSynthesizedMouseEvent(
     event.mClickCount = aClickCount;
   }
   event.mModifiers = aModifiers;
+  event.pointerId = aPointerId;
   // Real touch events will generate corresponding pointer events. We set
   // convertToPointer to false to prevent the synthesized mouse events generate
   // pointer events again.
@@ -546,36 +578,48 @@ nsEventStatus APZCCallbackHelper::DispatchSynthesizedMouseEvent(
   return DispatchWidgetEvent(event);
 }
 
-PreventDefaultResult APZCCallbackHelper::DispatchMouseEvent(
-    PresShell* aPresShell, const nsString& aType, const CSSPoint& aPoint,
-    int32_t aButton, int32_t aClickCount, int32_t aModifiers,
-    unsigned short aInputSourceArg, uint32_t aPointerId) {
-  NS_ENSURE_TRUE(aPresShell, PreventDefaultResult::ByContent);
+PreventDefaultResult APZCCallbackHelper::DispatchSynthesizedContextmenuEvent(
+    const LayoutDevicePoint& aRefPoint, uint32_t aPointerId,
+    Modifiers aModifiers, nsIWidget* aWidget,
+    SynthesizeForTests aSynthesizeForTests) {
+  WidgetPointerEvent event(true, eContextMenu, aWidget);
+  event.mFlags.mIsSynthesizedForTests = static_cast<bool>(aSynthesizeForTests);
+  event.mRefPoint = LayoutDeviceIntPoint::Truncate(aRefPoint.x, aRefPoint.y);
+  event.mButton = MouseButton::ePrimary;
+  event.mButtons = MouseButtonsFlag::ePrimaryFlag;
+  event.mInputSource = dom::MouseEvent_Binding::MOZ_SOURCE_TOUCH;
+  event.mModifiers = aModifiers;
+  event.pointerId = aPointerId;
+  // contextmenu events will never generate pointer events.
+  event.convertToPointer = false;
+  nsEventStatus result = DispatchWidgetEvent(event);
+  if (result != nsEventStatus_eConsumeNoDefault) {
+    return PreventDefaultResult::No;
+  }
 
-  PreventDefaultResult preventDefaultResult;
-  nsContentUtils::SendMouseEvent(
-      aPresShell, aType, aPoint.x, aPoint.y, aButton,
-      nsIDOMWindowUtils::MOUSE_BUTTONS_NOT_SPECIFIED, aClickCount, aModifiers,
-      /* aIgnoreRootScrollFrame = */ false, 0, aInputSourceArg, aPointerId,
-      false, &preventDefaultResult, false,
-      /* aIsWidgetEventSynthesized = */ false);
-  return preventDefaultResult;
+  return event.mFlags.mDefaultPreventedByContent
+             ? PreventDefaultResult::ByContent
+             : PreventDefaultResult::ByChrome;
 }
 
 void APZCCallbackHelper::FireSingleTapEvent(
-    const LayoutDevicePoint& aPoint, Modifiers aModifiers, int32_t aClickCount,
-    PrecedingPointerDown aPrecedingPointerDownState, nsIWidget* aWidget) {
+    const LayoutDevicePoint& aPoint, uint32_t aPointerId, Modifiers aModifiers,
+    int32_t aClickCount, PrecedingPointerDown aPrecedingPointerDownState,
+    nsIWidget* aWidget, SynthesizeForTests aSynthesizeForTests) {
   if (aWidget->Destroyed()) {
     return;
   }
   APZCCH_LOG("Dispatching single-tap component events to %s\n",
              ToString(aPoint).c_str());
-  DispatchSynthesizedMouseEvent(eMouseMove, aPoint, aModifiers, aClickCount,
-                                aPrecedingPointerDownState, aWidget);
-  DispatchSynthesizedMouseEvent(eMouseDown, aPoint, aModifiers, aClickCount,
-                                aPrecedingPointerDownState, aWidget);
-  DispatchSynthesizedMouseEvent(eMouseUp, aPoint, aModifiers, aClickCount,
-                                aPrecedingPointerDownState, aWidget);
+  DispatchSynthesizedMouseEvent(eMouseMove, aPoint, aPointerId, aModifiers,
+                                aClickCount, aPrecedingPointerDownState,
+                                aWidget, aSynthesizeForTests);
+  DispatchSynthesizedMouseEvent(eMouseDown, aPoint, aPointerId, aModifiers,
+                                aClickCount, aPrecedingPointerDownState,
+                                aWidget, aSynthesizeForTests);
+  DispatchSynthesizedMouseEvent(eMouseUp, aPoint, aPointerId, aModifiers,
+                                aClickCount, aPrecedingPointerDownState,
+                                aWidget, aSynthesizeForTests);
 }
 
 static dom::Element* GetDisplayportElementFor(
@@ -596,21 +640,33 @@ static dom::Element* GetDisplayportElementFor(
   return content->AsElement();
 }
 
-static dom::Element* GetRootDocumentElementFor(nsIWidget* aWidget) {
+static dom::Element* GetRootElementFor(nsIWidget* aWidget) {
   // This returns the root element that ChromeProcessController sets the
   // displayport on during initialization.
-  if (nsView* view = nsView::GetViewFor(aWidget)) {
-    if (PresShell* presShell = view->GetPresShell()) {
-      MOZ_ASSERT(presShell->GetDocument());
-      return presShell->GetDocument()->GetDocumentElement();
-    }
+  auto* frame = aWidget->GetFrame();
+  if (!frame) {
+    return nullptr;
   }
-  return nullptr;
+  if (frame->IsMenuPopupFrame()) {
+    return frame->GetContent()->AsElement();
+  }
+  return frame->PresContext()->Document()->GetDocumentElement();
 }
 
 namespace {
 
 using FrameForPointOption = nsLayoutUtils::FrameForPointOption;
+
+ScrollContainerFrame* GetScrollContainerFor(nsIFrame* aTarget,
+                                            const nsIFrame* aRootFrame) {
+  if (!aTarget) {
+    return !aRootFrame->IsMenuPopupFrame()
+               ? aRootFrame->PresShell()->GetRootScrollContainerFrame()
+               : nullptr;
+  }
+
+  return nsLayoutUtils::GetAsyncScrollableAncestorFrame(aTarget);
+}
 
 // Determine the scrollable target frame for the given point and add it to
 // the target list. If the frame doesn't have a displayport, set one.
@@ -628,13 +684,12 @@ static bool PrepareForSetTargetAPZCNotification(
       aWidget, aRefPoint, relativeTo);
   nsIFrame* target = nsLayoutUtils::GetFrameForPoint(relativeTo, point);
   ScrollContainerFrame* scrollAncestor =
-      target ? nsLayoutUtils::GetAsyncScrollableAncestorFrame(target)
-             : aRootFrame->PresShell()->GetRootScrollContainerFrame();
+      GetScrollContainerFor(target, aRootFrame);
 
   // Assuming that if there's no scrollAncestor, there's already a displayPort.
   nsCOMPtr<dom::Element> dpElement =
       scrollAncestor ? GetDisplayportElementFor(scrollAncestor)
-                     : GetRootDocumentElementFor(aWidget);
+                     : GetRootElementFor(aWidget);
 
   if (MOZ_LOG_TEST(sApzHlpLog, LogLevel::Debug)) {
     nsAutoString dpElementDesc;
@@ -653,6 +708,12 @@ static bool PrepareForSetTargetAPZCNotification(
   if (!guidIsValid) {
     return false;
   }
+
+  // Stop suppressing displayport while the page is still loading.
+  if (MOZ_UNLIKELY(aRootFrame->PresShell()->IsDocumentLoading())) {
+    aRootFrame->PresShell()->SuppressDisplayport(false);
+  }
+
   if (DisplayPortUtils::HasNonMinimalNonZeroDisplayPort(dpElement)) {
     // If the element has a displayport but it hasn't been painted yet,
     // we want the caller to wait for the paint to happen, but we don't
@@ -666,7 +727,13 @@ static bool PrepareForSetTargetAPZCNotification(
     // let's try to set a displayport again and bail out on this operation.
     APZCCH_LOG("Widget %p's document element %p didn't have a displayport\n",
                aWidget, dpElement.get());
-    APZCCallbackHelper::InitializeRootDisplayport(aRootFrame->PresShell());
+    if (aRootFrame->IsMenuPopupFrame()) {
+      // XXX It's unclear whether this swapped root element case can happen
+      // in popup window.
+      APZCCallbackHelper::InitializeRootDisplayport(aRootFrame);
+    } else {
+      APZCCallbackHelper::InitializeRootDisplayport(aRootFrame->PresShell());
+    }
     return false;
   }
 
@@ -733,6 +800,18 @@ void DisplayportSetListener::OnPostRefresh() {
                                             std::move(mTargets));
 }
 
+nsIFrame* GetRootFrameForWidget(const nsIWidget* aWidget,
+                                const PresShell* aPresShell) {
+  if (auto* popup = aWidget->GetPopupFrame()) {
+    // In the case where the widget is popup window and uses APZ, the widget
+    // frame (i.e. menu popup frame) is the reference frame used for building
+    // the display list for hit-testing inside the popup.
+    return popup;
+  }
+
+  return aPresShell->GetRootFrame();
+}
+
 already_AddRefed<DisplayportSetListener>
 APZCCallbackHelper::SendSetTargetAPZCNotification(nsIWidget* aWidget,
                                                   dom::Document* aDocument,
@@ -754,41 +833,48 @@ APZCCallbackHelper::SendSetTargetAPZCNotification(nsIWidget* aWidget,
     return nullptr;
   }
   sLastTargetAPZCNotificationInputBlock = aInputBlockId;
-  if (PresShell* presShell = aDocument->GetPresShell()) {
-    if (nsIFrame* rootFrame = presShell->GetRootFrame()) {
-      bool waitForRefresh = false;
-      nsTArray<ScrollableLayerGuid> targets;
-
-      if (const WidgetTouchEvent* touchEvent = aEvent.AsTouchEvent()) {
-        for (size_t i = 0; i < touchEvent->mTouches.Length(); i++) {
-          waitForRefresh |= PrepareForSetTargetAPZCNotification(
-              aWidget, aLayersId, rootFrame, touchEvent->mTouches[i]->mRefPoint,
-              &targets);
-        }
-      } else if (const WidgetWheelEvent* wheelEvent = aEvent.AsWheelEvent()) {
-        waitForRefresh = PrepareForSetTargetAPZCNotification(
-            aWidget, aLayersId, rootFrame, wheelEvent->mRefPoint, &targets);
-      } else if (const WidgetMouseEvent* mouseEvent = aEvent.AsMouseEvent()) {
-        waitForRefresh = PrepareForSetTargetAPZCNotification(
-            aWidget, aLayersId, rootFrame, mouseEvent->mRefPoint, &targets);
-      }
-      // TODO: Do other types of events need to be handled?
-
-      if (!targets.IsEmpty()) {
-        if (waitForRefresh) {
-          APZCCH_LOG(
-              "At least one target got a new displayport, need to wait for "
-              "refresh\n");
-          return MakeAndAddRef<DisplayportSetListener>(
-              aWidget, presShell->GetPresContext(), aInputBlockId,
-              std::move(targets));
-        }
-        APZCCH_LOG("Sending target APZCs for input block %" PRIu64 "\n",
-                   aInputBlockId);
-        aWidget->SetConfirmedTargetAPZC(aInputBlockId, targets);
-      }
-    }
+  PresShell* presShell = aDocument->GetPresShell();
+  if (!presShell) {
+    return nullptr;
   }
+
+  nsIFrame* rootFrame = GetRootFrameForWidget(aWidget, presShell);
+  if (!rootFrame) {
+    return nullptr;
+  }
+
+  bool waitForRefresh = false;
+  nsTArray<ScrollableLayerGuid> targets;
+
+  if (const WidgetTouchEvent* touchEvent = aEvent.AsTouchEvent()) {
+    for (size_t i = 0; i < touchEvent->mTouches.Length(); i++) {
+      waitForRefresh |= PrepareForSetTargetAPZCNotification(
+          aWidget, aLayersId, rootFrame, touchEvent->mTouches[i]->mRefPoint,
+          &targets);
+    }
+  } else if (const WidgetWheelEvent* wheelEvent = aEvent.AsWheelEvent()) {
+    waitForRefresh = PrepareForSetTargetAPZCNotification(
+        aWidget, aLayersId, rootFrame, wheelEvent->mRefPoint, &targets);
+  } else if (const WidgetMouseEvent* mouseEvent = aEvent.AsMouseEvent()) {
+    waitForRefresh = PrepareForSetTargetAPZCNotification(
+        aWidget, aLayersId, rootFrame, mouseEvent->mRefPoint, &targets);
+  }
+  // TODO: Do other types of events need to be handled?
+
+  if (!targets.IsEmpty()) {
+    if (waitForRefresh) {
+      APZCCH_LOG(
+          "At least one target got a new displayport, need to wait for "
+          "refresh\n");
+      return MakeAndAddRef<DisplayportSetListener>(
+          aWidget, presShell->GetPresContext(), aInputBlockId,
+          std::move(targets));
+    }
+    APZCCH_LOG("Sending target APZCs for input block %" PRIu64 "\n",
+               aInputBlockId);
+    aWidget->SetConfirmedTargetAPZC(aInputBlockId, targets);
+  }
+
   return nullptr;
 }
 
@@ -886,31 +972,30 @@ void APZCCallbackHelper::CancelAutoscroll(
 void APZCCallbackHelper::NotifyScaleGestureComplete(
     const nsCOMPtr<nsIWidget>& aWidget, float aScale) {
   MOZ_ASSERT(NS_IsMainThread());
-
-  if (nsView* view = nsView::GetViewFor(aWidget)) {
-    if (PresShell* presShell = view->GetPresShell()) {
-      dom::Document* doc = presShell->GetDocument();
-      MOZ_ASSERT(doc);
-      if (nsPIDOMWindowInner* win = doc->GetInnerWindow()) {
-        dom::AutoJSAPI jsapi;
-        if (!jsapi.Init(win)) {
-          return;
-        }
-
-        JSContext* cx = jsapi.cx();
-        JS::Rooted<JS::Value> detail(cx, JS::Float32Value(aScale));
-        RefPtr<dom::CustomEvent> event =
-            NS_NewDOMCustomEvent(doc, nullptr, nullptr);
-        event->InitCustomEvent(cx, u"MozScaleGestureComplete"_ns,
-                               /* CanBubble */ true,
-                               /* Cancelable */ false, detail);
-        event->SetTrusted(true);
-        auto* dispatcher = new AsyncEventDispatcher(doc, event.forget(),
-                                                    ChromeOnlyDispatch::eYes);
-        dispatcher->PostDOMEvent();
-      }
-    }
+  nsIFrame* frame = aWidget->GetFrame();
+  if (!frame) {
+    return;
   }
+  dom::Document* doc = frame->PresShell()->GetDocument();
+  MOZ_ASSERT(doc);
+  nsPIDOMWindowInner* win = doc->GetInnerWindow();
+  if (!win) {
+    return;
+  }
+  dom::AutoJSAPI jsapi;
+  if (!jsapi.Init(win)) {
+    return;
+  }
+  JSContext* cx = jsapi.cx();
+  JS::Rooted<JS::Value> detail(cx, JS::Float32Value(aScale));
+  RefPtr<dom::CustomEvent> event = NS_NewDOMCustomEvent(doc, nullptr, nullptr);
+  event->InitCustomEvent(cx, u"MozScaleGestureComplete"_ns,
+                         /* CanBubble */ true,
+                         /* Cancelable */ false, detail);
+  event->SetTrusted(true);
+  auto* dispatcher =
+      new AsyncEventDispatcher(doc, event.forget(), ChromeOnlyDispatch::eYes);
+  dispatcher->PostDOMEvent();
 }
 
 /* static */
@@ -947,4 +1032,21 @@ void APZCCallbackHelper::NotifyPinchGesture(
 }
 
 }  // namespace layers
+
+std::ostream& operator<<(std::ostream& aOut,
+                         const PreventDefaultResult aPreventDefaultResult) {
+  switch (aPreventDefaultResult) {
+    case PreventDefaultResult::No:
+      aOut << "unhandled";
+      break;
+    case PreventDefaultResult::ByContent:
+      aOut << "handled-by-content";
+      break;
+    case PreventDefaultResult::ByChrome:
+      aOut << "handled-by-chrome";
+      break;
+  }
+  return aOut;
+}
+
 }  // namespace mozilla

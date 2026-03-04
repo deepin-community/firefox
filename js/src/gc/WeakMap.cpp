@@ -12,6 +12,7 @@
 #include "vm/JSObject.h"
 
 #include "gc/Marking-inl.h"
+#include "gc/StoreBuffer-inl.h"
 
 using namespace js;
 using namespace js::gc;
@@ -22,18 +23,8 @@ WeakMapBase::WeakMapBase(JSObject* memOf, Zone* zone)
   MOZ_ASSERT(!IsMarked(mapColor()));
 }
 
-WeakMapBase::~WeakMapBase() {
-  MOZ_ASSERT(CurrentThreadIsGCFinalizing() ||
-             CurrentThreadCanAccessZone(zone_));
-}
-
 void WeakMapBase::unmarkZone(JS::Zone* zone) {
-  AutoEnterOOMUnsafeRegion oomUnsafe;
-  if (!zone->gcEphemeronEdges().clear()) {
-    oomUnsafe.crash("clearing ephemeron edges table");
-  }
-  MOZ_ASSERT(zone->gcNurseryEphemeronEdges().count() == 0);
-
+  zone->gcEphemeronEdges().clearAndCompact();
   for (WeakMapBase* m : zone->gcWeakMapList()) {
     m->setMapColor(CellColor::White);
   }
@@ -72,11 +63,26 @@ bool WeakMapBase::markMap(MarkColor markColor) {
   }
 }
 
-bool WeakMapBase::addEphemeronEdgesForEntry(MarkColor mapColor, Cell* key,
-                                            Cell* delegate,
+bool WeakMapBase::addEphemeronEdgesForEntry(MarkColor mapColor,
+                                            TenuredCell* key, Cell* delegate,
                                             TenuredCell* value) {
-  if (delegate && !addEphemeronEdge(mapColor, delegate, key)) {
-    return false;
+  if (delegate) {
+    if (!delegate->isTenured()) {
+      MOZ_ASSERT(false);
+      // This case is probably not possible, or wasn't at the time of this
+      // writing. It requires a tenured wrapper with a nursery wrappee delegate,
+      // which is tough to create given that the wrapper has to be created after
+      // its target, and in fact appears impossible because the delegate has to
+      // be created after the GC begins to avoid being tenured at the beginning
+      // of the GC, and adding the key to the weakmap will mark the key via a
+      // pre-barrier. But still, handling this case is straightforward:
+
+      // The delegate is already being kept alive in a minor GC since it has an
+      // edge from a tenured cell (the key). Make sure the key stays alive too.
+      delegate->storeBuffer()->putWholeCell(key);
+    } else if (!addEphemeronEdge(mapColor, &delegate->asTenured(), key)) {
+      return false;
+    }
   }
 
   if (value && !addEphemeronEdge(mapColor, key, value)) {
@@ -86,13 +92,18 @@ bool WeakMapBase::addEphemeronEdgesForEntry(MarkColor mapColor, Cell* key,
   return true;
 }
 
-bool WeakMapBase::addEphemeronEdge(MarkColor color, gc::Cell* src,
-                                   gc::Cell* dst) {
+bool WeakMapBase::addEphemeronEdge(MarkColor color, gc::TenuredCell* src,
+                                   gc::TenuredCell* dst) {
   // Add an implicit edge from |src| to |dst|.
 
-  auto& edgeTable = src->zone()->gcEphemeronEdges(src);
-  auto* ptr = edgeTable.getOrAdd(src);
-  return ptr && ptr->value.emplaceBack(color, dst);
+  auto& edgeTable = src->zone()->gcEphemeronEdges();
+  auto p = edgeTable.lookupForAdd(src);
+  if (!p) {
+    if (!edgeTable.add(p, src, EphemeronEdgeVector())) {
+      return false;
+    }
+  }
+  return p->value().emplaceBack(color, dst);
 }
 
 #if defined(JS_GC_ZEAL) || defined(DEBUG)
@@ -130,9 +141,10 @@ bool WeakMapBase::markZoneIteratively(JS::Zone* zone, GCMarker* marker) {
   return markedAny;
 }
 
-bool WeakMapBase::findSweepGroupEdgesForZone(JS::Zone* zone) {
-  for (WeakMapBase* m : zone->gcWeakMapList()) {
-    if (!m->findSweepGroupEdges()) {
+bool WeakMapBase::findSweepGroupEdgesForZone(JS::Zone* atomsZone,
+                                             JS::Zone* mapZone) {
+  for (WeakMapBase* m : mapZone->gcWeakMapList()) {
+    if (!m->findSweepGroupEdges(atomsZone)) {
       return false;
     }
   }
@@ -189,36 +201,19 @@ void WeakMapBase::restoreMarkedWeakMaps(WeakMapColors& markedWeakMaps) {
   }
 }
 
-ObjectWeakMap::ObjectWeakMap(JSContext* cx) : map(cx, nullptr) {}
+void WeakMapBase::setHasNurseryEntries() {
+  MOZ_ASSERT(!hasNurseryEntries);
 
-JSObject* ObjectWeakMap::lookup(const JSObject* obj) {
-  if (ObjectValueWeakMap::Ptr p = map.lookup(const_cast<JSObject*>(obj))) {
-    return &p->value().toObject();
-  }
-  return nullptr;
-}
+  AutoEnterOOMUnsafeRegion oomUnsafe;
 
-bool ObjectWeakMap::add(JSContext* cx, JSObject* obj, JSObject* target) {
-  MOZ_ASSERT(obj && target);
-
-  Value targetVal(ObjectValue(*target));
-  if (!map.putNew(obj, targetVal)) {
-    ReportOutOfMemory(cx);
-    return false;
+  GCRuntime* gc = &zone()->runtimeFromMainThread()->gc;
+  if (!gc->nursery().addWeakMapWithNurseryEntries(this)) {
+    oomUnsafe.crash("WeakMapBase::setHasNurseryEntries");
   }
 
-  return true;
+  hasNurseryEntries = true;
 }
 
-void ObjectWeakMap::remove(JSObject* key) {
-  MOZ_ASSERT(key);
-  map.remove(key);
-}
-
-void ObjectWeakMap::clear() { map.clear(); }
-
-void ObjectWeakMap::trace(JSTracer* trc) { map.trace(trc); }
-
-size_t ObjectWeakMap::sizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) {
-  return map.shallowSizeOfExcludingThis(mallocSizeOf);
-}
+namespace js {
+template class WeakMap<JSObject*, JSObject*, ZoneAllocPolicy>;
+}  // namespace js

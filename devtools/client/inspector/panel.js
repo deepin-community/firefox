@@ -4,16 +4,29 @@
 
 "use strict";
 
-function InspectorPanel(iframeWindow, toolbox, commands) {
-  this._inspector = new iframeWindow.Inspector(toolbox, commands);
-}
-InspectorPanel.prototype = {
-  open() {
-    return this._inspector.init();
-  },
+const {
+  Inspector,
+} = require("resource://devtools/client/inspector/inspector.js");
+
+class InspectorPanel {
+  constructor(iframeWindow, toolbox, commands) {
+    this.#inspector = new Inspector(toolbox, commands, iframeWindow);
+  }
+
+  #inspector;
+
+  /**
+   * Initialize the inspector
+   *
+   * @param {object} options: see Inspector.init
+   * @returns {Inspector}
+   */
+  open(options = {}) {
+    return this.#inspector.init(options);
+  }
 
   destroy() {
-    this._inspector.destroy();
-  },
-};
+    this.#inspector.destroy();
+  }
+}
 exports.InspectorPanel = InspectorPanel;

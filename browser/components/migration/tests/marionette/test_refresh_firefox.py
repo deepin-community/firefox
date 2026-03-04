@@ -38,6 +38,8 @@ class TestFirefoxRefresh(MarionetteTestCase):
     _formAutofillAddressGuid = None
 
     _expectedURLs = ["about:robots", "about:mozilla"]
+    _expectedOpenGroupID = "test-open-group"
+    _expectedSavedGroups = ["test-saved-group"]
 
     def savePassword(self):
         self.runAsyncCode(
@@ -160,10 +162,10 @@ class TestFirefoxRefresh(MarionetteTestCase):
         self.runCode(
             """
           // Expire in 15 minutes:
-          let expireTime = Math.floor(Date.now() / 1000) + 15 * 60;
+          let expireTime = Date.now() + 1000 * 15 * 60;
           Services.cookies.add(arguments[0], arguments[1], arguments[2], arguments[3],
                                true, false, false, expireTime, {},
-                               Ci.nsICookie.SAMESITE_NONE, Ci.nsICookie.SCHEME_UNSET);
+                               Ci.nsICookie.SAMESITE_UNSET, Ci.nsICookie.SCHEME_UNSET);
         """,
             script_args=(
                 self._cookieHost,
@@ -183,6 +185,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
             "resource:///modules/sessionstore/TabStateFlusher.sys.mjs"
           );
           let expectedURLs = Array.from(arguments[0])
+          let expectedOpenGroupID = arguments[1];
           gBrowser.addTabsProgressListener({
             onStateChange(browser, webprogress, request, flags, status) {
               try {
@@ -207,6 +210,9 @@ class TestFirefoxRefresh(MarionetteTestCase):
               triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
             }));
           }
+          if (expectedOpenGroupID) {
+            gBrowser.addTabGroup([gBrowser.tabs[gBrowser.tabs.length - 1]], { id: expectedOpenGroupID });
+          }
           // Close any other tabs that might be open:
           let allTabs = Array.from(gBrowser.tabs);
           for (let tab of allTabs) {
@@ -215,7 +221,60 @@ class TestFirefoxRefresh(MarionetteTestCase):
             }
           }
         """,  # NOQA: E501
-            script_args=(self._expectedURLs,),
+            script_args=(self._expectedURLs, self._expectedOpenGroupID),
+        )
+
+        self.runAsyncCode(
+            """
+          let resolve = arguments[arguments.length - 1];
+          let expectedSavedGroups = Array.from(arguments[0]);
+          let { TabStateFlusher } = ChromeUtils.importESModule(
+            "resource:///modules/sessionstore/TabStateFlusher.sys.mjs"
+          );
+
+          let savePromises = [];
+          let groups = [];
+          for (let id of expectedSavedGroups) {
+            let tab = gBrowser.addTab("about:mozilla", {
+              triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+            });
+            let group = gBrowser.addTabGroup([tab], { id });
+            groups.push(group);
+            let groupSaved = new Promise(res => {
+              window.addEventListener("TabGroupSaved", (e) => {
+                if (e.target === group) {
+                  res()
+                }
+              });
+            });
+            let groupRemoved = new Promise(res => {
+              window.addEventListener("TabGroupRemoved", (e) => {
+                if (e.target === group) {
+                  res()
+                }
+              });
+            });
+            savePromises.push(Promise.allSettled([groupSaved, groupRemoved]));
+          }
+          TabStateFlusher.flushWindow(gBrowser.ownerGlobal).then(() => {
+            groups.forEach(group => {
+              group.saveAndClose();
+            })
+            Promise.allSettled(savePromises).then(resolve);
+          });
+
+        """,
+            script_args=(self._expectedSavedGroups,),
+        )
+
+        self.assertEqual(
+            self.marionette.execute_script(
+                """
+                return SessionStore.savedGroups.length;
+                """
+            ),
+            len(self._expectedSavedGroups),
+            "Correct number of groups were saved",
         )
 
     def createFxa(self):
@@ -306,7 +365,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
         """,
             script_args=(self._historyURL,),
         )
-        if type(historyResult) == str:
+        if type(historyResult) is str:
             self.fail(historyResult)
             return
 
@@ -322,7 +381,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
         """,
             script_args=(self._formHistoryFieldName,),
         )
-        if type(formFieldResults) == str:
+        if type(formFieldResults) is str:
             self.fail(formFieldResults)
             return
 
@@ -357,7 +416,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
           }).then(resolve);
         """,
         )
-        if type(formAutofillResults) == str:
+        if type(formAutofillResults) is str:
             self.fail(formAutofillResults)
             return
 
@@ -445,6 +504,30 @@ class TestFirefoxRefresh(MarionetteTestCase):
         )
         self.assertSequenceEqual(tabURIs, self._expectedURLs)
 
+        if self._expectedOpenGroupID:
+            groupExists = self.runCode(
+                """
+              let groupID = arguments[0];
+              let group = gBrowser.getTabGroupById(groupID);
+              return !!group;
+            """,
+                script_args=(self._expectedOpenGroupID,),
+            )
+            self.assertTrue(groupExists, "open group was restored")
+
+        savedGroupIDs = self.runAsyncCode(
+            """
+          let resolve = arguments[arguments.length - 1];
+          let groupIDs = [];
+          for (let group of window.SessionStore.savedGroups) {
+            groupIDs.push(group.id);
+          }
+          resolve(groupIDs);
+        """,
+            script_args=(self._expectedSavedGroups,),
+        )
+        self.assertSequenceEqual(savedGroupIDs, self._expectedSavedGroups)
+
     def checkFxA(self):
         result = self.runAsyncCode(
             """
@@ -465,7 +548,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
           });
         """
         )
-        if type(result) != dict:
+        if type(result) is not dict:
             self.fail(result)
             return
         self.assertEqual(result["accountData"]["email"], "test@test.com")
@@ -492,6 +575,14 @@ class TestFirefoxRefresh(MarionetteTestCase):
         )
         self.assertFalse(result)
 
+    def checkRefreshPromptDisabled(self):
+        refreshPromptDisabled = self.runCode(
+            """
+          return Services.prefs.getStringPref("browser.disableResetPrompt", false);
+      """
+        )
+        self.assertTrue(refreshPromptDisabled)
+
     def checkProfile(self, has_migrated=False, expect_sync_user=True):
         self.checkPassword()
         self.checkBookmarkInMenu()
@@ -505,6 +596,7 @@ class TestFirefoxRefresh(MarionetteTestCase):
             self.checkBookmarkToolbarVisibility()
             self.checkSession()
             self.checkStartupMigrationStateCleared()
+            self.checkRefreshPromptDisabled()
 
     def createProfileData(self):
         self.savePassword()

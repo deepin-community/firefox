@@ -33,18 +33,18 @@
  *************************************************************************************
  */
 
+#include <assert.h>
 #include <stdint.h>
+
 #include <cstring>
 #include <iostream>
-#include <assert.h>
 
 #include "gmp-platform.h"
-#include "gmp-video-host.h"
-#include "gmp-video-encode.h"
 #include "gmp-video-decode.h"
-#include "gmp-video-frame-i420.h"
+#include "gmp-video-encode.h"
 #include "gmp-video-frame-encoded.h"
-
+#include "gmp-video-frame-i420.h"
+#include "gmp-video-host.h"
 #include "mozilla/PodOperations.h"
 
 #if defined(_MSC_VER)
@@ -337,7 +337,9 @@ class FakeVideoDecoder : public GMPVideoDecoder {
     int width = eframe->idr_nalu.width_;
     int height = eframe->idr_nalu.height_;
     int ystride = eframe->idr_nalu.width_;
-    int uvstride = eframe->idr_nalu.width_ / 2;
+    // Round up so the data fits, or CreateEmptyFrame will fail on odd width and
+    // height.
+    int uvstride = (ystride + (ystride % 2)) / 2;
 
     GMPLOG(GL_DEBUG, "Video frame ready for display "
                          << width << "x" << height

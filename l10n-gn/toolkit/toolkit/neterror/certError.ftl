@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Ndojejeroviái pe mboajepyréva 
 cert-error-trust-expired-issuer = Ndojejeroviái pe mboajepyre rehe pe ime’ẽhare ndoikovéima rupi.
 cert-error-trust-self-signed = Ndojejeroviái pe mboajepyre rehe oñemboheraguapyjehegui rupi.
 cert-error-trust-symantec = Umi mboajepyre oguenohẽva GeoTrust, RapidSSL, Symantec, Thawte y VeriSign nahekorosãvéima mboajepyre moakãharakuéra ndoguatái tekorosã rapére ymave.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } ndojeroviái { $hostname } rehe ndaikatúire ohechauka ojapoha he’íva pe mboajepyre opavaveguáva rekosakã.
 cert-error-untrusted-default = Pe mboajepyre ndoúi peteĩ teñoiha ijeroviahávagui.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,50 @@ open-in-new-window-for-csp-or-xfo-error = Embojuruja tenda ovetã pyahúpe
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Emo’ã hag̃ua ne rekorosã, { $hostname } nomoneĩmo’ãi { -brand-short-name } ohechaukávo kuatiarogue ambue tenda omoingéramo. Ehecha hag̃ua ko kuatiarogue, embojurujava’erã ovetã pyahúpe.
+fp-certerror-view-certificate-link = Ehecha tenda kuatia’atã
+fp-certerror-return-to-previous-page-recommended-button = Eguevi (ñemoñe’ẽmbyre)
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ndahetái. Ikatuhína iñapañuái upe tendaite ndivevoi.
+fp-certerror-self-signed-important-note = JEHAIPY TUICHAMBA’ÉVA: Eñeha’ãrõ eike ko tendápe peintranet atyguasugua rupi, IT mba’apohára ikatu oiporu kuatia’atã heraguapyjeheguíva. Ha’ekuéra oipytyvõta ha'épa añetegua.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Aravopapaha mba’e’oka pegua oñemboheko { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } ramo. Oĩ porãramo, oiméne apañuái tekorosãgua oĩhína pe tendapevoi. Oĩvaíramo, ikatu emoambue apopyvusu mba’e’oka ñembohekohápe.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Ayvu jejavy: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+fp-certerror-transparency-why-dangerous-body = { -brand-short-name } ndojeroviái { $hostname } rehe ndaikatúire ohechauka ojapoha he’íva pe mboajepyre opavaveguáva rekosakã.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-transparency-what-can-you-do-body = Ikatu ndaha’éi mba’evete, oikokuaa haguére apañuái upe ñanduti rogue ndive.
+fp-learn-more-about-secure-connection-failures = Eikuaave jeike katu jejavy rehegua
+fp-learn-more-about-cert-issues = Eikuaave ko apañuái kuatia’atã ndive rehegua
+fp-learn-more-about-time-related-errors = Eikuaave mba’éichapa emoĩporãta jejavy arange rehegua
+
+## Variables:
+##   $hostname (string) - Hostname of the website with cert error.
+
+cert-error-revoked-certificate = { -brand-short-name } ojoko nde jeike ko tendápe upe kuatia’atã oñeme’ẽva { $hostname }-pe oñemboguevíma ha mavave ndojeroviavéima hese.
+cert-error-bad-signature = { -brand-short-name } ojoko nde jeike ko tendápe pe kuatia’atã ñemboheraguapy oñeme’ẽva { $hostname }-pe g̃uarã ndoikói.
+cert-error-key-pinning-failure = { -brand-short-name } ojoko nde jeike ko tendápe upe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã oiporu rupi ñe’ẽñemi iñambuéva oñeha’ãrõvagui.
+cert-error-bad-der = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete pe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã.
+cert-error-cert-not-in-name-space = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete pe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã ndohapykuehói téra jejoko pe kuatia’atã ome’ẽva’ekue.
+cert-error-inadequate-cert-type = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã ndoiporukuaái ñanduti apopyvusu.
+cert-error-path-len-constraint-invalid = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete pe kuatia’atã oñeme’ẽva { $hostname }-pe oreko rehe heta kuatia’atã mbytegua pe kuatia’atã ypygua rapépe.
+cert-error-invalid-key = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete kuatia’atã oñeme’ẽva { $hostname }-pe orekóre ñe’ẽñemi oiko’ỹva. Ikatúre, michĩeterei hekorosã hag̃ua.
+cert-error-unknown-critical-extension = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete pe kuatia’atã oñeme’ẽva { $hostname }-pe oreko jepysokue vai ndojokupytýiva.
+cert-error-extension-value-invalid = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete pe kuatia’atã oñeme’ẽva { $hostname }-pe oreko jepysokue oiko’ỹva.
+cert-error-untrusted-issuer = { -brand-short-name } ojoko nde jeike ko tendápe upe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã oguenohẽkuri mburuvicha kuatia’atã omoheñóiva ndojejeroviavéima hese.
+cert-error-untrusted-cert = { -brand-short-name } ojoko nde jeike ko tendápe upe kuatia’atã oñeme’ẽva { $hostname }-pe oñembokurusu rehe hekorosã’ỹvaramo.
+cert-error-invalid-integer-encoding = { -brand-short-name } ojoko nde jeike ko tendápe upe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã oguereko rehe ñembopapapy oiko’ỹva. Ko’ãva ikatu oiko oguerekóramo papapy syryry mbotovéva, RSA ayvu mbotovéva ra’ãha ha mbopapapy ipukuetereíva oikotevẽ’ỹre.
+cert-error-unsupported-keyalg = { -brand-short-name } ojoko nde jeike ko tendápe upe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã oguereko rupi ñe’ẽñemi ojokupyty’ỹva.
+cert-error-issuer-no-longer-trusted = { -brand-short-name } ojoko nde jeike ko tendápe ndojejapóigui hekopete pe kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã ndaha’evéima jeroviaha.
+cert-error-signature-algorithm-mismatch = { -brand-short-name } ojoko nde jeike ko tendápe algoritmo teraguapyha kuatia’atã oñeme’ẽva { $hostname }-pe g̃uarã ndojokupytýi rehe pe algoritmo teraguapyha kora rehe.
 
 ## Messages used for certificate error titles
 
@@ -76,6 +123,7 @@ deniedPortAccess-title = Ko kundaharape ndaikatúi eiporu
 # "Hmm" is a sound made when considering or puzzling over something.
 # You don't have to include it in your translation if your language does not have a written word like this.
 dnsNotFound-title = Hmm. Oĩ apañuái ejuhu hag̃ua ko tenda.
+internet-connection-offline-title = Ha’eténte ku oĩva apañuái eikundaha hag̃ua ñandutípe.
 dns-not-found-trr-only-title2 = Tekorosã imarãkuaa ehekakuévo ko tendatee
 dns-not-found-native-fallback-title2 = Tekorosã imarãkuaa ehekakuévo ko tendatee
 fileNotFound-title = Marandurenda ndojejuhúiva
@@ -92,6 +140,7 @@ contentEncodingError-title = Tetepy mbopapapy jejavy
 unsafeContentType-title = Peteĩchagua marandurenda hekorosã’ỹva
 netReset-title = Jeike oñepyrũjeýma
 netTimeout-title = Pe jeike ndoikovéima
+httpErrorPage-title = Ha’eténte ku oĩva apañuái ko tenda ndive.
 serverError-title = Ha’eténte ku oĩva apañuái ko tenda ndive.
 unknownProtocolFound-title = Pe kundaharape nahesakãi
 proxyConnectFailure-title = Mohendahavusu proxy ombotove jeike
@@ -100,6 +149,7 @@ redirectLoop-title = Ko kuatiarogue ndoguerahajeýi hekoitépe
 unknownSocketType-title = Mbohovái eha’ãrõ’ỹva mohendahavusúgui
 nssFailure2-title = Jeikekatu jejavýva
 csp-xfo-error-title = { -brand-short-name } ndoikekuaái ko kuatiaroguépe
+corruptedContentErrorv2-title = Tetepy imarãva jejavy
 corruptedContentError-title = Tetepy marãva jejavy
 sslv3Used-title = Ndaikatúi eikekatu
 inadequateSecurityError-title = Nde jeike ndahekokatúi
@@ -109,3 +159,21 @@ networkProtocolError-title = Jejavy guasu ñandutípe
 nssBadCert-title = Jesarekorã: Imarãkuaáva tenondeve
 nssBadCert-sts-title = Ndoikéi: Ikatu hína iñapañuái tekorosãrã
 certerror-mitm-title = Ko software ojokohína { -brand-short-name } ani oike ko tendápe tekorasãme
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Kyhyjerã: Tekorosã ñembyaikuaa
+fp-certerror-body-title = Ema’ẽke. Oĩvaicha iporãmba’ỹva.
+fp-certerror-why-site-dangerous = ¿Mba’érevaicha upe tenda ivaikuaa?
+fp-certerror-what-can-you-do = ¿Mba’e ikatu rejapo upéicharõ?
+fp-certerror-advanced-title = Opapotáva
+fp-certerror-advanced-button = Opapotáva
+fp-certerror-hide-advanced-button = Eñomi opapotáva
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Ejapo { $hostname } ndive (ivaikuaa)
+fp-certerror-intro = { -brand-short-name } ohecha apañuái tekorosãgua ivaikuaáva <strong>{ $hostname }</strong> ndive. Oĩrõ oñembohasáva tenda rendaguépe ikatuhína omonda marandu kuatia’atã ñemurãgui, ñe’ẽñemi térã ñanduti veve.
+fp-certerror-expired-into = { -brand-short-name } ohechakuaa tekorosã apañuái <strong>{ $hostname }</strong> ndive. Térã tenda noñembohekoporãi térã mba’e’oka aravopapaha oñemohenda arange/aravo oĩvaívape.
+fp-certerror-transparency-intro = Peteĩ ohasáva <strong>{ $hostname }</strong> rekovia omondakuaa ne marandu ikatúva kuatia’atã mba’ekuaarã, ñe’ẽñemi térã ñanduti veve.

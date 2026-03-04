@@ -366,8 +366,8 @@ pub struct Device {
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct RemoteDirEntry {
     depth: usize,
-    metadata: RemoteMetadata,
-    name: String,
+    pub metadata: RemoteMetadata,
+    pub name: String,
 }
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
@@ -401,15 +401,13 @@ impl Device {
 
         // check for rooted devices
         let uid_check = |id: String| id.contains("uid=0");
-        device.adbd_root = device
-            .execute_host_shell_command("id")
-            .map_or(false, uid_check);
+        device.adbd_root = device.execute_host_shell_command("id").is_ok_and(uid_check);
         device.su_0_root = device
             .execute_host_shell_command("su 0 id")
-            .map_or(false, uid_check);
+            .is_ok_and(uid_check);
         device.su_c_root = device
             .execute_host_shell_command("su -c id")
-            .map_or(false, uid_check);
+            .is_ok_and(uid_check);
         device.is_rooted = device.adbd_root || device.su_0_root || device.su_c_root;
 
         device.storage = match storage {
@@ -592,7 +590,7 @@ impl Device {
         activity: &str,
         am_start_args: &[T],
     ) -> Result<bool> {
-        let mut am_start = format!("am start -W -n {}/{}", package, activity);
+        let mut am_start = format!("am start -S -W -n {}/{}", package, activity);
 
         for arg in am_start_args {
             am_start.push(' ');

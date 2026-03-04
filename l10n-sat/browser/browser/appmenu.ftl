@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = ᱰᱟᱣᱱᱞᱚᱰ ᱠᱚ
 appmenuitem-passwords =
     .label = ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱠᱚ
+appmenuitem-extensions-and-themes =
+    .label = ᱯᱟᱥᱱᱟᱣ ᱟᱨ ᱛᱷᱤᱢ ᱠᱚ
+appmenuitem-extensions =
+    .label = ᱯᱟᱥᱱᱟᱣ ᱠᱚ
 appmenuitem-addons-and-themes =
     .label = ᱮᱰᱚᱱᱥ ᱟᱨ ᱛᱷᱮᱢᱥ
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = ᱥᱭᱝᱠ ᱟᱨ ᱰᱟᱴᱟ ᱥᱟᱺᱪ�
 appmenu-fxa-signed-in-label = ᱵᱚᱞᱚᱱ ᱥᱩᱦᱤ
 appmenu-fxa-setup-sync =
     .label = ᱛᱚᱞ ᱡᱚᱠᱷᱟ ᱚᱱ ᱢᱮ...
+appmenu-fxa-setup-sync-new = ᱮᱢ ᱢᱮ
 appmenuitem-save-page =
     .label = ᱞᱮᱠᱟ ᱥᱟᱦᱴᱟ ᱥᱟᱺᱪᱟᱣ...
+appmenuitem-fxa-sync-off-title = ᱥᱭᱝᱠ ᱵᱚᱸᱫᱚ ᱢᱮᱱᱟᱜ-ᱟ
+appmenuitem-fxa-sync-off-description = ᱟᱢᱟᱜ ᱵᱩᱠᱢᱟᱨᱠ, ᱯᱟᱥᱣᱟᱨᱰ ᱟᱨ ᱟᱭᱢᱟ ᱡᱟᱦᱟᱸ ᱨᱮᱜᱮ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱚᱱᱟ ᱨᱮᱭᱟᱜ ᱟᱫᱮᱨ ᱧᱟᱢ  ᱢᱮ ᱾
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = ᱯᱨᱚᱯᱷᱟᱭᱞᱟᱨ ᱯᱮᱱᱮᱞ ᱡᱷᱤᱡᱽ ᱢᱮ
+    .tooltiptext = ᱯᱨᱚᱯᱷᱟᱭᱞᱟᱨ ᱯᱮᱱᱮᱞ ᱡᱷᱤᱡᱽ ᱢᱮ
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = { -brand-shorter-name } ᱨᱮ ᱥᱟᱰᱮ ᱟᱨ ᱣᱤᱰᱤᱭᱚ ᱮᱴᱠᱮᱴᱚᱬᱮᱸ ᱠᱚ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱞᱟᱹᱜᱤᱫ ᱡᱤᱱᱤᱥ ᱾
 profiler-popup-presets-media-label =
     .label = ᱢᱤᱰᱤᱭᱟ
+profiler-popup-presets-ml-description = { -brand-shorter-name } ᱨᱮ ᱢᱟᱥᱤᱱ ᱪᱮᱫᱚᱜ ᱵᱚᱜᱽ ᱠᱚ ᱨᱮᱭᱟᱜ ᱛᱚᱞᱟᱥ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱴ ᱾
+profiler-popup-presets-ml-label =
+    .label = ᱢᱮᱥᱤᱱ ᱪᱮᱫᱚᱜ
 profiler-popup-presets-networking-description = { -brand-shorter-name } ᱨᱮ ᱱᱮᱴᱣᱟᱨᱠᱤᱝ ᱵᱟᱵᱚᱛ ᱮᱴᱠᱮᱴᱚᱬᱮᱸ ᱠᱚ ᱥᱮᱸᱫᱽᱨᱟ ᱞᱟᱹᱜᱤᱫ ᱡᱤᱱᱤᱥ ᱾
 profiler-popup-presets-networking-label =
     .label = ᱱᱮᱴᱣᱟᱨᱠᱤᱝ
@@ -196,6 +209,12 @@ profiler-popup-presets-power-description = ᱠᱚᱢ ᱚᱵᱷᱚᱨᱞᱚᱰ �
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = ᱞᱟᱹᱭᱤᱱ
+profiler-popup-presets-debug-description = { -brand-shorter-name } ᱨᱮ ᱰᱤᱵᱟᱜᱽ ᱞᱟᱹᱜᱤᱫ ᱯᱨᱤᱥᱮᱴ ᱾ ᱵᱟᱹᱲᱛᱤ ᱚᱵᱷᱟᱨᱞᱚᱰ, ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱠᱟᱹᱢᱤ ᱞᱟᱹᱜᱤᱫ ᱟᱞᱚᱢ ᱵᱮᱵᱷᱟᱨᱟ ᱢᱮᱱᱠᱷᱟᱱ ᱵᱽᱨᱟᱣᱩᱡᱚᱨ ᱵᱮᱵᱷᱟᱨ ᱵᱩᱡᱷᱟᱹᱣ ᱨᱮ ᱢᱚᱱᱮ ᱞᱟᱜᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱵᱮᱵᱷᱟᱨ ᱢᱮ ᱾
+profiler-popup-presets-debug-label =
+    .label = ᱰᱮᱵᱩᱜᱽ
+profiler-popup-presets-web-compat-description = ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱴᱨᱮᱠᱤᱝ ᱵᱚᱫᱚᱞ ᱛᱮ, ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱠᱚ ᱨᱮ ᱣᱮᱵᱽ ᱟᱱᱩᱠᱩᱞ ᱮᱴᱠᱮᱴᱚᱬᱮ ᱠᱚ ᱰᱤᱵᱟᱜᱽ ᱞᱟᱹᱜᱤᱫ ᱥᱚᱞᱦᱟ ᱟᱠᱟᱱ ᱥᱮᱴ ᱾
+profiler-popup-presets-web-compat-label =
+    .label = ᱣᱮᱵᱽ ᱠᱚᱢᱯᱮᱴ
 profiler-popup-presets-custom-label =
     .label = ᱠᱩᱥᱤᱭᱟᱜ
 
@@ -274,5 +293,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = ᱰᱟᱴᱟ ᱠᱩᱢᱵᱽᱲᱩ ᱴᱟᱴᱠᱟ ᱠᱷᱚᱵᱚᱨ ᱧᱟᱢ ᱢᱮ
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = ᱟᱢᱟᱜ ᱴᱷᱤᱠ ᱤᱢᱮᱞ ᱟᱨ ᱯᱷᱚᱱ ᱩᱠᱩᱭ ᱢᱮ
+appmenuitem-services-relay-description = ᱤᱢᱮᱞ ᱢᱟᱥᱠ ᱰᱮᱥᱵᱚᱨᱰ ᱯᱟᱨᱥᱟᱞ ᱢᱮ
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = ᱟᱢᱟᱜ ᱚᱱᱞᱟᱭᱤᱱ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱨᱩᱠᱷᱤᱭᱟᱹᱭᱢᱮ
+appmenu-services-header = ᱤᱧᱟᱜ ᱥᱮᱵᱟ ᱠᱚ
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Mozilla ᱠᱷᱚᱱ ᱮᱴᱟᱜ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱥᱟᱯᱟᱵ ᱠᱚ ᱪᱮᱥᱴᱟᱭ ᱢᱮ :
+appmenu-other-protection-header = { -vendor-short-name } ᱠᱷᱚᱱ ᱮᱴᱟᱜ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱥᱟᱯᱟᱵ ᱠᱚ ᱪᱮᱥᱴᱟᱭ ᱢᱮ :
+
+## Profiles panel
+
+appmenu-other-profiles = ᱮᱴᱟᱜ ᱯᱨᱚᱯᱷᱟᱭᱤᱞᱠᱚ
+appmenu-manage-profiles =
+    .label = ᱯᱨᱚᱯᱷᱟᱭᱤᱞ ᱠᱚ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
+appmenu-copy-profile =
+    .label = ᱱᱚᱶᱟ ᱯᱨᱚᱯᱷᱟᱭᱤᱞ ᱱᱚᱠᱚᱞ ᱢᱮ
+appmenu-create-profile =
+    .label = ᱱᱟᱶᱟ ᱯᱨᱚᱯᱷᱟᱭᱤᱞ
+appmenu-edit-profile =
+    .aria-label = ᱯᱨᱚᱯᱷᱟᱭᱤᱞ ᱥᱟᱯᱲᱟᱣ ᱢᱮ
+appmenu-profiles-2 =
+    .label = ᱢᱮᱫᱦᱟᱸᱠᱚ

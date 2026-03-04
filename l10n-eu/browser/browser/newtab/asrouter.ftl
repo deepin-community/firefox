@@ -59,14 +59,22 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } erabiltzaile
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sinkronizatu laster-markak edonon.
 cfr-doorhanger-bookmark-fxa-body = Ondo ikusia! Orain ez galdu laster-marka hau zure gailu mugikorretan. Hasi { -fxaccount-brand-name } erabiltzen.
+cfr-doorhanger-bookmark-fxa-body-2 = Ondo ikusia! Orain ez galdu laster-marka hau zure gailu mugikorretan. Hasi erabiltzen kontu batekin.
 cfr-doorhanger-bookmark-fxa-link-text = Sinkronizatu laster-markak orain…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Ixteko botoia
     .title = Itxi
+fxa-adoption-addresses-backup-title = Egin dezagun gordetako zure helbideen babeskopia
+fxa-adoption-addresses-backup-subtitle = Babestu gordetako zure helbideak gailuen artean zifratze bidez sinkronizatuz.
+fxa-adoption-credit-cards-backup-title = Egin dezagun gordetako zure ordainketa-metodoen babeskopia
+fxa-adoption-credit-cards-backup-subtitle = Babestu zure ordainketa-metodoak gailuen artean zifratze bidez sinkronizatuz.
+fxa-adoption-bookmarks-treatment-backup-title = Egin dezagun zure laster-marken babeskopia
+fxa-adoption-bookmarks-treatment-backup-subtitle = Babestu zure laster-markak gailuen artean zifratze bidez sinkronizatuz.
+fxa-adoption-primary-button-label = Eman izena
 
 ## Protections panel
 
@@ -203,6 +211,8 @@ cfr-cbh-confirm-button = Ukatu cookie iragarki-bandak
     .accesskey = k
 cfr-cbh-dismiss-button = Une honetan ez
     .accesskey = n
+cookie-banner-blocker-onboarding-header = { -brand-short-name }(e)k zuregatik cookie iragarki-banda bat ukatu berri du
+cookie-banner-blocker-onboarding-body = Distrazio gutxiago, zure jarraipena egiten duten cookie gutxiago gune honetan.
 cookie-banner-blocker-onboarding-learn-more = Argibide gehiago
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
@@ -222,6 +232,24 @@ fox-doodle-pin-secondary = Une honetan ez
 set-default-pdf-handler-headline = <strong>Zure PDFak orain { -brand-short-name }(e)n irekitzen dira.</strong> Editatu edo sinatu inprimakiak zuzenean nabigatzailetik. Aldatzeko, bilatu "PDF" ezarpenetan.
 set-default-pdf-handler-primary = Ulertuta
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Sinatu puntukako marraren gainean — edo edonon!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Marraztu, idatzi edo igo zure sinadura, gero koka ezazu zehazki nahi duzun tokian. Gorde hurrengorako gehien erabiltzen dituzun sinadurak.
+annotations-make-default-pdf-handler-title = Egin { -brand-short-name } zure PDF editore lehenetsia?
+annotations-make-default-pdf-handler-subtitle = Gure tresnetarako sarbidea izango duzu PDF bat irekitzen duzun aldiro.
+annotations-make-default-pdf-primary-cta-label = Ezarri lehenetsi gisa
+annotations-make-default-pdf-next-label = Hurrengoa
+annotations-make-default-pdf-primary-cta =
+    .label = Ezarri lehenetsi gisa
+annotations-make-default-pdf-next =
+    .label = Hurrengoa
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Gailu berririk ba al da zure etorkizunean?
@@ -240,7 +268,11 @@ device-migration-fxa-spotlight-older-device-header = Bakea eta lasaitasuna, { -b
 device-migration-fxa-spotlight-older-device-body = Kontuak zure informazio garrantzitsua egunean eta babestuta mantentzen du konektatzen zaren edozein gailutan.
 device-migration-fxa-spotlight-older-device-primary-button = Sortu kontua
 device-migration-fxa-spotlight-getting-new-device-header-2 = Gailu berririk ba al da zure etorkizunean?
+device-migration-fxa-spotlight-getting-new-device-body-2 = Jarraitu urrats sinple batzuk zure laster-markak, historia eta pasahitzak alboan eramateko gailu berri batera aldatzean.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Nola egin nire datuen babeskopia
+device-migration-fxa-spotlight-sync-header = Nabigatu ezertxo ere galdu gabe
+device-migration-fxa-spotlight-sync-body = Sinkronizatu zure informazio garrantzitsua zifratze bidez — adibidez laster-markak eta pasahitzak. Hauek erabiltzeko moduan daude { -brand-product-name } darabilzun leku guztietan.
+device-migration-fxa-spotlight-sync-primary-button = Hasi erabiltzen
 
 ## Set as Default PDF Reader Infobar
 
@@ -269,4 +301,142 @@ launch-on-login-infobar-final-reject-button = Ez, eskerrik asko
 
 ## Tail Fox Set Default Spotlight
 
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = Kendu gainetik jarraipen-elementu gogaikarriak
+tail-fox-spotlight-subtitle = Esan agur iragarkien jarraipen-elementu nekagarriei eta egonkortu Internet-esperientzia seguru eta azkarrago batean.
+tail-fox-spotlight-primary-button = Ireki nire loturak { -brand-short-name } erabiliz
 tail-fox-spotlight-secondary-button = Une honetan ez
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name }(r)en bertsio zaharragoak arazoak izaten has litezke 2025eko urtarrilaren 14tik aurrera.</strong>
+root-certificate-succession-infobar-march-message = <strong>Eguneratu { -brand-short-name } erabiltzen jarraitzeko 2025eko martxoaren 14aren ondoren.</strong>
+root-certificate-succession-infobar-link = Zergatik eguneratu behar dut?
+root-certificate-succession-infobar-primary-button =
+    .label = Eguneratu orain
+    .accesskey = E
+root-certificate-succession-infobar-secondary-button =
+    .label = Geroago
+    .accesskey = g
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = { -brand-short-name }(e)n eguneraketa garrantzitsu bat galdu duzu
+root-certificate-windows-background-notification-subtitle = Ez baduzu eguneratzen, nabigatzailearen zati batzuk ibiltzeari utziko die. Une egokia da orain gure azken babes eta eginbideak lortzeko.
+root-certificate-windows-background-notification-learn-more-button = Argibide gehiago
+root-certificate-windows-background-notification-update-button = Eguneratu { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Itxi
+    .aria-label = Itxi
+fxa-menu-message-sign-up-button = Eman izena
+fxa-menu-message-sign-in-button = Hasi saioa
+fxa-menu-message-sync-button = Hasi sinkronizatzen
+fxa-menu-message-sync-devices-primary-text = Sinkronizatu zure gailu guztiak
+fxa-menu-message-sync-devices-secondary-text = Eskuratu zure informazioa di-da — adibidez laster-markak eta pasahitzak — { -brand-short-name } darabilzun leku guztietan.
+fxa-menu-message-sync-devices-secondary-text2 = Eskuratu di-da zure laster-markak, pasahitzak eta gehiago — { -brand-short-name }(e)n saioa hasita duzun leku guztietan.
+fxa-menu-message-sync-devices-collapsed-text = Sinkronizatu zure gailu guztiak
+fxa-menu-message-backup-data-primary-text = Egin zure nabigatzaile-datuen babeskopia
+fxa-menu-message-backup-data-secondary-text = Babestu automatikoki laster-markak, pasahitzak eta bestelako informazioa zure gailu guztietan.
+fxa-menu-message-backup-data-collapsed-text = Egin nabigatzaile-datuen babeskopia
+fxa-menu-message-backup-sync-primary-text = Mantendu zure datuak seguru eta sinkronizatuta
+fxa-menu-message-backup-sync-secondary-text = Sinkronizazioak zure datu gehienenen babeskopia egiten du, { -brand-short-name } darabilzun leku guztietan eskuratzeko moduan izan ditzazun.
+fxa-menu-message-backup-sync-collapsed-text = Sinkronizatu eta gorde datuak
+fxa-menu-message-mobile-primary-text = Bidali fitxak zure telefonora
+fxa-menu-message-mobile-secondary-text = Jarraitu di-da utzi zenuen tokitik zure fitxak gailu mugikorrarekin sinkronizatzen dituzunean.
+fxa-menu-message-mobile-collapsed-text = Sinkronizatu zure telefonoarekin
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Ongi etorri berriro
+multi-cta-fox-doodle-set-default-checkbox = Ezarri { -brand-short-name } lehenetsi gisa
+multi-cta-fox-doodle-pin-startmenu-checkbox = Ainguratu { -brand-short-name } Hasi menuan
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mantendu { -brand-short-name } Dock-ean
+       *[other] Ainguratu { -brand-short-name } ataza-barran
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Hasi nabigatzen
+multi-cta-fox-doodle-main-browser-primary-button-label = Egin { -brand-short-name } nire nabigatzaile nagusia
+multi-cta-fox-doodle-quick-reminder-subtitle = Hona hemen abisua gogorarazteko pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera manten dezakezula.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Mantendu pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera. Egizu { -brand-short-name } loturak irekitzeko zure nabigatzaile lehenetsia eta manten ezazu Dock-ean.
+       *[other] Mantendu pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera. Egizu { -brand-short-name } loturak irekitzeko zure nabigatzaile lehenetsia eta manten ezazu ataza-barran.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Mantendu pribatutasunari zuzendutako zure nabigatzaile gogokoena klik bakarrera. Egizu { -brand-short-name } loturak irekitzeko zure nabigatzaile lehenetsia eta manten ezazu ataza-barran eta Hasi menuan.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Windows 10etik eguneratu behar duzu laster?
+windows-10-eos-sync-spotlight-subtitle = Egin zure pasahitz eta laster-marken babeskopia, edozein gailutara aldatzeko prest egon zaitezen.
+windows-10-eos-sync-spotlight-primary-label = Egin zure { -brand-short-name }(e)n babeskopia
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Windows 11ra bertsio-berritu behar duzu? Ez galdu laster-markak eta pasahitzak.
+windows-10-eos-sync-toast-subtitle = Egin zure datuen babeskopia { -brand-short-name } erabiltzeko prest egon dadin edonoiz, izan ordenagailu pertsonal honetan edo hurrengoan.
+windows-10-eos-sync-toast-primary-label = Hasi erabiltzen
+windows-10-eos-sync-toast-secondary-label = Gogora iezadazu geroago
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } ez dago aurrez kargatuta, enpresa teknologiko handien beste nabigatzaile ezagunak ez bezala. Hori da arrazoia.
+windows-10-eos-challenger-sync-callout-subtitle = { -brand-product-name }(e)ko laster-marka eta pasahitzen babeskopia egiten duzunean, errazagoa da aukeratutako nabigatzailea zure hurrengo gailura eramatea.
+windows-10-eos-challenger-pin-callout-subtitle = Ainguratu { -brand-shorter-name } ataza-barran, aukeratutako nabigatzailea behar duzunean beti eskura egon dadin.
+windows-10-eos-challenger-sync-primary-button = Egin { -brand-shorter-name }(r)en babeskopia
+windows-10-eos-challenger-pin-primary-button = Ainguratu { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name }(e)k kriptomeatzariak, sare sozialetako jarraipen-elementuak eta hatz-marka bidezko jarraipena blokeatzen ditu.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Jarraipen elementuek ezin dute zure gailua identifikatu edo zu webean zehar jarraitu — ez baitiegu hori egiten uzten.
+windows-10-eos-sync-callout-privacy-screen-2-title = Segurtatu pasahitz eta laster-markak zure hurrengo gailurako.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = { -brand-shorter-name }(r)en babeskopia egitean errazagoa da zure datuak eta pribatutasun-ezarpenak alboan eramatea.
+windows-10-eos-sync-callout-privacy-info-button = Ikusi blokeatu dena
+windows-10-eos-callout-addons-title = Probatu gehigarriak: bertsio-berritze sinpleak, eragin handiak
+windows-10-eos-callout-addons-subtitle = Zuri emankorrago, babestuta eta distraziorik gabe egoten laguntzeko aukeratu dira hedapen hauek.
+windows-10-eos-callout-addons-primary-button = Ikusi gure hautuak
+windows-10-eos-sync-callout-addons-title = Ez galdu zure gehigarriak Windows 10era bertsio-berritzean.
+windows-10-eos-sync-callout-addons-subtitle = Sinkronizatu orain zure { -brand-product-name } gehigarriak beti erabilgarri egon daitezen, baita gailua aldatu ondoren ere.
+windows-10-eos-sync-callout-next-button = Hurrengoa
+windows-10-eos-sync-callout-get-started-button = Hasi erabiltzen
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Fitxa bertikalak eta fitxa-taldeak hemen daude!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Herriak hala eskatuta, { -brand-product-name }(e)k eginbide berriak gehitu ditu zure nabigazioa sinplifikatu eta zentratuta mantentzeko.
+windows-10-eos-feature-toast-whats-new-button = Ikusi nobedadeak
+windows-10-eos-feature-toast-dismiss-button = Baztertu
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>jarraipenaren babes zorrotzak zenbait gune apurtzea eragin lezake.</strong> Konpondu ohiko arazoak jarraipen-elementuak izan litzaketen funtsezko elementuak desblokeatuz.
+etp-strict-exceptions-infobar-learn-more = Argibide gehiago
+etp-strict-exceptions-infobar-button = Aplikatu konponketak
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = Une honetan ez
+    .accesskey = n
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } ez da zure nabigatzaile lehenetsia
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } ez da zure nabigatzaile nagusia
+set-default-menu-message-row-layout-title = Egizu { -brand-short-name } zure nabigatzaile nagusia
+set-default-menu-message-row-layout-title-variant = Egizu { -brand-short-name } zure nabigatzaile lehenetsia
+set-default-menu-message-row-layout-subtitle = Eskuratu abiadura, segurtasuna eta pribatutasuna nabigatzen duzun aldiro.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Mantendu { -brand-short-name } esku-eskura — egizu zure nabigatzaile lehenetsia eta manten ezazu Dock-ean.
+       *[other] Mantendu { -brand-short-name } esku-eskura — egizu zure nabigatzaile lehenetsia eta manten ezazu ataza-barran.
+    }
+set-default-menu-message-primary-button = Ezarri lehenetsi gisa
+set-default-menu-message-primary-button-variant = Ezarri nabigatzaile nagusi gisa

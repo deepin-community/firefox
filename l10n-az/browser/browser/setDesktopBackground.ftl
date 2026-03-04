@@ -4,37 +4,31 @@
 
 set-desktop-background-window =
     .title = İşçi stolu arxa fonu et
-
 set-desktop-background-accept =
     .label = İşçi stolu arxa fonu et
-
 open-desktop-prefs =
     .label = MasaÜstü Tənzimləmələrini Aç
-
+set-desktop-background-downloading =
+    .label = Şəkil Saxlanılır…
 set-background-preview-unavailable = Ön baxış mümkün deyil
-
+# Name of the file that will be used as the desktop background. The
+# extension ".bmp" is added by the system.
+set-desktop-background-filename = Masaüstü Arxa Fonu
 # This refers to the wallpaper "spanning" multiple monitors when the
 # user has more than one. Only some of the entire image will be on
 # each monitor. This should ideally match the wording in Windows' own
 # Desktop Background settings page.
 set-background-span =
     .label = Genişlət
-
 set-background-color = Rənglər:
-
 set-background-position = Ünvan:
-
 set-background-tile =
     .label = Döşe
-
 set-background-center =
     .label = Merkez
-
 set-background-stretch =
     .label = Genişləndir
-
 set-background-fill =
     .label = Doldur
-
 set-background-fit =
     .label = Sığdır

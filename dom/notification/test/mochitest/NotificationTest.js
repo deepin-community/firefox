@@ -1,3 +1,5 @@
+/* global MockAlertsService, registerAndWaitForActive */
+
 var NotificationTest = (function () {
   "use strict";
 
@@ -10,7 +12,7 @@ var NotificationTest = (function () {
     // it can be used to track data between tests
     var context = {};
 
-    (function executeRemainingTests(remainingTests) {
+    (async function executeRemainingTests(remainingTests) {
       if (!remainingTests.length) {
         callback();
         return;
@@ -21,14 +23,14 @@ var NotificationTest = (function () {
       var startTest = nextTest.call.bind(nextTest, context, finishTest);
 
       try {
-        startTest();
+        await startTest();
         // if no callback was defined for test function,
         // we must manually invoke finish to continue
         if (nextTest.length === 0) {
           finishTest();
         }
       } catch (e) {
-        ok(false, "Test threw exception!");
+        ok(false, `Test threw exception: ${e}`);
         finishTest();
       }
     })(tests);
@@ -91,3 +93,28 @@ var NotificationTest = (function () {
     },
   };
 })();
+
+async function setupServiceWorker(src, scope) {
+  await NotificationTest.allowNotifications();
+  await MockAlertsService.register();
+  let registration = await registerAndWaitForActive(src, scope);
+  SimpleTest.registerCleanupFunction(async () => {
+    await registration.unregister();
+  });
+  return registration;
+}
+
+async function testFrame(src, args) {
+  let { promise, resolve } = Promise.withResolvers();
+  let iframe = document.createElement("iframe");
+  let serialized = encodeURIComponent(JSON.stringify(args));
+  iframe.src = `${src}?args=${serialized}`;
+  window.callback = async function (data) {
+    window.callback = null;
+    document.body.removeChild(iframe);
+    iframe = null;
+    resolve(data);
+  };
+  document.body.appendChild(iframe);
+  return await promise;
+}

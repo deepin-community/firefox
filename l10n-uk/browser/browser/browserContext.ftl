@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Зберегти посилання в { -pocket-brand-name }
     .accesskey = б
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Копіювати адресу е-пошти
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Копіювати посилання
     .accesskey = п
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Копіювати посилання без елементів стеження сайту
-    .accesskey = е
+main-context-menu-preview-link =
+    .label = Перегляд посилання
+    .accesskey = г
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Копіювати очищене посилання
+    .accesskey = ч
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Переглянути опис
     .accesskey = о
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Пошук зображення за допомогою { $engine }
+    .accesskey = з
 main-context-menu-video-save-as =
     .label = Зберегти відео як…
     .accesskey = в
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Переслати аудіо…
     .accesskey = с
+main-context-menu-send-to-device-2 =
+    .label = Надіслати на пристрій
+    .accesskey = Н
 main-context-menu-save-to-pocket =
     .label = Зберегти сторінку в { -pocket-brand-name }
     .accesskey = с
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Надіслати сторінку на пристрій
     .accesskey = с
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Використати збережене ім'я входу
@@ -317,8 +325,11 @@ main-context-menu-manage-passwords =
     .label = Керувати паролями
     .accesskey = м
 main-context-menu-keyword =
-    .label = Створити скорочення для цього пошуку…
-    .accesskey = д
+    .label = Додати ключове слово для цього пошуку…
+    .accesskey = ю
+main-context-menu-add-engine =
+    .label = Додати пошукову систему
+    .accesskey = о
 main-context-menu-link-send-to-device =
     .label = Надіслати посилання на пристрій
     .accesskey = Н
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Показати пароль
     .accesskey = П
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Нове

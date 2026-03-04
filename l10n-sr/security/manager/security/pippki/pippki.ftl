@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Преглед
 download-cert-view-text = Испитај сертификат сертификационог тела
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -80,8 +77,6 @@ client-auth-cert-details-issued-by = Издао: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Складишти се на: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Запамти ову одлуку
 
 ## Set password (p12) dialog
 

@@ -19,6 +19,9 @@ kind-dependencies:
     - release-partner-repack-mac-notarization
     - toolchain
 
+task-defaults:
+    run-on-repo-type: [hg]
+
 only-for-build-platforms:
     - macosx64-shippable/opt
     - win32-shippable/opt
@@ -30,12 +33,12 @@ tasks:
         from-deps:
             group-by: single-with-filters
         upstream-mac-kind:
-            by-build-type:
-                debug: release-partner-repack-mac-signing
-                default:
-                    by-project:
-                        mozilla-(central|beta|release|esr.*): release-partner-repack-mac-notarization
-                        default: release-partner-repack-mac-signing
+            by-build-platform:
+                macosx64-(shippable|devedition):
+                    by-release-level:
+                        production: release-partner-repack-mac-notarization
+                        staging: release-partner-repack-mac-signing
+                default: release-partner-repack-mac-signing
         mozharness:
             config:
                 by-build-platform:

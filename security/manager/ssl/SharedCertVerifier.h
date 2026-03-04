@@ -7,7 +7,6 @@
 
 #include "CertVerifier.h"
 #include "EnterpriseRoots.h"
-#include "mozilla/RefPtr.h"
 #include "mozilla/TimeStamp.h"
 
 namespace mozilla {
@@ -24,12 +23,12 @@ class SharedCertVerifier : public mozilla::psm::CertVerifier {
                      mozilla::TimeDuration ocspSoftTimeout,
                      mozilla::TimeDuration ocspHardTimeout,
                      uint32_t certShortLifetimeInDays,
-                     NetscapeStepUpPolicy netscapeStepUpPolicy,
-                     CertificateTransparencyMode ctMode, CRLiteMode crliteMode,
+                     CertificateTransparencyConfig&& ctConfig,
+                     CRLiteMode crliteMode,
                      const nsTArray<EnterpriseCert>& thirdPartyCerts)
-      : mozilla::psm::CertVerifier(
-            odc, osc, ocspSoftTimeout, ocspHardTimeout, certShortLifetimeInDays,
-            netscapeStepUpPolicy, ctMode, crliteMode, thirdPartyCerts) {}
+      : mozilla::psm::CertVerifier(odc, osc, ocspSoftTimeout, ocspHardTimeout,
+                                   certShortLifetimeInDays, std::move(ctConfig),
+                                   crliteMode, thirdPartyCerts) {}
 };
 
 }  // namespace psm

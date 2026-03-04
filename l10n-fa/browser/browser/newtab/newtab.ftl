@@ -8,11 +8,18 @@
 newtab-page-title = زبانهٔ جدید
 newtab-settings-button =
     .title = صفحهٔ زبانهٔ جدید را سفارشی کنید
+newtab-personalize-settings-icon-label =
+    .title = شخصی‌سازی زبانه جدید
+    .aria-label = تنظیمات
+newtab-settings-dialog-label =
+    .aria-label = تنظیمات
 newtab-personalize-icon-label =
     .title = شحصی‌سازی زبانهٔ جدید
     .aria-label = شحصی‌سازی زبانهٔ جدید
 newtab-personalize-dialog-label =
     .aria-label = شخصی‌سازی
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -45,13 +52,17 @@ newtab-topsites-add-search-engine-header = افزودن موتور جستجو
 newtab-topsites-add-shortcut-header = میانبر جدید
 newtab-topsites-edit-topsites-header = ویرایش سایت برتر
 newtab-topsites-edit-shortcut-header = ویرایش میانبر
+newtab-topsites-add-shortcut-label = افزودن میان‌بر
+newtab-topsites-add-shortcut-title =
+    .title = افزودن میان‌بر
+    .aria-label = افزودن میان‌بر
 newtab-topsites-title-label = عنوان
 newtab-topsites-title-input =
     .placeholder = عنوان را وارد کنید
-newtab-topsites-url-label = نشانی
+newtab-topsites-url-label = نشانی اینترنتی
 newtab-topsites-url-input =
     .placeholder = یک نشانی بنویسید یا بچسبانید
-newtab-topsites-url-validation = نشانی معتبر الزامی است
+newtab-topsites-url-validation = نشانی اینترنتی معتبر الزامی است
 newtab-topsites-image-url-label = نشانیِ سفارشی عکس
 newtab-topsites-use-image-link = استفاده از یک عکس سفارشی…
 newtab-topsites-image-validation = بارگیری عکس شکست خورد. آدرس دیگری امتحان کنید.
@@ -92,8 +103,8 @@ newtab-menu-content-tooltip =
     .aria-label = بازکردن فهرست زمینه برای { $title }
 # Tooltip on an empty topsite box to open the New Top Site dialog.
 newtab-menu-topsites-placeholder-tooltip =
-    .title = ویرایش این سایت
-    .aria-label = ویرایش این سایت
+    .title = ویرایش این وبگاه
+    .aria-label = ویرایش این وبگاه
 
 ## Context Menu: These strings are displayed in a context menu and are meant as a call to action for a given page.
 
@@ -226,7 +237,6 @@ newtab-pocket-learn-more = اطلاعات بیشتر
 newtab-pocket-cta-button = دریافت { -pocket-brand-name }
 newtab-pocket-cta-text = مطالبی که دوست دارید را در { -pocket-brand-name } ذخیره کنید، و به ذهن خود با مطالب فوق‌العاده انرژی بدهید.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } بخشی از خانوادهٔ { -brand-product-name } است
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = ذخیره
 newtab-pocket-saved = ذخیره شد
 
@@ -257,15 +267,57 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = میانبرهای حمایت شده
 newtab-custom-pocket-title = توصیه‌های { -pocket-brand-name }
 newtab-custom-pocket-subtitle = محتوای استثنایی که توسط { -pocket-brand-name }، بخشی از خانواده { -brand-product-name } جمع‌آوری شده‌اند.
-newtab-custom-pocket-toggle =
-    .label = توصیه‌های { -pocket-brand-name }
-    .description = محتوای استثنایی که توسط { -pocket-brand-name }، بخشی از خانواده { -brand-product-name } جمع‌آوری شده‌اند.
 newtab-custom-pocket-sponsored = محتواهایی از حامیان مالی
 newtab-custom-pocket-show-recent-saves = نمایش ذخیره‌های اخیر
 newtab-custom-recent-title = فعالیت‌های اخیر
 newtab-custom-recent-subtitle = منتخبی از سایت‌ها و مطالب اخیر
-newtab-custom-recent-toggle =
-    .label = فعالیت‌های اخیر
-    .description = منتخبی از سایت‌ها و مطالب اخیر
+newtab-custom-weather-toggle =
+    .label = آب و هوا
+    .description = پیش‌بینی آب و هوای امروز به طور خلاصه
 newtab-custom-close-button = بستن
 newtab-custom-settings = مدیریت تنظیمات بیشتر
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = کاغذدیواری‌ها
+newtab-wallpaper-reset = بازگرداندن به تنظیمات اولیه
+newtab-wallpaper-light-red-panda = پاندای قرمز
+newtab-wallpaper-light-mountain = کوه سفید
+newtab-wallpaper-light-sky = آسمانی با ابرهای بنفش و صورتی
+newtab-wallpaper-light-color = اشکال آبی، صورتی و زرد
+
+## Solid Colors
+
+newtab-wallpaper-blue = آبی
+newtab-wallpaper-light-blue = آبی روشن
+newtab-wallpaper-light-purple = بنفش روشن
+newtab-wallpaper-light-green = سبز روشن
+newtab-wallpaper-green = سبز
+newtab-wallpaper-beige = بژ
+newtab-wallpaper-yellow = زرد
+newtab-wallpaper-orange = نارنجی
+newtab-wallpaper-pink = صورتی
+newtab-wallpaper-light-pink = صورتی روشن
+newtab-wallpaper-red = قرمز
+newtab-wallpaper-dark-blue = آبی تیره
+newtab-wallpaper-dark-purple = بنفش تیره
+newtab-wallpaper-dark-green = سبز تیره
+newtab-wallpaper-brown = قهوه‌ای
+
+## Firefox
+
+newtab-wallpaper-white-mountains = کوه‌های سفید
+
+## New Tab Weather
+
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = ساده
+newtab-weather-menu-learn-more = بیشتر بدانید
+
+## Topic Selection Modal
+
+newtab-topic-selection-save-button = ذخیره
+newtab-topic-selection-cancel-button = انصراف
+newtab-topic-selection-button-maybe-later = شاید بعداً

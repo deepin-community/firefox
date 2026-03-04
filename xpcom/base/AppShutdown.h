@@ -7,7 +7,6 @@
 #ifndef AppShutdown_h
 #define AppShutdown_h
 
-#include <type_traits>
 #include "nsCOMPtr.h"
 #include "nsISupports.h"
 #include "ShutdownPhase.h"
@@ -32,8 +31,6 @@ enum class AppShutdownReason {
   OSSessionEnd,
   // The system is shutting down (and maybe restarting).
   OSShutdown,
-  // We unexpectedly received MOZ_WM_APP_QUIT, see bug 1827807.
-  WinUnexpectedMozQuit,
 };
 
 class AppShutdown {
@@ -86,6 +83,19 @@ class AppShutdown {
    * restart.
    */
   static bool IsRestarting();
+
+  /**
+   * True if either SetImpendingShutdown or Init have been called, that is
+   * we passed the point of no return and will eventually shutdown.
+   */
+  static bool IsShutdownImpending();
+
+  /**
+   * Signal an impending shutdown, can be set earlier than Init and/or
+   * AdvanceShutdownPhase. Must be called only if we passed the point of no
+   * return.
+   */
+  static void SetImpendingShutdown();
 
   /**
    * Wrapper for shutdown notifications that informs the terminator before

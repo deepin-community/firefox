@@ -923,9 +923,11 @@ class GatherDecls(TcheckVisitor):
                     )
             elif isinstance(aspec, (list, tuple)):
                 if not any(
-                    isinstance(attr.value, s)
-                    if isinstance(s, type)
-                    else attr.value == s
+                    (
+                        isinstance(attr.value, s)
+                        if isinstance(s, type)
+                        else attr.value == s
+                    )
                     for s in aspec
                 ):
                     self.error(
@@ -1154,14 +1156,14 @@ class GatherDecls(TcheckVisitor):
         self.checkAttributes(sd.attributes, {"Comparable": None})
 
         for f in sd.fields:
-            ftypedecl = self.symtab.lookup(str(f.typespec))
+            ftypedecl = self.symtab.lookup(f.typespec.basename())
             if ftypedecl is None:
                 self.error(
                     f.loc,
                     "field `%s' of struct `%s' has unknown type `%s'",
                     f.name,
                     sd.name,
-                    str(f.typespec),
+                    f.typespec.basename(),
                 )
                 continue
 
@@ -1185,10 +1187,13 @@ class GatherDecls(TcheckVisitor):
         self.checkAttributes(ud.attributes, {"Comparable": None})
 
         for c in ud.components:
-            cdecl = self.symtab.lookup(str(c))
+            cdecl = self.symtab.lookup(c.basename())
             if cdecl is None:
                 self.error(
-                    c.loc, "unknown component type `%s' of union `%s'", str(c), ud.name
+                    c.loc,
+                    "unknown component type `%s' of union `%s'",
+                    c.basename(),
+                    ud.name,
                 )
                 continue
             utype.components.append(self._canonicalType(cdecl.type, c))
@@ -1479,10 +1484,6 @@ class GatherDecls(TcheckVisitor):
         md.decl._md = md
 
     def _canonicalType(self, itype, typespec):
-        loc = typespec.loc
-        if typespec.uniqueptr:
-            itype = UniquePtrType(itype)
-
         if itype.isIPDL() and itype.isProtocol():
             itype = ActorType(itype)
 
@@ -1491,14 +1492,19 @@ class GatherDecls(TcheckVisitor):
                 itype = NotNullType(itype)
         elif typespec.nullable:
             self.error(
-                loc, "`nullable' qualifier for type `%s' is unsupported", itype.name()
+                typespec.loc,
+                "`nullable' qualifier for type `%s' is unsupported",
+                itype.name(),
             )
 
-        if typespec.array:
-            itype = ArrayType(itype)
-
-        if typespec.maybe:
-            itype = MaybeType(itype)
+        for modifier in typespec.modifiers:
+            if modifier == "uniqueptr":
+                itype = UniquePtrType(itype)
+            elif modifier == "array":
+                itype = ArrayType(itype)
+            else:
+                assert modifier == "maybe"
+                itype = MaybeType(itype)
 
         return itype
 

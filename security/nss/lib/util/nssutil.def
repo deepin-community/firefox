@@ -372,3 +372,15 @@ NSS_SetAlgorithmPolicyAll;
 ;+    local:
 ;+       *;
 ;+};
+;+NSSUTIL_3.108 {         # NSS Utilities 3.108 release
+;+    global:
+PORT_SafeZero;
+;+    local:
+;+       *;
+;+};
+;+NSSUTIL_3.117 {         # NSS Utilities 3.117 release
+;+    global:
+SECOID_FindOIDTagFromDescripton;
+;+    local:
+;+       *;
+;+};

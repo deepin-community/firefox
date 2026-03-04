@@ -7,21 +7,17 @@
 #ifndef DOM_SVG_DOMSVGPOINTLIST_H_
 #define DOM_SVG_DOMSVGPOINTLIST_H_
 
+#include "SVGPointList.h"  // IWYU pragma: keep
 #include "mozAutoDocUpdate.h"
+#include "mozilla/Attributes.h"
+#include "mozilla/RefPtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDebug.h"
 #include "nsTArray.h"
-#include "SVGPointList.h"  // IWYU pragma: keep
-#include "mozilla/Attributes.h"
-#include "mozilla/RefPtr.h"
 
 // {61812ad1-c078-4cd1-87e6-bc1c1b8d7284}
-#define MOZILLA_DOMSVGPOINTLIST_IID                  \
-  {                                                  \
-    0x61812ad1, 0xc078, 0x4cd1, {                    \
-      0x87, 0xe6, 0xbc, 0x1c, 0x1b, 0x8d, 0x72, 0x84 \
-    }                                                \
-  }
+#define MOZILLA_DOMSVGPOINTLIST_IID \
+  {0x61812ad1, 0xc078, 0x4cd1, {0x87, 0xe6, 0xbc, 0x1c, 0x1b, 0x8d, 0x72, 0x84}}
 
 namespace mozilla {
 
@@ -45,15 +41,13 @@ class MOZ_RAII AutoChangePointListNotifier {
     MOZ_ASSERT(mValue, "Expecting non-null value");
     if (mValue->IsInList()) {
       mUpdateBatch.emplace(mValue->Element()->GetComposedDoc(), true);
-      mEmptyOrOldValue =
-          mValue->Element()->WillChangePointList(mUpdateBatch.ref());
+      mValue->Element()->WillChangePointList(mUpdateBatch.ref());
     }
   }
 
   ~AutoChangePointListNotifier() {
     if (mValue->IsInList()) {
-      mValue->Element()->DidChangePointList(mEmptyOrOldValue,
-                                            mUpdateBatch.ref());
+      mValue->Element()->DidChangePointList(mUpdateBatch.ref());
       if (mValue->AttrIsAnimating()) {
         mValue->Element()->AnimationNeedsResample();
       }
@@ -63,7 +57,6 @@ class MOZ_RAII AutoChangePointListNotifier {
  private:
   Maybe<mozAutoDocUpdate> mUpdateBatch;
   T* const mValue;
-  nsAttrValue mEmptyOrOldValue;
 };
 
 /**
@@ -97,7 +90,7 @@ class DOMSVGPointList final : public nsISupports, public nsWrapperCache {
   friend class DOMSVGPoint;
 
  public:
-  NS_DECLARE_STATIC_IID_ACCESSOR(MOZILLA_DOMSVGPOINTLIST_IID)
+  NS_INLINE_DECL_STATIC_IID(MOZILLA_DOMSVGPOINTLIST_IID)
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(DOMSVGPointList)
 
@@ -185,23 +178,21 @@ class DOMSVGPointList final : public nsISupports, public nsWrapperCache {
     }
     return LengthNoFlush();
   }
-  void Clear(ErrorResult& aError);
+  void Clear(ErrorResult& aRv);
   already_AddRefed<DOMSVGPoint> Initialize(DOMSVGPoint& aNewItem,
-                                           ErrorResult& aError);
+                                           ErrorResult& aRv);
   already_AddRefed<DOMSVGPoint> GetItem(uint32_t index, ErrorResult& error);
   already_AddRefed<DOMSVGPoint> IndexedGetter(uint32_t index, bool& found,
                                               ErrorResult& error);
   already_AddRefed<DOMSVGPoint> InsertItemBefore(DOMSVGPoint& aNewItem,
                                                  uint32_t aIndex,
-                                                 ErrorResult& aError);
+                                                 ErrorResult& aRv);
   already_AddRefed<DOMSVGPoint> ReplaceItem(DOMSVGPoint& aNewItem,
-                                            uint32_t aIndex,
-                                            ErrorResult& aError);
-  already_AddRefed<DOMSVGPoint> RemoveItem(uint32_t aIndex,
-                                           ErrorResult& aError);
+                                            uint32_t aIndex, ErrorResult& aRv);
+  already_AddRefed<DOMSVGPoint> RemoveItem(uint32_t aIndex, ErrorResult& aRv);
   already_AddRefed<DOMSVGPoint> AppendItem(DOMSVGPoint& aNewItem,
-                                           ErrorResult& aError) {
-    return InsertItemBefore(aNewItem, LengthNoFlush(), aError);
+                                           ErrorResult& aRv) {
+    return InsertItemBefore(aNewItem, LengthNoFlush(), aRv);
   }
   uint32_t Length() const { return NumberOfItems(); }
 
@@ -251,9 +242,13 @@ class DOMSVGPointList final : public nsISupports, public nsWrapperCache {
   RefPtr<dom::SVGElement> mElement;
 
   bool mIsAnimValList;
-};
 
-NS_DEFINE_STATIC_IID_ACCESSOR(DOMSVGPointList, MOZILLA_DOMSVGPOINTLIST_IID)
+  // Tracks whether we're in the tearoff table. Initialized to true, since all
+  // new instances are added to the table right after construction. Updated to
+  // false when we're removed from the table (at which point we're being
+  // destructed or soon-to-be destructed).
+  bool mIsInTearoffTable = true;
+};
 
 }  // namespace dom
 }  // namespace mozilla

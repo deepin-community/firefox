@@ -33,6 +33,7 @@ perftools-description-local-build =
     Ha egy olyan összeállítást profiloz, amelyet saját maga fordított le,
     ezen a gépen, akkor adja az összeállítás tárgykönyvtárát a lenti listához,
     hogy használható legyen a szimbóluminformációk megkereséséhez.
+perftools-pick-local-build-directory = Válasszon összeállítási könyvtárat
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -68,6 +69,14 @@ perftools-button-restart = Újraindítás
 perftools-button-add-directory = Könyvtár hozzáadása
 perftools-button-remove-directory = Kijelölt eltávolítása
 perftools-button-edit-settings = Beállítások szerkesztése…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = További műveletek
+perftools-menu-more-actions-restart-with-profiling = A { -brand-shorter-name } újraindítása az indítási profilozás engedélyezésével
+perftools-menu-more-actions-copy-for-startup = Környezeti változók másolása az indítási profilozáshoz
+perftools-menu-more-actions-copy-for-perf-tests = Paraméterek másolása a teljesítménytesztekhez
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,6 +150,8 @@ perftools-presets-graphics-label = Grafika
 perftools-presets-graphics-description = Előbeállítás a { -brand-shorter-name } grafikai hibák kivizsgálásához.
 perftools-presets-media-label = Média
 perftools-presets-media-description2 = Előbeállítás a { -brand-shorter-name } hang- és videóhibáinak kivizsgálásához.
+perftools-presets-ml-label = Gépi tanulás
+perftools-presets-ml-description2 = Előbeállítás a { -brand-shorter-name } gépi tanulási hibáinak kivizsgálásához.
 perftools-presets-networking-label = Hálózat
 perftools-presets-networking-description = Előbeállítás a { -brand-shorter-name } hálózati hibák kivizsgálásához.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +159,6 @@ perftools-presets-power-label = Energiagazdálkodás
 perftools-presets-power-description = Előbeállítás a { -brand-shorter-name } energiagazdálkodási hibáinak kivizsgálásához, alacsony többletfogyasztással.
 perftools-presets-debug-label = Hibakeresés
 perftools-presets-debug-description = Előbeállítás a { -brand-shorter-name }ban való hibakereséshez. Magas többletterhelés, ne teljesítménykritikus munkához használja, hanem a böngésző viselkedésének megértéséhez.
+perftools-presets-web-compat-label = Webkompatibilitás
+perftools-presets-web-compat-description = Ajánlott előbeállítás a weboldalak webes kompatibilitási problémáinak kereséséhez, nem pedig a teljesítmény követéséhez.
 perftools-presets-custom-label = Egyéni
-
-##
-

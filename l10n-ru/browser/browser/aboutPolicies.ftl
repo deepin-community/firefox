@@ -3,15 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-policies-title = Корпоративные политики
-
+aboutpolicies-page-heading =
+    .heading = О политиках
 # 'Active' is used to describe the policies that are currently active
 active-policies-tab = Активны
 errors-tab = Ошибки
 documentation-tab = Документация
-
 no-specified-policies-message = Служба корпоративных политик активна, но ни одной политики не включено.
 inactive-message = Служба корпоративных политик неактивна.
-
 policy-name = Имя политики
 policy-value = Значение политики
 policy-errors = Ошибки политики

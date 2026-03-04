@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Закрыть
     .aria-label = Закрыть
-firefoxview-empty-state-icon =
-    .alt = Внимание:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Прямо сейчас
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% завершено
 firefoxview-tabpickup-step-signin-header = Легко переключайтесь между устройствами
 firefoxview-tabpickup-step-signin-description = Чтобы просматривать здесь вкладки со своего телефона, сначала выполните вход или создайте аккаунт.
 firefoxview-tabpickup-step-signin-primarybutton = Продолжить
-firefoxview-syncedtabs-signin-header = Захватывайте вкладки отовсюду
-firefoxview-syncedtabs-signin-description = Чтобы видеть свои вкладки везде, где вы используете { -brand-product-name }, войдите в свой аккаунт. Если у вас нет аккаунта, мы проведем вас через этапы регистрации.
-firefoxview-syncedtabs-signin-primarybutton = Войдите или зарегистрируйтесь
-firefoxview-tabpickup-adddevice-header = Синхронизируйте { -brand-product-name } на своем телефоне или планшете
-firefoxview-tabpickup-adddevice-description = Загрузите { -brand-product-name } для мобильных устройств и выполните вход.
+firefoxview-syncedtabs-signin-header-2 = Ваш { -brand-product-name } на всех ваших устройствах
+firefoxview-syncedtabs-signin-description-2 = Чтобы увидеть вкладки, открытые на вашем телефоне и других устройствах, войдите или зарегистрируйте аккаунт. С аккаунтом вы также можете синхронизировать пароли, историю и многое другое.
+firefoxview-syncedtabs-signin-primarybutton-2 = Войти
+firefoxview-tabpickup-adddevice-header = Синхронизируйте { -brand-product-name } на своём телефоне или планшете
+firefoxview-tabpickup-adddevice-description = Скачайте { -brand-product-name } для мобильных устройств и выполните вход.
 firefoxview-tabpickup-adddevice-learn-how = Подробнее
 firefoxview-tabpickup-adddevice-primarybutton = Получить { -brand-product-name } для мобильных устройств
-firefoxview-syncedtabs-adddevice-header = Войдите в { -brand-product-name } на других ваших устройствах.
-firefoxview-syncedtabs-adddevice-description = Чтобы видеть свои вкладки везде, где вы используете { -brand-product-name }, войдите на всех своих устройствах. Узнайте, как <a data-l10n-name="url">подключить дополнительные устройства</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Захватывайте вкладки отовсюду
+firefoxview-syncedtabs-adddevice-description-2 = Войдите в { -brand-product-name } на вашем телефоне или другом компьютере, чтобы увидеть здесь вкладки. Узнайте, как <a data-l10n-name="url">подключить дополнительные устройства</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Попробуйте { -brand-product-name } для мобильных устройств
 firefoxview-tabpickup-synctabs-header = Включить синхронизацию вкладок
 firefoxview-tabpickup-synctabs-description = Разрешить { -brand-short-name } делиться вкладками между устройствами.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Подробнее
 firefoxview-tabpickup-synctabs-primarybutton = Синхронизировать открытые вкладки
 firefoxview-syncedtabs-synctabs-header = Обновите настройки синхронизации
 firefoxview-syncedtabs-synctabs-description = Чтобы увидеть вкладки с других устройств, вам необходимо синхронизировать открытые вкладки.
-firefoxview-syncedtabs-synctabs-checkbox = Разрешить синхронизацию открытых вкладок
 firefoxview-syncedtabs-loading-header = Выполняется синхронизация
 firefoxview-syncedtabs-loading-description = Когда процесс завершится, вы увидите все вкладки, открытые на других устройствах. Зайдите в ближайшее время.
 firefoxview-tabpickup-fxa-admin-disabled-header = В вашей организации синхронизация отключена
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Недавно закрытые
 firefoxview-closed-tabs-description2 = Заново открыть страницы, которые вы закрыли в этом окне.
 firefoxview-closed-tabs-placeholder-header = Нет недавно закрытых вкладок
 firefoxview-closed-tabs-placeholder-body = Когда вы закрываете вкладку в этом окне, вы можете восстановить её здесь.
-firefoxview-closed-tabs-placeholder-body2 = Когда вы закрываете вкладку, вы можете восстановить её здесь.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -136,6 +132,14 @@ firefoxview-synced-tabs-nav = Вкладки с других устройств
     .title = Вкладки с других устройств
 firefoxview-synced-tabs-header = Вкладки с других устройств
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = Чаты
+    .title = Чаты
+firefoxview-chats-header = Чаты
+firefoxview-chat-context-delete = Удалить из чатов
+    .accesskey = В
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -148,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Окно { $winID } (Текущее)
-firefoxview-opentabs-focus-tab =
-    .title = Переключаться на эту вкладку
 firefoxview-show-more = Показать больше
 firefoxview-show-less = Показать меньше
 firefoxview-show-all = Показать все
@@ -165,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Поиск недавно закрытых вкладок
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Поиск облачных вкладок
+firefoxview-search-text-box-tabs =
+    .placeholder = Поиск во вкладках
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Поиск открытых вкладок
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = Поиск по чатам
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -190,10 +195,6 @@ firefoxview-sort-history-by-date-label = Сортировать по дате
 firefoxview-sort-history-by-site-label = Сортировать по сайтам
 firefoxview-sort-open-tabs-by-recency-label = Сортировать по недавней активности
 firefoxview-sort-open-tabs-by-order-label = Сортировать по порядку вкладок
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Переключиться на { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -206,11 +207,14 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (локальные файлы)
+firefoxview-chat-date-today = Сегодня - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = Вчера - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = Показать всю историю
-firefoxview-view-more-browsing-history = Увидеть больше из истории просмотров
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -226,9 +230,8 @@ firefoxview-choose-browser-button = Выберите браузер
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Нет информации
-firefoxview-dont-remember-history-empty-description = Защита вашей конфиденциальности лежит в основе того, что мы делаем. Вот почему вы можете контролировать активность, которую помнит { -brand-short-name }.
-firefoxview-dont-remember-history-empty-description-two = Основываясь на ваших текущих настройках, { -brand-short-name } не запоминает ваши действия во время просмотра. Чтобы изменить это, <a data-l10n-name="history-settings-url-two">отредактируйте настройки истории для её запоминания</a>.
+firefoxview-dont-remember-history-empty-header-2 = Вы контролируете то, что запоминает { -brand-short-name }
+firefoxview-dont-remember-history-empty-description-one = В данный момент { -brand-short-name } не запоминает вашу активность в Интернете. Чтобы изменить это, <a data-l10n-name="history-settings-url-two">обновите настройки истории</a>.
 
 ##
 
@@ -262,10 +265,10 @@ firefoxview-tabs =
 ##  $tabTitle (string) - Title of pinned tab that will be opened when selected
 
 firefoxview-opentabs-pinned-tab =
-    .title = Переключиться на { $tabTitle }
+    .title = Переключиться на «{ $tabTitle }»
 # This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
 firefoxview-opentabs-bookmarked-pinned-tab =
-    .title = Переключиться на (Закладки) { $tabTitle }
+    .title = Переключиться на (закладки) «{ $tabTitle }»
 
 ## These tooltips will be displayed when hovering over an unpinned Open Tab
 ## Variables:

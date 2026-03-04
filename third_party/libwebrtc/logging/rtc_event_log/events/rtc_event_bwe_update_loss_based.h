@@ -64,21 +64,21 @@ class RtcEventBweUpdateLossBased final : public RtcEvent {
   uint8_t fraction_loss() const { return fraction_loss_; }
   int32_t total_packets() const { return total_packets_; }
 
-  static std::string Encode(rtc::ArrayView<const RtcEvent*> batch) {
+  static std::string Encode(ArrayView<const RtcEvent*> /* batch */) {
     // TODO(terelius): Implement
     return "";
   }
 
   static RtcEventLogParseStatus Parse(
-      absl::string_view encoded_bytes,
-      bool batched,
-      std::vector<LoggedBweLossBasedUpdate>& output) {
+      absl::string_view /* encoded_bytes */,
+      bool /* batched */,
+      std::vector<LoggedBweLossBasedUpdate>& /* output */) {
     // TODO(terelius): Implement
     return RtcEventLogParseStatus::Error("Not Implemented", __FILE__, __LINE__);
   }
 
  private:
-  RtcEventBweUpdateLossBased(const RtcEventBweUpdateLossBased& other);
+  RtcEventBweUpdateLossBased(const RtcEventBweUpdateLossBased&) = default;
 
   const int32_t bitrate_bps_;
   const uint8_t fraction_loss_;

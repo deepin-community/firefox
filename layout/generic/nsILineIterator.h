@@ -6,12 +6,12 @@
 #ifndef nsILineIterator_h___
 #define nsILineIterator_h___
 
-#include "nscore.h"
-#include "nsINode.h"
-#include "nsRect.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Result.h"
 #include "mozilla/WritingModes.h"
+#include "nsINode.h"
+#include "nsRect.h"
+#include "nscore.h"
 
 class nsIFrame;
 
@@ -73,7 +73,7 @@ class nsILineIterator {
    * aStartLine.  Returns -1 if the frame cannot be found on lines
    * starting with aStartLine.
    */
-  virtual int32_t FindLineContaining(nsIFrame* aFrame,
+  virtual int32_t FindLineContaining(const nsIFrame* aFrame,
                                      int32_t aStartLine = 0) = 0;
 
   // Given a line number and a coordinate, find the frame on the line
@@ -129,7 +129,7 @@ struct LineFrameFinder {
  * and want to verify that no DOM mutations (which would invalidate the
  * iterator) occur while we're using it.
  */
-class MOZ_STACK_CLASS AutoAssertNoDomMutations final {
+class MOZ_RAII AutoAssertNoDomMutations final {
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
   nsMutationGuard mGuard;
 #endif

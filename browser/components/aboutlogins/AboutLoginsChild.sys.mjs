@@ -12,10 +12,9 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "ClipboardHelper",
   "@mozilla.org/widget/clipboardhelper;1",
-  "nsIClipboardHelper"
+  Ci.nsIClipboardHelper
 );
 
-const TELEMETRY_EVENT_CATEGORY = "pwmgr";
 const TELEMETRY_MIN_MS_BETWEEN_OPEN_MANAGEMENT = 5000;
 
 let gLastOpenManagementBrowserId = null;
@@ -24,14 +23,11 @@ let gPrimaryPasswordPromise;
 
 function recordTelemetryEvent(event) {
   try {
-    let { method, object, extra = {}, value = null } = event;
-    Services.telemetry.recordEvent(
-      TELEMETRY_EVENT_CATEGORY,
-      method,
-      object,
-      value,
-      extra
-    );
+    let { name, extra = {}, value = null } = event;
+    if (value) {
+      extra.value = value;
+    }
+    Glean.pwmgr[name].record(extra);
   } catch (ex) {
     console.error("AboutLoginsChild: error recording telemetry event:", ex);
   }
@@ -122,22 +118,24 @@ export class AboutLoginsChild extends JSWindowActorChild {
       /**
        * Shows the Primary Password prompt if enabled, or the
        * OS auth dialog otherwise.
+       *
        * @param resolve Callback that is called with result of authentication.
        * @param messageId The string ID that corresponds to a string stored in aboutLogins.ftl.
        *                  This string will be displayed only when the OS auth dialog is used.
+       * @param reason The reason for requesting reauthentication, used for telemetry.
        */
-      async promptForPrimaryPassword(resolve, messageId) {
+      async promptForPrimaryPassword(resolve, messageId, reason) {
         gPrimaryPasswordPromise = {
           resolve,
         };
 
-        that.sendAsyncMessage("AboutLogins:PrimaryPasswordRequest", messageId);
+        that.sendAsyncMessage("AboutLogins:PrimaryPasswordRequest", {
+          messageId,
+          reason,
+        });
 
         return gPrimaryPasswordPromise;
       },
-      fileImportEnabled: Services.prefs.getBoolPref(
-        "signon.management.page.fileImport.enabled"
-      ),
       // Default to enabled just in case a search is attempted before we get a response.
       primaryPasswordEnabled: true,
       passwordRevealVisible: true,
@@ -186,31 +184,26 @@ export class AboutLoginsChild extends JSWindowActorChild {
   #aboutLoginsImportFromBrowser() {
     this.sendAsyncMessage("AboutLogins:ImportFromBrowser");
     recordTelemetryEvent({
-      object: "import_from_browser",
-      method: "mgmt_menu_item_used",
+      name: "mgmtMenuItemUsedImportFromBrowser",
     });
   }
 
   #aboutLoginsImportFromFile() {
     this.sendAsyncMessage("AboutLogins:ImportFromFile");
     recordTelemetryEvent({
-      object: "import_from_csv",
-      method: "mgmt_menu_item_used",
+      name: "mgmtMenuItemUsedImportFromCsv",
     });
   }
 
   #aboutLoginsOpenPreferences() {
     this.sendAsyncMessage("AboutLogins:OpenPreferences");
     recordTelemetryEvent({
-      object: "preferences",
-      method: "mgmt_menu_item_used",
+      name: "mgmtMenuItemUsedPreferences",
     });
   }
 
   #aboutLoginsRecordTelemetryEvent(event) {
-    let { method } = event.detail;
-
-    if (method == "open_management") {
+    if (event.detail.name.startsWith("openManagement")) {
       let { docShell } = this.browsingContext;
       // Compare to the last time open_management was recorded for the same
       // outerWindowID to not double-count them due to a redirect to remove
@@ -249,6 +242,7 @@ export class AboutLoginsChild extends JSWindowActorChild {
     });
   }
 
+  // eslint-disable-next-line consistent-return
   receiveMessage(message) {
     switch (message.name) {
       case "AboutLogins:ImportReportData":
@@ -263,6 +257,21 @@ export class AboutLoginsChild extends JSWindowActorChild {
       case "AboutLogins:Setup":
         this.#setup(message.data);
         break;
+      case "AboutLogins:WaitForFocus": {
+        return new Promise(resolve => {
+          if (!this.document.hasFocus()) {
+            this.document.ownerGlobal.addEventListener(
+              "focus",
+              () => {
+                resolve();
+              },
+              { once: true }
+            );
+          } else {
+            resolve();
+          }
+        });
+      }
       default:
         this.#passMessageDataToContent(message);
     }

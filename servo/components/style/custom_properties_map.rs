@@ -10,6 +10,7 @@ use crate::selector_map::PrecomputedHasher;
 use indexmap::IndexMap;
 use servo_arc::Arc;
 use std::hash::BuildHasherDefault;
+use std::sync::LazyLock;
 
 /// A map for a set of custom properties, which implements copy-on-write behavior on insertion with
 /// cheap copying.
@@ -26,33 +27,14 @@ impl Default for CustomPropertiesMap {
 type OwnMap =
     IndexMap<Name, Option<ComputedRegisteredValue>, BuildHasherDefault<PrecomputedHasher>>;
 
-// IndexMap equality doesn't consider ordering, which we want to account for. Also, for the same
-// reason, IndexMap equality comparisons are slower than needed.
-//
-// See https://github.com/bluss/indexmap/issues/153.
-// TODO: use as_slice when updating to indexmap 2.0.
-fn maps_equal(l: &OwnMap, r: &OwnMap) -> bool {
-    if std::ptr::eq(l, r) {
-        return true;
-    }
-    if l.len() != r.len() {
-        return false;
-    }
-    l.iter()
-        .zip(r.iter())
-        .all(|((k1, v1), (k2, v2))| k1 == k2 && v1 == v2)
-}
-
-lazy_static! {
-    static ref EMPTY: Arc<Inner> = {
-        Arc::new_leaked(Inner {
-            own_properties: Default::default(),
-            parent: None,
-            len: 0,
-            ancestor_count: 0,
-        })
-    };
-}
+static EMPTY: LazyLock<Arc<Inner>> = LazyLock::new(|| {
+    Arc::new_leaked(Inner {
+        own_properties: Default::default(),
+        parent: None,
+        len: 0,
+        ancestor_count: 0,
+    })
+});
 
 #[derive(Debug, Clone)]
 struct Inner {
@@ -106,28 +88,27 @@ impl PartialEq for Inner {
         if self.len != other.len {
             return false;
         }
-        if self.parent_ptr_eq(other) {
-            return maps_equal(&self.own_properties, &other.own_properties);
+        // NOTE(emilio): In order to speed up custom property comparison when tons of custom
+        // properties are involved, we return false in some cases where the ordering might be
+        // different, but the computed values end up being the same.
+        //
+        // This is a performance trade-off, on the assumption that if the ordering is different,
+        // there's likely a different value as well, but might over-invalidate.
+        //
+        // Doing the slow thing (checking all the keys) shows up a lot in profiles, see
+        // bug 1926423.
+        //
+        // Note that self.own_properties != other.own_properties is not the same, as by default
+        // IndexMap comparison is not order-aware.
+        if self.own_properties.as_slice() != other.own_properties.as_slice() {
+            return false;
         }
-        for (name, value) in self.iter() {
-            if other.get(name) != value.as_ref() {
-                return false;
-            }
-        }
-        return true;
+        self.parent == other.parent
     }
 }
 
 impl Inner {
-    fn parent_ptr_eq(&self, other: &Self) -> bool {
-        match (&self.parent, &other.parent) {
-            (Some(p1), Some(p2)) => Arc::ptr_eq(p1, p2),
-            (None, None) => true,
-            _ => false,
-        }
-    }
-
-    fn iter(&self) -> Iter {
+    fn iter(&self) -> Iter<'_> {
         Iter {
             current: self,
             current_iter: self.own_properties.iter(),
@@ -233,7 +214,7 @@ impl CustomPropertiesMap {
     }
 
     /// Return iterator to go through all properties.
-    pub fn iter(&self) -> Iter {
+    pub fn iter(&self) -> Iter<'_> {
         self.0.iter()
     }
 }

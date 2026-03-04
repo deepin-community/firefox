@@ -20,6 +20,9 @@ newtab-personalize-dialog-label =
 newtab-search-box-search-button =
     .title = Hanapin
     .aria-label = Hanapin
+# Variables:
+#   $engine (string) - The name of the user's default search engine
+newtab-search-box-handoff-text = Maghanap gamit ang { $engine } o maglagay ng address
 newtab-search-box-handoff-text-no-engine = Maghanap o ilagay ang address
 newtab-search-box-handoff-input-no-engine =
     .placeholder = Hanapin o ilagay ang address
@@ -76,7 +79,7 @@ newtab-dismiss-button-tooltip =
     .aria-label = Tanggalin
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = Buksan ang menu
     .aria-label = Buksan ang menu ng konteksto para sa { $title }
@@ -148,11 +151,11 @@ newtab-label-saved = Nai-save na sa { -pocket-brand-name }
 newtab-label-download = Nai-download na
 # This string is used in the story cards to indicate sponsored content
 # Variables:
-#  $sponsorOrSource (String): This is the name of a company or their domain
+#   $sponsorOrSource (string) - The name of a company or their domain
 newtab-label-sponsored = { $sponsorOrSource } · Sponsored
 # This string is used at the bottom of story cards to indicate sponsored content
 # Variables:
-#  $sponsor (String): This is the name of a sponsor
+#   $sponsor (string) - The name of a sponsor
 newtab-label-sponsored-by = Suportado ng { $sponsor }
 
 ## Section Menu: These strings are displayed in the section context menu and are
@@ -180,7 +183,7 @@ newtab-section-expand-section-label =
 
 newtab-section-header-topsites = Mga Pangunahing Site
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Inirekomenda ni { $provider }
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
@@ -188,7 +191,7 @@ newtab-section-header-pocket = Inirekomenda ni { $provider }
 newtab-empty-section-highlights = Magsimulang mag-browse, at ipapakita namin ang ilan sa mga magagandang artikulo, video, at iba pang mga pahina na kamakailan mong binisita o na-bookmark dito.
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = Nakahabol ka na. Bumalik sa ibang pagkakataon para sa higit pang mga nangungunang kuwento mula sa { $provider }. Hindi makapaghintay? Pumili ng isang tanyag na paksa upang makahanap ng higit pang mahusay na mga kuwento mula sa buong web.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
@@ -208,9 +211,7 @@ newtab-pocket-more-recommendations = Karagdagang Rekomendasyon
 newtab-pocket-learn-more = Alamin
 newtab-pocket-cta-button = Kunin ang { -pocket-brand-name }
 newtab-pocket-cta-text = I-save sa { -pocket-brand-name } ang mga kwentong iyong nagustuhan, at palawigin ang iyong pagiisip sa mga nakabibighaning babasahin.
-
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
+newtab-pocket-save = I-save
 
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
@@ -225,6 +226,8 @@ newtab-custom-shortcuts-subtitle = Mga site na nai-save o binibisita mo
 newtab-custom-shortcuts-toggle =
     .label = Mga shortcut
     .description = Mga site na nai-save o binibisita mo
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } row
@@ -233,13 +236,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Mga naka-sponsor na shortcut
 newtab-custom-pocket-title = Inirerekomenda ng { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Natatanging nilalaman na inorganisa ng { -pocket-brand-name }, bahagi ng pamilyang { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Inirerekomenda ng { -pocket-brand-name }
-    .description = Natatanging nilalaman na inorganisa ng { -pocket-brand-name }, bahagi ng pamilyang { -brand-product-name }
+newtab-custom-pocket-sponsored = Mga naka-sponsor na kwento
+newtab-custom-pocket-show-recent-saves = Ipakita ang mga na-save kamakailan
 newtab-custom-recent-title = Kamakailang aktibidad
 newtab-custom-recent-subtitle = Isang pagpipilian ng mga kamakailang site at nilalaman
-newtab-custom-recent-toggle =
-    .label = Kamakailang aktibidad
-    .description = Isang pagpipilian ng mga kamakailang site at nilalaman
 newtab-custom-close-button = Isara
 newtab-custom-settings = Mamahala ng higit pang mga setting

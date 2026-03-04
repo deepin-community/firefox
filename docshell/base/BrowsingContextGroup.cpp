@@ -16,6 +16,7 @@
 #include "mozilla/dom/DocGroup.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/ThrottledEventQueue.h"
+#include "mozilla/dom/ProcessIsolation.h"
 #include "nsFocusManager.h"
 #include "nsTHashMap.h"
 
@@ -217,27 +218,19 @@ void BrowsingContextGroup::Subscribe(ContentParent* aProcess) {
   nsTArray<SyncedContextInitializer> inits(mContexts.Count());
   CollectContextInitializers(mToplevels, inits);
 
-  // Send all of our contexts to the target content process.
-  Unused << aProcess->SendRegisterBrowsingContextGroup(Id(), inits);
-
-  // If the focused or active BrowsingContexts belong in this group, tell the
-  // newly subscribed process.
-  if (nsFocusManager* fm = nsFocusManager::GetFocusManager()) {
-    BrowsingContext* focused = fm->GetFocusedBrowsingContextInChrome();
-    if (focused && focused->Group() != this) {
-      focused = nullptr;
-    }
-    BrowsingContext* active = fm->GetActiveBrowsingContextInChrome();
-    if (active && active->Group() != this) {
-      active = nullptr;
+  nsTArray<OriginAgentClusterInitializer> useOriginAgentCluster;
+  for (auto& entry : mUseOriginAgentCluster) {
+    if (!aProcess->ValidatePrincipal(entry.GetKey())) {
+      continue;
     }
 
-    if (focused || active) {
-      Unused << aProcess->SendSetupFocusedAndActive(
-          focused, fm->GetActionIdForFocusedBrowsingContextInChrome(), active,
-          fm->GetActionIdForActiveBrowsingContextInChrome());
-    }
+    useOriginAgentCluster.AppendElement(OriginAgentClusterInitializer(
+        WrapNotNull(RefPtr{entry.GetKey()}), entry.GetData()));
   }
+
+  // Send all of our contexts to the target content process.
+  (void)aProcess->SendRegisterBrowsingContextGroup(Id(), inits,
+                                                   useOriginAgentCluster);
 }
 
 void BrowsingContextGroup::Unsubscribe(ContentParent* aProcess) {
@@ -256,6 +249,42 @@ void BrowsingContextGroup::Unsubscribe(ContentParent* aProcess) {
 ContentParent* BrowsingContextGroup::GetHostProcess(
     const nsACString& aRemoteType) {
   return mHosts.GetWeak(aRemoteType);
+}
+
+bool BrowsingContextGroup::IsKnownForMessageReader(
+    IPC::MessageReader* aReader) {
+  if (!aReader->GetActor()) {
+    aReader->FatalError(
+        "No actor for BrowsingContextGroup::IsKnownForMessageReader");
+    return false;
+  }
+
+  mozilla::ipc::IToplevelProtocol* topActor =
+      aReader->GetActor()->ToplevelProtocol();
+  switch (topActor->GetProtocolId()) {
+    case PInProcessMsgStart:
+      // PInProcess always exists only within a single process, so we don't need
+      // to do any validation on it.
+      return true;
+
+    case PContentMsgStart:
+      // The process should only be able to name this BCG if it is
+      // subscribed, or if the BCG has been destroyed (and has therefore
+      // stopped tracking subscribers).
+      if (topActor->GetSide() == mozilla::ipc::ParentSide && !mDestroyed &&
+          !mSubscribers.Contains(static_cast<ContentParent*>(topActor))) {
+        aReader->FatalError(
+            "Process is not subscribed to this BrowsingContextGroup");
+        return false;
+      }
+      return true;
+
+    default:
+      aReader->FatalError(
+          "Unsupported toplevel actor for "
+          "BrowsingContextGroup::IsKnownForMessageReader");
+      return false;
+  }
 }
 
 void BrowsingContextGroup::UpdateToplevelsSuspendedIfNeeded() {
@@ -303,8 +332,8 @@ void BrowsingContextGroup::Destroy() {
                              !sBrowsingContextGroups->Contains(Id()) ||
                                  *sBrowsingContextGroups->Lookup(Id()) != this);
   }
-  mDestroyed = true;
 #endif
+  mDestroyed = true;
 
   // Make sure to call `RemoveBrowsingContextGroup` for every entry in both
   // `mHosts` and `mSubscribers`. This will visit most entries twice, but
@@ -482,11 +511,34 @@ void BrowsingContextGroup::GetDocGroups(nsTArray<DocGroup*>& aDocGroups) {
 }
 
 already_AddRefed<DocGroup> BrowsingContextGroup::AddDocument(
-    const nsACString& aKey, Document* aDocument) {
+    Document* aDocument) {
   MOZ_ASSERT(NS_IsMainThread());
 
+  nsCOMPtr<nsIPrincipal> principal = aDocument->NodePrincipal();
+
+  // Determine the DocGroup (agent cluster) key to use for this principal.
+  //
+  // https://html.spec.whatwg.org/#obtain-similar-origin-window-agent
+  DocGroupKey key;
+  if (auto originKeyed = UsesOriginAgentCluster(principal)) {
+    key.mOriginKeyed = *originKeyed;
+  } else {
+#ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
+    MOZ_CRASH(
+        "Document loading without first determining origin keying for origin!");
+#endif
+    key.mOriginKeyed = false;
+  }
+  if (key.mOriginKeyed) {
+    nsresult rv = principal->GetOrigin(key.mKey);
+    NS_ENSURE_SUCCESS(rv, nullptr);
+  } else {
+    nsresult rv = principal->GetSiteOrigin(key.mKey);
+    NS_ENSURE_SUCCESS(rv, nullptr);
+  }
+
   RefPtr<DocGroup>& docGroup = mDocGroups.LookupOrInsertWith(
-      aKey, [&] { return DocGroup::Create(this, aKey); });
+      key, [&] { return DocGroup::Create(this, key); });
 
   docGroup->AddDocument(aDocument);
   return do_AddRef(docGroup);
@@ -560,6 +612,109 @@ bool BrowsingContextGroup::DialogsAreBeingAbused() {
 bool BrowsingContextGroup::IsPotentiallyCrossOriginIsolated() {
   return GetBrowsingContextGroupIdFlags(mId) &
          kPotentiallyCrossOriginIsolatedFlag;
+}
+
+void BrowsingContextGroup::NotifyFocusedOrActiveBrowsingContextToProcess(
+    ContentParent* aProcess) {
+  MOZ_DIAGNOSTIC_ASSERT(aProcess);
+  // If the focused or active BrowsingContexts belong in this group,
+  // tell the newly subscribed process.
+  if (nsFocusManager* fm = nsFocusManager::GetFocusManager()) {
+    BrowsingContext* focused = fm->GetFocusedBrowsingContextInChrome();
+    if (focused && focused->Group() != this) {
+      focused = nullptr;
+    }
+    BrowsingContext* active = fm->GetActiveBrowsingContextInChrome();
+    if (active && active->Group() != this) {
+      active = nullptr;
+    }
+
+    if (focused || active) {
+      (void)aProcess->SendSetupFocusedAndActive(
+          focused, fm->GetActionIdForFocusedBrowsingContextInChrome(), active,
+          fm->GetActionIdForActiveBrowsingContextInChrome());
+    }
+  }
+}
+
+// Non-http(s) principals always use origin agent clusters.
+static bool AlwaysUseOriginAgentCluster(nsIPrincipal* aPrincipal) {
+  return !aPrincipal->GetIsContentPrincipal() ||
+         (!aPrincipal->SchemeIs("http") && !aPrincipal->SchemeIs("https"));
+}
+
+void BrowsingContextGroup::SetUseOriginAgentClusterFromNetwork(
+    nsIPrincipal* aPrincipal, bool aUseOriginAgentCluster) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+  // Ignore this set call if it will have no effect on loads in this BCG (e.g.
+  // because the BCG is cross-origin isolated or the origin will always be
+  // origin-keyed).
+  if (AlwaysUseOriginAgentCluster(aPrincipal) ||
+      IsPotentiallyCrossOriginIsolated()) {
+    return;
+  }
+
+  MOZ_ASSERT(!mUseOriginAgentCluster.Contains(aPrincipal));
+  mUseOriginAgentCluster.InsertOrUpdate(aPrincipal, aUseOriginAgentCluster);
+
+  // Tell any content processes subscribed to this BrowsingContextGroup about
+  // the new flag.
+  EachParent([&](ContentParent* aContentParent) {
+    // If this ContentParent can never load this principal, don't send it the
+    // information.
+    if (!aContentParent->ValidatePrincipal(aPrincipal)) {
+      return;
+    }
+
+    (void)aContentParent->SendSetUseOriginAgentCluster(
+        Id(), WrapNotNull(aPrincipal), aUseOriginAgentCluster);
+  });
+}
+
+void BrowsingContextGroup::SetUseOriginAgentClusterFromIPC(
+    nsIPrincipal* aPrincipal, bool aUseOriginAgentCluster) {
+  MOZ_ASSERT(!AlwaysUseOriginAgentCluster(aPrincipal));
+  MOZ_ASSERT(!IsPotentiallyCrossOriginIsolated());
+  MOZ_ASSERT(!mUseOriginAgentCluster.Contains(aPrincipal));
+  mUseOriginAgentCluster.InsertOrUpdate(aPrincipal, aUseOriginAgentCluster);
+}
+
+Maybe<bool> BrowsingContextGroup::UsesOriginAgentCluster(
+    nsIPrincipal* aPrincipal) {
+  // Check if agent clusters (DocGroups) for aPrincipal should be origin-keyed.
+  // https://html.spec.whatwg.org/#origin-keyed-agent-clusters
+  if (AlwaysUseOriginAgentCluster(aPrincipal) ||
+      IsPotentiallyCrossOriginIsolated()) {
+    return Some(true);
+  }
+
+  // If this assertion fails, we may return `Nothing()` below unexpectedly, as
+  // the parent process may have chosen to not process-switch.
+  MOZ_DIAGNOSTIC_ASSERT(
+      XRE_IsParentProcess() ||
+          ValidatePrincipalCouldPotentiallyBeLoadedBy(
+              aPrincipal, ContentChild::GetSingleton()->GetRemoteType(), {}),
+      "Attempting to create document with unexpected principal");
+
+  if (auto entry = mUseOriginAgentCluster.Lookup(aPrincipal)) {
+    return Some(entry.Data());
+  }
+  return Nothing();
+}
+
+void BrowsingContextGroup::EnsureUsesOriginAgentClusterInitialized(
+    nsIPrincipal* aPrincipal) {
+  if (UsesOriginAgentCluster(aPrincipal).isSome()) {
+    return;
+  }
+
+  MOZ_RELEASE_ASSERT(!XRE_IsContentProcess(),
+                     "Cannot determine origin-keying in content process!");
+
+  // We're about to load a document for this principal without hitting the
+  // network, so simulate no HTTP header being received on the network.
+  SetUseOriginAgentClusterFromNetwork(
+      aPrincipal, StaticPrefs::dom_origin_agent_cluster_default());
 }
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(BrowsingContextGroup, mContexts,

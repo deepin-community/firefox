@@ -16,7 +16,6 @@
 #include "nsStyleConsts.h"
 #include "nsPIDOMWindow.h"
 #include "nsProgressFrame.h"
-#include "nsMeterFrame.h"
 #include "nsRangeFrame.h"
 #include "nsCSSRendering.h"
 #include "ImageContainer.h"
@@ -29,6 +28,7 @@
 #include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/dom/DocumentInlines.h"
+#include "nsXULElement.h"
 #include <algorithm>
 
 using namespace mozilla;
@@ -49,26 +49,16 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
     return ElementState();
   }
 
-  const bool isXULElement = frameContent->IsXULElement();
-  if (isXULElement) {
-    if (aAppearance == StyleAppearance::Checkbox ||
-        aAppearance == StyleAppearance::Radio ||
-        aAppearance == StyleAppearance::ToolbarbuttonDropdown ||
-        aAppearance == StyleAppearance::ButtonArrowPrevious ||
-        aAppearance == StyleAppearance::ButtonArrowNext ||
-        aAppearance == StyleAppearance::ButtonArrowUp ||
-#ifdef MOZ_WIDGET_GTK
-        aAppearance == StyleAppearance::MozWindowButtonClose ||
-        aAppearance == StyleAppearance::MozWindowButtonMinimize ||
-        aAppearance == StyleAppearance::MozWindowButtonRestore ||
-        aAppearance == StyleAppearance::MozWindowButtonMaximize ||
-#endif
-        aAppearance == StyleAppearance::ButtonArrowDown) {
+  bool isXULElement = frameContent->IsXULElement();
+  if (aAppearance == StyleAppearance::Checkbox ||
+      aAppearance == StyleAppearance::Radio) {
+    if (nsXULElement::FromNodeOrNull(frameContent->GetParent())) {
       aFrame = aFrame->GetParent();
-      frameContent = aFrame->GetContent();
+      frameContent = frameContent->GetParent();
+      isXULElement = true;
     }
-    MOZ_ASSERT(frameContent && frameContent->IsElement());
   }
+  MOZ_ASSERT(frameContent && frameContent->IsElement());
 
   ElementState flags = frameContent->AsElement()->StyleState();
   nsNumberControlFrame* numberControlFrame =
@@ -116,12 +106,10 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
         flags |= ElementState::HOVER | ElementState::ACTIVE;
       }
       break;
-    case StyleAppearance::MenulistButton:
     case StyleAppearance::Menulist:
     case StyleAppearance::NumberInput:
     case StyleAppearance::Textfield:
     case StyleAppearance::PasswordInput:
-    case StyleAppearance::Searchfield:
     case StyleAppearance::Textarea: {
       if (CheckBooleanAttr(aFrame, nsGkAtoms::focused)) {
         flags |= ElementState::FOCUS | ElementState::FOCUSRING;
@@ -152,23 +140,6 @@ bool nsNativeTheme::CheckBooleanAttr(nsIFrame* aFrame, nsAtom* aAtom) {
 }
 
 /* static */
-int32_t nsNativeTheme::CheckIntAttr(nsIFrame* aFrame, nsAtom* aAtom,
-                                    int32_t defaultValue) {
-  if (!aFrame) return defaultValue;
-
-  nsIContent* content = aFrame->GetContent();
-  if (!content || !content->IsElement()) return defaultValue;
-
-  nsAutoString attr;
-  content->AsElement()->GetAttr(aAtom, attr);
-  nsresult err;
-  int32_t value = attr.ToInteger(&err);
-  if (attr.IsEmpty() || NS_FAILED(err)) return defaultValue;
-
-  return value;
-}
-
-/* static */
 double nsNativeTheme::GetProgressValue(nsIFrame* aFrame) {
   if (!aFrame || !aFrame->GetContent()->IsHTMLElement(nsGkAtoms::progress)) {
     return 0;
@@ -195,16 +166,6 @@ bool nsNativeTheme::IsButtonTypeMenu(nsIFrame* aFrame) {
                                            u"menu"_ns, eCaseMatters);
 }
 
-bool nsNativeTheme::IsPressedButton(nsIFrame* aFrame) {
-  ElementState state = GetContentState(aFrame, StyleAppearance::Toolbarbutton);
-  if (state.HasState(ElementState::DISABLED)) {
-    return false;
-  }
-
-  return IsOpenButton(aFrame) ||
-         state.HasAllStates(ElementState::ACTIVE | ElementState::HOVER);
-}
-
 bool nsNativeTheme::IsWidgetStyled(nsPresContext* aPresContext,
                                    nsIFrame* aFrame,
                                    StyleAppearance aAppearance) {
@@ -215,29 +176,12 @@ bool nsNativeTheme::IsWidgetStyled(nsPresContext* aPresContext,
 
   /**
    * Progress bar appearance should be the same for the bar and the container
-   * frame. nsProgressFrame owns the logic and will tell us what we should do.
+   * frame.
    */
-  if (aAppearance == StyleAppearance::Progresschunk ||
-      aAppearance == StyleAppearance::ProgressBar) {
-    nsProgressFrame* progressFrame = do_QueryFrame(
-        aAppearance == StyleAppearance::Progresschunk ? aFrame->GetParent()
-                                                      : aFrame);
-    if (progressFrame) {
-      return !progressFrame->ShouldUseNativeStyle();
-    }
-  }
-
-  /**
-   * Meter bar appearance should be the same for the bar and the container
-   * frame. nsMeterFrame owns the logic and will tell us what we should do.
-   */
-  if (aAppearance == StyleAppearance::Meterchunk ||
+  if (aAppearance == StyleAppearance::ProgressBar ||
       aAppearance == StyleAppearance::Meter) {
-    nsMeterFrame* meterFrame = do_QueryFrame(
-        aAppearance == StyleAppearance::Meterchunk ? aFrame->GetParent()
-                                                   : aFrame);
-    if (meterFrame) {
-      return !meterFrame->ShouldUseNativeStyle();
+    if (nsProgressFrame* progressFrame = do_QueryFrame(aFrame)) {
+      return !progressFrame->ShouldUseNativeStyle();
     }
   }
 
@@ -246,12 +190,8 @@ bool nsNativeTheme::IsWidgetStyled(nsPresContext* aPresContext,
    * comes to native theming (either all parts, or no parts, are themed).
    * nsRangeFrame owns the logic and will tell us what we should do.
    */
-  if (aAppearance == StyleAppearance::Range ||
-      aAppearance == StyleAppearance::RangeThumb) {
-    nsRangeFrame* rangeFrame = do_QueryFrame(
-        aAppearance == StyleAppearance::RangeThumb ? aFrame->GetParent()
-                                                   : aFrame);
-    if (rangeFrame) {
+  if (aAppearance == StyleAppearance::Range) {
+    if (nsRangeFrame* rangeFrame = do_QueryFrame(aFrame)) {
       return !rangeFrame->ShouldUseNativeStyle();
     }
   }
@@ -279,108 +219,6 @@ bool nsNativeTheme::IsHTMLContent(nsIFrame* aFrame) {
   return content && content->IsHTMLElement();
 }
 
-// treeheadercell:
-nsNativeTheme::TreeSortDirection nsNativeTheme::GetTreeSortDirection(
-    nsIFrame* aFrame) {
-  if (!aFrame || !aFrame->GetContent()) return eTreeSortDirection_Natural;
-
-  static Element::AttrValuesArray strings[] = {nsGkAtoms::descending,
-                                               nsGkAtoms::ascending, nullptr};
-
-  nsIContent* content = aFrame->GetContent();
-  if (content->IsElement()) {
-    switch (content->AsElement()->FindAttrValueIn(
-        kNameSpaceID_None, nsGkAtoms::sortDirection, strings, eCaseMatters)) {
-      case 0:
-        return eTreeSortDirection_Descending;
-      case 1:
-        return eTreeSortDirection_Ascending;
-    }
-  }
-
-  return eTreeSortDirection_Natural;
-}
-
-bool nsNativeTheme::IsLastTreeHeaderCell(nsIFrame* aFrame) {
-  if (!aFrame) {
-    return false;
-  }
-
-  // A tree column picker button is always the last header cell.
-  if (aFrame->GetContent()->IsXULElement(nsGkAtoms::button)) {
-    return true;
-  }
-
-  // Find the parent tree.
-  nsIContent* parent = aFrame->GetContent()->GetParent();
-  while (parent && !parent->IsXULElement(nsGkAtoms::tree)) {
-    parent = parent->GetParent();
-  }
-
-  // If the column picker is visible, this can't be the last column.
-  if (parent && !parent->AsElement()->AttrValueIs(kNameSpaceID_None,
-                                                  nsGkAtoms::hidecolumnpicker,
-                                                  u"true"_ns, eCaseMatters))
-    return false;
-
-  while ((aFrame = aFrame->GetNextSibling())) {
-    if (aFrame->GetRect().Width() > 0) return false;
-  }
-  return true;
-}
-
-// tab:
-bool nsNativeTheme::IsBottomTab(nsIFrame* aFrame) {
-  if (!aFrame) return false;
-
-  nsAutoString classStr;
-  if (aFrame->GetContent()->IsElement()) {
-    aFrame->GetContent()->AsElement()->GetAttr(nsGkAtoms::_class, classStr);
-  }
-  // FIXME: This looks bogus, shouldn't this be looking at GetClasses()?
-  return !classStr.IsEmpty() && classStr.Find(u"tab-bottom") != kNotFound;
-}
-
-bool nsNativeTheme::IsFirstTab(nsIFrame* aFrame) {
-  if (!aFrame) return false;
-
-  for (nsIFrame* first : aFrame->GetParent()->PrincipalChildList()) {
-    if (first->GetRect().Width() > 0 &&
-        first->GetContent()->IsXULElement(nsGkAtoms::tab))
-      return (first == aFrame);
-  }
-  return false;
-}
-
-bool nsNativeTheme::IsHorizontal(nsIFrame* aFrame) {
-  if (!aFrame) return false;
-
-  if (!aFrame->GetContent()->IsElement()) return true;
-
-  return !aFrame->GetContent()->AsElement()->AttrValueIs(
-      kNameSpaceID_None, nsGkAtoms::orient, nsGkAtoms::vertical, eCaseMatters);
-}
-
-bool nsNativeTheme::IsNextToSelectedTab(nsIFrame* aFrame, int32_t aOffset) {
-  if (!aFrame) return false;
-
-  if (aOffset == 0) return IsSelectedTab(aFrame);
-
-  int32_t thisTabIndex = -1, selectedTabIndex = -1;
-
-  nsIFrame* currentTab = aFrame->GetParent()->PrincipalChildList().FirstChild();
-  for (int32_t i = 0; currentTab; currentTab = currentTab->GetNextSibling()) {
-    if (currentTab->GetRect().Width() == 0) continue;
-    if (aFrame == currentTab) thisTabIndex = i;
-    if (IsSelectedTab(currentTab)) selectedTabIndex = i;
-    ++i;
-  }
-
-  if (thisTabIndex == -1 || selectedTabIndex == -1) return false;
-
-  return (thisTabIndex - selectedTabIndex == aOffset);
-}
-
 bool nsNativeTheme::IsVerticalProgress(nsIFrame* aFrame) {
   if (!aFrame) {
     return false;
@@ -401,30 +239,6 @@ bool nsNativeTheme::IsVerticalMeter(nsIFrame* aFrame) {
       return !aFrame->GetWritingMode().IsVertical();
   }
   MOZ_ASSERT_UNREACHABLE("unexpected -moz-orient value");
-  return false;
-}
-
-// menupopup:
-bool nsNativeTheme::IsSubmenu(nsIFrame* aFrame, bool* aLeftOfParent) {
-  if (!aFrame) return false;
-
-  nsIContent* parentContent = aFrame->GetContent()->GetParent();
-  if (!parentContent || !parentContent->IsXULElement(nsGkAtoms::menu))
-    return false;
-
-  nsIFrame* parent = aFrame;
-  while ((parent = parent->GetParent())) {
-    if (parent->GetContent() == parentContent) {
-      if (aLeftOfParent) {
-        LayoutDeviceIntRect selfBounds, parentBounds;
-        selfBounds = aFrame->GetNearestWidget()->GetScreenBounds();
-        parentBounds = parent->GetNearestWidget()->GetScreenBounds();
-        *aLeftOfParent = selfBounds.X() < parentBounds.X();
-      }
-      return true;
-    }
-  }
-
   return false;
 }
 
@@ -569,8 +383,6 @@ bool nsNativeTheme::IsWidgetScrollbarPart(StyleAppearance aAppearance) {
     case StyleAppearance::ScrollbarbuttonRight:
     case StyleAppearance::ScrollbarthumbVertical:
     case StyleAppearance::ScrollbarthumbHorizontal:
-    case StyleAppearance::ScrollbartrackHorizontal:
-    case StyleAppearance::ScrollbartrackVertical:
     case StyleAppearance::Scrollcorner:
       return true;
     default:
@@ -583,5 +395,12 @@ bool nsNativeTheme::IsWidgetAlwaysNonNative(nsIFrame* aFrame,
                                             StyleAppearance aAppearance) {
   return IsWidgetScrollbarPart(aAppearance) ||
          aAppearance == StyleAppearance::FocusOutline ||
+         aAppearance == StyleAppearance::SpinnerUpbutton ||
+         aAppearance == StyleAppearance::SpinnerDownbutton ||
+         aAppearance == StyleAppearance::Toolbarbutton ||
+         aAppearance == StyleAppearance::ProgressBar ||
+         aAppearance == StyleAppearance::Meter ||
+         aAppearance == StyleAppearance::Range ||
+         aAppearance == StyleAppearance::Listbox ||
          (aFrame && aFrame->StyleUI()->mMozTheme == StyleMozTheme::NonNative);
 }

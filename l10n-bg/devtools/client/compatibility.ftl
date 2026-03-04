@@ -5,6 +5,7 @@
 
 ## Messages used as headers in the main pane
 
+compatibility-all-elements-header = Всички
 
 ## Message used as labels for the type of issue
 
@@ -15,9 +16,16 @@ compatibility-issue-deprecated-experimental-prefixneeded = (изведено о�
 
 ## Messages used as labels and titles for buttons in the footer
 
+compatibility-settings-button-label = Настройки
+compatibility-settings-button-title =
+    .title = Настройки
 
 ## Messages used as headers in settings pane
 
+compatibility-settings-header = Настройки
+compatibility-target-browsers-header = Целеви браузъри
 
 ##
 
+compatibility-close-settings-button =
+    .title = Затваряне на настройките

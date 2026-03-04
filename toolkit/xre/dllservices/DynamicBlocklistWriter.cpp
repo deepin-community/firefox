@@ -12,9 +12,9 @@
 
 namespace mozilla {
 #if ENABLE_TESTS
-nsDependentString testEntryString(DynamicBlockList::kTestDll,
-                                  DynamicBlockList::kTestDllBytes /
-                                      sizeof(DynamicBlockList::kTestDll[0]));
+MOZ_RUNINIT nsDependentString testEntryString(
+    DynamicBlockList::kTestDll,
+    DynamicBlockList::kTestDllBytes / sizeof(DynamicBlockList::kTestDll[0]));
 #endif
 
 bool ShouldWriteEntry(const nsAString& name) {
@@ -56,7 +56,7 @@ DynamicBlocklistWriter::DynamicBlocklistWriter(
   }
 
   mStringBuffer = MakeUnique<uint8_t[]>(mStringBufferSize);
-  Unused << mArray.resize(entriesToWrite + 1);  // aBlockEntries + sentinel
+  (void)mArray.resize(entriesToWrite + 1);  // aBlockEntries + sentinel
 
   size_t currentStringOffset = 0;
   size_t i = 0;
@@ -85,7 +85,7 @@ DynamicBlocklistWriter::DynamicBlocklistWriter(
 
 nsresult DynamicBlocklistWriter::WriteToFile(const nsAString& aName) const {
   nsCOMPtr<nsIFile> file;
-  MOZ_TRY(NS_NewLocalFile(aName, true, getter_AddRefs(file)));
+  MOZ_TRY(NS_NewLocalFile(aName, getter_AddRefs(file)));
 
   nsCOMPtr<nsIOutputStream> stream;
   MOZ_TRY(NS_NewSafeLocalFileOutputStream(getter_AddRefs(stream), file));

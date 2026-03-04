@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import expect from 'expect';
 import * as utils from 'puppeteer-core/internal/common/util.js';
@@ -21,7 +21,7 @@ describe('Tracing', function () {
    * individual test, which isn't the default behaviour of getTestState()
    */
   beforeEach(async () => {
-    testState = await launch({});
+    testState = await launch({}, {createContext: true});
     outputFile = path.join(__dirname, 'trace.json');
   });
 
@@ -49,7 +49,7 @@ describe('Tracing', function () {
     await page.tracing.stop();
 
     const traceJson = JSON.parse(
-      fs.readFileSync(outputFile, {encoding: 'utf8'})
+      fs.readFileSync(outputFile, {encoding: 'utf8'}),
     );
     const traceConfig = JSON.parse(traceJson.metadata['trace-config']);
     expect(traceConfig.included_categories).toEqual([
@@ -59,7 +59,7 @@ describe('Tracing', function () {
     expect(traceJson.traceEvents).not.toContainEqual(
       expect.objectContaining({
         cat: 'toplevel',
-      })
+      }),
     );
   });
 
@@ -71,12 +71,12 @@ describe('Tracing', function () {
     await page.tracing.stop();
 
     const traceJson = JSON.parse(
-      fs.readFileSync(outputFile, {encoding: 'utf8'})
+      fs.readFileSync(outputFile, {encoding: 'utf8'}),
     );
     expect(traceJson.traceEvents).toContainEqual(
       expect.objectContaining({
         cat: 'toplevel',
-      })
+      }),
     );
   });
   it('should throw if tracing on two pages', async () => {

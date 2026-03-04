@@ -11,7 +11,7 @@
 
 namespace mozilla::dom {
 
-class WebAuthnManager;
+class WebAuthnHandler;
 
 class CredentialsContainer final : public nsISupports, public nsWrapperCache {
  public:
@@ -22,7 +22,7 @@ class CredentialsContainer final : public nsISupports, public nsWrapperCache {
 
   nsPIDOMWindowInner* GetParentObject() const { return mParent; }
 
-  already_AddRefed<WebAuthnManager> GetWebAuthnManager();
+  already_AddRefed<WebAuthnHandler> GetWebAuthnHandler();
 
   virtual JSObject* WrapObject(JSContext* aCx,
                                JS::Handle<JSObject*> aGivenProto) override;
@@ -38,14 +38,15 @@ class CredentialsContainer final : public nsISupports, public nsWrapperCache {
 
   already_AddRefed<Promise> PreventSilentAccess(ErrorResult& aRv);
 
+  static bool IsSameOriginWithAncestors(nsPIDOMWindowInner* aParent);
+
  private:
   ~CredentialsContainer();
 
-  void EnsureWebAuthnManager();
+  void EnsureWebAuthnHandler();
 
   nsCOMPtr<nsPIDOMWindowInner> mParent;
-  RefPtr<WebAuthnManager> mManager;
-  bool mActiveIdentityRequest;
+  RefPtr<WebAuthnHandler> mWebAuthnHandler;
 };
 
 }  // namespace mozilla::dom

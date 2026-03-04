@@ -5,6 +5,12 @@
 /* eslint-env node */
 
 const { logTest, logTask } = require("./utils/profiling");
+const {
+  initializeMeasurements,
+  startMeasurements,
+  stopMeasurements,
+  finalizeMeasurements,
+} = require("./utils/support_measurements");
 
 module.exports = logTest(
   "speedometer 3 test",
@@ -16,6 +22,14 @@ module.exports = logTest(
     let post_startup_delay = context.options.browsertime.post_startup_delay;
     let page_timeout = context.options.timeouts.pageLoad;
     let expose_profiler = context.options.browsertime.expose_profiler;
+
+    await initializeMeasurements(
+      context,
+      commands,
+      true,
+      context.options.browsertime.power_test,
+      true
+    );
 
     context.log.info(
       "Waiting for %d ms (post_startup_delay)",
@@ -45,6 +59,16 @@ module.exports = logTest(
           }
         }
         await commands.measure.start(url);
+        await startMeasurements(context, commands);
+
+        // Measure the GC perfstats counters over the entire sp3 run.
+        if (context.options.browser === "firefox") {
+          await commands.perfStats.start([
+            "MinorGC",
+            "MajorGC",
+            "NonIdleMajorGC",
+          ]);
+        }
 
         await commands.js.runAndWait(`
         this.benchmarkClient.start()
@@ -83,6 +107,14 @@ module.exports = logTest(
           context.log.error("Benchmark timed out. Aborting...");
           return false;
         }
+        await stopMeasurements();
+
+        let perfStatsResults = undefined;
+        if (context.options.browser === "firefox") {
+          perfStatsResults = await commands.perfStats.collect();
+          await commands.perfStats.stop();
+        }
+
         let internal_data = await commands.js.run(
           `return this.benchmarkClient._measuredValuesList;`
         );
@@ -101,10 +133,18 @@ module.exports = logTest(
     `);
         context.log.info("Value of summarized benchmark data: ", data);
 
-        commands.measure.addObject({ s3: data, s3_internal: internal_data });
+        commands.measure.addObject({
+          s3: data,
+          s3_internal: internal_data,
+          ...(perfStatsResults !== undefined && {
+            perfstats: perfStatsResults,
+          }),
+        });
+
         return true;
       });
     }
+    await finalizeMeasurements();
 
     return true;
   }

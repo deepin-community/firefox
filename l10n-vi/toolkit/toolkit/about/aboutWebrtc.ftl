@@ -147,9 +147,6 @@ about-webrtc-time-elapsed = Thời gian đã trôi qua (giây)
 about-webrtc-estimated-framerate = Tốc độ khung hình ước tính
 about-webrtc-rotation-degrees = Xoay (độ)
 
-## SSRCs are identifiers that represent endpoints in an RTP stream
-
-
 ## These are displayed on the button that shows or hides the
 ## PeerConnection configuration disclosure
 
@@ -166,10 +163,6 @@ about-webrtc-configuration-element-provided = Cung cấp
 about-webrtc-configuration-element-not-provided = Không cung cấp
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Người dùng thiết lập tùy chọn WebRTC
-
-## These are displayed on the button that shows or hides the
-## user modified configuration disclosure
-
 
 ##
 
@@ -192,10 +185,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Thống kê khung hình video - ID MediaStreamTrack: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = đã lưu trang vào: { $path }
 about-webrtc-debug-mode-off-state-msg = nhật ký theo dõi có thể được tìm thấy tại: { $path }
@@ -272,11 +262,3 @@ about-webrtc-sdp-set-timestamp = Timestamp { NUMBER($timestamp, useGrouping: "fa
 
 about-webrtc-show-msg-sdp = Hiển thị SDP
 about-webrtc-hide-msg-sdp = Ẩn SDP
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-

@@ -137,9 +137,8 @@ function promiseWaitForEvent(
  * @param aWindow
  *        The window to focus and wait for.
  *
- * @return {Promise}
- * @resolves When the window is focused.
- * @rejects Never.
+ * @returns {Promise<void>}
+ *   Resolved when the window is focused.
  */
 function promiseWaitForFocus(aWindow) {
   return new Promise(resolve => {
@@ -161,29 +160,6 @@ function promiseWindowClosed(win) {
   return promise;
 }
 
-function promiseOpenAndLoadWindow(aOptions, aWaitForDelayedStartup = false) {
-  return new Promise(resolve => {
-    let win = OpenBrowserWindow(aOptions);
-    if (aWaitForDelayedStartup) {
-      Services.obs.addObserver(function onDS(aSubject) {
-        if (aSubject != win) {
-          return;
-        }
-        Services.obs.removeObserver(onDS, "browser-delayed-startup-finished");
-        resolve(win);
-      }, "browser-delayed-startup-finished");
-    } else {
-      win.addEventListener(
-        "load",
-        function () {
-          resolve(win);
-        },
-        { once: true }
-      );
-    }
-  });
-}
-
 async function whenNewTabLoaded(aWindow, aCallback) {
   aWindow.BrowserCommands.openTab();
 
@@ -198,65 +174,6 @@ async function whenNewTabLoaded(aWindow, aCallback) {
     await loadPromise;
   }
   aCallback();
-}
-
-function whenTabLoaded(aTab, aCallback) {
-  promiseTabLoadEvent(aTab).then(aCallback);
-}
-
-function promiseTabLoaded(aTab) {
-  return new Promise(resolve => {
-    whenTabLoaded(aTab, resolve);
-  });
-}
-
-/**
- * Waits for a load (or custom) event to finish in a given tab. If provided
- * load an uri into the tab.
- *
- * @param tab
- *        The tab to load into.
- * @param [optional] url
- *        The url to load, or the current url.
- * @return {Promise} resolved when the event is handled.
- * @resolves to the received event
- * @rejects if a valid load event is not received within a meaningful interval
- */
-function promiseTabLoadEvent(tab, url) {
-  info("Wait tab event: load");
-
-  function handle(loadedUrl) {
-    if (loadedUrl === "about:blank" || (url && loadedUrl !== url)) {
-      info(`Skipping spurious load event for ${loadedUrl}`);
-      return false;
-    }
-
-    info("Tab event received: load");
-    return true;
-  }
-
-  let loaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser, false, handle);
-
-  if (url) {
-    BrowserTestUtils.startLoadingURIString(tab.linkedBrowser, url);
-  }
-
-  return loaded;
-}
-
-/**
- * Returns a Promise that resolves once a new tab has been opened in
- * a xul:tabbrowser.
- *
- * @param aTabBrowser
- *        The xul:tabbrowser to monitor for a new tab.
- * @return {Promise}
- *        Resolved when the new tab has been opened.
- * @resolves to the TabOpen event that was fired.
- * @rejects Never.
- */
-function waitForNewTabEvent(aTabBrowser) {
-  return BrowserTestUtils.waitForEvent(aTabBrowser.tabContainer, "TabOpen");
 }
 
 function is_hidden(element) {
@@ -327,13 +244,31 @@ function promiseOnBookmarkItemAdded(aExpectedURI) {
   });
 }
 
-async function loadBadCertPage(url) {
+async function loadBadCertPage(url, feltPrivacy = false) {
   let loaded = BrowserTestUtils.waitForErrorPage(gBrowser.selectedBrowser);
   BrowserTestUtils.startLoadingURIString(gBrowser.selectedBrowser, url);
   await loaded;
 
-  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], async function () {
-    content.document.getElementById("exceptionDialogButton").click();
-  });
+  await SpecialPowers.spawn(
+    gBrowser.selectedBrowser,
+    [feltPrivacy],
+    async isFeltPrivacy => {
+      if (isFeltPrivacy) {
+        let netErrorCard =
+          content.document.querySelector("net-error-card").wrappedJSObject;
+        await netErrorCard.getUpdateComplete();
+        netErrorCard.advancedButton.click();
+        await ContentTaskUtils.waitForCondition(() => {
+          return (
+            netErrorCard.exceptionButton &&
+            !netErrorCard.exceptionButton.disabled
+          );
+        }, "Waiting for exception button");
+        netErrorCard.exceptionButton.click();
+      } else {
+        content.document.getElementById("exceptionDialogButton").click();
+      }
+    }
+  );
   await BrowserTestUtils.browserLoaded(gBrowser.selectedBrowser);
 }

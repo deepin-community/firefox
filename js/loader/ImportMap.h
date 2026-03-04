@@ -11,7 +11,6 @@
 #include <map>
 
 #include "js/SourceText.h"
-#include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Logging.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
@@ -55,6 +54,10 @@ using SpecifierMap =
 using ScopeMap = std::map<nsCString, mozilla::UniquePtr<SpecifierMap>,
                           std::greater<nsCString>>;
 
+// Integrity map from import maps.
+// https://html.spec.whatwg.org/multipage/webappapis.html#concept-import-map-integrity
+using IntegrityMap = std::map<nsCString, nsString, std::greater<nsCString>>;
+
 /**
  * Implementation of Import maps.
  * https://html.spec.whatwg.org/multipage/webappapis.html#import-maps
@@ -62,8 +65,11 @@ using ScopeMap = std::map<nsCString, mozilla::UniquePtr<SpecifierMap>,
 class ImportMap {
  public:
   ImportMap(mozilla::UniquePtr<SpecifierMap> aImports,
-            mozilla::UniquePtr<ScopeMap> aScopes)
-      : mImports(std::move(aImports)), mScopes(std::move(aScopes)) {}
+            mozilla::UniquePtr<ScopeMap> aScopes,
+            mozilla::UniquePtr<IntegrityMap> aIntegrity)
+      : mImports(std::move(aImports)),
+        mScopes(std::move(aScopes)),
+        mIntegrity(std::move(aIntegrity)) {}
 
   /**
    * Parse the JSON string from the Import map script.
@@ -73,7 +79,7 @@ class ImportMap {
    * https://html.spec.whatwg.org/multipage/webappapis.html#parse-an-import-map-string
    */
   static mozilla::UniquePtr<ImportMap> ParseString(
-      JSContext* aCx, JS::SourceText<char16_t>& aInput, nsIURI* aBaseURL,
+      JSContext* aCx, SourceText<char16_t>& aInput, nsIURI* aBaseURL,
       const ReportWarningHelper& aWarning);
 
   /**
@@ -98,6 +104,9 @@ class ImportMap {
                                               LoadedScript* aScript,
                                               const nsAString& aSpecifier);
 
+  static mozilla::Maybe<nsString> LookupIntegrity(ImportMap* aImportMap,
+                                                  nsIURI* aURL);
+
   // Logging
   static mozilla::LazyLogModule gImportMapLog;
 
@@ -111,6 +120,7 @@ class ImportMap {
    */
   mozilla::UniquePtr<SpecifierMap> mImports;
   mozilla::UniquePtr<ScopeMap> mScopes;
+  mozilla::UniquePtr<IntegrityMap> mIntegrity;
 };
 
 }  // namespace JS::loader

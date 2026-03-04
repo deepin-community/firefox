@@ -8,11 +8,10 @@
 #define DOM_SVG_SVGTRANSFORMABLEELEMENT_H_
 
 #include "gfxMatrix.h"
-#include "mozilla/Attributes.h"
+#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/SVGAnimatedTransformList.h"
 #include "mozilla/dom/SVGElement.h"
 #include "mozilla/gfx/Matrix.h"
-#include "mozilla/UniquePtr.h"
 
 namespace mozilla::dom {
 
@@ -33,16 +32,9 @@ class SVGTransformableElement : public SVGElement {
   // WebIDL
   already_AddRefed<DOMSVGAnimatedTransformList> Transform();
 
-  // nsIContent interface
-  nsChangeHint GetAttributeChangeHint(const nsAtom* aAttribute,
-                                      int32_t aModType) const override;
-
   // SVGElement overrides
   bool IsEventAttributeNameInternal(nsAtom* aName) override;
 
-  gfxMatrix PrependLocalTransformsTo(
-      const gfxMatrix& aMatrix,
-      SVGTransformTypes aWhich = eAllTransforms) const override;
   const gfx::Matrix* GetAnimateMotionTransform() const override;
   void SetAnimateMotionTransform(const gfx::Matrix* aMatrix) override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;

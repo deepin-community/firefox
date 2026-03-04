@@ -19,7 +19,7 @@ import mozilla.components.browser.state.state.LoadRequestState
 import mozilla.components.browser.state.state.MediaSessionState
 import mozilla.components.browser.state.state.ReaderState
 import mozilla.components.browser.state.state.SearchState
-import mozilla.components.browser.state.state.SecurityInfoState
+import mozilla.components.browser.state.state.SecurityInfo
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.TabGroup
 import mozilla.components.browser.state.state.TabSessionState
@@ -28,7 +28,8 @@ import mozilla.components.browser.state.state.UndoHistoryState
 import mozilla.components.browser.state.state.WebExtensionState
 import mozilla.components.browser.state.state.content.DownloadState
 import mozilla.components.browser.state.state.content.FindResultState
-import mozilla.components.browser.state.state.content.ShareInternetResourceState
+import mozilla.components.browser.state.state.content.PermissionHighlightsState
+import mozilla.components.browser.state.state.content.ShareResourceState
 import mozilla.components.browser.state.state.extension.WebExtensionPromptRequest
 import mozilla.components.browser.state.state.recover.RecoverableTab
 import mozilla.components.browser.state.state.recover.TabState
@@ -512,6 +513,28 @@ sealed class ContentAction : BrowserAction() {
             UpdatePermissionHighlightsStateAction()
 
         /**
+         * Updates the [PermissionHighlightsState.localDeviceAccessChanged] property with the
+         * given [tabId]
+         *
+         * @property tabId The affected tab id
+         * @property value The value indicating whether or not the local device access permission
+         * has changed
+         */
+        data class LocalDeviceAccessChangedAction(val tabId: String, val value: Boolean) :
+            UpdatePermissionHighlightsStateAction()
+
+        /**
+         * Updates the [PermissionHighlightsState.localNetworkAccessChanged] property with the
+         * given [tabId]
+         *
+         * @property tabId The affected tab id
+         * @property value The value indicating whether or not the local network access permission
+         * has changed
+         */
+        data class LocalNetworkAccessChangedAction(val tabId: String, val value: Boolean) :
+            UpdatePermissionHighlightsStateAction()
+
+        /**
          * Updates the autoPlayAudibleChanged property of the [PermissionHighlightsState]
          * with the given [tabId].
          */
@@ -583,11 +606,11 @@ sealed class ContentAction : BrowserAction() {
     ) : ContentAction()
 
     /**
-     * Updates the [SecurityInfoState] of the [ContentState] with the given [sessionId].
+     * Updates the [SecurityInfo] of the [ContentState] with the given [sessionId].
      */
     data class UpdateSecurityInfoAction(
         val sessionId: String,
-        val securityInfo: SecurityInfoState,
+        val securityInfo: SecurityInfo,
     ) : ContentAction()
 
     /**
@@ -810,7 +833,7 @@ sealed class ContentAction : BrowserAction() {
     /**
      * Updates the [ContentState] of the given [sessionId] to indicate whether or not desktop mode is enabled.
      */
-    data class UpdateDesktopModeAction(val sessionId: String, val enabled: Boolean) : ContentAction()
+    data class UpdateTabDesktopMode(val sessionId: String, val enabled: Boolean) : ContentAction()
 
     /**
      * Updates the [AppIntentState] of the [ContentState] with the given [sessionId].
@@ -849,11 +872,17 @@ sealed class ContentAction : BrowserAction() {
     data class CheckForFormDataExceptionAction(val tabId: String, val throwable: Throwable) : ContentAction()
 
     /**
-     * Updates the [ContentState.isProductUrl] state for the non private tab with the given [tabId].
+     * Inform that the tab with [tabId] started rendering a pdf.
      */
-    data class UpdateProductUrlStateAction(
+    data class EnteredPdfViewer(
         val tabId: String,
-        val isProductUrl: Boolean,
+    ) : ContentAction()
+
+    /**
+     * Inform that the tab with [tabId] stopped rendering a pdf.
+     */
+    data class ExitedPdfViewer(
+        val tabId: String,
     ) : ContentAction()
 }
 
@@ -1331,6 +1360,7 @@ sealed class EngineAction : BrowserAction() {
         val flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none(),
         val additionalHeaders: Map<String, String>? = null,
         val includeParent: Boolean = false,
+        val textDirectiveUserActivation: Boolean = false,
     ) : EngineAction(), ActionWithTab
 
     /**
@@ -1521,6 +1551,13 @@ sealed class EngineAction : BrowserAction() {
      * Purges the back/forward history of all tabs and custom tabs.
      */
     object PurgeHistoryAction : EngineAction()
+
+    /**
+     * Flushes the most recent state of the session with the provided [tabId].
+     */
+    data class FlushEngineSessionStateAction(
+        override val tabId: String,
+    ) : EngineAction(), ActionWithTab
 }
 
 /**
@@ -1694,19 +1731,28 @@ sealed class DownloadAction : BrowserAction() {
      * Restores the given [download] from the storage.
      */
     data class RestoreDownloadStateAction(val download: DownloadState) : DownloadAction()
+
+    /**
+     * [BrowserAction] to remove completed and cancelled downloads from the storage that no longer
+     * exist on disk.
+     *
+     * This action is used to clean up the download storage by removing entries for files
+     * that have been deleted or moved from their original download location.
+     */
+    data object RemoveDeletedDownloads : DownloadAction()
 }
 
 /**
- * [BrowserAction] implementations related to updating the session state of internet resources to be shared.
+ * [BrowserAction] implementations related to updating the session state of internet or local resources to be shared.
  */
-sealed class ShareInternetResourceAction : BrowserAction() {
+sealed class ShareResourceAction : BrowserAction() {
     /**
-     * Starts the sharing process of an Internet resource.
+     * Starts the sharing process of an Internet or local resource.
      */
     data class AddShareAction(
         val tabId: String,
-        val internetResource: ShareInternetResourceState,
-    ) : ShareInternetResourceAction()
+        val resource: ShareResourceState,
+    ) : ShareResourceAction()
 
     /**
      * Previous share request is considered completed.
@@ -1715,7 +1761,7 @@ sealed class ShareInternetResourceAction : BrowserAction() {
      */
     data class ConsumeShareAction(
         val tabId: String,
-    ) : ShareInternetResourceAction()
+    ) : ShareResourceAction()
 }
 
 /**
@@ -1727,7 +1773,7 @@ sealed class CopyInternetResourceAction : BrowserAction() {
      */
     data class AddCopyAction(
         val tabId: String,
-        val internetResource: ShareInternetResourceState,
+        val internetResource: ShareResourceState.InternetResource,
     ) : CopyInternetResourceAction()
 
     /**
@@ -1795,6 +1841,11 @@ sealed class SearchAction : BrowserAction() {
      * distribution is a [String] that specifies a set of default search engines if available
      */
     data class SetRegionAction(val regionState: RegionState, val distribution: String? = null) : SearchAction()
+
+    /**
+     * Application Search Engines have finished loading from disk.
+     */
+    data class ApplicationSearchEnginesLoaded(val applicationSearchEngines: List<SearchEngine>) : SearchAction()
 
     /**
      * Sets the list of search engines and default search engine IDs.
@@ -1870,6 +1921,11 @@ sealed class SearchAction : BrowserAction() {
 }
 
 /**
+ * [BrowserAction] implements setting and updating the distribution
+ */
+data class UpdateDistribution(val distributionId: String?) : BrowserAction()
+
+/**
  * [BrowserAction] implementations for updating state needed for debugging. These actions should
  * be carefully considered before being used.
  *
@@ -1902,4 +1958,19 @@ sealed class AppLifecycleAction : BrowserAction() {
      * The application has received an ON_PAUSE event.
      */
     object PauseAction : AppLifecycleAction()
+}
+
+/**
+ * [BrowserAction] implementations related to updating the application's default desktop mode setting.
+ */
+sealed class DefaultDesktopModeAction : BrowserAction() {
+    /**
+     * Toggles the global default for desktop browsing mode.
+     */
+    data object ToggleDesktopMode : DefaultDesktopModeAction()
+
+    /**
+     * Updates the global default for desktop browsing mode.
+     */
+    data class DesktopModeUpdated(val newValue: Boolean) : DefaultDesktopModeAction()
 }

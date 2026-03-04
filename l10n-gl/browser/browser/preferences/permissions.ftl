@@ -91,6 +91,7 @@ permissions-exceptions-https-only-window2 =
     .title = Excepcións: modo só HTTPS
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Pode desactivar o modo só HTTPS para sitios web específicos. { -brand-short-name } non intentará anovar a conexión a HTTPS seguros para eses sitios. As excepcións non se aplican ás xanelas privadas.
+permissions-exceptions-https-only-desc2 = Podes desactivar o modo só HTTPS para sitios web específicos. { -brand-short-name } non tentará actualizar a conexión a HTTPS seguro neses sitios.
 
 ## Exceptions - Pop-ups
 
@@ -166,6 +167,12 @@ permissions-site-camera-desc = Os seguintes sitios web solicitaron acceder á c�
 permissions-site-camera-disable-label =
     .label = Bloquear novas peticións de acceso á cámara
 permissions-site-camera-disable-desc = Isto evitará que os sitios web non listados arriba soliciten permiso de acceso á cámara. Bloquear o acceso á cámara pode impedir o funcionamento dalgunhas características dos sitios web.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Configuración: aplicacións e servizos do dispositivo
+    .style = { permissions-window2.style }
 
 ## Site Permissions - Microphone
 

@@ -15,7 +15,7 @@ default-browser-notification-button =
 default-browser-prompt-title-pin = להפוך את { -brand-short-name } לדפדפן הראשי שלך?
 default-browser-prompt-message-pin = כדי לשמור את { -brand-short-name } קרוב אליך — מומלץ להגדיר אותו כדפדפן ברירת המחדל ולהצמיד אותו לשורת המשימות.
 default-browser-prompt-message-pin-msix = כדי לשמור את { -brand-short-name } קרוב אליך — מומלץ להגדיר אותו כדפדפן ברירת המחדל ולהצמיד אותו לשורת המשימות ותפריט ההתחל.
-default-browser-prompt-message-pin-mac = כדי לשמור את { -brand-short-name } קרוב אליך — מומלץ להגדיר אותו כדפדפן ברירת המחדל לשמור אותו ב־Dock שלך.
+default-browser-prompt-message-pin-mac = כדי לשמור את { -brand-short-name } קרוב אליך — מומלץ להגדיר אותו כדפדפן ברירת המחדל ולשמור אותו ב־Dock שלך.
 default-browser-prompt-button-primary-set = הגדרה כדפדפן הראשי
 default-browser-prompt-button-primary-pin = הגדרה כדפדפן הראשי
 default-browser-prompt-title-alt = להפוך את { -brand-short-name } לדפדפן ברירת המחדל שלך?
@@ -40,3 +40,6 @@ default-browser-guidance-notification-body-instruction-win11 =
     שלב 2: לבחור באפשרות ״הגדר ברירת מחדל" עבור { -brand-short-name }
 default-browser-guidance-notification-info-page = תראו לי
 default-browser-guidance-notification-dismiss = סיום
+default-browser-guidance-notification-v2-title = סיום הגדרת { -brand-short-name } כדפדפן ברירת המחדל שלך
+default-browser-guidance-notification-v2-body = בהגדרות, יש לבחור באפשרות "קבע כברירת מחדל" עבור { -brand-short-name }.
+default-browser-guidance-notification-v2-title-only = סיום הגדרת { -brand-short-name } כדפדפן ברירת המחדל שלך הגדרות

@@ -7,7 +7,6 @@ package mozilla.components.feature.awesomebar.provider
 import android.graphics.Bitmap
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import mozilla.components.browser.state.search.OS_SEARCH_ENGINE_TERMS_PARAM
 import mozilla.components.browser.state.search.SearchEngine
@@ -37,7 +36,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 
-@ExperimentalCoroutinesApi // for runTest
 @RunWith(AndroidJUnit4::class)
 class SearchTermSuggestionsProviderTest {
     private val historyEntry = HistoryMetadata(
@@ -78,13 +76,13 @@ class SearchTermSuggestionsProviderTest {
     }
 
     @Test
-    fun `GIVEN an empty input WHEN querying suggestions THEN cleanup all read operations for the current query`() = runTest {
+    fun `GIVEN an empty input WHEN querying suggestions THEN do not cleanup read operations for the empty query`() = runTest {
         val provider = SearchTermSuggestionsProvider(storage, mock(), searchEngine)
 
         provider.onInputChanged("")
 
         verify(storage, never()).cancelReads()
-        verify(storage).cancelReads("")
+        verify(storage, never()).cancelReads("")
     }
 
     @Test

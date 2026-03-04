@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = ปิด
     .aria-label = ปิด
-firefoxview-empty-state-icon =
-    .alt = คำเตือน:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = เมื่อกี้นี้
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% เสร็จสม�
 firefoxview-tabpickup-step-signin-header = สลับระหว่างอุปกรณ์ได้อย่างไร้รอยต่อ
 firefoxview-tabpickup-step-signin-description = เมื่อต้องการนำแท็บบนโทรศัพท์ของคุณมาที่นี่ ให้ลงชื่อเข้าหรือสร้างบัญชีก่อน
 firefoxview-tabpickup-step-signin-primarybutton = ดำเนินการต่อ
-firefoxview-syncedtabs-signin-header = หยิบแท็บได้จากทุกที่
-firefoxview-syncedtabs-signin-description = ถ้าต้องการเห็นแท็บต่างๆ จากที่ใดก็ตามที่คุณใช้ { -brand-product-name } ให้ลงชื่อเข้าใช้บัญชีของคุณ ถ้าคุณไม่มีบัญชี เราจะแนะนำขั้นตอนต่างๆ ในการสมัครให้คุณ
-firefoxview-syncedtabs-signin-primarybutton = ลงชื่อเข้าหรือสมัคร
+firefoxview-syncedtabs-signin-header-2 = ให้ { -brand-product-name } เป็นแบบคุณในทุกอุปกรณ์ของคุณ
+firefoxview-syncedtabs-signin-description-2 = หากต้องการเห็นแท็บที่คุณเปิดไว้ในโทรศัพท์และอุปกรณ์อื่นๆ ของคุณ ให้ลงชื่อเข้าหรือลงทะเบียนบัญชีใหม่ เมื่อคุณมีบัญชีแล้ว คุณจะสามารถซิงค์รหัสผ่าน ประวัติ และอื่นๆ ของคุณได้ด้วย
+firefoxview-syncedtabs-signin-primarybutton-2 = ลงชื่อเข้า
 firefoxview-tabpickup-adddevice-header = ซิงค์ { -brand-product-name } บนโทรศัพท์หรือแท็บเล็ตของคุณ
 firefoxview-tabpickup-adddevice-description = ดาวน์โหลด { -brand-product-name } สำหรับมือถือแล้วลงชื่อเข้าจากที่นั่น
 firefoxview-tabpickup-adddevice-learn-how = เรียนรู้วิธี
 firefoxview-tabpickup-adddevice-primarybutton = รับ { -brand-product-name } สำหรับมือถือ
-firefoxview-syncedtabs-adddevice-header = ลงชื่อเข้า { -brand-product-name } บนอุปกรณ์อื่น ๆ ของคุณ
-firefoxview-syncedtabs-adddevice-description = ถ้าต้องการเห็นแท็บต่างๆ จากที่ใดก็ตามที่คุณใช้ { -brand-product-name } ให้ลงชื่อเข้าใช้บนอุปกรณ์ทั้งหมดของคุณ เรียนรู้วิธีการ<a data-l10n-name="url">เชื่อมต่อกับอุปกรณ์เพิ่มเติม</a>
+firefoxview-syncedtabs-adddevice-header-2 = หยิบแท็บได้จากทุกที่
+firefoxview-syncedtabs-adddevice-description-2 = ลงชื่อเข้าใช้ { -brand-product-name } ในโทรศัพท์ของคุณหรือคอมพิวเตอร์อีกเครื่องเพื่อให้แท็บต่างๆ ปรากฏที่นี่ เรียนรู้วิธีการ<a data-l10n-name="url">เชื่อมต่ออุปกรณ์เพิ่มเติม</a>
 firefoxview-syncedtabs-adddevice-primarybutton = ลองใช้ { -brand-product-name } สำหรับมือถือ
 firefoxview-tabpickup-synctabs-header = เปิดการซิงค์แท็บ
 firefoxview-tabpickup-synctabs-description = อนุญาตให้ { -brand-short-name } แบ่งปันแท็บระหว่างอุปกรณ์
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = เรียนรู้วิธี
 firefoxview-tabpickup-synctabs-primarybutton = ซิงค์แท็บที่เปิดอยู่
 firefoxview-syncedtabs-synctabs-header = อัปเดตการตั้งค่าการซิงค์ของคุณ
 firefoxview-syncedtabs-synctabs-description = ถ้าต้องการดูแท็บจากอุปกรณ์อื่น คุณต้องซิงค์แท็บที่เปิดอยู่
-firefoxview-syncedtabs-synctabs-checkbox = อนุญาตให้ซิงค์แท็บที่เปิดอยู่
 firefoxview-syncedtabs-loading-header = อยู่ระหว่างการซิงค์
 firefoxview-syncedtabs-loading-description = เมื่อเสร็จแล้ว คุณจะเห็นแท็บที่คุณเปิดไว้ในอุปกรณ์อื่น ๆ โปรดกลับมาดูในเร็ว ๆ นี้
 firefoxview-tabpickup-fxa-admin-disabled-header = องค์กรของคุณปิดใช้งานการซิงค์
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = เพิ่งปิดล่าสุด
 firefoxview-closed-tabs-description2 = เปิดหน้าที่คุณปิดไปในหน้าต่างนี้ใหม่
 firefoxview-closed-tabs-placeholder-header = ไม่มีแท็บที่ปิดล่าสุด
 firefoxview-closed-tabs-placeholder-body = เมื่อคุณปิดแท็บในหน้าต่างนี้ คุณสามารถเรียกแท็บนั้นกลับมาได้จากที่นี่
-firefoxview-closed-tabs-placeholder-body2 = เมื่อคุณปิดแท็บ คุณสามารถเรียกแท็บนั้นกลับมาได้จากที่นี่
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -136,6 +132,14 @@ firefoxview-synced-tabs-nav = แท็บจากอุปกรณ์อื�
     .title = แท็บจากอุปกรณ์อื่น ๆ
 firefoxview-synced-tabs-header = แท็บจากอุปกรณ์อื่น ๆ
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = สนทนา
+    .title = สนทนา
+firefoxview-chats-header = สนทนา
+firefoxview-chat-context-delete = ลบจากการสนทนา
+    .accesskey = ล
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -148,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = หน้าต่าง { $winID } (ปัจจุบัน)
-firefoxview-opentabs-focus-tab =
-    .title = สลับไปยังแท็บนี้
 firefoxview-show-more = แสดงเพิ่มเติม
 firefoxview-show-less = แสดงน้อยลง
 firefoxview-show-all = แสดงทั้งหมด
@@ -165,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = ค้นหาแท็บที่เพิ่งปิดล่าสุด
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = ค้นหาแท็บที่ซิงค์
+firefoxview-search-text-box-tabs =
+    .placeholder = ค้นหาแท็บ
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = ค้นหาแท็บที่เปิดอยู่
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = ค้นหาการสนทนา
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -185,10 +190,6 @@ firefoxview-sort-history-by-date-label = เรียงตามวันที
 firefoxview-sort-history-by-site-label = เรียงตามไซต์
 firefoxview-sort-open-tabs-by-recency-label = เรียงตามกิจกรรมล่าสุด
 firefoxview-sort-open-tabs-by-order-label = เรียงตามลำดับแท็บ
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = เปลี่ยนไปยัง { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -201,11 +202,14 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (ไฟล์ในเครื่อง)
+firefoxview-chat-date-today = วันนี้ - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = เมื่อวาน - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = แสดงประวัติทั้งหมด
-firefoxview-view-more-browsing-history = ดูประวัติการเข้าชมเพิ่มเติม
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -221,9 +225,8 @@ firefoxview-choose-browser-button = เลือกเบราว์เซอ�
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = ไม่มีอะไรจะแสดง
-firefoxview-dont-remember-history-empty-description = การปกป้องความเป็นส่วนตัวของคุณเป็นหัวใจสำคัญของสิ่งที่เราทำ ซึ่งเป็นเหตุผลที่คุณสามารถควบคุมกิจกรรมที่ { -brand-short-name } จำได้
-firefoxview-dont-remember-history-empty-description-two = ตามการตั้งค่าปัจจุบันของคุณ { -brand-short-name } จะไม่จดจำกิจกรรมของคุณขณะที่คุณเรียกดู ถ้าต้องการเปลี่ยนแปลง ให้<a data-l10n-name="history-settings-url-two">เปลี่ยนการตั้งค่าประวัติเพื่อจดจำประวัติของคุณ</a>
+firefoxview-dont-remember-history-empty-header-2 = คุณควบคุมสิ่งที่จะให้ { -brand-short-name } จดจำได้ทุกอย่าง
+firefoxview-dont-remember-history-empty-description-one = ขณะนี้ { -brand-short-name } จะไม่จดจำกิจกรรมการเรียกดูของคุณ หากต้องการเปลี่ยนแปลง ให้<a data-l10n-name="history-settings-url-two">อัปเดตการตั้งค่าประวัติของคุณ</a>
 
 ##
 

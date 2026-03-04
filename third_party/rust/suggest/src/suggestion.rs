@@ -5,7 +5,7 @@
 
 use chrono::Local;
 
-use crate::db::DEFAULT_SUGGESTION_SCORE;
+use crate::{db::DEFAULT_SUGGESTION_SCORE, geoname::Geoname};
 
 /// The template parameter for a timestamp in a "raw" sponsored suggestion URL.
 const TIMESTAMP_TEMPLATE: &str = "%YYYYMMDDHH%";
@@ -16,13 +16,18 @@ const TIMESTAMP_TEMPLATE: &str = "%YYYYMMDDHH%";
 /// 2 bytes shorter than [`TIMESTAMP_TEMPLATE`].
 const TIMESTAMP_LENGTH: usize = 10;
 
-/// Suggestion Types for Amp
-pub(crate) enum AmpSuggestionType {
-    Mobile,
-    Desktop,
+/// Subject type for Yelp suggestion.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, uniffi::Enum)]
+#[repr(u8)]
+pub enum YelpSubjectType {
+    // Service such as sushi, ramen, yoga etc.
+    Service = 0,
+    // Specific business such as the shop name.
+    Business = 1,
 }
+
 /// A suggestion from the database to show in the address bar.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, uniffi::Enum)]
 pub enum Suggestion {
     Amp {
         title: String,
@@ -34,16 +39,12 @@ pub enum Suggestion {
         block_id: i64,
         advertiser: String,
         iab_category: String,
+        categories: Vec<i32>,
         impression_url: String,
         click_url: String,
         raw_click_url: String,
         score: f64,
-    },
-    Pocket {
-        title: String,
-        url: String,
-        score: f64,
-        is_top_pick: bool,
+        fts_match_info: Option<FtsMatchInfo>,
     },
     Wikipedia {
         title: String,
@@ -70,6 +71,7 @@ pub enum Suggestion {
         score: f64,
         has_location_sign: bool,
         subject_exact_match: bool,
+        subject_type: YelpSubjectType,
         location_param: String,
     },
     Mdn {
@@ -79,6 +81,7 @@ pub enum Suggestion {
         score: f64,
     },
     Weather {
+        city: Option<Geoname>,
         score: f64,
     },
     Fakespot {
@@ -91,7 +94,30 @@ pub enum Suggestion {
         icon: Option<Vec<u8>>,
         icon_mimetype: Option<String>,
         score: f64,
+        // Details about the FTS match.  For performance reasons, this is only calculated for the
+        // result with the highest score.  We assume that only one that will be shown to the user
+        // and therefore the only one we'll collect metrics for.
+        match_info: Option<FtsMatchInfo>,
     },
+    Dynamic {
+        suggestion_type: String,
+        data: Option<serde_json::Value>,
+        /// This value is optionally defined in the suggestion's remote settings
+        /// data and is an opaque token used for dismissing the suggestion in
+        /// lieu of a URL. If `Some`, the suggestion can be dismissed by passing
+        /// the wrapped string to [crate::SuggestStore::dismiss_suggestion].
+        dismissal_key: Option<String>,
+        score: f64,
+    },
+}
+
+/// Additional data about how an FTS match was made
+#[derive(Debug, Clone, PartialEq, uniffi::Record)]
+pub struct FtsMatchInfo {
+    /// Was this a prefix match (`water b` matched against `water bottle`)
+    pub prefix: bool,
+    /// Did the match require stemming? (`run shoes` matched against `running shoes`)
+    pub stemming: bool,
 }
 
 impl PartialOrd for Suggestion {
@@ -102,38 +128,46 @@ impl PartialOrd for Suggestion {
 
 impl Ord for Suggestion {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        let a_score = match self {
-            Suggestion::Amp { score, .. }
-            | Suggestion::Pocket { score, .. }
-            | Suggestion::Amo { score, .. } => score,
-            Suggestion::Fakespot { score, .. } => score,
-            _ => &DEFAULT_SUGGESTION_SCORE,
-        };
-        let b_score = match other {
-            Suggestion::Amp { score, .. }
-            | Suggestion::Pocket { score, .. }
-            | Suggestion::Amo { score, .. } => score,
-            Suggestion::Fakespot { score, .. } => score,
-            _ => &DEFAULT_SUGGESTION_SCORE,
-        };
-        b_score
-            .partial_cmp(a_score)
+        other
+            .score()
+            .partial_cmp(&self.score())
             .unwrap_or(std::cmp::Ordering::Equal)
     }
 }
 
 impl Suggestion {
+    /// Get the suggestion's dismissal key, which should be stored in the
+    /// `dismissed_suggestions` table when the suggestion is dismissed. Some
+    /// suggestions may not have dismissal keys and cannot be dismissed.
+    pub fn dismissal_key(&self) -> Option<&str> {
+        match self {
+            Self::Amp { full_keyword, .. } => {
+                if !full_keyword.is_empty() {
+                    Some(full_keyword)
+                } else {
+                    self.raw_url()
+                }
+            }
+            Self::Dynamic { dismissal_key, .. } => dismissal_key.as_deref(),
+            Self::Wikipedia { .. }
+            | Self::Amo { .. }
+            | Self::Yelp { .. }
+            | Self::Mdn { .. }
+            | Self::Weather { .. }
+            | Self::Fakespot { .. } => self.raw_url(),
+        }
+    }
+
     /// Get the URL for this suggestion, if present
     pub fn url(&self) -> Option<&str> {
         match self {
             Self::Amp { url, .. }
-            | Self::Pocket { url, .. }
             | Self::Wikipedia { url, .. }
             | Self::Amo { url, .. }
             | Self::Yelp { url, .. }
             | Self::Mdn { url, .. }
             | Self::Fakespot { url, .. } => Some(url),
-            _ => None,
+            Self::Weather { .. } | Self::Dynamic { .. } => None,
         }
     }
 
@@ -143,26 +177,26 @@ impl Suggestion {
     /// "cooked" using template interpolation, while `raw_url` is the URL template.
     pub fn raw_url(&self) -> Option<&str> {
         match self {
-            Self::Amp { raw_url: url, .. }
-            | Self::Pocket { url, .. }
-            | Self::Wikipedia { url, .. }
-            | Self::Amo { url, .. }
-            | Self::Yelp { url, .. }
-            | Self::Mdn { url, .. } => Some(url),
-            _ => None,
+            Self::Amp { raw_url, .. } => Some(raw_url),
+            Self::Wikipedia { .. }
+            | Self::Amo { .. }
+            | Self::Yelp { .. }
+            | Self::Mdn { .. }
+            | Self::Weather { .. }
+            | Self::Fakespot { .. }
+            | Self::Dynamic { .. } => self.url(),
         }
     }
 
     pub fn title(&self) -> &str {
         match self {
             Self::Amp { title, .. }
-            | Self::Pocket { title, .. }
             | Self::Wikipedia { title, .. }
             | Self::Amo { title, .. }
             | Self::Yelp { title, .. }
-            | Self::Mdn { title, .. } => title,
-            Self::Weather { .. } => "weather",
-            Self::Fakespot { title, .. } => title,
+            | Self::Mdn { title, .. }
+            | Self::Fakespot { title, .. } => title,
+            _ => "untitled",
         }
     }
 
@@ -172,6 +206,26 @@ impl Suggestion {
             | Self::Wikipedia { icon, .. }
             | Self::Yelp { icon, .. }
             | Self::Fakespot { icon, .. } => icon.as_deref(),
+            _ => None,
+        }
+    }
+
+    pub fn score(&self) -> f64 {
+        match self {
+            Self::Amp { score, .. }
+            | Self::Amo { score, .. }
+            | Self::Yelp { score, .. }
+            | Self::Mdn { score, .. }
+            | Self::Weather { score, .. }
+            | Self::Fakespot { score, .. }
+            | Self::Dynamic { score, .. } => *score,
+            Self::Wikipedia { .. } => DEFAULT_SUGGESTION_SCORE,
+        }
+    }
+
+    pub fn fts_match_info(&self) -> Option<&FtsMatchInfo> {
+        match self {
+            Self::Fakespot { match_info, .. } => match_info.as_ref(),
             _ => None,
         }
     }
@@ -215,6 +269,7 @@ pub(crate) fn cook_raw_suggestion_url(raw_url: &str) -> String {
 /// Determines whether a "raw" sponsored suggestion URL is equivalent to a
 /// "cooked" URL. The two URLs are equivalent if they are identical except for
 /// their replaced template parameters, which can be different.
+#[uniffi::export]
 pub fn raw_suggestion_url_matches(raw_url: &str, cooked_url: &str) -> bool {
     let Some((raw_url_prefix, raw_url_suffix)) = raw_url.split_once(TIMESTAMP_TEMPLATE) else {
         return raw_url == cooked_url;

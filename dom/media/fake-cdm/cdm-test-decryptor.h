@@ -6,12 +6,13 @@
 #ifndef FAKE_DECRYPTOR_H__
 #define FAKE_DECRYPTOR_H__
 
-#include "content_decryption_module.h"
 #include <string>
+
+#include "content_decryption_module.h"
 
 class FakeDecryptor : public cdm::ContentDecryptionModule_10 {
  public:
-  explicit FakeDecryptor(cdm::Host_10* aHost);
+  explicit FakeDecryptor(cdm::Host_11* aHost);
 
   void Initialize(bool aAllowDistinctiveIdentifier, bool aAllowPersistentState,
                   bool aUseHardwareSecureCodecs) override {
@@ -93,7 +94,7 @@ class FakeDecryptor : public cdm::ContentDecryptionModule_10 {
 
   static void Message(const std::string& aMessage);
 
-  cdm::Host_10* mHost;
+  cdm::Host_11* mHost;
 
   static FakeDecryptor* sInstance;
 

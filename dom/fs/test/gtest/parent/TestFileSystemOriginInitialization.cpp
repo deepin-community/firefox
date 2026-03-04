@@ -111,8 +111,11 @@ class TestFileSystemOriginInitialization : public FileSystemParentTest {
     FileSystemQuotaClientFactory::SetCustomFactory(nullptr);
   }
 
-  static inline RefPtr<MockFileSystemQuotaClient> sQuotaClient;
+  static RefPtr<MockFileSystemQuotaClient> sQuotaClient;
 };
+
+constinit RefPtr<MockFileSystemQuotaClient>
+    TestFileSystemOriginInitialization::sQuotaClient;
 
 TEST_F(TestFileSystemOriginInitialization, EmptyOriginDirectory) {
   ASSERT_NO_FATAL_FAILURE(ShutdownStorage());
@@ -131,7 +134,8 @@ TEST_F(TestFileSystemOriginInitialization, EmptyOriginDirectory) {
   // Initialize origin
   ASSERT_NO_FATAL_FAILURE(InitializeStorage());
   ASSERT_NO_FATAL_FAILURE(InitializeTemporaryStorage());
-  ASSERT_NO_FATAL_FAILURE(InitializeTemporaryOrigin());
+  ASSERT_NO_FATAL_FAILURE(
+      InitializeTemporaryOrigin(/* aCreateIfNonExistent */ true));
 
   // After initialization,
   // * origin usage is nothing

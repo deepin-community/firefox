@@ -1,16 +1,14 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
+/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gtest/gtest.h"
-#include "GMPUtils.h"
-#include "mozilla/ArrayUtils.h"
-#include "nsString.h"
-
 #include <string>
-#include <vector>
+
+#include "GMPUtils.h"
+#include "gtest/gtest.h"
+#include "nsString.h"
 
 using namespace mozilla;
 
@@ -34,14 +32,14 @@ TEST(GeckoMediaPlugins, TestSplitAt)
     const char* input = "1,2,3,4";
     const char* delims = ",";
     const char* tokens[] = {"1", "2", "3", "4"};
-    TestSplitAt(input, delims, MOZ_ARRAY_LENGTH(tokens), tokens);
+    TestSplitAt(input, delims, std::size(tokens), tokens);
   }
 
   {
     const char* input = "a simple, comma, seperated, list";
     const char* delims = ",";
     const char* tokens[] = {"a simple", " comma", " seperated", " list"};
-    TestSplitAt(input, delims, MOZ_ARRAY_LENGTH(tokens), tokens);
+    TestSplitAt(input, delims, std::size(tokens), tokens);
   }
 
   {
@@ -52,7 +50,7 @@ TEST(GeckoMediaPlugins, TestSplitAt)
         "line4";
     const char* delims = "\r\n";
     const char* tokens[] = {"line1", "line2", "line3", "line4"};
-    TestSplitAt(input, delims, MOZ_ARRAY_LENGTH(tokens), tokens);
+    TestSplitAt(input, delims, std::size(tokens), tokens);
   }
 }
 

@@ -34,21 +34,24 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] Ailagor Tabiau wedi'u Cau
         }
     .accesskey = o
-
+toolbar-context-turn-on-vertical-tabs =
+    .label = Troi Tabiau Fertigol ymlaen
+toolbar-context-turn-off-vertical-tabs =
+    .label = Diffodd Tabiau Fertigol
+toolbar-context-customize-sidebar =
+    .label = Cyfaddasu'r Bar Offer
 toolbar-context-menu-manage-extension =
     .label = Rheoli Estyniad
     .accesskey = E
 toolbar-context-menu-remove-extension =
     .label = Tynnu Estyniad
     .accesskey = T
-
 # This label is used in the extensions toolbar buttons context menus,
 # a user can use this command to submit to Mozilla an abuse report
 # related to that extension. "Report" is a verb.
 toolbar-context-menu-report-extension =
-    .label = Adrodd ar yr Estyniad
-    .accesskey = A
-
+    .label = Adrodd am yr Estyniad
+    .accesskey = E
 # Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
 # ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
 # have different access keys.
@@ -60,6 +63,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
     .accesskey = B
 toolbar-context-menu-always-open-downloads-panel =
     .label = Dangos y Panel Pan fydd y Llwytho'n Dechrau
+    .accesskey = D
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = Dangos yn y Bar Offer bob amser
     .accesskey = D
 toolbar-context-menu-remove-from-toolbar =
     .label = Tynnu o'r Bar Offer
@@ -75,7 +82,6 @@ toolbar-context-menu-view-customize-toolbar-2 =
 toolbar-context-menu-pin-to-toolbar =
     .label = Pinio i'r Bar Offer
     .accesskey = P
-
 toolbar-context-menu-bookmarks-toolbar-always-show-2 =
     .label = Dangos Bob Tro
     .accesskey = D
@@ -85,11 +91,9 @@ toolbar-context-menu-bookmarks-toolbar-never-show-2 =
 toolbar-context-menu-bookmarks-toolbar-on-new-tab-2 =
     .label = Dangos ar Dab Newydd yn Unig
     .accesskey = U
-
 toolbar-context-menu-bookmarks-show-other-bookmarks =
     .label = Dangos Nodau Tudalen Eraill
     .accesskey = N
-
 toolbar-context-menu-menu-bar-cmd =
     .toolbarname = Bar Dewislen
     .accesskey = B

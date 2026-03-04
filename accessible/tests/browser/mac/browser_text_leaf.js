@@ -7,6 +7,12 @@
 /* import-globals-from ../../mochitest/role.js */
 loadScripts({ name: "role.js", dir: MOCHITESTS_DIR });
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 /**
  * Test accessibles aren't created for linebreaks.
  */
@@ -16,12 +22,8 @@ addAccessibleTask(
     let doc = accDoc.nativeInterface.QueryInterface(
       Ci.nsIAccessibleMacInterface
     );
-    let docChildren = doc.getAttributeValue("AXChildren");
-    is(docChildren.length, 1, "The document contains a root group");
-
-    let rootGroup = docChildren[0];
-    let children = rootGroup.getAttributeValue("AXChildren");
-    is(docChildren.length, 1, "The root group contains 2 children");
+    let children = doc.getAttributeValue("AXChildren");
+    is(children.length, 2, "The document contains 2 children");
 
     // verify first child is correct
     is(

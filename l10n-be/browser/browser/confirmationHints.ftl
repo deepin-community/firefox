@@ -16,7 +16,7 @@ confirmation-hint-address-created = Адрас захаваны
 confirmation-hint-address-updated = Адрас абноўлены
 confirmation-hint-credit-card-created = Карта захавана
 confirmation-hint-credit-card-updated = Карта абноўлена
-confirmation-hint-pin-tab = Прышпілена!
+confirmation-hint-pin-tab = Замацавана!
 confirmation-hint-pin-tab-description = Націсніце правай кнопкай на картцы, каб адшпіліць.
 confirmation-hint-send-to-device = Адпраўлена!
 confirmation-hint-firefox-relay-mask-created = Створана новая маска!
@@ -30,3 +30,5 @@ confirmation-hint-duplicate-tabs-closed =
         [few] Закрыты { $tabCount } карткі
        *[many] Закрыта { $tabCount } картак
     }
+# Subtle notification shown when Extensions button moves into the application menu.
+confirmation-hint-extensions-button-hidden = Перамешчана ў меню

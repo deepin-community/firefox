@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Sposte ae fin
     .accesskey = e
 fxviewtabrow-move-tab-window = Sposte suntun gnûf barcon
     .accesskey = u
+fxviewtabrow-send-to-device = Mande a dispositîf
+    .accesskey = n
 fxviewtabrow-send-tab = Invie schede a dispositîf
     .accesskey = n
 fxviewtabrow-pin-tab = Fisse la schede
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Ative audio de schede
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Opzions par { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Cidine { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Ative audio su { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

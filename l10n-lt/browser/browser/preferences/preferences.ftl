@@ -111,6 +111,10 @@ startup-header = Paleistis
 always-check-default =
     .label = Visada tikrinti, ar „{ -brand-short-name }“ yra jūsų numatytoji naršyklė
     .accesskey = d
+is-default-browser =
+    .message = „{ -brand-short-name }“ šiuo metu yra numatytoji naršyklė
+is-not-default-browser =
+    .message = „{ -brand-short-name }“ šiuo metu nėra numatytoji naršyklė
 is-default = „{ -brand-short-name }“ šiuo metu yra numatytoji naršyklė
 is-not-default = „{ -brand-short-name }“ šiuo metu nėra numatytoji naršyklė
 set-as-my-default-browser =
@@ -123,6 +127,8 @@ startup-restore-warn-on-quit =
     .label = Perspėti išjungiant naršyklę
 disable-extension =
     .label = Išjungti priedą
+tabs-group-header2 =
+    .label = Kortelės
 tabs-group-header = Kortelės
 ctrl-tab-recently-used-order =
     .label = Vald+Tab perjungia korteles paskiausiai naudotų eiliškumu
@@ -158,6 +164,8 @@ browser-containers-settings =
     .label = Nuostatos…
     .accesskey = u
 containers-disable-alert-title = Užverti visas sudėtinio rodinio korteles?
+startup-group =
+    .label = Paleistis
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -193,8 +201,20 @@ containers-remove-cancel-button = Palikti šį sudėtinį rodinį
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Kalba ir išvaizda
+appearance-group =
+    .label = Svetainių išvaizda
+    .description = Kai kurios svetainės pritaiko savo spalvų schemą pagal jūsų nustatymus. Pasirinkite, kurią spalvų schemą norėtumėte naudoti tokioms svetainėms.
 preferences-web-appearance-header = Svetainių išvaizda
 preferences-web-appearance-description = Kai kurios svetainės pritaiko savo spalvų schemą pagal jūsų nustatymus. Pasirinkite, kurią spalvų schemą norėtumėte naudoti tokioms svetainėms.
+preferences-web-appearance-choice-auto2 =
+    .label = Automatinis
+    .title = Automatiškai keiskite svetainės foną ir turinį pagal sistemos nustatymus ir „{ -brand-short-name }“ grafinį apvalkalą.
+preferences-web-appearance-choice-light2 =
+    .label = Šviesus
+    .title = Naudoti šviesias spalvas svetainių fonui ir turiniui.
+preferences-web-appearance-choice-dark2 =
+    .label = Tamsus
+    .title = Naudoti tamsias spalvas svetainių fonui ir turiniui.
 preferences-web-appearance-choice-auto = Automatinis
 preferences-web-appearance-choice-light = Šviesus
 preferences-web-appearance-choice-dark = Tamsus
@@ -210,13 +230,11 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Tvarkykite { -brand-short-name } apvalkalus prieduose ir grafiniuose apvalkaluose
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Jūsų spalvų pasirinkimai pakeičia svetainių išvaizdą. <a data-l10n-name="colors-link">Tvarkyti spalvas</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Jūsų spalvų pasirinkimai pakeičia svetainių išvaizdą.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Tvarkykite { -brand-short-name } apvalkalus <a data-l10n-name="themes-link">prieduose ir grafiniuose apvalkaluose</a>
@@ -225,6 +243,14 @@ preferences-colors-description = Pakeisti „{ -brand-short-name }“ numatytąs
 preferences-colors-manage-button =
     .label = Tvarkyti spalvas…
     .accesskey = s
+preferences-fonts-header2 =
+    .label = Šriftai
+default-font-2 =
+    .label = Numatytasis šriftas
+    .accesskey = u
+default-font-size-2 =
+    .label = Dydis
+    .accesskey = D
 preferences-fonts-header = Šriftai
 default-font = Numatytasis šriftas
     .accesskey = u
@@ -233,6 +259,12 @@ default-font-size = Dydis
 advanced-fonts =
     .label = Kitkas…
     .accesskey = t
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Dydis
+preferences-default-zoom-label =
+    .label = Numatytasis dydis
+    .accesskey = d
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Dydis
 preferences-default-zoom = Numatytasis dydis
@@ -276,6 +308,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Failai ir programos
+downloads-header-2 =
+    .label = Atsiuntimai
+download-save-where-2 =
+    .label = Atsiunčiamus failus įrašyti į:
+    .accesskey = f
 download-header = Atsiuntimai
 download-save-where = Atsiunčiamus failus įrašyti į:
     .accesskey = f
@@ -375,6 +412,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Paklausti, ar atverti, ar įrašyti failus
     .accesskey = P
+drm-group =
+    .label = Skaitmeninių teisių valdymo (DRM) turinys
 drm-content-header = Skaitmeninių teisių valdymo (DRM) turinys
 play-drm-content =
     .label = Atkurti DRM valdomą turinį
@@ -443,6 +482,8 @@ performance-limit-content-process-blocked-desc = Turinio procesų skaičiaus kei
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (numatyta)
+performance-group =
+    .label = Našumas
 
 ## General Section - Browsing
 
@@ -480,6 +521,8 @@ browsing-cfr-features =
     .label = Rekomenduoti funkcijas naršant
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Sužinoti daugiau
+browsing-group =
+    .label = Naršymas
 
 ## General Section - Proxy
 
@@ -489,16 +532,27 @@ network-proxy-connection-learn-more = Sužinoti daugiau
 network-proxy-connection-settings =
     .label = Nuostatos…
     .accesskey = N
+network-proxy-group =
+    .label = Tinklo nuostatos
+    .description = Nustatykite, kaip „{ -brand-short-name }“ jungiasi prie interneto.
 
 ## Home Section
 
 home-new-windows-tabs-header = Nauji langai ir kortelės
 home-new-windows-tabs-description2 = Pasirinkite, ką norite matyti atvėrę savo pradžios tinklalapį, naujus langus, naujas korteles.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Paskirti numatytąja
+    .accesskey = n
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Pradžios tinklalapis ir nauji langai
 home-newtabs-mode-label = Naujos kortelės
+home-homepage-new-tabs =
+    .label = Naujos kortelės
 home-restore-defaults =
     .label = Atstatyti numatytąsias
     .accesskey = A
@@ -537,8 +591,7 @@ home-prefs-shortcuts-description = Jūsų įrašytos arba lankomos svetainės
 home-prefs-shortcuts-by-option-sponsored =
     .label = Rėmėjų leistukai
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Rekomenduoja „{ $provider }“
@@ -600,6 +653,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Rodyti paieškos žodžių siūlymus adreso lauko rezultatuose
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = Paieškos žodžių siūlymai adreso lauke nebus rodomi, kadangi esate nustatę, jog „{ -brand-short-name }“ niekada nevestų žurnalo.
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -639,12 +694,18 @@ search-keyword-warning-title = Pasikartojantis reikšminis žodis
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Įvedėte reikšminį žodį, kurį jau naudoja „{ $name }“. Prašome įvesti kitą.
 search-keyword-warning-bookmark = Įvedėte reikšminį žodį, kurį jau naudojate adresyno įrašui. Prašom įvesti kitą.
+search-engine-group =
+    .label = Numatytoji ieškyklė
+search-default-engine =
+    .aria-label = Numatytoji ieškyklė
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Grįžti į nuostatas
 containers-header = Sudėtinio rodinio kortelės
+containers-section-header =
+    .heading = Sudėtinio rodinio kortelės
 containers-add-button =
     .label = Pridėti naują sudėtinį rodinį
     .accesskey = P
@@ -655,6 +716,11 @@ containers-settings-button =
     .label = Nuostatos
 containers-remove-button =
     .label = Pašalinti
+
+## Account and sync
+
+sync-group-label =
+    .label = Sinchronizavimas
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -684,11 +750,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Atsijungti…
     .accesskey = g
+sync-sign-out2 =
+    .label = Atsijungti
+    .accesskey = g
 sync-manage-account = Tvarkyti paskyrą
+    .accesskey = y
+sync-manage-account2 =
+    .label = Tvarkyti paskyrą
     .accesskey = y
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = Paskyra { $email } yra nepatvirtinta.
 sync-signedin-login-failure = Prie { $email } reikia prisijungti iš naujo
@@ -712,6 +785,9 @@ prefs-syncing-off = Sinchronizavimas: IŠJUNGTA
 prefs-sync-turn-on-syncing =
     .label = Įjungti sinchronizavimą…
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Įjungti sinchronizavimą
+    .accesskey = s
 prefs-sync-offer-setup-label2 = Sinchronizuokite savo adresyną, žurnalą, korteles, slaptažodžius, priedus, ir nuostatas visuose savo įrenginiuose.
 prefs-sync-now =
     .labelnotsyncing = Sinchronizuoti dabar
@@ -720,8 +796,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sinchronizuoti dabar
     .accesskey = d
+prefs-sync-now-button-2 =
+    .label = Sinchronizuoti dabar
+    .accesskey = d
 prefs-syncing-button =
     .label = Sinchronizuojama…
+prefs-syncing-button-2 =
+    .label = Sinchronizuojama…
+    .title = Sinchronizuoti dabar
 
 ## The list of things currently syncing.
 
@@ -780,6 +862,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Įrenginio pavadinimas
+sync-device-name-header-2 =
+    .label = Įrenginio pavadinimas
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Įrenginio pavadinimas
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Keisti įrenginio pavadinimą
+    .accesskey = e
 sync-device-name-change =
     .label = Keisti įrenginio pavadinimą…
     .accesskey = e
@@ -790,6 +882,8 @@ sync-device-name-save =
     .label = Įrašyti
     .accesskey = r
 sync-connect-another-device = Susieti kitą įrenginį
+sync-connect-another-device-2 =
+    .label = Susieti kitą įrenginį
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -870,12 +964,19 @@ primary-password-os-auth-dialog-message-win = Norėdami sukurti pagrindinį slap
 primary-password-os-auth-dialog-message-macosx = sukurti pagrindinį slaptažodį
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Žurnalas
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = „{ -brand-short-name }“ privalo
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -893,6 +994,18 @@ history-remember-option-never =
     .label = niekada nevesti žurnalo
 history-remember-option-custom =
     .label = laikytis tinkintų žurnalo vedimo nuostatų
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } įsimins jūsų naršytus tinklalapius, parsiųstus failus, įvestas formų ir paieškos laukų reikšmes.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = „{ -brand-short-name }“ visą laiką laikysis privačiojo naršymo seanso nuostatų ir nepildys naršymo žurnalo.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } įsimins jūsų naršytus tinklalapius, parsiųstus failus, įvestas formų ir paieškos laukų reikšmes.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = „{ -brand-short-name }“ visą laiką laikysis privačiojo naršymo seanso nuostatų ir nepildys naršymo žurnalo.
 history-remember-description = { -brand-short-name } įsimins jūsų naršytus tinklalapius, parsiųstus failus, įvestas formų ir paieškos laukų reikšmes.
 history-dontremember-description = „{ -brand-short-name }“ visą laiką laikysis privačiojo naršymo seanso nuostatų ir nepildys naršymo žurnalo.
 history-private-browsing-permanent =
@@ -913,6 +1026,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Išvalyti žurnalą…
     .accesskey = u
+history-group =
+    .label = Žurnalas
 
 ## Privacy Section - Site Data
 
@@ -956,14 +1071,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Tvarkyti išimtis…
     .accesskey = m
+cookies-site-data-group =
+    .label = Slapukai ir svetainių duomenys
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Adreso laukas
 addressbar-suggest = Rašant adreso lauke, rodyti pasiūlymus iš:
@@ -1102,6 +1213,8 @@ permissions-notification-link = Sužinoti daugiau
 permissions-notification-pause =
     .label = Nerodyti pranešimų iki kito „{ -brand-short-name }“ paleidimo
     .accesskey = p
+permissions-autoplay2 =
+    .label = Automatinis grojimas
 permissions-autoplay = Automatinis grojimas
 permissions-autoplay-settings =
     .label = Nuostatos…
@@ -1121,6 +1234,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Išimtys…
     .accesskey = I
+permissions-location2 =
+    .label = Vieta
+permissions-xr2 =
+    .label = Virtualioji realybė
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofonas
+permissions-notification2 =
+    .label = Pranešimai
 
 ## Privacy Section - Data Collection
 
@@ -1144,8 +1267,6 @@ addon-recommendations-link = Sužinoti daugiau
 collection-health-report-disabled = Duomenų siuntimas šiai darinio sąrankai yra išjungtas
 collection-backlogged-crash-reports-with-link = Leisti „{ -brand-short-name }“ siųsti sukauptus strigčių pranešimus jūsų vardu. <a data-l10n-name="crash-reports-link">Sužinoti daugiau</a>
     .accesskey = s
-collection-backlogged-crash-reports = Leisti „{ -brand-short-name }“ siųsti sukauptus strigčių pranešimus jūsų vardu.
-    .accesskey = s
 privacy-segmentation-section-header = Naujos funkcijos, kurios pagerina jūsų naršymą
 privacy-segmentation-section-description = Kai siūlome funkcijas, kurios naudoja jūsų duomenis, kad suteiktų jums asmeniškesnės patirties:
 privacy-segmentation-radio-off =
@@ -1153,15 +1274,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Rodyti detalią informaciją
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Saugumas
+browsing-protection-group =
+    .label = Apsauga nuo apgaulingo turinio ir pavojingos programinės įrangos
 security-browsing-protection = Apsauga nuo apgaulingo turinio ir pavojingos programinės įrangos
 security-enable-safe-browsing =
     .label = Blokuoti pavojingą ir apgaulingą turinį
@@ -1186,6 +1306,7 @@ certs-view =
 certs-devices =
     .label = Saugumo priemonės…
     .accesskey = S
+certs-devices-enable-fips = FIPS veiksena
 space-alert-over-5gb-settings-button =
     .label = Atverti nuostatas
     .accesskey = A
@@ -1203,9 +1324,6 @@ httpsonly-radio-enabled-pbm =
     .label = Įjungti tik HTTPS veikseną privačiojo naršymo languose
 httpsonly-radio-disabled =
     .label = Neįjungti tik HTTPS veiksenos
-
-## DoH Section
-
 
 ## The following strings are used in the Download section of settings
 

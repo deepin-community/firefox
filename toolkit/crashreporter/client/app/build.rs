@@ -6,9 +6,10 @@ use std::{env, path::Path};
 
 fn main() {
     windows_manifest();
-    crash_ping_annotations();
+    crash_annotations();
     set_mock_cfg();
     set_glean_metrics_file();
+    generate_buildid_section();
 }
 
 fn windows_manifest() {
@@ -25,17 +26,17 @@ fn windows_manifest() {
         // Use legacy active code page because GDI doesn't support per-process UTF8 (and older
         // win10 may not support this setting anyway).
         .active_code_page(manifest::ActiveCodePage::Legacy)
-        // GDI scaling is not enabled by default but we need it to make the GDI-drawn text look
-        // nice on high-DPI displays.
-        .gdi_scaling(manifest::Setting::Enabled);
+        // We support WM_DPICHANGED for scaling, but need to set our DPI awareness to receive the
+        // messages.
+        .dpi_awareness(manifest::DpiAwareness::PerMonitorV2);
 
     embed_manifest(manifest).expect("unable to embed windows manifest file");
 
     println!("cargo:rerun-if-changed=build.rs");
 }
 
-/// Generate crash ping annotation information from the yaml definition file.
-fn crash_ping_annotations() {
+/// Generate crash annotation information from the yaml definition file.
+fn crash_annotations() {
     use std::fs::File;
     use std::io::{BufWriter, Write};
     use yaml_rust::{Yaml, YamlLoader};
@@ -45,7 +46,7 @@ fn crash_ping_annotations() {
         .unwrap();
     println!("cargo:rerun-if-changed={}", crash_annotations.display());
 
-    let crash_ping_file = Path::new(&env::var("OUT_DIR").unwrap()).join("ping_annotations.rs");
+    let crash_ping_file = Path::new(&env::var("OUT_DIR").unwrap()).join("crash_annotations.rs");
 
     let yaml = std::fs::read_to_string(crash_annotations).unwrap();
     let Yaml::Hash(entries) = YamlLoader::load_from_str(&yaml)
@@ -57,23 +58,37 @@ fn crash_ping_annotations() {
         panic!("unexpected crash annotations root type");
     };
 
-    let ping_annotations = entries.into_iter().filter_map(|(k, v)| {
-        v["ping"]
-            .as_bool()
-            .unwrap_or(false)
-            .then(|| k.into_string().unwrap())
-    });
+    let mut ping_annotations = phf_codegen::Set::new();
+    let mut annotations = phf_codegen::Set::new();
 
-    let mut phf_set = phf_codegen::Set::new();
-    for annotation in ping_annotations {
-        phf_set.entry(annotation);
+    for (k, v) in entries {
+        let scope = v["scope"].as_str().unwrap_or("client");
+        match scope {
+            "ping-only" => {
+                ping_annotations.entry(k.into_string().unwrap());
+            }
+            "ping" => {
+                ping_annotations.entry(k.clone().into_string().unwrap());
+                annotations.entry(k.into_string().unwrap());
+            }
+            "report" => {
+                annotations.entry(k.into_string().unwrap());
+            }
+            _ => (),
+        }
     }
 
     let mut file = BufWriter::new(File::create(&crash_ping_file).unwrap());
     writeln!(
         &mut file,
         "static PING_ANNOTATIONS: phf::Set<&'static str> = {};",
-        phf_set.build()
+        ping_annotations.build(),
+    )
+    .unwrap();
+    writeln!(
+        &mut file,
+        "static ALL_REPORT_ANNOTATIONS: phf::Set<&'static str> = {};",
+        annotations.build(),
     )
     .unwrap();
 }
@@ -112,4 +127,32 @@ fn set_glean_metrics_file() {
         "cargo:rustc-env=GLEAN_METRICS_FILE={}",
         glean_metrics_path.display()
     );
+}
+
+/// Generate the buildid section name (we read the buildid at runtime using buildid_reader).
+fn generate_buildid_section() {
+    use mozbuild::config::BINDGEN_SYSTEM_FLAGS as CFLAGS;
+
+    let defines = if cfg!(target_os = "macos") {
+        "#define XP_DARWIN"
+    } else if cfg!(target_os = "windows") {
+        "#define XP_WIN"
+    } else {
+        ""
+    };
+
+    let bindings = bindgen::Builder::default()
+        .header_contents("defines.h", defines)
+        .header(format!(
+            "{}/toolkit/library/buildid_section.h",
+            mozbuild::TOPSRCDIR.display()
+        ))
+        .clang_args(CFLAGS)
+        .generate_cstr(true)
+        .generate()
+        .expect("unable to generate buildid_section.h");
+    let out_path = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("buildid_section.rs"))
+        .expect("failed to write buildid section");
 }

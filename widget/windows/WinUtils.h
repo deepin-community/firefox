@@ -11,7 +11,6 @@
 #include <shobjidl.h>
 #include <uxtheme.h>
 #include <dwmapi.h>
-#include <unordered_map>
 #include <utility>
 
 // Undo the windows.h damage
@@ -33,12 +32,9 @@
 #include "nsIDownloader.h"
 #include "nsIURI.h"
 #include "nsIWidget.h"
-#include "nsIThread.h"
+#include "nsWindowsHelpers.h"
 
-#include "mozilla/Attributes.h"
 #include "mozilla/EventForwards.h"
-#include "mozilla/HalScreenConfiguration.h"
-#include "mozilla/HashTable.h"
 #include "mozilla/LazyIdleThread.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Vector.h"
@@ -48,11 +44,13 @@
 
 /**
  * NS_INLINE_DECL_IUNKNOWN_REFCOUNTING should be used for defining and
- * implementing AddRef() and Release() of IUnknown interface.
- * This depends on xpcom/base/nsISupportsImpl.h.
+ * implementing AddRef() and Release() of IUnknown interface and mRefCnt.
+ * NS_INLINE_DECL_IUNKNOWN_ADDREF_RELEASE should be used for overriding
+ * AddRef() and Release() of IUnknown interface.
+ * These depend on xpcom/base/nsISupportsImpl.h.
  */
 
-#define NS_INLINE_DECL_IUNKNOWN_REFCOUNTING(_class)                         \
+#define NS_INLINE_DECL_IUNKNOWN_ADDREF_RELEASE(_class)                      \
  public:                                                                    \
   STDMETHODIMP_(ULONG) AddRef() {                                           \
     MOZ_ASSERT_TYPE_OK_FOR_REFCOUNTING(_class)                              \
@@ -75,11 +73,15 @@
       return 0;                                                             \
     }                                                                       \
     return static_cast<ULONG>(mRefCnt.get());                               \
-  }                                                                         \
-                                                                            \
- protected:                                                                 \
-  nsAutoRefCnt mRefCnt;                                                     \
-  NS_DECL_OWNINGTHREAD                                                      \
+  }
+
+#define NS_INLINE_DECL_IUNKNOWN_REFCOUNTING(_class) \
+ public:                                            \
+  NS_INLINE_DECL_IUNKNOWN_ADDREF_RELEASE(_class)    \
+                                                    \
+ protected:                                         \
+  nsAutoRefCnt mRefCnt;                             \
+  NS_DECL_OWNINGTHREAD                              \
  public:
 
 class nsWindow;
@@ -213,7 +215,6 @@ class WinUtils {
    */
   static double SystemScaleFactor();
 
-  static bool IsPerMonitorDPIAware();
   /**
    * Get the DPI of the given monitor if it's per-monitor DPI aware, otherwise
    * return the system DPI.
@@ -308,7 +309,7 @@ class WinUtils {
    * |                         |         TRUE          |         FALSE         |
    + +-----------------+-------+-----------------------+-----------------------+
    * |                 |       |  * an independent top level window            |
-   * |                 | TRUE  |  * a pupup window (WS_POPUP)                  |
+   * |                 | TRUE  |  * a popup window (WS_POPUP)                  |
    * |                 |       |  * an owned top level window (like dialog)    |
    * | aStopIfNotChild +-------+-----------------------+-----------------------+
    * |                 |       |  * independent window | * only an independent |
@@ -380,19 +381,6 @@ class WinUtils {
   }
 
   /**
-   * GetInternalMessage() converts a native message to an internal message.
-   * If there is no internal message for the given native message, returns
-   * the native message itself.
-   */
-  static UINT GetInternalMessage(UINT aNativeMessage);
-
-  /**
-   * GetNativeMessage() converts an internal message to a native message.
-   * If aInternalMessage is a native message, returns the native message itself.
-   */
-  static UINT GetNativeMessage(UINT aInternalMessage);
-
-  /**
    * GetMouseInputSource() returns a pointing device information.  The value is
    * one of MouseEvent_Binding::MOZ_SOURCE_*.  This method MUST be called during
    * mouse message handling.
@@ -416,11 +404,8 @@ class WinUtils {
    * returns the LayoutDeviceIntRegion.
    */
   static LayoutDeviceIntRegion ConvertHRGNToRegion(HRGN aRgn);
-  /**
-   * Performs the inverse of ConvertHRGNToRegion.
-   * The region must be cleaned up with DeleteObject().
-   */
-  static HRGN RegionToHRGN(const LayoutDeviceIntRegion&);
+  /** Performs the inverse of ConvertHRGNToRegion. */
+  static nsAutoRegion RegionToHRGN(const LayoutDeviceIntRegion&);
 
   /**
    * ToIntRect converts a Windows RECT to a LayoutDeviceIntRect.
@@ -468,9 +453,11 @@ class WinUtils {
   static PointerCapabilities GetPrimaryPointerCapabilities();
   // For any-pointer and any-hover media queries features.
   static PointerCapabilities GetAllPointerCapabilities();
-  // Returns a string containing a comma-separated list of Fluent IDs
-  // representing the currently active pointing devices
-  static void GetPointerExplanation(nsAString* aExplanation);
+
+  // Returns whether the system has any active device for each pointer type.
+  static bool SystemHasMouse();
+  static bool SystemHasTouch();
+  static bool SystemHasPen();
 
   /**
    * Fully resolves a path to its final path name. So if path contains
@@ -560,6 +547,11 @@ class WinUtils {
 
   static bool GetClassName(HWND aHwnd, nsAString& aName);
 
+  static bool MicaAvailable();
+  static bool MicaEnabled();
+  static bool MicaPopupsEnabled();
+  static void UpdateMicaInAllWindows();
+
   static void EnableWindowOcclusion(const bool aEnable);
 
   static bool GetTimezoneName(wchar_t* aBuffer);
@@ -573,6 +565,10 @@ class WinUtils {
 
   static void GetClipboardFormatAsString(UINT aFormat, nsAString& aOutput);
 
+  static nsresult GetProcessImageName(DWORD aProcessId, nsAString& aName);
+
+  static void InvalidateWindowPreviews();
+
  private:
   static WhitelistVec BuildWhitelist();
 
@@ -583,34 +579,6 @@ class WinUtils {
 };
 
 typedef MozPromise<nsString, nsresult, true> ObtainCachedIconFileAsyncPromise;
-
-#ifdef MOZ_PLACES
-class AsyncFaviconDataReady final : public nsIFaviconDataCallback {
- public:
-  NS_DECL_ISUPPORTS
-  NS_DECL_NSIFAVICONDATACALLBACK
-
-  AsyncFaviconDataReady(
-      nsIURI* aNewURI, RefPtr<nsISerialEventTarget> aIOThread,
-      const bool aURLShortcut, already_AddRefed<nsIRunnable> aRunnable,
-      UniquePtr<MozPromiseHolder<ObtainCachedIconFileAsyncPromise>>
-          aPromiseHolder = nullptr);
-  nsresult OnFaviconDataNotAvailable(void);
-
- private:
-  ~AsyncFaviconDataReady() {
-    if (mPromiseHolder) {
-      mPromiseHolder->RejectIfExists(NS_ERROR_FAILURE, __func__);
-    }
-  }
-
-  nsCOMPtr<nsIURI> mNewURI;
-  RefPtr<nsISerialEventTarget> mIOThread;
-  nsCOMPtr<nsIRunnable> mRunnable;
-  UniquePtr<MozPromiseHolder<ObtainCachedIconFileAsyncPromise>> mPromiseHolder;
-  const bool mURLShortcut;
-};
-#endif
 
 /**
  * Asynchronously tries add the list to the build

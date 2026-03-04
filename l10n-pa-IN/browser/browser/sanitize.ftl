@@ -59,10 +59,7 @@ history-section-label = ਅਤੀਤ
 item-history-and-downloads =
     .label = ਬਰਾਊਜ਼ਿੰਗ ਅਤੇ ਡਾਊਨਲੋਡ ਅਤੀਤ
     .accesskey = B
-item-history-form-data-downloads =
-    .label = ਅਤੀਤ
-    .accesskey = H
-item-history-form-data-downloads-description = ਸਾਈਟ ਅਤੇ ਡਾਊਨਲੋਡ ਅਤੀਤ, ਸੰਭਾਲੀ ਹੋਈ ਫਾਰਮ ਜਾਣਕਾਰੀ ਅਤੇ ਖੋਜਾਂ ਨੂੰ ਮਿਟਾਓ
+item-history-and-downloads-description2 = ਸਾਈਟ ਅਤੇ ਡਾਊਨਲੋਡ ਅਤੀਤ ਨੂੰ ਮਿਟਾਉਂਦਾ ਹੈ
 item-cookies =
     .label = ਕੂਕੀਜ਼
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = ਸਾਈਟ ਸੈਟਿੰਗਾਂ
     .accesskey = i
+item-formdata-prefs =
+    .label = ਸੰਭਾਲੀ ਫਾਰਮ ਜਾਣਕਾਰੀ
+    .accesskey = o
+item-formdata-description = ਫਾਰਮਾਂ ਵਿੱਚ ਤੁਹਾਡੇ ਵਲੋਂ ਭਰੇ ਨਾਂ, ਈਮੇਲਾਂ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਮਿਟਾਉਂਦਾ ਹੈ
 item-site-prefs-description = ਆਪਣੀਆਂ ਇਜਾਜ਼ਤਾਂ ਅਤੇ ਸਾਈਟ ਪਸੰਦਾਂ ਨੂੰ ਅਸਲ ਸੈਟਿੰਗਾਂ ਲਈ ਮੁੜ-ਸੈੱਟ ਕਰੋ
 data-section-label = ਮਿਤੀ
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = ਸਭ ਅਤੀਤ ਨੂੰ ਸਾਫ਼ ਕੀ�
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = ਸਭ ਚੁਣੀਆਂ ਆਈਟਮਾਂ ਨੂੰ ਸਾਫ਼ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ।
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = ਗਿਣਤੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…

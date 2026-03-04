@@ -33,6 +33,7 @@ perftools-description-local-build =
     Si está perfilando una compilación hecha por usted mismo en esta
     máquina, añada el objdir de la misma a la lista de abajo para que
     pueda utilizarse para buscar información de símbolos.
+perftools-pick-local-build-directory = Seleccione el directorio de compilación
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -68,6 +69,14 @@ perftools-button-restart = Reiniciar
 perftools-button-add-directory = Añadir un directorio
 perftools-button-remove-directory = Eliminar lo seleccionado
 perftools-button-edit-settings = Editar ajustes…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Más acciones
+perftools-menu-more-actions-restart-with-profiling = Reinicia { -brand-shorter-name } con el perfilador de inicio activado
+perftools-menu-more-actions-copy-for-startup = Copiar variables de entorno para el perfilado al inicio
+perftools-menu-more-actions-copy-for-perf-tests = Copiar parámetros para pruebas de rendimiento
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,6 +150,8 @@ perftools-presets-graphics-label = Gráficos
 perftools-presets-graphics-description = Preestablecido para investigar errores gráficos en { -brand-shorter-name }.
 perftools-presets-media-label = Multimedia
 perftools-presets-media-description2 = Preestablecido para investigar errores de audio y vídeo en { -brand-shorter-name }.
+perftools-presets-ml-label = Machine Learning
+perftools-presets-ml-description2 = Preestablecido para investigar problemas de machine learning en { -brand-shorter-name }.
 perftools-presets-networking-label = Red
 perftools-presets-networking-description = Preestablecido para investigar problemas de red en { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +159,6 @@ perftools-presets-power-label = Energía
 perftools-presets-power-description = Preestablecido para investigar errores relacionados con el consumo de energía en { -brand-shorter-name }, con poca sobrecarga.
 perftools-presets-debug-label = Depurar
 perftools-presets-debug-description = Preestablecido para depuración en { -brand-shorter-name } Alta sobrecarga, no lo uses para mejoras de rendimiento sino para enfocarte en comprender el comportamiento del navegador.
+perftools-presets-web-compat-label = Compatibilidad web
+perftools-presets-web-compat-description = Ajuste preestablecido recomendado para depurar problemas de compatibilidad en sitios web, en lugar de analizar el rendimiento.
 perftools-presets-custom-label = Personalizado
-
-##
-

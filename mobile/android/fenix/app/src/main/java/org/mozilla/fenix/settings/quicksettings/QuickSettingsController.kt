@@ -174,7 +174,7 @@ class DefaultQuickSettingsController(
             }
             val sitePermissions =
                 autoplayValue.createSitePermissionsFromCustomRules(origin, settings)
-            handleAutoplayAdd(sitePermissions, tab?.content?.private ?: false)
+            handleAutoplayAdd(sitePermissions, tab.content.private)
             sitePermissions
         } else {
             val newPermission = autoplayValue.updateSitePermissions(permissions)
@@ -254,7 +254,8 @@ class DefaultQuickSettingsController(
                 sessionId = sessionId,
                 title = state.websiteTitle,
                 url = state.websiteUrl,
-                isSecured = state.websiteSecurityUiValues == WebsiteSecurityUiValues.SECURE,
+                isLocalPdf = state.websiteInfoUiValues == WebsiteInfoUiValues.Document,
+                isSecured = state.websiteInfoUiValues == WebsiteInfoUiValues.SECURE,
                 certificateName = state.certificateName,
                 gravity = context.components.settings.toolbarPosition.androidGravity,
                 sitePermissions = sitePermissions,

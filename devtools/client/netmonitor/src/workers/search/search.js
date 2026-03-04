@@ -23,6 +23,16 @@ function searchInResource(resource, query, modifiers) {
     );
   }
 
+  if (resource.earlyHintsResponseHeaders) {
+    results.push(
+      findMatches(resource, query, modifiers, {
+        key: "earlyHintsResponseHeaders.headers",
+        type: "earlyHintsResponseHeaders",
+        panel: "headers",
+      })
+    );
+  }
+
   if (resource.responseHeaders) {
     results.push(
       findMatches(resource, query, modifiers, {
@@ -110,6 +120,7 @@ function searchInResource(resource, query, modifiers) {
 
 /**
  * Concatenates all results
+ *
  * @param results
  * @returns {*[]}
  */
@@ -135,6 +146,7 @@ function find(query, modifiers, source) {
 
 /**
  * Find query matches in arrays, objects and strings.
+ *
  * @param resource
  * @param query
  * @param modifiers
@@ -187,6 +199,7 @@ function searchInProperties(query, modifiers, obj, data) {
 
 /**
  * Get type of resource - deals with arrays as well.
+ *
  * @param resource
  * @returns {*}
  */
@@ -196,6 +209,7 @@ function getType(resource) {
 
 /**
  * Function returns the value of a key, included nested keys.
+ *
  * @param path
  * @param obj
  * @returns {*}
@@ -207,6 +221,7 @@ function getValue(path, obj) {
 
 /**
  * Search text for specific string and return all matches found
+ *
  * @param query
  * @param modifiers
  * @param text
@@ -230,7 +245,7 @@ function searchInText(query, modifiers, text, data) {
     let singleMatch;
 
     while ((singleMatch = regexQuery.exec(lines[i])) !== null) {
-      const startIndex = regexQuery.lastIndex;
+      const startIndex = singleMatch.index;
       lineMatches.push(startIndex);
     }
 
@@ -258,6 +273,7 @@ function searchInText(query, modifiers, text, data) {
 /**
  * Search for query in array.
  * Iterates through each array item and handles item based on type.
+ *
  * @param query
  * @param modifiers
  * @param arr
@@ -280,6 +296,7 @@ function searchInArray(query, modifiers, arr, data) {
 /**
  * Return query match and up to 50 characters on left and right.
  * (50) + [matched query] + (50)
+ *
  * @param value
  * @param query
  * @param startIndex
@@ -287,20 +304,18 @@ function searchInArray(query, modifiers, arr, data) {
  */
 function getTruncatedValue(value, query, startIndex) {
   const valueSize = value.length;
-  const indexEnd = startIndex + query.length;
+  const endIndex = startIndex + query.length;
 
   if (valueSize < 100 + query.length) {
     return value;
   }
 
-  const start = value.substring(startIndex, startIndex - 50);
-  const end = value.substring(indexEnd, indexEnd + 50);
-
-  return start + end;
+  return value.substring(startIndex - 50, endIndex + 50);
 }
 
 /**
  * Iterates through object, including nested objects, returns all
+ *
  * @param query
  * @param modifiers
  * @param obj

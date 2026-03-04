@@ -1,24 +1,587 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+## [24.10.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.9.0...puppeteer-core-v24.10.0) (2025-06-02)
+
+
+### Features
+
+* roll to Chrome 137.0.7151.55 ([#13909](https://github.com/puppeteer/puppeteer/issues/13909)) ([1e5a1a8](https://github.com/puppeteer/puppeteer/commit/1e5a1a825166d49aec5c1e8205874ebeeb6c813c))
+* roll to Firefox 139.0 ([#13908](https://github.com/puppeteer/puppeteer/issues/13908)) ([4bd8319](https://github.com/puppeteer/puppeteer/commit/4bd83192c102ee2d2253604f0089c0ba8db51d27))
+
+
+### Bug Fixes
+
+* roll to Chrome 136.0.7103.113 ([#13895](https://github.com/puppeteer/puppeteer/issues/13895)) ([a6b61e7](https://github.com/puppeteer/puppeteer/commit/a6b61e799a0bb2a6fe3c87a5bdbb09f17808f514))
+* roll to Firefox 139.0.1 ([#13911](https://github.com/puppeteer/puppeteer/issues/13911)) ([646a961](https://github.com/puppeteer/puppeteer/commit/646a961982b6180eaaacf95e3cb5433f7ff40a8e))
+* switch to global command id generation ([#13910](https://github.com/puppeteer/puppeteer/issues/13910)) ([c2ebd3f](https://github.com/puppeteer/puppeteer/commit/c2ebd3f7fa2dd0863a1129529865bb8502a4e604))
+
+## [24.9.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.8.2...puppeteer-core-v24.9.0) (2025-05-20)
+
+
+### Features
+
+* add `screencast` override options ([#13708](https://github.com/puppeteer/puppeteer/issues/13708)) ([e3586e8](https://github.com/puppeteer/puppeteer/commit/e3586e81521e0d91d4d69990cc44a73504dea3c4))
+
+
+### Bug Fixes
+
+* roll to Chrome 136.0.7103.94 ([#13870](https://github.com/puppeteer/puppeteer/issues/13870)) ([9c6ef13](https://github.com/puppeteer/puppeteer/commit/9c6ef1345633b3576b3ef433dafdc6dcb9c1424f))
+* roll to Firefox 138.0.3 ([#13868](https://github.com/puppeteer/puppeteer/issues/13868)) ([863a3e0](https://github.com/puppeteer/puppeteer/commit/863a3e07dcce874035d851778ae4187e12ef421b))
+* roll to Firefox 138.0.4 ([#13881](https://github.com/puppeteer/puppeteer/issues/13881)) ([29ff2b5](https://github.com/puppeteer/puppeteer/commit/29ff2b59815c543c95e7458b7f8ba7ad72afd71c))
+
 
 ### Dependencies
 
 * The following workspace dependencies were updated
   * dependencies
-    * @puppeteer/browsers bumped from 1.0.1 to 1.1.0
+    * @puppeteer/browsers bumped from 2.10.4 to 2.10.5
+
+## [24.8.2](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.8.1...puppeteer-core-v24.8.2) (2025-05-07)
+
+
+### Bug Fixes
+
+* roll to Chrome 136.0.7103.92 ([#13854](https://github.com/puppeteer/puppeteer/issues/13854)) ([a83e6ce](https://github.com/puppeteer/puppeteer/commit/a83e6ce79729a99a4d7c8eb834aa645869185664))
+
 
 ### Dependencies
 
 * The following workspace dependencies were updated
   * dependencies
-    * @puppeteer/browsers bumped from 1.4.4 to 1.4.5
+    * @puppeteer/browsers bumped from 2.10.3 to 2.10.4
+
+## [24.8.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.8.0...puppeteer-core-v24.8.1) (2025-05-06)
+
+
+### Bug Fixes
+
+* revert "refactor: allow importing chromium-bidi ESM" ([#13849](https://github.com/puppeteer/puppeteer/issues/13849)) ([e7f514a](https://github.com/puppeteer/puppeteer/commit/e7f514ab5a55ffed015cd89bc69feb059bf5da0c))
+* **webdriver:** bump chromium-bidi ([#13844](https://github.com/puppeteer/puppeteer/issues/13844)) ([250cccb](https://github.com/puppeteer/puppeteer/commit/250cccb57a4fd61ad92c5f54ae09e59ea87ec27d))
+
+## [24.8.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.7.2...puppeteer-core-v24.8.0) (2025-05-02)
+
+
+### Features
+
+* Add `enableExtensions` launch option ([#13824](https://github.com/puppeteer/puppeteer/issues/13824)) ([fd948cf](https://github.com/puppeteer/puppeteer/commit/fd948cfd9dece93233b8ed636af1447f8fb44f4e))
+* Add Browser.installExtension and Browser.uninstallExtension ([#13810](https://github.com/puppeteer/puppeteer/issues/13810)) ([7b9c72c](https://github.com/puppeteer/puppeteer/commit/7b9c72c984ba14b78d94235bd3ac41e0848a96a0))
+* roll to Chrome 136.0.7103.49 ([#13828](https://github.com/puppeteer/puppeteer/issues/13828)) ([ad4a6e7](https://github.com/puppeteer/puppeteer/commit/ad4a6e76c6846d98d9f6c4e81cbab71c4284a124))
+* roll to Firefox 138.0 ([#13829](https://github.com/puppeteer/puppeteer/issues/13829)) ([b3f04d7](https://github.com/puppeteer/puppeteer/commit/b3f04d7e65319d61f88d04f74d215c452292e222))
+
+
+### Bug Fixes
+
+* roll to Firefox 138.0.1 ([#13832](https://github.com/puppeteer/puppeteer/issues/13832)) ([bfa0e39](https://github.com/puppeteer/puppeteer/commit/bfa0e39a3bdee567e0df87d65d76494139c3a18c))
+* writable stream in PipeTransport should handle errors ([#13825](https://github.com/puppeteer/puppeteer/issues/13825)) ([da97da5](https://github.com/puppeteer/puppeteer/commit/da97da5731a7d246118c74d69baea23eeaf3a7f6))
+
 
 ### Dependencies
 
 * The following workspace dependencies were updated
   * dependencies
-    * @puppeteer/browsers bumped from 1.5.1 to 1.6.0
+    * @puppeteer/browsers bumped from 2.10.2 to 2.10.3
+
+## [24.7.2](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.7.1...puppeteer-core-v24.7.2) (2025-04-24)
+
+
+### Bug Fixes
+
+* roll to Chrome 135.0.7049.114 ([#13811](https://github.com/puppeteer/puppeteer/issues/13811)) ([3d32f72](https://github.com/puppeteer/puppeteer/commit/3d32f7232de1d67a23e73ed1119b95ba397b379f))
+* roll to Chrome 135.0.7049.97 ([#13802](https://github.com/puppeteer/puppeteer/issues/13802)) ([d0e6492](https://github.com/puppeteer/puppeteer/commit/d0e649266b244ae3ec153e62f05b40ce819f7049))
+* update chromium-bidi to fix ESM import issue  ([#13813](https://github.com/puppeteer/puppeteer/issues/13813)) ([7ff0719](https://github.com/puppeteer/puppeteer/commit/7ff07196a263a39cf03011aa00c41728d272bbb7))
+
+## [24.7.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.7.0...puppeteer-core-v24.7.1) (2025-04-22)
+
+
+### Bug Fixes
+
+* update Disposable polyfill to match TC39 proposal ([#13683](https://github.com/puppeteer/puppeteer/issues/13683)) ([c2b27c4](https://github.com/puppeteer/puppeteer/commit/c2b27c4b2609fb52f0937d34fb55418d4c046fd4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.10.1 to 2.10.2
+
+## [24.7.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.6.1...puppeteer-core-v24.7.0) (2025-04-22)
+
+
+### Features
+
+* support network requests for workers ([#13752](https://github.com/puppeteer/puppeteer/issues/13752)) ([4062068](https://github.com/puppeteer/puppeteer/commit/4062068da9fd839008ef78411432de26ad367bda))
+* **webdriver:** support FileChooser with WebDriver BiDi ([#13780](https://github.com/puppeteer/puppeteer/issues/13780)) ([a4d0d34](https://github.com/puppeteer/puppeteer/commit/a4d0d34643ef1dce173a0a927a4016ee99521ac4))
+* **webdriver:** support geolocation emulation ([#13773](https://github.com/puppeteer/puppeteer/issues/13773)) ([74eefd8](https://github.com/puppeteer/puppeteer/commit/74eefd82786e6b2b59d4d8ef6989404536d3463f))
+
+
+### Bug Fixes
+
+* roll to Chrome 135.0.7049.95 ([#13788](https://github.com/puppeteer/puppeteer/issues/13788)) ([f2f37b5](https://github.com/puppeteer/puppeteer/commit/f2f37b5a3cbfba9a0279f6ff47a424170575ed3c))
+* roll to Firefox 137.0.2 ([#13789](https://github.com/puppeteer/puppeteer/issues/13789)) ([192ce96](https://github.com/puppeteer/puppeteer/commit/192ce9676c312c551b24cd732c15b590c5243fb6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.10.0 to 2.10.1
+
+## [24.6.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.6.0...puppeteer-core-v24.6.1) (2025-04-09)
+
+
+### Bug Fixes
+
+* optimize base64 decoding ([#13753](https://github.com/puppeteer/puppeteer/issues/13753)) ([8145dd6](https://github.com/puppeteer/puppeteer/commit/8145dd64f21ca7ab917c9c75fe51d04a9463b552))
+* roll to Chrome 135.0.7049.84 ([#13756](https://github.com/puppeteer/puppeteer/issues/13756)) ([ab6459f](https://github.com/puppeteer/puppeteer/commit/ab6459f947471645445a71afbe5d7b4755cb9cf7))
+* roll to Firefox 137.0.1 ([#13758](https://github.com/puppeteer/puppeteer/issues/13758)) ([446a07c](https://github.com/puppeteer/puppeteer/commit/446a07cdc4e56f8a926f74d167cb14eca24a9602))
+* **webdriver:** handle errors if exposed function args are no longer available ([#13759](https://github.com/puppeteer/puppeteer/issues/13759)) ([4013556](https://github.com/puppeteer/puppeteer/commit/401355610874beac23a51dcb75739a4bb4191a2b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.9.0 to 2.10.0
+
+## [24.6.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.5.0...puppeteer-core-v24.6.0) (2025-04-03)
+
+
+### Features
+
+* roll to Chrome 135.0.7049.42 ([#13717](https://github.com/puppeteer/puppeteer/issues/13717)) ([30b7ba8](https://github.com/puppeteer/puppeteer/commit/30b7ba8c62d3b76efed239b5bd39ec4bfc77bd08))
+* roll to Firefox 137.0 ([#13720](https://github.com/puppeteer/puppeteer/issues/13720)) ([bee835f](https://github.com/puppeteer/puppeteer/commit/bee835f938b8ace30d5a06f17bd4a5ff0923ad16))
+
+## [24.5.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.4.0...puppeteer-core-v24.5.0) (2025-03-31)
+
+
+### Features
+
+* improve `screencast` options ([#13645](https://github.com/puppeteer/puppeteer/issues/13645)) ([22aeab9](https://github.com/puppeteer/puppeteer/commit/22aeab945842fb1875e28da672c28bcca166254a))
+
+
+### Bug Fixes
+
+* `screencast` mp4 encoding ([#13676](https://github.com/puppeteer/puppeteer/issues/13676)) ([dfc9219](https://github.com/puppeteer/puppeteer/commit/dfc92194c5f2656de7374cafcb73cd283a0976c8))
+* roll to Chrome 134.0.6998.165 ([#13696](https://github.com/puppeteer/puppeteer/issues/13696)) ([ff74c58](https://github.com/puppeteer/puppeteer/commit/ff74c58464f985253b0a986f5fbbe4edc1658a42))
+* roll to Chrome 134.0.6998.88 ([#13666](https://github.com/puppeteer/puppeteer/issues/13666)) ([334d06a](https://github.com/puppeteer/puppeteer/commit/334d06aa546173b924a4754c8968470547cd75a7))
+* roll to Chrome 134.0.6998.90 ([#13693](https://github.com/puppeteer/puppeteer/issues/13693)) ([7433674](https://github.com/puppeteer/puppeteer/commit/7433674f69100128f2a7fe5450e5315a3380b865))
+* roll to Firefox 136.0.1 ([#13672](https://github.com/puppeteer/puppeteer/issues/13672)) ([c900ded](https://github.com/puppeteer/puppeteer/commit/c900ded5125069e9abf796877d4003cdf0392fa9))
+* roll to Firefox 136.0.2 ([#13692](https://github.com/puppeteer/puppeteer/issues/13692)) ([ea8a0ae](https://github.com/puppeteer/puppeteer/commit/ea8a0aee6136a585ee9e9ebe94e1e766144082e8))
+* roll to Firefox 136.0.3 ([#13702](https://github.com/puppeteer/puppeteer/issues/13702)) ([d3a865e](https://github.com/puppeteer/puppeteer/commit/d3a865e4fd742d9b025b8de988a2635e0ca1516d))
+* roll to Firefox 136.0.4 ([#13707](https://github.com/puppeteer/puppeteer/issues/13707)) ([33668c9](https://github.com/puppeteer/puppeteer/commit/33668c983a08f0fedf8f9f85e2f8a71c7a2780f2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.8.0 to 2.9.0
+
+## [24.4.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.3.1...puppeteer-core-v24.4.0) (2025-03-05)
+
+
+### Features
+
+* roll to Chrome 134.0.6998.35 ([#13649](https://github.com/puppeteer/puppeteer/issues/13649)) ([cdb175b](https://github.com/puppeteer/puppeteer/commit/cdb175b76c49c53e680515cf635f08e722f3dd52))
+* roll to Firefox 136.0 ([#13647](https://github.com/puppeteer/puppeteer/issues/13647)) ([b8e0310](https://github.com/puppeteer/puppeteer/commit/b8e031007a5b980d59b8e17bc208f18f55050442))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.7.1 to 2.8.0
+
+## [24.3.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.3.0...puppeteer-core-v24.3.1) (2025-03-03)
+
+
+### Bug Fixes
+
+* roll to Chrome 133.0.6943.141 ([#13635](https://github.com/puppeteer/puppeteer/issues/13635)) ([af6ee5d](https://github.com/puppeteer/puppeteer/commit/af6ee5ddf4a7a8bf471d3aafc2366bec7a834de5))
+
+## [24.3.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.2.1...puppeteer-core-v24.3.0) (2025-02-24)
+
+
+### Features
+
+* expose CDPSession.detached ([#13615](https://github.com/puppeteer/puppeteer/issues/13615)) ([33e3e83](https://github.com/puppeteer/puppeteer/commit/33e3e83d3c47e1fcedbbec186ae3ab98ae7cf025))
+
+
+### Bug Fixes
+
+* do not throw an error when a navigation is aborted ([#13621](https://github.com/puppeteer/puppeteer/issues/13621)) ([89d71a2](https://github.com/puppeteer/puppeteer/commit/89d71a2f8f4bd681a265d06431d00757ba891efa))
+* roll to Chrome 133.0.6943.126 ([#13623](https://github.com/puppeteer/puppeteer/issues/13623)) ([09e4404](https://github.com/puppeteer/puppeteer/commit/09e44049baee33e2ed660fe224c2035b2892b413))
+* roll to Firefox 135.0.1 ([#13622](https://github.com/puppeteer/puppeteer/issues/13622)) ([ce10410](https://github.com/puppeteer/puppeteer/commit/ce10410f0a9603ad9bffae8faad8da70f7383262))
+
+## [24.2.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.2.0...puppeteer-core-v24.2.1) (2025-02-13)
+
+
+### Bug Fixes
+
+* change Browser.setCookie type to be CookieData ([#13593](https://github.com/puppeteer/puppeteer/issues/13593)) ([8971cc2](https://github.com/puppeteer/puppeteer/commit/8971cc21ce52ded6cb3c973467fff0319b3f0c95))
+* don't wait for activation if the connection is disconnected ([#13591](https://github.com/puppeteer/puppeteer/issues/13591)) ([6b20ac1](https://github.com/puppeteer/puppeteer/commit/6b20ac10b1cc6a54a87eb2f6437727d204acd1c3))
+* **network:** propagate CDP error in interception ([#13607](https://github.com/puppeteer/puppeteer/issues/13607)) ([2f470cd](https://github.com/puppeteer/puppeteer/commit/2f470cdeddbdae6eb110445acfff011af151ca1d))
+* roll to Chrome 133.0.6943.98 ([#13611](https://github.com/puppeteer/puppeteer/issues/13611)) ([ea11a46](https://github.com/puppeteer/puppeteer/commit/ea11a464460735048cf0e9dc81b28779e39e2e01))
+
+## [24.2.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.1.1...puppeteer-core-v24.2.0) (2025-02-05)
+
+
+### Features
+
+* add keyboard-lock and pointer-lock permissions ([#13586](https://github.com/puppeteer/puppeteer/issues/13586)) ([108cd53](https://github.com/puppeteer/puppeteer/commit/108cd53c21ec31b2383de11510bfbedfacdd5ac2))
+* roll to Chrome 133.0.6943.53 ([#13584](https://github.com/puppeteer/puppeteer/issues/13584)) ([a63d568](https://github.com/puppeteer/puppeteer/commit/a63d5686cbfef782f2e079ce344503ff88c0bb9b))
+* roll to Firefox 135.0 ([#13587](https://github.com/puppeteer/puppeteer/issues/13587)) ([b42c046](https://github.com/puppeteer/puppeteer/commit/b42c0464aa0d8a102856e147d34a1fb048f547c9))
+
+
+### Bug Fixes
+
+* roll to Chrome 132.0.6834.159 ([#13566](https://github.com/puppeteer/puppeteer/issues/13566)) ([416534b](https://github.com/puppeteer/puppeteer/commit/416534bce9575f65b81487e8820e8a3c96fb9b10))
+* **webdriver:** make sure user agent can be set twice ([#13585](https://github.com/puppeteer/puppeteer/issues/13585)) ([411ff95](https://github.com/puppeteer/puppeteer/commit/411ff9510add6ea33fe004036e61a7032fd30de1))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.7.0 to 2.7.1
+
+## [24.1.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.1.0...puppeteer-core-v24.1.1) (2025-01-23)
+
+
+### Bug Fixes
+
+* dispose the isolated handle ([#13542](https://github.com/puppeteer/puppeteer/issues/13542)) ([f9ed75e](https://github.com/puppeteer/puppeteer/commit/f9ed75eb39eef825469b82a818b245bc76d6cd93))
+* roll to Chrome 132.0.6834.110 ([#13543](https://github.com/puppeteer/puppeteer/issues/13543)) ([2d2d214](https://github.com/puppeteer/puppeteer/commit/2d2d21483c608e67e848586f912403689863c8e2))
+* roll to Firefox 134.0.2 ([#13538](https://github.com/puppeteer/puppeteer/issues/13538)) ([82ec05d](https://github.com/puppeteer/puppeteer/commit/82ec05d3fcb8ed4be2ccae622ff1ad6c35e00c39))
+* **webdriver:** use correct units for format pdf option ([#13516](https://github.com/puppeteer/puppeteer/issues/13516)) ([c764f82](https://github.com/puppeteer/puppeteer/commit/c764f82c7435bdc10e6a9007892ab8dba111d21c))
+
+## [24.1.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v24.0.0...puppeteer-core-v24.1.0) (2025-01-15)
+
+
+### Features
+
+* roll to Chrome 132.0.6834.83 ([#13507](https://github.com/puppeteer/puppeteer/issues/13507)) ([e282992](https://github.com/puppeteer/puppeteer/commit/e28299296675c018e38b0367c3e9810a8a63f21c))
+
+
+### Bug Fixes
+
+* roll to Firefox 134.0.1 ([#13510](https://github.com/puppeteer/puppeteer/issues/13510)) ([a50357c](https://github.com/puppeteer/puppeteer/commit/a50357cc2c84f59f951bc647ac809303d365231a))
+
+## [24.0.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.11.1...puppeteer-core-v24.0.0) (2025-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove support for Firefox over CDP ([#13427](https://github.com/puppeteer/puppeteer/issues/13427))
+* remove deprecated Launch and Connect options ([#13426](https://github.com/puppeteer/puppeteer/issues/13426))
+* include URL fragment into URL returned by HTTPRequest/Response instances ([#13425](https://github.com/puppeteer/puppeteer/issues/13425))
+
+### Features
+
+* roll to Firefox 134.0 ([#13470](https://github.com/puppeteer/puppeteer/issues/13470)) ([3bd3176](https://github.com/puppeteer/puppeteer/commit/3bd31769b5827305dc553cd36ca40387558b3acd))
+
+
+### Bug Fixes
+
+* include URL fragment into URL returned by HTTPRequest/Response instances ([#13425](https://github.com/puppeteer/puppeteer/issues/13425)) ([8ff26ad](https://github.com/puppeteer/puppeteer/commit/8ff26ad5aff0b366e54e6e85f71577de575ee31d))
+* remove erroneous changelog entry ([#13479](https://github.com/puppeteer/puppeteer/issues/13479)) ([6de3238](https://github.com/puppeteer/puppeteer/commit/6de32386c2294a74eb3df3fbc9b179ffeed083f5))
+* roll to Chrome 131.0.6778.264 ([#13468](https://github.com/puppeteer/puppeteer/issues/13468)) ([aac759b](https://github.com/puppeteer/puppeteer/commit/aac759b82f0f6427b401bee11ab7c454f0ac6d5b))
+* **webdriver:** handle DiscardedBrowsingContextError error ([#13472](https://github.com/puppeteer/puppeteer/issues/13472)) ([b903856](https://github.com/puppeteer/puppeteer/commit/b90385662a7b29e9d36a7cae825e8c0f9f89fac8))
+
+
+### Code Refactoring
+
+* remove deprecated Launch and Connect options ([#13426](https://github.com/puppeteer/puppeteer/issues/13426)) ([20f9f15](https://github.com/puppeteer/puppeteer/commit/20f9f15d5f94832bd6f5c0e9807a1a53182c49f8))
+* remove support for Firefox over CDP ([#13427](https://github.com/puppeteer/puppeteer/issues/13427)) ([1a2e91b](https://github.com/puppeteer/puppeteer/commit/1a2e91b04413e2ed90778b2f8e49549a8e63c139))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.6.1 to 2.7.0
+
+## [23.11.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.11.0...puppeteer-core-v23.11.1) (2024-12-19)
+
+
+### Bug Fixes
+
+* roll to Chrome 131.0.6778.204 ([#13422](https://github.com/puppeteer/puppeteer/issues/13422)) ([4f3a877](https://github.com/puppeteer/puppeteer/commit/4f3a87789ea271993d418e0e64c6d4e3c940c83b))
+
+## [23.11.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.10.4...puppeteer-core-v23.11.0) (2024-12-18)
+
+
+### Features
+
+* support reducedContrast in Page.emulateVisionDeficiency ([#13408](https://github.com/puppeteer/puppeteer/issues/13408)) ([18e3e6a](https://github.com/puppeteer/puppeteer/commit/18e3e6a42c9517bc3a283fdc23e5c454ad8d27fe))
+
+
+### Bug Fixes
+
+* **deps:** bump chromium-bidi to 0.11.0 ([#13418](https://github.com/puppeteer/puppeteer/issues/13418)) ([771e4b2](https://github.com/puppeteer/puppeteer/commit/771e4b27abf21436dba80d568b82c9235bfb7de3))
+* include iframes into the a11y snapshot ([#12579](https://github.com/puppeteer/puppeteer/issues/12579)) ([a8152d4](https://github.com/puppeteer/puppeteer/commit/a8152d46101da918962555404e5a580e2696dd60))
+
+## [23.10.4](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.10.3...puppeteer-core-v23.10.4) (2024-12-12)
+
+
+### Bug Fixes
+
+* roll to Chrome 131.0.6778.108 ([#13395](https://github.com/puppeteer/puppeteer/issues/13395)) ([cc1aa16](https://github.com/puppeteer/puppeteer/commit/cc1aa167efdb8f229678086618b8b129e7cf96d6))
+* roll to Firefox 133.0.3 ([#13399](https://github.com/puppeteer/puppeteer/issues/13399)) ([a163cbf](https://github.com/puppeteer/puppeteer/commit/a163cbf7905059891f68cfe3a31396c9aca64467))
+
+## [23.10.3](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.10.2...puppeteer-core-v23.10.3) (2024-12-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.6.0 to 2.6.1
+
+## [23.10.2](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.10.1...puppeteer-core-v23.10.2) (2024-12-09)
+
+
+### Bug Fixes
+
+* export the PuppeteerLaunchOptions type ([#13376](https://github.com/puppeteer/puppeteer/issues/13376)) ([2202ce8](https://github.com/puppeteer/puppeteer/commit/2202ce8b8a11b6bd36743418ade62b6ae56a67b9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.5.0 to 2.6.0
+
+## [23.10.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.10.0...puppeteer-core-v23.10.1) (2024-12-04)
+
+
+### Bug Fixes
+
+* roll to Chrome 131.0.6778.87 ([#13357](https://github.com/puppeteer/puppeteer/issues/13357)) ([a571bff](https://github.com/puppeteer/puppeteer/commit/a571bff7a47f2e439a59fa1cd94159e8f1b0e1e7))
+
+## [23.10.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.9.0...puppeteer-core-v23.10.0) (2024-12-03)
+
+
+### Features
+
+* adjust browser-level cookie API ([#13331](https://github.com/puppeteer/puppeteer/issues/13331)) ([678eaf0](https://github.com/puppeteer/puppeteer/commit/678eaf09f2f018678181c1b115f850cfa33be411))
+* browser level cookies API ([#13316](https://github.com/puppeteer/puppeteer/issues/13316)) ([43dec3b](https://github.com/puppeteer/puppeteer/commit/43dec3b0aa277df0f0b8ed29009d71cd1ba77982))
+* implement ElementHandle.backendNodeId ([#13328](https://github.com/puppeteer/puppeteer/issues/13328)) ([ffb31ca](https://github.com/puppeteer/puppeteer/commit/ffb31cacc53f6ca6991b227807a29aa93305a177))
+* roll to Firefox 133.0 ([#13333](https://github.com/puppeteer/puppeteer/issues/13333)) ([de314e5](https://github.com/puppeteer/puppeteer/commit/de314e53de38c015748ff4c31f0e178512c4e494))
+* support LaunchOptions in executablePath() ([#13340](https://github.com/puppeteer/puppeteer/issues/13340)) ([6acfee6](https://github.com/puppeteer/puppeteer/commit/6acfee6810da378844d4dca7f28d539dd46a3529))
+
+
+### Bug Fixes
+
+* stop calling bringToFront when taking page screenshots ([#13336](https://github.com/puppeteer/puppeteer/issues/13336)) ([6da2cb4](https://github.com/puppeteer/puppeteer/commit/6da2cb490495193fb7fbdb47a71c95033a4a6fab))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.4.1 to 2.5.0
+
+## [23.9.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.8.0...puppeteer-core-v23.9.0) (2024-11-21)
+
+
+### Features
+
+* config download behavior ([#13309](https://github.com/puppeteer/puppeteer/issues/13309)) ([c3ca96c](https://github.com/puppeteer/puppeteer/commit/c3ca96c9d354ea727bfe0954c1ee763ca1ae2a6b))
+
+
+### Bug Fixes
+
+* correctly resolve OOPIF response bodies ([#13311](https://github.com/puppeteer/puppeteer/issues/13311)) ([e837140](https://github.com/puppeteer/puppeteer/commit/e83714023e1c80e8ab32e0a100f57d7cf5f5e151))
+* roll to Chrome 131.0.6778.85 ([#13312](https://github.com/puppeteer/puppeteer/issues/13312)) ([374cead](https://github.com/puppeteer/puppeteer/commit/374cead4b5537cf041dc5a1e38206e1a86333842))
+
+## [23.8.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.7.1...puppeteer-core-v23.8.0) (2024-11-13)
+
+
+### Features
+
+* roll to Chrome 131.0.6778.69 ([#13291](https://github.com/puppeteer/puppeteer/issues/13291)) ([34568e0](https://github.com/puppeteer/puppeteer/commit/34568e0b2d9e8a95050bd60e54d1d21b1cd0558c))
+
+
+### Bug Fixes
+
+* add getDefaultNavigationTimeout to Page ([#13277](https://github.com/puppeteer/puppeteer/issues/13277)) ([8b64c2c](https://github.com/puppeteer/puppeteer/commit/8b64c2cd01f7df44c1b667c4f1f2b676e0fab0a8))
+* roll to Firefox 132.0.2 ([#13293](https://github.com/puppeteer/puppeteer/issues/13293)) ([aae6b33](https://github.com/puppeteer/puppeteer/commit/aae6b33cd0053ce75ad66e91d804f288fa8c9794))
+* **webdriver:** frameElement() should return handles in the main world ([#13287](https://github.com/puppeteer/puppeteer/issues/13287)) ([2fde1ce](https://github.com/puppeteer/puppeteer/commit/2fde1ce4e09c4b084033537baea77fdd58b0c213))
+
+## [23.7.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.7.0...puppeteer-core-v23.7.1) (2024-11-07)
+
+
+### Bug Fixes
+
+* roll to Chrome 130.0.6723.116 ([#13274](https://github.com/puppeteer/puppeteer/issues/13274)) ([979af2b](https://github.com/puppeteer/puppeteer/commit/979af2bccdd684bb26f61518cc42e248ad2c8cfb))
+* roll to Chrome 130.0.6723.93 ([#13268](https://github.com/puppeteer/puppeteer/issues/13268)) ([b7c7785](https://github.com/puppeteer/puppeteer/commit/b7c77852911164a1c167cb7cb0906cb27a70e122))
+* roll to Firefox 132.0.1 ([#13265](https://github.com/puppeteer/puppeteer/issues/13265)) ([acd3c72](https://github.com/puppeteer/puppeteer/commit/acd3c7249e06446709830daabd48ce4421496278))
+* **webdriver:** report frame URL as console message location ([#13273](https://github.com/puppeteer/puppeteer/issues/13273)) ([33b4f09](https://github.com/puppeteer/puppeteer/commit/33b4f09021faea6a3c639ff7fa7f96099a02ffd4))
+
+## [23.7.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.6.1...puppeteer-core-v23.7.0) (2024-11-04)
+
+
+### Features
+
+* distinguish different Touches ([#13231](https://github.com/puppeteer/puppeteer/issues/13231)) ([a2a205c](https://github.com/puppeteer/puppeteer/commit/a2a205c2e8ffbc5b9c73bee0466ac0bf00fb4657))
+* roll to Firefox 132.0 ([#13252](https://github.com/puppeteer/puppeteer/issues/13252)) ([41d3dd9](https://github.com/puppeteer/puppeteer/commit/41d3dd9f0ceec5f551fc111f653645286169209f))
+
+
+### Bug Fixes
+
+* **browser:** omit file path validation in uploadFile() in browser environments ([#13258](https://github.com/puppeteer/puppeteer/issues/13258)) ([a9e6cd1](https://github.com/puppeteer/puppeteer/commit/a9e6cd1ed231c161ba83712b690fa6aab47a87a5))
+* remove event listeners from AbortSignal in WaitTask ([#13257](https://github.com/puppeteer/puppeteer/issues/13257)) ([4e5c0ad](https://github.com/puppeteer/puppeteer/commit/4e5c0ad1c770d6bd1785325cdf5c0a63f285e5c2))
+* roll to Chrome 130.0.6723.91 ([#13255](https://github.com/puppeteer/puppeteer/issues/13255)) ([8295e67](https://github.com/puppeteer/puppeteer/commit/8295e67874a31de43570c04b8608073808e5db0d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.4.0 to 2.4.1
+
+## [23.6.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.6.0...puppeteer-core-v23.6.1) (2024-10-28)
+
+
+### Bug Fixes
+
+* correctly handle errors in the ExtensionTransport ([#13244](https://github.com/puppeteer/puppeteer/issues/13244)) ([1fee9ff](https://github.com/puppeteer/puppeteer/commit/1fee9ff269d59e9750b264fe46c9b8be7d36bff1))
+* roll to Chrome 130.0.6723.69 ([#13227](https://github.com/puppeteer/puppeteer/issues/13227)) ([76390bf](https://github.com/puppeteer/puppeteer/commit/76390bf5ac1cb6d70962f3a99cbfd43675ed8e4f))
+* **webdriver:** consider subdomain in cookie filtering ([#13232](https://github.com/puppeteer/puppeteer/issues/13232)) ([98102ec](https://github.com/puppeteer/puppeteer/commit/98102ececf253ef6f0305d4dfb96e23981ea02f2))
+* **webdriver:** partially handle client-side redirects in page.goto ([#13222](https://github.com/puppeteer/puppeteer/issues/13222)) ([442ed05](https://github.com/puppeteer/puppeteer/commit/442ed05b67c806339edf5fffee37fe27e7f410a3))
+
+## [23.6.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.5.3...puppeteer-core-v23.6.0) (2024-10-16)
+
+
+### Features
+
+* remove --disable-component-update from default args ([#13201](https://github.com/puppeteer/puppeteer/issues/13201)) ([19dd9c3](https://github.com/puppeteer/puppeteer/commit/19dd9c385a34c01cf6aad4c207165962d888e63f))
+* roll to Chrome 130.0.6723.58 ([#13195](https://github.com/puppeteer/puppeteer/issues/13195)) ([1cf5116](https://github.com/puppeteer/puppeteer/commit/1cf5116a2d3dd817cf38e46363e483fee58ed5bc))
+
+
+### Bug Fixes
+
+* re-export node reference removed by TS 5.5 ([#13200](https://github.com/puppeteer/puppeteer/issues/13200)) ([1300e59](https://github.com/puppeteer/puppeteer/commit/1300e595cdea37e09f28d68bb06ead47b0883059))
+* roll to Firefox 131.0.3 ([#13189](https://github.com/puppeteer/puppeteer/issues/13189)) ([d7bc66e](https://github.com/puppeteer/puppeteer/commit/d7bc66ef9c58e124b61ab20cc4508ca659a4541a))
+
+## [23.5.3](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.5.2...puppeteer-core-v23.5.3) (2024-10-10)
+
+
+### Bug Fixes
+
+* roll to Chrome 129.0.6668.100 ([#13174](https://github.com/puppeteer/puppeteer/issues/13174)) ([de145c3](https://github.com/puppeteer/puppeteer/commit/de145c3b26e82821b79689da62da73041a4ea7f5))
+* roll to Firefox 131.0.2 ([#13171](https://github.com/puppeteer/puppeteer/issues/13171)) ([5b2b1fe](https://github.com/puppeteer/puppeteer/commit/5b2b1fe67dbd215df9acad948b63d39642621171))
+
+## [23.5.2](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.5.1...puppeteer-core-v23.5.2) (2024-10-09)
+
+
+### Bug Fixes
+
+* roll to Chrome 129.0.6668.91 ([#13166](https://github.com/puppeteer/puppeteer/issues/13166)) ([8a216f1](https://github.com/puppeteer/puppeteer/commit/8a216f19380d792d9f84144fa8d63a6ed81a20c3))
+
+## [23.5.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.5.0...puppeteer-core-v23.5.1) (2024-10-07)
+
+
+### Bug Fixes
+
+* default to RAF polling if visible||hidden is set ([#13153](https://github.com/puppeteer/puppeteer/issues/13153)) ([dd13d5d](https://github.com/puppeteer/puppeteer/commit/dd13d5d65a6d5d1f745ce7cfaa170d0a5f725cfe)), closes [#13152](https://github.com/puppeteer/puppeteer/issues/13152)
+* handle shadow DOM in Frame.frameElement ([#13156](https://github.com/puppeteer/puppeteer/issues/13156)) ([57a8df0](https://github.com/puppeteer/puppeteer/commit/57a8df069b10217174ba494a1cd2b594d966778d)), closes [#13155](https://github.com/puppeteer/puppeteer/issues/13155)
+
+## [23.5.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.4.1...puppeteer-core-v23.5.0) (2024-10-02)
+
+
+### Features
+
+* roll to Firefox 131.0 ([#13148](https://github.com/puppeteer/puppeteer/issues/13148)) ([b5b8601](https://github.com/puppeteer/puppeteer/commit/b5b8601a7660b50c16e04f8683f38e6e35f5e2e8))
+
+
+### Bug Fixes
+
+* handle requestservedfromcache during interception ([#13134](https://github.com/puppeteer/puppeteer/issues/13134)) ([3ad2e45](https://github.com/puppeteer/puppeteer/commit/3ad2e45c295083de6fc72a5041138c620615b755))
+* roll to Chrome 129.0.6668.89 ([#13150](https://github.com/puppeteer/puppeteer/issues/13150)) ([cab123e](https://github.com/puppeteer/puppeteer/commit/cab123e68ee2e50a66da434346ec39afe000b2f7))
+* **webdriver:** dispose child browsing contexts ([#13137](https://github.com/puppeteer/puppeteer/issues/13137)) ([378762d](https://github.com/puppeteer/puppeteer/commit/378762d6e170040901f5c3ccb66968db37f44051))
+
+## [23.4.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.4.0...puppeteer-core-v23.4.1) (2024-09-25)
+
+
+### Bug Fixes
+
+* roll to Chrome 129.0.6668.70 ([#13125](https://github.com/puppeteer/puppeteer/issues/13125)) ([dfd2e64](https://github.com/puppeteer/puppeteer/commit/dfd2e64802d6b2948cb99e5608f707b0013f847b))
+* show browser in error ([#13119](https://github.com/puppeteer/puppeteer/issues/13119)) ([98cad4e](https://github.com/puppeteer/puppeteer/commit/98cad4eb1f88585ea0c222d9c19a3eb3de3c78fd))
+* **webdriver:** convert console method to type ([#13120](https://github.com/puppeteer/puppeteer/issues/13120)) ([429319e](https://github.com/puppeteer/puppeteer/commit/429319e6fe562a9163463a374574533575beab9a))
+
+## [23.4.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.3.1...puppeteer-core-v23.4.0) (2024-09-18)
+
+
+### Features
+
+* roll to Chrome 129.0.6668.58 ([#13099](https://github.com/puppeteer/puppeteer/issues/13099)) ([6614660](https://github.com/puppeteer/puppeteer/commit/661466031edf730022bce4d706f76dd0b04dea05))
+
+
+### Bug Fixes
+
+* **extensions:** handle attachToTarget command correctly ([#13095](https://github.com/puppeteer/puppeteer/issues/13095)) ([61fa00e](https://github.com/puppeteer/puppeteer/commit/61fa00eae5a296c9a616d163423b5093f004dd32)), closes [#13089](https://github.com/puppeteer/puppeteer/issues/13089)
+* roll to Firefox 130.0.1 ([#13100](https://github.com/puppeteer/puppeteer/issues/13100)) ([a1df1dc](https://github.com/puppeteer/puppeteer/commit/a1df1dce9956e666f150240369475dd04d20b8c8))
+
+## [23.3.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.3.0...puppeteer-core-v23.3.1) (2024-09-16)
+
+
+### Bug Fixes
+
+* improve Precision of Paper Sizes in Inches to 4 Decimal Places ([#13087](https://github.com/puppeteer/puppeteer/issues/13087)) ([47d6c44](https://github.com/puppeteer/puppeteer/commit/47d6c4423e61b42867840e6714567b529040593a))
+* roll to Chrome 128.0.6613.137 ([#13071](https://github.com/puppeteer/puppeteer/issues/13071)) ([27df147](https://github.com/puppeteer/puppeteer/commit/27df147a28684cd0a9ad2229e63e740eceb63615))
+
+## [23.3.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.2.2...puppeteer-core-v23.3.0) (2024-09-04)
+
+
+### Features
+
+* roll to Firefox 130.0 ([#13046](https://github.com/puppeteer/puppeteer/issues/13046)) ([f311a65](https://github.com/puppeteer/puppeteer/commit/f311a65f6b5d15ece791844959d6cd18165c2474))
+
+
+### Bug Fixes
+
+* incorrect y-coordinate in ElementHandle.boxModel() ([#13045](https://github.com/puppeteer/puppeteer/issues/13045)) ([afe77af](https://github.com/puppeteer/puppeteer/commit/afe77af53ba672dda487c6ceccf66ea7c7908105))
+* revert the use of structuredClone ([#13044](https://github.com/puppeteer/puppeteer/issues/13044)) ([96b3a8b](https://github.com/puppeteer/puppeteer/commit/96b3a8b33f648fdae43179ab237182683836b8ec))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.3.1 to 2.4.0
+
+## [23.2.2](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.2.1...puppeteer-core-v23.2.2) (2024-09-03)
+
+
+### Bug Fixes
+
+* improve frame session management ([#13022](https://github.com/puppeteer/puppeteer/issues/13022)) ([049e13c](https://github.com/puppeteer/puppeteer/commit/049e13c5f84d82c21d73cacc4ecdf29afcbdc32f))
+* incorrect error message when encountering launch browser error. ([#13021](https://github.com/puppeteer/puppeteer/issues/13021)) ([9aef4ab](https://github.com/puppeteer/puppeteer/commit/9aef4ab63878dfa64a6675b201d80e3dfaf9b065))
+* roll to Chrome 128.0.6613.119 ([#13035](https://github.com/puppeteer/puppeteer/issues/13035)) ([cd4f340](https://github.com/puppeteer/puppeteer/commit/cd4f340230652903d6f1432c5ed79ddaee89fefd))
+
+## [23.2.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.2.0...puppeteer-core-v23.2.1) (2024-08-29)
+
+
+### Bug Fixes
+
+* roll to Chrome 128.0.6613.86 ([#13013](https://github.com/puppeteer/puppeteer/issues/13013)) ([d41cc51](https://github.com/puppeteer/puppeteer/commit/d41cc5136ce5d431a0a522cbc4238b6c08383e2f))
+
+## [23.2.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.1.1...puppeteer-core-v23.2.0) (2024-08-26)
+
+
+### Features
+
+* roll to Chrome 128.0.6613.84 ([#13005](https://github.com/puppeteer/puppeteer/issues/13005)) ([132a7ce](https://github.com/puppeteer/puppeteer/commit/132a7ce624ed8a9529c19c057c486bea2e737cb7))
+
+## [23.1.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.1.0...puppeteer-core-v23.1.1) (2024-08-21)
+
+
+### Bug Fixes
+
+* roll to Firefox 129.0.1 ([#12975](https://github.com/puppeteer/puppeteer/issues/12975)) ([778ae6f](https://github.com/puppeteer/puppeteer/commit/778ae6f2821e4ae5a5b3f65736a4b6bad2b0a56e))
+* roll to Firefox 129.0.2 ([#12987](https://github.com/puppeteer/puppeteer/issues/12987)) ([d934cf5](https://github.com/puppeteer/puppeteer/commit/d934cf52cd9194a90f1ca2f2c76fd6471bbd0033))
 
 ## [23.1.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v23.0.2...puppeteer-core-v23.1.0) (2024-08-14)
 
@@ -1916,7 +2479,7 @@ All notable changes to this project will be documented in this file. See [standa
 * fix release-please bot ([#8400](https://github.com/puppeteer/puppeteer/issues/8400)) ([5c235c7](https://github.com/puppeteer/puppeteer/commit/5c235c701fc55380f09d09ac2cf63f2c94b60e3d))
 * use strict TS in Input.ts ([#8392](https://github.com/puppeteer/puppeteer/issues/8392)) ([af92a24](https://github.com/puppeteer/puppeteer/commit/af92a24ba9fc8efea1ba41f96d87515cf760da65))
 
-### [14.1.1](https://github.com/puppeteer/puppeteer/compare/v14.1.0...v14.1.1) (2022-05-19)
+## [14.1.1](https://github.com/puppeteer/puppeteer/compare/v14.1.0...v14.1.1) (2022-05-19)
 
 
 ### Bug Fixes
@@ -1998,7 +2561,7 @@ All notable changes to this project will be documented in this file. See [standa
 * ignore favicon requests in page.spec event handler tests ([#8208](https://github.com/puppeteer/puppeteer/issues/8208)) ([04e5c88](https://github.com/puppeteer/puppeteer/commit/04e5c889973432c6163a8539cdec23c0e8726bff))
 * **network.spec.ts:** typo in the word should ([#8223](https://github.com/puppeteer/puppeteer/issues/8223)) ([e93faad](https://github.com/puppeteer/puppeteer/commit/e93faadc21b7fcb1e03b69c451c28b769f9cde51))
 
-### [13.5.2](https://github.com/puppeteer/puppeteer/compare/v13.5.1...v13.5.2) (2022-03-31)
+## [13.5.2](https://github.com/puppeteer/puppeteer/compare/v13.5.1...v13.5.2) (2022-03-31)
 
 
 ### Bug Fixes
@@ -2006,7 +2569,7 @@ All notable changes to this project will be documented in this file. See [standa
 * chromium downloading hung at 99% ([#8169](https://github.com/puppeteer/puppeteer/issues/8169)) ([8f13470](https://github.com/puppeteer/puppeteer/commit/8f13470af06045857f32496f03e77b14f3ecff98))
 * get extra headers from Fetch.requestPaused event ([#8162](https://github.com/puppeteer/puppeteer/issues/8162)) ([37ede68](https://github.com/puppeteer/puppeteer/commit/37ede6877017a8dc6c946a3dff4ec6d79c3ebc59))
 
-### [13.5.1](https://github.com/puppeteer/puppeteer/compare/v13.5.0...v13.5.1) (2022-03-09)
+## [13.5.1](https://github.com/puppeteer/puppeteer/compare/v13.5.0...v13.5.1) (2022-03-09)
 
 
 ### Bug Fixes
@@ -2027,7 +2590,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **page:** page.createIsolatedWorld error catching has been added ([#7848](https://github.com/puppeteer/puppeteer/issues/7848)) ([309e8b8](https://github.com/puppeteer/puppeteer/commit/309e8b80da0519327bc37b44a3ebb6f2e2d357a7))
 * **tests:** ensure all tests honour BINARY envvar ([#8092](https://github.com/puppeteer/puppeteer/issues/8092)) ([3b8b9ad](https://github.com/puppeteer/puppeteer/commit/3b8b9adde5d18892af96329b6f9303979f9c04f5))
 
-### [13.4.1](https://github.com/puppeteer/puppeteer/compare/v13.4.0...v13.4.1) (2022-03-01)
+## [13.4.1](https://github.com/puppeteer/puppeteer/compare/v13.4.0...v13.4.1) (2022-03-01)
 
 
 ### Bug Fixes
@@ -2051,7 +2614,7 @@ All notable changes to this project will be documented in this file. See [standa
 * ensure dom binding is not called after detach ([#8024](https://github.com/puppeteer/puppeteer/issues/8024)) ([5c308b0](https://github.com/puppeteer/puppeteer/commit/5c308b0704123736ddb085f97596c201ea18cf4a)), closes [#7814](https://github.com/puppeteer/puppeteer/issues/7814)
 * use both __dirname and require.resolve to support different bundlers ([#8046](https://github.com/puppeteer/puppeteer/issues/8046)) ([e6a6295](https://github.com/puppeteer/puppeteer/commit/e6a6295d9a7480bb59ee58a2cc7785171fa0fa2c)), closes [#8044](https://github.com/puppeteer/puppeteer/issues/8044)
 
-### [13.3.2](https://github.com/puppeteer/puppeteer/compare/v13.3.1...v13.3.2) (2022-02-14)
+## [13.3.2](https://github.com/puppeteer/puppeteer/compare/v13.3.1...v13.3.2) (2022-02-14)
 
 
 ### Bug Fixes
@@ -2059,7 +2622,7 @@ All notable changes to this project will be documented in this file. See [standa
 * always use ENV executable path when present ([#7985](https://github.com/puppeteer/puppeteer/issues/7985)) ([6d6ea9b](https://github.com/puppeteer/puppeteer/commit/6d6ea9bf59daa3fb851b3da8baa27887e0aa2c28))
 * use require.resolve instead of __dirname ([#8003](https://github.com/puppeteer/puppeteer/issues/8003)) ([bbb186d](https://github.com/puppeteer/puppeteer/commit/bbb186d88cb99e4914299c983c822fa41a80f356))
 
-### [13.3.1](https://github.com/puppeteer/puppeteer/compare/v13.3.0...v13.3.1) (2022-02-10)
+## [13.3.1](https://github.com/puppeteer/puppeteer/compare/v13.3.0...v13.3.1) (2022-02-10)
 
 
 ### Bug Fixes
@@ -2088,7 +2651,7 @@ All notable changes to this project will be documented in this file. See [standa
 * migrate more files to strict-mode TypeScript ([#7950](https://github.com/puppeteer/puppeteer/issues/7950)) ([aaac8d9](https://github.com/puppeteer/puppeteer/commit/aaac8d9c44327a2c503ffd6c97b7f21e8010c3e4))
 * typos in documentation ([#7968](https://github.com/puppeteer/puppeteer/issues/7968)) ([41ab4e9](https://github.com/puppeteer/puppeteer/commit/41ab4e9127df64baa6c43ecde2f7ddd702ba7b0c))
 
-### [13.1.3](https://github.com/puppeteer/puppeteer/compare/v13.1.2...v13.1.3) (2022-01-31)
+## [13.1.3](https://github.com/puppeteer/puppeteer/compare/v13.1.2...v13.1.3) (2022-01-31)
 
 
 ### Bug Fixes
@@ -2097,7 +2660,7 @@ All notable changes to this project will be documented in this file. See [standa
 * make more files work in strict-mode TypeScript ([#7936](https://github.com/puppeteer/puppeteer/issues/7936)) ([0636513](https://github.com/puppeteer/puppeteer/commit/0636513e34046f4d40b5e88beb2b18b16dab80aa))
 * page.pdf producing an invalid pdf ([#7868](https://github.com/puppeteer/puppeteer/issues/7868)) ([afea509](https://github.com/puppeteer/puppeteer/commit/afea509544fb99bfffe5b0bebe6f3575c53802f0)), closes [#7757](https://github.com/puppeteer/puppeteer/issues/7757)
 
-### [13.1.2](https://github.com/puppeteer/puppeteer/compare/v13.1.1...v13.1.2) (2022-01-25)
+## [13.1.2](https://github.com/puppeteer/puppeteer/compare/v13.1.1...v13.1.2) (2022-01-25)
 
 
 ### Bug Fixes
@@ -2106,7 +2669,7 @@ All notable changes to this project will be documented in this file. See [standa
 * types in Browser.ts to be compatible with strict mode Typescript ([#7918](https://github.com/puppeteer/puppeteer/issues/7918)) ([a8ec0aa](https://github.com/puppeteer/puppeteer/commit/a8ec0aadc9c90d224d568d9e418d14261e6e85b1)), closes [#6769](https://github.com/puppeteer/puppeteer/issues/6769)
 * types in Connection.ts to be compatible with strict mode Typescript ([#7919](https://github.com/puppeteer/puppeteer/issues/7919)) ([d80d602](https://github.com/puppeteer/puppeteer/commit/d80d6027ea8e1b7fcdaf045398629cf8e6512658)), closes [#6769](https://github.com/puppeteer/puppeteer/issues/6769)
 
-### [13.1.1](https://github.com/puppeteer/puppeteer/compare/v13.1.0...v13.1.1) (2022-01-18)
+## [13.1.1](https://github.com/puppeteer/puppeteer/compare/v13.1.0...v13.1.1) (2022-01-18)
 
 
 ### Bug Fixes
@@ -2127,7 +2690,7 @@ All notable changes to this project will be documented in this file. See [standa
 * correctly compute clickable points for elements inside OOPIFs ([#7900](https://github.com/puppeteer/puppeteer/issues/7900)) ([486bbe0](https://github.com/puppeteer/puppeteer/commit/486bbe010d5ee5c446d9e8daf61a080232379c3f)), closes [#7849](https://github.com/puppeteer/puppeteer/issues/7849)
 * error for pre-existing OOPIFs ([#7899](https://github.com/puppeteer/puppeteer/issues/7899)) ([d7937b8](https://github.com/puppeteer/puppeteer/commit/d7937b806d331bf16c2016aaf16e932b1334eac8)), closes [#7844](https://github.com/puppeteer/puppeteer/issues/7844) [#7896](https://github.com/puppeteer/puppeteer/issues/7896)
 
-### [13.0.1](https://github.com/puppeteer/puppeteer/compare/v13.0.0...v13.0.1) (2021-12-22)
+## [13.0.1](https://github.com/puppeteer/puppeteer/compare/v13.0.0...v13.0.1) (2021-12-22)
 
 
 ### Bug Fixes
@@ -2155,7 +2718,7 @@ All notable changes to this project will be documented in this file. See [standa
 * revert "feat(typescript): allow using puppeteer without dom lib" ([02c9af6](https://github.com/puppeteer/puppeteer/commit/02c9af62d64060a83f53368640f343ae2e30e38a)), closes [#6998](https://github.com/puppeteer/puppeteer/issues/6998)
 * typo in 'already-handled' constant of the request interception API ([#7813](https://github.com/puppeteer/puppeteer/issues/7813)) ([8242422](https://github.com/puppeteer/puppeteer/commit/824242246de9e158aacb85f71350a79cb386ed92)), closes [#7745](https://github.com/puppeteer/puppeteer/issues/7745) [#7747](https://github.com/puppeteer/puppeteer/issues/7747) [#7780](https://github.com/puppeteer/puppeteer/issues/7780)
 
-### [12.0.1](https://github.com/puppeteer/puppeteer/compare/v12.0.0...v12.0.1) (2021-11-29)
+## [12.0.1](https://github.com/puppeteer/puppeteer/compare/v12.0.0...v12.0.1) (2021-11-29)
 
 
 ### Bug Fixes
@@ -2303,7 +2866,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * drop support for Node.js 10 ([#7200](https://github.com/puppeteer/puppeteer/issues/7200)) ([97c9fe2](https://github.com/puppeteer/puppeteer/commit/97c9fe2520723d45a5a86da06b888ae888d400be)), closes [#6753](https://github.com/puppeteer/puppeteer/issues/6753)
 
-### [9.1.1](https://github.com/puppeteer/puppeteer/compare/v9.1.0...v9.1.1) (2021-05-05)
+## [9.1.1](https://github.com/puppeteer/puppeteer/compare/v9.1.0...v9.1.1) (2021-05-05)
 
 
 ### Bug Fixes
@@ -2387,21 +2950,21 @@ All notable changes to this project will be documented in this file. See [standa
 * jsonValue() type is generic ([#6865](https://github.com/puppeteer/puppeteer/issues/6865)) ([bdaba78](https://github.com/puppeteer/puppeteer/commit/bdaba7829da366aabbc81885d84bb2401ab3eaff))
 * wider compat TS types and CI checks to ensure correct type defs ([#6855](https://github.com/puppeteer/puppeteer/issues/6855)) ([6a0eb78](https://github.com/puppeteer/puppeteer/commit/6a0eb7841fd82493903b0b9fa153d2de181350eb))
 
-### [7.0.4](https://github.com/puppeteer/puppeteer/compare/v7.0.3...v7.0.4) (2021-02-09)
+## [7.0.4](https://github.com/puppeteer/puppeteer/compare/v7.0.3...v7.0.4) (2021-02-09)
 
 
 ### Bug Fixes
 
 * make publish bot run full build, not just tsc ([#6848](https://github.com/puppeteer/puppeteer/issues/6848)) ([f718b14](https://github.com/puppeteer/puppeteer/commit/f718b14b64df8be492d344ddd35e40961ff750c5))
 
-### [7.0.3](https://github.com/puppeteer/puppeteer/compare/v7.0.2...v7.0.3) (2021-02-09)
+## [7.0.3](https://github.com/puppeteer/puppeteer/compare/v7.0.2...v7.0.3) (2021-02-09)
 
 
 ### Bug Fixes
 
 * include lib/types.d.ts in files list ([#6844](https://github.com/puppeteer/puppeteer/issues/6844)) ([e34f317](https://github.com/puppeteer/puppeteer/commit/e34f317b37533256a063c1238609b488d263b998))
 
-### [7.0.2](https://github.com/puppeteer/puppeteer/compare/v7.0.1...v7.0.2) (2021-02-09)
+## [7.0.2](https://github.com/puppeteer/puppeteer/compare/v7.0.1...v7.0.2) (2021-02-09)
 
 
 ### Bug Fixes
@@ -2410,7 +2973,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **domworld:** reset bindings when context changes ([#6766](https://github.com/puppeteer/puppeteer/issues/6766)) ([#6836](https://github.com/puppeteer/puppeteer/issues/6836)) ([4e8d074](https://github.com/puppeteer/puppeteer/commit/4e8d074c2f8384a2f283f5edf9ef69c40bd8464f))
 * **launcher:** output correct error message for browser ([#6815](https://github.com/puppeteer/puppeteer/issues/6815)) ([6c61874](https://github.com/puppeteer/puppeteer/commit/6c618747979c3a08f2727e9e22fe45cade8c926a))
 
-### [7.0.1](https://github.com/puppeteer/puppeteer/compare/v7.0.0...v7.0.1) (2021-02-04)
+## [7.0.1](https://github.com/puppeteer/puppeteer/compare/v7.0.0...v7.0.1) (2021-02-04)
 
 
 ### Bug Fixes

@@ -22,10 +22,11 @@ text-action-copy =
     .accesskey = K
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Kopjoje Pa Gjurmim Sajti
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Kopjo Lidhje të Pastër
     .accesskey = K
 text-action-paste =
     .label = Ngjite
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Fshije
     .accesskey = F
+text-action-reveal-password =
+    .label = Shfaqe Fjalëkalimin
+    .accesskey = f
 text-action-select-all =
     .label = Përzgjidhe Krejt
     .accesskey = e
@@ -64,3 +68,14 @@ text-action-search-text-box-clear =
     .title = Spastroje
 text-action-highlight-selection =
     .label = Theksoje Përzgjedhjen
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Shtoni Koment te Përzgjedhja
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Hiqe Theksimin
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Hiqi Krejt Theksimet

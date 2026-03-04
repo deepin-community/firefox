@@ -2,16 +2,26 @@ export const description = `Validation tests for entry point built-in variables`
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { keysOf } from '../../../../common/util/data_tables.js';
+import { WGSLLanguageFeature } from '../../../capability_info.js';
 import { ShaderValidationTest } from '../shader_validation_test.js';
 
 import { generateShader } from './util.js';
 
 export const g = makeTestGroup(ShaderValidationTest);
 
+interface Builtin {
+  name: string;
+  stage: 'vertex' | 'fragment' | 'compute';
+  io: 'in' | 'out';
+  type: string;
+  enable?: string;
+  requires?: WGSLLanguageFeature;
+}
+
 // List of all built-in variables and their stage, in|out usage, and type.
 // Taken from table in Section 15:
-// https://www.w3.org/TR/2021/WD-WGSL-20211013/#builtin-variables
-export const kBuiltins = [
+// https://www.w3.org/TR/WGSL/#builtin-inputs-outputs
+export const kBuiltins: readonly Builtin[] = [
   { name: 'vertex_index', stage: 'vertex', io: 'in', type: 'u32' },
   { name: 'instance_index', stage: 'vertex', io: 'in', type: 'u32' },
   { name: 'position', stage: 'vertex', io: 'out', type: 'vec4<f32>' },
@@ -26,10 +36,89 @@ export const kBuiltins = [
   { name: 'sample_index', stage: 'fragment', io: 'in', type: 'u32' },
   { name: 'sample_mask', stage: 'fragment', io: 'in', type: 'u32' },
   { name: 'sample_mask', stage: 'fragment', io: 'out', type: 'u32' },
-  { name: 'subgroup_invocation_id', stage: 'compute', io: 'in', type: 'u32' },
-  { name: 'subgroup_size', stage: 'compute', io: 'in', type: 'u32' },
-  { name: 'subgroup_invocation_id', stage: 'fragment', io: 'in', type: 'u32' },
-  { name: 'subgroup_size', stage: 'fragment', io: 'in', type: 'u32' },
+  { name: 'subgroup_invocation_id', stage: 'compute', io: 'in', type: 'u32', enable: 'subgroups' },
+  { name: 'subgroup_size', stage: 'compute', io: 'in', type: 'u32', enable: 'subgroups' },
+  { name: 'subgroup_invocation_id', stage: 'fragment', io: 'in', type: 'u32', enable: 'subgroups' },
+  { name: 'subgroup_size', stage: 'fragment', io: 'in', type: 'u32', enable: 'subgroups' },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,1>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,2>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,3>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,4>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,5>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,6>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,7>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'clip_distances',
+    stage: 'vertex',
+    io: 'out',
+    type: 'array<f32,8>',
+    enable: 'clip_distances',
+  },
+  {
+    name: 'primitive_id',
+    stage: 'fragment',
+    io: 'in',
+    type: 'u32',
+    enable: 'chromium_experimental_primitive_id',
+  },
+  {
+    name: 'subgroup_id',
+    stage: 'compute',
+    io: 'in',
+    type: 'u32',
+    enable: 'subgroups',
+    requires: 'subgroup_id',
+  },
+  {
+    name: 'num_subgroups',
+    stage: 'compute',
+    io: 'in',
+    type: 'u32',
+    enable: 'subgroups',
+    requires: 'subgroup_id',
+  },
 ] as const;
 
 // List of types to test against.
@@ -64,7 +153,15 @@ const kTestTypes = [
   'array<bool,4>',
   'array<u32,4>',
   'array<i32,4>',
+  'array<f32,1>',
+  'array<f32,2>',
+  'array<f32,3>',
   'array<f32,4>',
+  'array<f32,5>',
+  'array<f32,6>',
+  'array<f32,7>',
+  'array<f32,8>',
+  'array<f32,9>',
   'MyStruct',
 ] as const;
 
@@ -85,9 +182,13 @@ g.test('stage_inout')
       t.isCompatibility && ['sample_index', 'sample_mask'].includes(t.params.name),
       'compatibility mode does not support sample_index or sample_mask'
     );
-    if (t.params.name.includes('subgroup')) {
-      t.selectDeviceOrSkipTestCase('subgroups' as GPUFeatureName);
-    }
+    t.skipIf(
+      t.params.name !== 'position' &&
+        t.params.target_stage === 'vertex' &&
+        t.params.target_io === 'out' &&
+        !t.params.use_struct,
+      'missing @builtin(position) in the vertex output when the vertex output is not a struct'
+    );
   })
   .fn(t => {
     const code = generateShader({
@@ -96,6 +197,7 @@ g.test('stage_inout')
       stage: t.params.target_stage,
       io: t.params.target_io,
       use_struct: t.params.use_struct,
+      enable: t.params.enable,
     });
 
     // Expect to pass iff the built-in table contains an entry that matches.
@@ -105,7 +207,8 @@ g.test('stage_inout')
         (x.stage === t.params.target_stage ||
           (t.params.use_struct && t.params.target_stage === '')) &&
         (x.io === t.params.target_io || t.params.target_stage === '') &&
-        x.type === t.params.type
+        x.type === t.params.type &&
+        (x.requires === undefined || t.hasLanguageFeature(x.requires))
     );
     t.expectCompileResult(expectation, code);
   });
@@ -117,18 +220,22 @@ g.test('type')
   .params(u =>
     u
       .combineWithParams(kBuiltins)
+      .combine('use_struct', [true, false] as const)
       .beginSubcases()
       .combine('target_type', kTestTypes)
-      .combine('use_struct', [true, false] as const)
   )
   .beforeAllSubcases(t => {
     t.skipIf(
       t.isCompatibility && ['sample_index', 'sample_mask'].includes(t.params.name),
       'compatibility mode does not support sample_index or sample_mask'
     );
-    if (t.params.name.includes('subgroup')) {
-      t.selectDeviceOrSkipTestCase('subgroups' as GPUFeatureName);
-    }
+    t.skipIf(
+      t.params.name !== 'position' &&
+        t.params.stage === 'vertex' &&
+        t.params.io === 'out' &&
+        !t.params.use_struct,
+      'missing @builtin(position) in the vertex output'
+    );
   })
   .fn(t => {
     let code = '';
@@ -146,6 +253,7 @@ g.test('type')
       stage: t.params.stage,
       io: t.params.io,
       use_struct: t.params.use_struct,
+      enable: t.params.enable,
     });
 
     // Expect to pass iff the built-in table contains an entry that matches.
@@ -154,7 +262,8 @@ g.test('type')
         x.name === t.params.name &&
         x.stage === t.params.stage &&
         x.io === t.params.io &&
-        x.type === t.params.target_type
+        x.type === t.params.target_type &&
+        (x.requires === undefined || t.hasLanguageFeature(x.requires))
     );
     t.expectCompileResult(expectation, code);
   });
@@ -298,13 +407,11 @@ g.test('reuse_builtin_name')
       .combineWithParams(kBuiltins)
       .combine('use', ['alias', 'struct', 'function', 'module-var', 'function-var'])
   )
-  .beforeAllSubcases(t => {
-    if (t.params.name.includes('subgroup')) {
-      t.selectDeviceOrSkipTestCase('subgroups' as GPUFeatureName);
-    }
-  })
   .fn(t => {
     let code = '';
+    if (t.params.enable) {
+      code += `enable ${t.params.enable};\n`;
+    }
     if (t.params.use === 'alias') {
       code += `alias ${t.params.name} = i32;`;
     } else if (t.params.use === `struct`) {
@@ -316,7 +423,8 @@ g.test('reuse_builtin_name')
     } else if (t.params.use === `function-var`) {
       code += `fn test() { let ${t.params.name} = 1; }`;
     }
-    t.expectCompileResult(true, code);
+    const expect = t.params.requires === undefined || t.hasLanguageFeature(t.params.requires);
+    t.expectCompileResult(expect, code);
   });
 
 const kTests = {

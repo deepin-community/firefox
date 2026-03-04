@@ -35,6 +35,7 @@
 #include "js/experimental/TypedData.h"  // JS_IsArrayBufferViewObject
 #include "js/friend/ErrorMessages.h"  // JSErrNum, js::GetErrorMessage, JSMSG_*
 #include "js/Object.h"                // JS::GetBuiltinClass
+#include "js/Prefs.h"                 // JS::Prefs::ducktyped_errors
 #include "js/PropertyAndElement.h"    // JS_GetProperty, JS_HasProperty
 #include "js/SavedFrameAPI.h"
 #include "js/Stack.h"
@@ -220,10 +221,6 @@ struct SuppressErrorsGuard {
 
   ~SuppressErrorsGuard() { JS::SetWarningReporter(cx, prevReporter); }
 };
-
-// Cut off the stack if it gets too deep (most commonly for infinite recursion
-// errors).
-static const size_t MAX_REPORTED_STACK_DEPTH = 1u << 7;
 
 bool js::CaptureStack(JSContext* cx, MutableHandleObject stack) {
   return CaptureCurrentStack(
@@ -488,6 +485,60 @@ JS::ErrorReportBuilder::ErrorReportBuilder(JSContext* cx)
 
 JS::ErrorReportBuilder::~ErrorReportBuilder() = default;
 
+// (DOM)Exception objects are kind of like error objects, and they actually
+// have an Error.prototype, but they aren't really JS error objects.
+// They also don't have their own JSErrorReport*.
+// To improve the error reporting for DOMExceptions and make them look more
+// like JS errors, we create a fake JSErrorReport for them.
+JSString* JS::ErrorReportBuilder::maybeCreateReportFromDOMException(
+    JS::HandleObject obj, JSContext* cx) {
+  if (!obj->getClass()->isDOMClass()) {
+    return nullptr;
+  }
+
+  bool isException;
+  Rooted<JSString*> fileNameStr(cx), messageStr(cx);
+  uint32_t lineno, column;
+  if (!cx->runtime()->DOMcallbacks->extractExceptionInfo(
+          cx, obj, &isException, &fileNameStr, &lineno, &column, &messageStr)) {
+    cx->clearPendingException();
+    return nullptr;
+  }
+
+  if (!isException) {
+    return nullptr;
+  }
+
+  filename = JS_EncodeStringToUTF8(cx, fileNameStr);
+  if (!filename) {
+    cx->clearPendingException();
+    return nullptr;
+  }
+
+  JS::UniqueChars messageUtf8 = JS_EncodeStringToUTF8(cx, messageStr);
+  if (!messageUtf8) {
+    cx->clearPendingException();
+    return nullptr;
+  }
+
+  reportp = &ownedReport;
+  new (reportp) JSErrorReport();
+  ownedReport.filename = JS::ConstUTF8CharsZ(filename.get());
+  ownedReport.lineno = lineno;
+  ownedReport.exnType = JSEXN_INTERNALERR;
+  ownedReport.column = JS::ColumnNumberOneOrigin(column);
+  // Note that using |messageStr| for |message_| here is kind of wrong,
+  // because |messageStr| is of the format
+  // |ErrorName: ErrorMessage|, and |message_| is supposed to
+  // correspond to |ErrorMessage|. But this is what we've
+  // historically done for duck-typed error objects.
+  //
+  // If only this stuff could get specced one day...
+  ownedReport.initOwnedMessage(messageUtf8.release());
+
+  return messageStr;
+}
+
 bool JS::ErrorReportBuilder::init(JSContext* cx,
                                   const JS::ExceptionStack& exnStack,
                                   SniffingBehavior sniffingBehavior) {
@@ -499,6 +550,10 @@ bool JS::ErrorReportBuilder::init(JSContext* cx,
     // unrooted, we must root our exception object, if any.
     exnObject = &exnStack.exception().toObject();
     reportp = ErrorFromException(cx, exnObject);
+
+    if (reportp && reportp->isMuted) {
+      sniffingBehavior = SniffingBehavior::NoSideEffects;
+    }
   }
 
   // Be careful not to invoke ToString if we've already successfully extracted
@@ -507,6 +562,9 @@ bool JS::ErrorReportBuilder::init(JSContext* cx,
   RootedString str(cx);
   if (reportp) {
     str = ErrorReportToString(cx, exnObject, reportp, sniffingBehavior);
+  } else if (exnObject &&
+             (str = maybeCreateReportFromDOMException(exnObject, cx))) {
+    MOZ_ASSERT(reportp, "Should have initialized report");
   } else if (exnStack.exception().isSymbol()) {
     RootedValue strVal(cx);
     if (js::SymbolDescriptiveString(cx, exnStack.exception().toSymbol(),
@@ -533,8 +591,11 @@ bool JS::ErrorReportBuilder::init(JSContext* cx,
   // have to do it in that order, because DOMExceptions have Error.prototype
   // on their proto chain, and hence also have a "fileName" property, but its
   // value is "".
+  //
+  // WARNING: This is disabled by default and planned to be removed completely.
   const char* filename_str = "filename";
-  if (!reportp && exnObject && sniffingBehavior == WithSideEffects &&
+  if (JS::Prefs::ducktyped_errors() && !reportp && exnObject &&
+      sniffingBehavior == WithSideEffects &&
       IsDuckTypedErrorObject(cx, exnObject, &filename_str)) {
     // Temporary value for pulling properties off of duck-typed objects.
     RootedValue val(cx);
@@ -791,14 +852,19 @@ const char* js::ValueToSourceForError(JSContext* cx, HandleValue val,
 
   AutoClearPendingException acpe(cx);
 
+  // This function must always return a non-null string. If the conversion to
+  // string fails due to OOM, we return this string instead.
+  static constexpr char ErrorConvertingToStringMsg[] =
+      "<<error converting value to string>>";
+
   RootedString str(cx, JS_ValueToSource(cx, val));
   if (!str) {
-    return "<<error converting value to string>>";
+    return ErrorConvertingToStringMsg;
   }
 
   JSStringBuilder sb(cx);
-  if (val.hasObjectPayload()) {
-    RootedObject valObj(cx, &val.getObjectPayload());
+  if (val.isObject()) {
+    RootedObject valObj(cx, &val.toObject());
     ESClass cls;
     if (!JS::GetBuiltinClass(cx, valObj, &cls)) {
       return "<<error determining class of value>>";
@@ -810,43 +876,43 @@ const char* js::ValueToSourceForError(JSContext* cx, HandleValue val,
       s = "the array buffer ";
     } else if (JS_IsArrayBufferViewObject(valObj)) {
       s = "the typed array ";
-#ifdef ENABLE_RECORD_TUPLE
-    } else if (cls == ESClass::Record) {
-      s = "the record ";
-    } else if (cls == ESClass::Tuple) {
-      s = "the tuple ";
-#endif
     } else {
       s = "the object ";
     }
     if (!sb.append(s, strlen(s))) {
-      return "<<error converting value to string>>";
+      return ErrorConvertingToStringMsg;
     }
   } else if (val.isNumber()) {
     if (!sb.append("the number ")) {
-      return "<<error converting value to string>>";
+      return ErrorConvertingToStringMsg;
     }
   } else if (val.isString()) {
     if (!sb.append("the string ")) {
-      return "<<error converting value to string>>";
+      return ErrorConvertingToStringMsg;
     }
   } else if (val.isBigInt()) {
     if (!sb.append("the BigInt ")) {
-      return "<<error converting value to string>>";
+      return ErrorConvertingToStringMsg;
     }
   } else {
     MOZ_ASSERT(val.isBoolean() || val.isSymbol());
     bytes = StringToNewUTF8CharsZ(cx, *str);
+    if (!bytes) {
+      return ErrorConvertingToStringMsg;
+    }
     return bytes.get();
   }
   if (!sb.append(str)) {
-    return "<<error converting value to string>>";
+    return ErrorConvertingToStringMsg;
   }
   str = sb.finishString();
   if (!str) {
-    return "<<error converting value to string>>";
+    return ErrorConvertingToStringMsg;
   }
   bytes = StringToNewUTF8CharsZ(cx, *str);
+  if (!bytes) {
+    return ErrorConvertingToStringMsg;
+  }
   return bytes.get();
 }
 

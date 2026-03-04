@@ -36,7 +36,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "FinalizationWitnessService",
   "@mozilla.org/toolkit/finalizationwitness;1",
-  "nsIFinalizationWitnessService"
+  Ci.nsIFinalizationWitnessService
 );
 
 // Regular expression used by isInvalidBoundLikeQuery
@@ -310,6 +310,7 @@ function unregisterVacuumParticipant(connectionData) {
 
 /**
  * Create a ConsoleInstance logger with a given prefix.
+ *
  * @param {string} prefix The prefix to use when logging.
  * @returns {ConsoleInstance} a console logger.
  */
@@ -471,6 +472,7 @@ ConnectionData.prototype = Object.freeze({
 
   /**
    * This should only be used by the VacuumManager component.
+   *
    * @see unsafeRawConnection for an official (but still unsafe) API.
    */
   get databaseConnection() {
@@ -852,9 +854,7 @@ ConnectionData.prototype = Object.freeze({
               // generated an unexpected error. Then we rollback.
               if (ex.becauseTimedOut) {
                 let caller_module = caller.split(":", 1)[0];
-                Services.telemetry.keyedScalarAdd(
-                  "mozstorage.sqlitejsm_transaction_timeout",
-                  caller_module,
+                Glean.mozstorage.sqlitejsmTransactionTimeout[caller_module].add(
                   1
                 );
                 this._logger.error(
@@ -960,7 +960,9 @@ ConnectionData.prototype = Object.freeze({
 
     function bindParam(obj, key, val) {
       let isBlob =
-        val && typeof val == "object" && val.constructor.name == "Uint8Array";
+        val &&
+        typeof val == "object" &&
+        ["Uint8Array", "Uint8ClampedArray"].includes(val.constructor.name);
       let args = [key, val];
       if (isBlob) {
         args.push(val.length);
@@ -1082,14 +1084,14 @@ ConnectionData.prototype = Object.freeze({
 
         switch (reason) {
           case Ci.mozIStorageStatementCallback.REASON_FINISHED:
-          case Ci.mozIStorageStatementCallback.REASON_CANCELED:
+          case Ci.mozIStorageStatementCallback.REASON_CANCELED: {
             // If there is an onRow handler, we always instead resolve to a
             // boolean indicating whether the onRow handler was called or not.
             let result = onRow ? handledRow : rows;
             deferred.resolve(result);
             break;
-
-          case Ci.mozIStorageStatementCallback.REASON_ERROR:
+          }
+          case Ci.mozIStorageStatementCallback.REASON_ERROR: {
             let error = new Error(
               "Error(s) encountered during statement execution: " +
                 errors.map(e => e.message).join(", ")
@@ -1107,7 +1109,7 @@ ConnectionData.prototype = Object.freeze({
 
             deferred.reject(error);
             break;
-
+          }
           default:
             deferred.reject(
               new Error("Unknown completion reason code: " + reason)
@@ -1154,7 +1156,10 @@ ConnectionData.prototype = Object.freeze({
    * longer than necessary.
    */
   _getTimeoutPromise() {
-    if (this._timeoutPromise && Cu.now() <= this._timeoutPromiseExpires) {
+    if (
+      this._timeoutPromise &&
+      ChromeUtils.now() <= this._timeoutPromiseExpires
+    ) {
       return this._timeoutPromise;
     }
     let timeoutPromise = new Promise((resolve, reject) => {
@@ -1172,7 +1177,7 @@ ConnectionData.prototype = Object.freeze({
     });
     this._timeoutPromise = timeoutPromise;
     this._timeoutPromiseExpires =
-      Cu.now() + Sqlite.TRANSACTIONS_TIMEOUT_MS * 0.2;
+      ChromeUtils.now() + Sqlite.TRANSACTIONS_TIMEOUT_MS * 0.2;
     return this._timeoutPromise;
   },
 
@@ -1269,6 +1274,10 @@ ConnectionData.prototype = Object.freeze({
  *   testDelayedOpenPromise -- (promise) Used by tests to delay the open
  *       callback handling and execute code between asyncOpen and its callback.
  *
+ *   extensions -- (array) Array of SQLite extension names that should be
+ *       loaded for the connection. List of approved extensions is hardcoded in
+ *       `mozStorageConnection`, no other extensions can be loaded.
+ *
  * FUTURE options to control:
  *
  *   special named databases
@@ -1279,7 +1288,7 @@ ConnectionData.prototype = Object.freeze({
  * @param options
  *        (Object) Parameters to control connection and open options.
  *
- * @return Promise<OpenedConnection>
+ * @return {Promise<OpenedConnection>}
  */
 function openConnection(options) {
   let logger = createLoggerWithPrefix("ConnectionOpener");
@@ -1406,14 +1415,41 @@ function openConnection(options) {
           reject(error);
           return;
         }
+
         logger.debug("Connection opened");
+        connection.QueryInterface(Ci.mozIStorageAsyncConnection);
 
         if (options.testDelayedOpenPromise) {
           await options.testDelayedOpenPromise;
         }
 
+        if (options.extensions) {
+          for (let extension of options.extensions) {
+            try {
+              await new Promise((resolve2, reject2) =>
+                connection.loadExtension(extension, rv => {
+                  if (Components.isSuccessCode(rv)) {
+                    resolve2();
+                  } else {
+                    reject2(rv);
+                  }
+                })
+              );
+            } catch (ex) {
+              logger.error(`Could not load extension '${extension}'`, ex);
+              connection.asyncClose();
+              reject(
+                new Error(`Could not load extension '${extension}'`, {
+                  cause: ex,
+                })
+              );
+              return;
+            }
+          }
+        }
+
         if (isClosed()) {
-          connection.QueryInterface(Ci.mozIStorageAsyncConnection).asyncClose();
+          connection.asyncClose();
           reject(
             new Error(
               "Sqlite.sys.mjs has been shutdown. Cannot open connection to: " +
@@ -1424,13 +1460,7 @@ function openConnection(options) {
         }
 
         try {
-          resolve(
-            new OpenedConnection(
-              connection.QueryInterface(Ci.mozIStorageAsyncConnection),
-              identifier,
-              openedOptions
-            )
-          );
+          resolve(new OpenedConnection(connection, identifier, openedOptions));
         } catch (ex) {
           logger.error("Could not open database", ex);
           connection.asyncClose();
@@ -1448,27 +1478,23 @@ function openConnection(options) {
  *
  * The following parameters can control the cloned connection:
  *
- *   connection -- (mozIStorageAsyncConnection) The original Storage connection
- *       to clone.  It's not possible to clone connections to memory databases.
- *
- *   readOnly -- (boolean) - If true the clone will be read-only.  If the
- *       original connection is already read-only, the clone will be, regardless
- *       of this option.  If the original connection is using the shared cache,
- *       this parameter will be ignored and the clone will be as privileged as
- *       the original connection.
- *   shrinkMemoryOnConnectionIdleMS -- (integer) If defined, the connection
- *       will attempt to minimize its memory usage after this many
- *       milliseconds of connection idle. The connection is idle when no
- *       statements are executing. There is no default value which means no
- *       automatic memory minimization will occur. Please note that this is
- *       *not* a timer on the idle service and this could fire while the
- *       application is active.
- *
- *
- * @param options
- *        (Object) Parameters to control connection and clone options.
- *
- * @return Promise<OpenedConnection>
+ * @param {object} options
+ *   Parameters to control connection and clone options.
+ * @param {mozIStorageAsyncConnection} options.connection
+ *   The original Storage connection to clone. It's not possible to clone
+ *   connections to memory databases.
+ * @param {boolean} [options.readOnly]
+ *   If true the clone will be read-only.  If the original connection is already
+ *   read-only, the clone will be, regardless of this option.  If the original
+ *   connection is using the shared cache, this parameter will be ignored and
+ *   the clone will be as privileged as the original connection.
+ * @param {number} [options.shrinkMemoryOnConnectionIdleMS]
+ *   If defined, the connection will attempt to minimize its memory usage after
+ *   this many milliseconds of connection idle. The connection is idle when no
+ *   statements are executing. There is no default value which means no automatic
+ *   memory minimization will occur. Please note that this is *not* a timer on
+ *   the idle service and this could fire while the application is active.
+ * @return {Promise<OpenedConnection>}
  */
 function cloneStorageConnection(options) {
   let logger = createLoggerWithPrefix("ConnectionCloner");
@@ -1555,7 +1581,7 @@ function cloneStorageConnection(options) {
  * @param options
  *        (Object) Parameters to control connection and wrap options.
  *
- * @return Promise<OpenedConnection>
+ * @return {Promise<OpenedConnection>}
  */
 function wrapStorageConnection(options) {
   let logger = createLoggerWithPrefix("ConnectionWrapper");
@@ -1636,7 +1662,7 @@ function wrapStorageConnection(options) {
  *        (object) Options to control behavior of connection. See
  *        `openConnection`.
  */
-function OpenedConnection(connection, identifier, options = {}) {
+export function OpenedConnection(connection, identifier, options = {}) {
   // Store all connection data in a field distinct from the
   // witness. This enables us to store an additional reference to this
   // field without preventing garbage collection of
@@ -1672,7 +1698,7 @@ function convertStorageTransactionType(type) {
   return OpenedConnection.TRANSACTION_TYPES[type];
 }
 
-OpenedConnection.prototype = Object.freeze({
+OpenedConnection.prototype = {
   TRANSACTION_DEFAULT: "DEFAULT",
   TRANSACTION_DEFERRED: "DEFERRED",
   TRANSACTION_IMMEDIATE: "IMMEDIATE",
@@ -1784,7 +1810,7 @@ OpenedConnection.prototype = Object.freeze({
    *        this parameter will be ignored and the clone will be as privileged as
    *        the original connection.
    *
-   * @return Promise<OpenedConnection>
+   * @return {Promise<OpenedConnection>}
    */
   clone(readOnly = false) {
     return this._connectionData.clone(readOnly);
@@ -2033,7 +2059,11 @@ OpenedConnection.prototype = Object.freeze({
       stepDelayMs
     );
   },
-});
+};
+// This is frozen after the prototype has been assigned to allow TypeScript
+// identify the properties in the prototype. Ideally we'd change this to be a
+// class definition.
+OpenedConnection.prototype = Object.freeze(OpenedConnection.prototype);
 
 export var Sqlite = {
   // The maximum time to wait before considering a transaction stuck and

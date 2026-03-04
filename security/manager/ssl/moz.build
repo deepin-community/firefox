@@ -4,16 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# osclientcerts is currently only implemented for Windows
-# osclientcerts transitively depends on winapi 0.2.8, which doesn't work with
-# AArch64
-if (CONFIG["OS_ARCH"] == "WINNT" and CONFIG["TARGET_CPU"] != "aarch64") or CONFIG[
-    "OS_ARCH"
-] == "Darwin":
-    DIRS += ["osclientcerts"]
-
-DIRS += ["ipcclientcerts"]
-DIRS += ["builtins"]
+DIRS += ["abridged_certs", "qwac_trust_anchors"]
 
 TEST_DIRS += ["tests"]
 
@@ -58,6 +49,7 @@ XPCOM_MANIFESTS += [
 EXTRA_JS_MODULES.psm += [
     "ClientAuthDialogService.sys.mjs",
     "DER.sys.mjs",
+    "QWACs.sys.mjs",
     "RemoteSecuritySettings.sys.mjs",
     "X509.sys.mjs",
 ]
@@ -85,6 +77,7 @@ EXPORTS += [
 ]
 
 EXPORTS.mozilla += [
+    "crypto_hash/crypto_hash_sha2.h",
     "PublicSSL.h",
 ]
 
@@ -112,7 +105,6 @@ UNIFIED_SOURCES += [
     "md4.c",
     "nsCertOverrideService.cpp",
     "nsCertTree.cpp",
-    "nsClientAuthRemember.cpp",
     "nsNSSCallbacks.cpp",
     "nsNSSCertHelper.cpp",
     "nsNSSCertificate.cpp",
@@ -136,9 +128,12 @@ UNIFIED_SOURCES += [
     "NSSSocketControl.cpp",
     "nsTLSSocketProvider.cpp",
     "OSKeyStore.cpp",
+    "PDFSignatureVerification.cpp",
     "PKCS11ModuleDB.cpp",
     "PSMRunnable.cpp",
     "PublicKeyPinningService.cpp",
+    "QWACs.cpp",
+    "QWACTrustDomain.cpp",
     "RootCertificateTelemetryUtils.cpp",
     "SecretDecoderRing.cpp",
     "SSLServerCertVerification.cpp",
@@ -149,10 +144,22 @@ UNIFIED_SOURCES += [
     "X509CertValidity.cpp",
 ]
 
+if CONFIG["OS_ARCH"] == "Darwin":
+    # On macOS this file includes CoreFoundation.h, which contains definitions
+    # that conflict with headers included in other unified source files. We
+    # compile this one independently to prevent that interference.
+    SOURCES += [
+        "nsClientAuthRemember.cpp",
+    ]
+else:
+    UNIFIED_SOURCES += [
+        "nsClientAuthRemember.cpp",
+    ]
+
 if CONFIG["OS_ARCH"] == "WINNT":
     # On Windows this file includes ntsecapi.h, which contains definitions that
-    # conflict with headers included in remaining source files. We compile this
-    # one independently to prevent that interferance.
+    # conflict with headers included in other unified source files. We compile
+    # this one independently to prevent that interference.
     SOURCES += [
         "OSReauthenticator.cpp",
     ]
@@ -167,6 +174,8 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     ]
     CFLAGS += CONFIG["GLIB_CFLAGS"]
     CXXFLAGS += CONFIG["GLIB_CFLAGS"]
+    CFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
+    CXXFLAGS += CONFIG["MOZ_GTK3_CFLAGS"]
 
 if CONFIG["TARGET_KERNEL"] == "Darwin":
     UNIFIED_SOURCES += [
@@ -174,14 +183,9 @@ if CONFIG["TARGET_KERNEL"] == "Darwin":
         "OSReauthenticatorDarwin.mm",
     ]
     OS_LIBS += [
+        "-framework CoreFoundation",
         "-framework LocalAuthentication",
         "-framework Security",
-    ]
-
-if CONFIG["OS_ARCH"] == "WINNT":
-    OS_LIBS += ["credui"]
-    UNIFIED_SOURCES += [
-        "CredentialManagerSecret.cpp",
     ]
 
 IPDL_SOURCES += [
@@ -190,6 +194,25 @@ IPDL_SOURCES += [
     "PSMIPCTypes.ipdlh",
     "PVerifySSLServerCert.ipdl",
 ]
+
+# Required by OSClientCerts, IPCClientCerts and CredentialManagerSecret.
+if CONFIG["OS_ARCH"] == "WINNT":
+    OS_LIBS += [
+        "advapi32",
+        "bcrypt",
+        "credui",
+        "crypt32",
+        "kernel32",
+        "ncrypt",
+        "ntdll",
+        "synchronization",
+        "userenv",
+        "ws2_32",
+    ]
+
+    UNIFIED_SOURCES += [
+        "CredentialManagerSecret.cpp",
+    ]
 
 FINAL_LIBRARY = "xul"
 
@@ -200,6 +223,7 @@ LOCAL_INCLUDES += [
     "/netwerk/base",
     "/security/certverifier",
     "/third_party/rust/cose-c/include",
+    "/xpcom/base",
     "/xpcom/build",
 ]
 
@@ -211,6 +235,8 @@ GeneratedFile(
 
 DEFINES["SSL_DISABLE_DEPRECATED_CIPHER_SUITE_NAMES"] = "True"
 DEFINES["NSS_ENABLE_ECC"] = "True"
+if CONFIG["MOZ_SYSTEM_NSS"]:
+    DEFINES["MOZ_SYSTEM_NSS"] = True
 
 # mozpkix is linked statically from the in-tree sources independent of whether
 # system NSS is used or not.
@@ -233,45 +259,55 @@ if CONFIG["CC_TYPE"] in ("clang", "gcc"):
 headers_arrays_certs = [
     (
         "xpcshell.inc",
-        "xpcshellRoot",
-        "tests/unit/test_signed_apps/xpcshellTestRoot.der",
+        "xpcshellRoots",
+        [
+            "tests/unit/test_signed_apps/xpcshellTestRoot.pem",
+            "tests/unit/test_signed_apps/xpcshellTestRoot2.pem",
+        ],
     ),
-    ("addons-public.inc", "addonsPublicRoot", "addons-public.crt"),
+    ("addons-public.inc", "addonsPublicRoots", ["addons-public.pem"]),
     (
         "addons-public-intermediate.inc",
-        "addonsPublicIntermediate",
-        "addons-public-intermediate.crt",
+        "addonsPublicIntermediates",
+        [
+            "addons-public-intermediate.pem",
+            "addons-public-2018-intermediate.pem",
+        ],
     ),
-    ("addons-stage.inc", "addonsStageRoot", "addons-stage.crt"),
+    ("addons-stage.inc", "addonsStageRoots", ["addons-stage.pem"]),
     (
         "addons-stage-intermediate.inc",
-        "addonsStageIntermediate",
-        "addons-stage-intermediate.crt",
+        "addonsStageIntermediates",
+        ["addons-stage-intermediate.pem"],
     ),
     (
         "content-signature-prod.inc",
-        "contentSignatureProdRoot",
-        "content-signature-prod.crt",
+        "contentSignatureProdRoots",
+        ["content-signature-prod.pem"],
     ),
     (
         "content-signature-stage.inc",
-        "contentSignatureStageRoot",
-        "content-signature-stage.crt",
+        "contentSignatureStageRoots",
+        ["content-signature-stage.pem"],
     ),
     # The dev root is the same as the stage root.
     (
         "content-signature-dev.inc",
-        "contentSignatureDevRoot",
-        "content-signature-stage.crt",
+        "contentSignatureDevRoots",
+        ["content-signature-stage.pem"],
     ),
     (
         "content-signature-local.inc",
-        "contentSignatureLocalRoot",
-        "content-signature-local.crt",
+        "contentSignatureLocalRoots",
+        ["content-signature-local.pem"],
     ),
 ]
 
-for header, array_name, cert in headers_arrays_certs:
+for header, array_name, certs in headers_arrays_certs:
     GeneratedFile(
-        header, script="gen_cert_header.py", entry_point=array_name, inputs=[cert]
+        header,
+        script="gen_cert_header.py",
+        entry_point="generate",
+        inputs=certs,
+        flags=[array_name],
     )

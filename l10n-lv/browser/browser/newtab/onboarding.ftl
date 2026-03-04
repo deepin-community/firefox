@@ -53,9 +53,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importēt no { $previou
 mr1-onboarding-theme-header = Padariet to par savu
 mr1-onboarding-theme-subtitle = Personalizējiet { -brand-short-name } ar motīvu.
 mr1-onboarding-theme-secondary-button-label = Ne tagad
-newtab-wallpaper-onboarding-title = Izmēģiniet krāsu akcentu
-newtab-wallpaper-onboarding-subtitle = Izvēlieties tapeti, lai jaunajai cilnei piešķirtu jaunu izskatu.
-newtab-wallpaper-onboarding-primary-button-label = Iestatīt tapeti
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Sistēmas motīvs
 mr1-onboarding-theme-label-light = Gaišs
@@ -116,7 +113,7 @@ mr2022-onboarding-live-language-text = { -brand-short-name } runā jūsu valodā
 mr2022-language-mismatch-subtitle = Pateicoties mūsu kopienai, { -brand-short-name } ir tulkots vairāk nekā 90 valodās. Izskatās, ka jūsu sistēma izmanto { $systemLanguage }, bet { -brand-short-name } izmanto { $appLanguage }.
 onboarding-live-language-button-label-downloading = Lejupielādē valodas pakotni valodai { $negotiatedLanguage }…
 onboarding-live-language-waiting-button = Iegūst pieejamās valodas…
-onboarding-live-language-installing = Instalē valodas pakotni valodai { $negotiatedLanguage }…
+onboarding-live-language-installing = Instalē { $negotiatedLanguage } valodas pakotni…
 mr2022-onboarding-live-language-switch-to = Pārslēgties uz { $negotiatedLanguage }
 mr2022-onboarding-live-language-continue-in = Turpināt valodā { $appLanguage }
 onboarding-live-language-secondary-cancel-download = Atcelt
@@ -210,7 +207,9 @@ mr2022-onboarding-set-default-subtitle = Lietojiet pārlūku, ko atbalsta bezpe�
 mr2022-onboarding-get-started-primary-subtitle = Mūsu jaunākā versija ir veidota jums, padarot to vienkāršāku nekā jebkad agrāk. Tas ir aprīkots ar funkcijām, kuras, mūsuprāt, jums patiks.
 mr2022-onboarding-get-started-primary-button-label = Iestatiet dažās sekundēs
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Zibens ātra iestatīšana
 mr2022-onboarding-import-subtitle = Iestatiet { -brand-short-name }, kā jums patīk. Pievienojiet savas grāmatzīmes, paroles un citu saturu no vecā pārlūka.

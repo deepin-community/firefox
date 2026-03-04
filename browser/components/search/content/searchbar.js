@@ -12,10 +12,12 @@
   const lazy = {};
 
   ChromeUtils.defineESModuleGetters(lazy, {
+    BrowserSearchTelemetry:
+      "moz-src:///browser/components/search/BrowserSearchTelemetry.sys.mjs",
     BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
     FormHistory: "resource://gre/modules/FormHistory.sys.mjs",
     SearchSuggestionController:
-      "resource://gre/modules/SearchSuggestionController.sys.mjs",
+      "moz-src:///toolkit/components/search/SearchSuggestionController.sys.mjs",
   });
 
   /**
@@ -40,21 +42,19 @@
         <html:input class="searchbar-textbox" is="autocomplete-input" type="search" data-l10n-id="searchbar-input" autocompletepopup="PopupSearchAutoComplete" autocompletesearch="search-autocomplete" autocompletesearchparam="searchbar-history" maxrows="10" completeselectedindex="true" minresultsforpopup="0"/>
         <menupopup class="textbox-contextmenu"></menupopup>
         <hbox class="search-go-container" align="center">
-          <image class="search-go-button urlbar-icon" role="button" keyNav="false" hidden="true" onclick="handleSearchCommand(event);" data-l10n-id="searchbar-submit"></image>
+          <image class="search-go-button urlbar-icon" role="button" keyNav="false" hidden="true" data-l10n-id="searchbar-submit"></image>
         </hbox>
       `;
     }
 
     constructor() {
       super();
-
       MozXULElement.insertFTLIfNeeded("browser/search.ftl");
 
-      this.destroy = this.destroy.bind(this);
       this._setupEventListeners();
       let searchbar = this;
       this.observer = {
-        observe(aEngine, aTopic) {
+        observe(aEngine, aTopic, aData) {
           if (aTopic == "browser-search-engine-modified") {
             // Make sure the engine list is refetched next time it's needed
             searchbar._engines = null;
@@ -62,10 +62,29 @@
             // Update the popup header and update the display after any modification.
             searchbar._textbox.popup.updateHeader();
             searchbar.updateDisplay();
+          } else if (
+            aData == "browser.search.widget.new" &&
+            searchbar.isConnected
+          ) {
+            if (Services.prefs.getBoolPref("browser.search.widget.new")) {
+              searchbar.disconnectedCallback();
+            } else {
+              searchbar.connectedCallback();
+            }
           }
         },
         QueryInterface: ChromeUtils.generateQI(["nsIObserver"]),
       };
+
+      Services.prefs.addObserver("browser.search.widget.new", this.observer);
+
+      window.addEventListener("unload", () => {
+        this.destroy();
+        Services.prefs.removeObserver(
+          "browser.search.widget.new",
+          this.observer
+        );
+      });
 
       this._ignoreFocus = false;
       this._engines = null;
@@ -73,8 +92,11 @@
     }
 
     connectedCallback() {
-      // Don't initialize if this isn't going to be visible
-      if (this.closest("#BrowserToolbarPalette")) {
+      // Don't initialize if this isn't going to be visible.
+      if (
+        this.closest("#BrowserToolbarPalette") ||
+        Services.prefs.getBoolPref("browser.search.widget.new")
+      ) {
         return;
       }
 
@@ -106,8 +128,6 @@
       this._setupTextboxEventListeners();
       this._initTextbox();
 
-      window.addEventListener("unload", this.destroy);
-
       Services.obs.addObserver(this.observer, "browser-search-engine-modified");
 
       this._initialized = true;
@@ -128,7 +148,7 @@
               this._textbox.popup.updateHeader();
               // Refresh the display (updating icon, etc)
               this.updateDisplay();
-              BrowserSearch.updateOpenSearchBadge();
+              OpenSearchManager.updateOpenSearchBadge(window);
             })
             .catch(status =>
               console.error(
@@ -156,6 +176,10 @@
           }
         },
         { capture: true, once: true }
+      );
+
+      this.querySelector(".search-go-button").addEventListener("click", event =>
+        this.handleSearchCommand(event)
       );
     }
 
@@ -201,6 +225,13 @@
       return this._textbox;
     }
 
+    /**
+     * Textbox alias for API compatibility with UrlbarInput.
+     */
+    get inputField() {
+      return this.textbox;
+    }
+
     set value(val) {
       this._textbox.value = val;
     }
@@ -212,7 +243,6 @@
     destroy() {
       if (this._initialized) {
         this._initialized = false;
-        window.removeEventListener("unload", this.destroy);
 
         Services.obs.removeObserver(
           this.observer,
@@ -324,9 +354,8 @@
       let selectedIndex = this.telemetrySelectedIndex;
       let isOneOff = false;
 
-      BrowserSearchTelemetry.recordSearchSuggestionSelectionMethod(
+      lazy.BrowserSearchTelemetry.recordSearchSuggestionSelectionMethod(
         aEvent,
-        "searchbar",
         selectedIndex
       );
 
@@ -373,7 +402,7 @@
         );
       }
 
-      let submission = engine.getSubmission(aData, null, "searchbar");
+      let submission = engine.getSubmission(aData, null);
 
       // If we hit here, we come either from a one-off, a plain search or a suggestion.
       const details = {
@@ -382,13 +411,6 @@
       };
 
       this.telemetrySelectedIndex = -1;
-
-      BrowserSearchTelemetry.recordSearch(
-        gBrowser.selectedBrowser,
-        engine,
-        "searchbar",
-        details
-      );
 
       // Record when the user uses the search bar
       Services.prefs.setStringPref(
@@ -408,6 +430,28 @@
           params[key] = aParams[key];
         }
       }
+
+      if (aWhere == "tab") {
+        gBrowser.tabContainer.addEventListener(
+          "TabOpen",
+          event =>
+            lazy.BrowserSearchTelemetry.recordSearch(
+              event.target.linkedBrowser,
+              engine,
+              "searchbar",
+              details
+            ),
+          { once: true }
+        );
+      } else {
+        lazy.BrowserSearchTelemetry.recordSearch(
+          gBrowser.selectedBrowser,
+          engine,
+          "searchbar",
+          details
+        );
+      }
+
       openTrustedLinkIn(submission.uri.spec, aWhere, params);
     }
 
@@ -485,7 +529,7 @@
      */
     openSearchFormWhere(aEvent, aEngine, where, params = {}) {
       let engine = aEngine || this.currentEngine;
-      let searchForm = engine.wrappedJSObject.searchForm;
+      let searchForm = engine.searchForm;
 
       if (where === "tab" && !!params.inBackground) {
         // Keep the focus in the search bar.
@@ -499,6 +543,7 @@
         this._needBrowserFocusAtEnterKeyUp = true;
       }
 
+      lazy.BrowserSearchTelemetry.recordSearchForm(engine, "searchbar");
       openTrustedLinkIn(searchForm, where, params);
     }
 
@@ -764,8 +809,7 @@
         let searchIcon = document.querySelector(".searchbar-search-button");
         searchIcon.setAttribute("aria-expanded", popup.popupOpen);
         if (popup.popupOpen) {
-          let suggestionsHidden =
-            popup.richlistbox.getAttribute("collapsed") == "true";
+          let suggestionsHidden = popup.richlistbox.hasAttribute("collapsed");
           let numItems = suggestionsHidden ? 0 : popup.matchCount;
           return popup.oneOffButtons.handleKeyDown(aEvent, numItems, true);
         } else if (aEvent.keyCode == KeyEvent.DOM_VK_ESCAPE) {
@@ -774,6 +818,7 @@
           } else {
             this.textbox.select();
           }
+          aEvent.preventDefault();
           return true;
         }
         return false;

@@ -7,12 +7,11 @@
 #ifndef DOM_SVG_SVGPRESERVEASPECTRATIO_H_
 #define DOM_SVG_SVGPRESERVEASPECTRATIO_H_
 
-#include "mozilla/dom/SVGPreserveAspectRatioBinding.h"
 #include "mozilla/HashFunctions.h"  // for HashGeneric
-
-#include "nsWrapperCache.h"
-#include "nsCycleCollectionParticipant.h"
 #include "mozilla/dom/SVGElement.h"
+#include "mozilla/dom/SVGPreserveAspectRatioBinding.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -52,21 +51,21 @@ class SVGPreserveAspectRatio final {
 
   bool operator==(const SVGPreserveAspectRatio& aOther) const;
 
-  nsresult SetAlign(uint16_t aAlign) {
+  bool SetAlign(uint16_t aAlign) {
     if (aAlign < SVG_ALIGN_MIN_VALID || aAlign > SVG_ALIGN_MAX_VALID)
-      return NS_ERROR_FAILURE;
+      return false;
     mAlign = static_cast<uint8_t>(aAlign);
-    return NS_OK;
+    return true;
   }
 
   auto GetAlign() const { return mAlign; }
 
-  nsresult SetMeetOrSlice(uint16_t aMeetOrSlice) {
+  bool SetMeetOrSlice(uint16_t aMeetOrSlice) {
     if (aMeetOrSlice < SVG_MEETORSLICE_MIN_VALID ||
         aMeetOrSlice > SVG_MEETORSLICE_MAX_VALID)
-      return NS_ERROR_FAILURE;
+      return false;
     mMeetOrSlice = static_cast<uint8_t>(aMeetOrSlice);
-    return NS_OK;
+    return true;
   }
 
   auto GetMeetOrSlice() const { return mMeetOrSlice; }
@@ -96,9 +95,9 @@ class DOMSVGPreserveAspectRatio final : public nsWrapperCache {
                        JS::Handle<JSObject*> aGivenProto) override;
 
   uint16_t Align();
-  void SetAlign(uint16_t aAlign, ErrorResult& rv);
+  void SetAlign(uint16_t aAlign, ErrorResult& aRv);
   uint16_t MeetOrSlice();
-  void SetMeetOrSlice(uint16_t aMeetOrSlice, ErrorResult& rv);
+  void SetMeetOrSlice(uint16_t aMeetOrSlice, ErrorResult& aRv);
 
  protected:
   ~DOMSVGPreserveAspectRatio();

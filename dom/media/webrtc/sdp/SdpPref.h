@@ -7,11 +7,11 @@
 #ifndef _SDPPREF_H_
 #define _SDPPREF_H_
 
-#include "mozilla/Maybe.h"
-#include "mozilla/Preferences.h"
-
 #include <string>
 #include <unordered_map>
+
+#include "mozilla/Maybe.h"
+#include "mozilla/Preferences.h"
 
 namespace mozilla {
 
@@ -20,10 +20,13 @@ class SdpParser;
 // Interprets about:config SDP parsing preferences
 class SdpPref {
  private:
-  static const std::string PRIMARY_PREF;
-  static const std::string ALTERNATE_PREF;
-  static const std::string STRICT_SUCCESS_PREF;
-  static const std::string DEFAULT;
+  static constexpr const char PRIMARY_PREF[] =
+      "media.peerconnection.sdp.parser";
+  static constexpr const char ALTERNATE_PREF[] =
+      "media.peerconnection.sdp.alternate_parse_mode";
+  static constexpr const char STRICT_SUCCESS_PREF[] =
+      "media.peerconnection.sdp.strict_success";
+  static constexpr const char DEFAULT[] = "default";
 
  public:
   // Supported Parsers

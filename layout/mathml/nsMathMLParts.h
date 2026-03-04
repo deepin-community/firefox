@@ -7,8 +7,8 @@
 #ifndef nsMathMLParts_h___
 #define nsMathMLParts_h___
 
-#include "nscore.h"
 #include "nsISupports.h"
+#include "nscore.h"
 
 class nsTableFrame;
 
@@ -52,8 +52,6 @@ nsContainerFrame* NS_NewMathMLmtdFrame(mozilla::PresShell* aPresShell,
                                        nsTableFrame* aTableFrame);
 nsContainerFrame* NS_NewMathMLmtdInnerFrame(mozilla::PresShell* aPresShell,
                                             mozilla::ComputedStyle* aStyle);
-nsIFrame* NS_NewMathMLmsqrtFrame(mozilla::PresShell* aPresShell,
-                                 mozilla::ComputedStyle* aStyle);
 nsIFrame* NS_NewMathMLmrootFrame(mozilla::PresShell* aPresShell,
                                  mozilla::ComputedStyle* aStyle);
 nsIFrame* NS_NewMathMLmencloseFrame(mozilla::PresShell* aPresShell,

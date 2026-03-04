@@ -92,7 +92,7 @@ var security = {
     if (secInfo.succeededCertChain.length) {
       certChainArray = secInfo.succeededCertChain;
     } else {
-      certChainArray = secInfo.failedCertChain;
+      certChainArray = secInfo.handshakeCertificates;
     }
 
     retval = {
@@ -225,7 +225,7 @@ var security = {
   viewPasswords() {
     LoginHelper.openPasswordManager(window, {
       filterString: this.windowInfo.hostName,
-      entryPoint: "pageinfo",
+      entryPoint: "Pageinfo",
     });
   },
 };

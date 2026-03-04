@@ -30,6 +30,10 @@ options-context-inspector = Inspector
 options-show-user-agent-styles-label = Browserstilen toane
 options-show-user-agent-styles-tooltip =
     .title = As jo dit ynskeakelje sille standert stilen toand wurde dy’t laden binne troch de browser.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Shadow DOM fan browser toane
+options-show-user-agent-shadow-dom-tooltip =
+    .title = As jo dit ynskeakelje, wurde Shadow DOM-eleminten toand dy’t troch de browser ferwurke wurde.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-attributen ôfkappe
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP-buffer útskeakelje (as wurkset iepene i
 options-disable-http-cache-tooltip =
     .title = Troch dizze opsje oan te setten, wurdt de HTTP-buffer foar alle ljepblêden dy’t de wurkset iepene hawwe útskeakele. Service Workers wurde net troch dizze opsje beynfloede.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript útskeakelje
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript útskeakelje *
 options-disable-javascript-tooltip =
     .title = Troch dizze opsje oan te setten, wurdt JavaScript foar it aktuele ljepblêd útskeakelje. As it ljepblêd of de toolbox sluten is dan wurdt dizze ynstelling ferjitten.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Boarneferwizingen ynskeakelje
 options-source-maps-tooltip =
     .title = As jo dizze opsje ynskeakelje, sille boarnen yn it ark tawizen wurde.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (allinnich aktuele sesje, fernijt de side)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Allinnich aktuele sesje, fernijt de side
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (laadt de side opnij)

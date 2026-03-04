@@ -69,6 +69,14 @@ perftools-button-add-directory = In map tafoegje
 perftools-button-remove-directory = Selektearre fuortsmite
 perftools-button-edit-settings = Ynstellingen bewurkje…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Mear aksjes
+perftools-menu-more-actions-restart-with-profiling = { -brand-shorter-name } opnij starte mei opstartprofilearring ynskeakele
+perftools-menu-more-actions-copy-for-startup = Omjouwingsfariabelen foar opstartprofilearring kopiearje
+perftools-menu-more-actions-copy-for-perf-tests = Parameters foar prestaasjetests kopiearje
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -141,6 +149,8 @@ perftools-presets-graphics-label = Grafysk
 perftools-presets-graphics-description = Foarynstelling foar it ûndersykjen fan grafyske bugs yn { -brand-shorter-name }.
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Foarynstelling foar it ûndersykjen fan audio- en fideobugs yn { -brand-shorter-name }.
+perftools-presets-ml-label = Masinaal leare
+perftools-presets-ml-description2 = Foarynstelling foar it ûndersykjen fan masineoersettingsbugs yn { -brand-shorter-name }.
 perftools-presets-networking-label = Netwurk
 perftools-presets-networking-description = Foarynstelling foar it ûndersykjen fan netwerkbugs yn { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +158,6 @@ perftools-presets-power-label = Fermogen
 perftools-presets-power-description = Foarynstelling foar it ûndersykjen fan stroomferbrûkbugs yn { -brand-shorter-name }, mei lege overhead.
 perftools-presets-debug-label = Debugge
 perftools-presets-debug-description = Foarynstelling foar debugging yn { -brand-shorter-name }. Hege overhead, net brûke foar prestaasjewurk, mar om te fokussen op it begripen fan browsergedrach.
+perftools-presets-web-compat-label = Webkompatibiliteit
+perftools-presets-web-compat-description = Oanrekommandearre foarynstelling foar it opspoaren fan webkompatibiliteitsproblemen op websites, yn stee fan it folgjen fan prestaasjes.
 perftools-presets-custom-label = Oanpast
-
-##
-

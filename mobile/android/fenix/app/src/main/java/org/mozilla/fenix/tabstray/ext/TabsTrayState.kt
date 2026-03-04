@@ -4,9 +4,9 @@
 
 package org.mozilla.fenix.tabstray.ext
 
-import android.content.res.Resources
+import mozilla.components.compose.base.menu.MenuItem
+import mozilla.components.compose.base.text.Text
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.MenuItem
 import org.mozilla.fenix.tabstray.Page
 import org.mozilla.fenix.tabstray.TabsTrayState.Mode
 import org.mozilla.fenix.tabstray.TabsTrayTestTag
@@ -19,24 +19,23 @@ fun Mode.isSelect() = this is Mode.Select
 /**
  * Returns the list of menu items corresponding to the selected mode
  *
- * @param resources The resources used to provide the strings for the menu item titles.
  * @param shouldShowInactiveButton Whether or not to show the inactive tabs menu item.
  * @param selectedPage The currently selected page.
- * @param normalTabCount The normal tabs number.
- * @param privateTabCount The private tabs number.
- * @param onBookmarkSelectedTabsClick Invoked when user interacts with the bookmark menu item.
- * @param onCloseSelectedTabsClick Invoked when user interacts with the close menu item.
- * @param onMakeSelectedTabsInactive Invoked when user interacts with the make inactive menu item.
- * @param onTabSettingsClick Invoked when user interacts with the tab settings menu.
- * @param onRecentlyClosedClick Invoked when user interacts with the recently closed menu item.
- * @param onEnterMultiselectModeClick Invoked when user enters the multiselect mode.
- * @param onShareAllTabsClick Invoked when user interacts with the share all menu item.
- * @param onDeleteAllTabsClick Invoked when user interacts with the delete all menu item.
- * @param onAccountSettingsClick Invoked when user interacts with the account settings.
+ * @param normalTabCount The number of normal tabs.
+ * @param privateTabCount The number of private tabs.
+ * @param onBookmarkSelectedTabsClick Invoked when the user clicks the menu item to bookmark the selected tabs.
+ * @param onCloseSelectedTabsClick Invoked when the user clicks the menu item to close the selected tabs.
+ * @param onMakeSelectedTabsInactive Invoked when the user clicks the menu item to force the selected
+ * tabs as inactive.
+ * @param onTabSettingsClick Invoked when the user clicks the menu item to navigate to tab settings.
+ * @param onRecentlyClosedClick Invoked when the user clicks the menu item to navigate to their recently closed tabs.
+ * @param onEnterMultiselectModeClick Invoked when the user the menu item to enter multiselect mode.
+ * @param onShareAllTabsClick Invoked when the user clicks the menu item to share all of their tabs.
+ * @param onDeleteAllTabsClick Invoked when user clicks the menu item to delete all of their tabs.
+ * @param onAccountSettingsClick Invoked when user clicks the menu item to navigate to account settings.
  */
 @Suppress("LongParameterList")
 fun Mode.getMenuItems(
-    resources: Resources,
     shouldShowInactiveButton: Boolean,
     selectedPage: Page,
     normalTabCount: Int,
@@ -53,7 +52,6 @@ fun Mode.getMenuItems(
 ): List<MenuItem> {
     return if (this.isSelect()) {
         generateMultiSelectBannerMenuItems(
-            resources = resources,
             shouldShowInactiveButton = shouldShowInactiveButton,
             onBookmarkSelectedTabsClick = onBookmarkSelectedTabsClick,
             onCloseSelectedTabsClick = onCloseSelectedTabsClick,
@@ -61,7 +59,6 @@ fun Mode.getMenuItems(
         )
     } else {
         generateTabPageBannerMenuItems(
-            resources = resources,
             selectedPage = selectedPage,
             normalTabCount = normalTabCount,
             privateTabCount = privateTabCount,
@@ -76,43 +73,56 @@ fun Mode.getMenuItems(
 }
 
 /**
- *  Builds the menu items list when in multiselect mode
+ *  Builds the menu items list when in [Mode.Select].
+ *
+ * @param shouldShowInactiveButton Whether or not to show the inactive tabs menu item.
+ * @param onBookmarkSelectedTabsClick Invoked when the user clicks the menu item to bookmark the selected tabs.
+ * @param onCloseSelectedTabsClick Invoked when the user clicks the menu item to close the selected tabs.
+ * @param onMakeSelectedTabsInactive Invoked when the user clicks the menu item to force the selected
+ * tabs as inactive.
  */
-private fun generateMultiSelectBannerMenuItems(
-    resources: Resources,
+internal fun generateMultiSelectBannerMenuItems(
     shouldShowInactiveButton: Boolean,
     onBookmarkSelectedTabsClick: () -> Unit,
     onCloseSelectedTabsClick: () -> Unit,
     onMakeSelectedTabsInactive: () -> Unit,
 ): List<MenuItem> {
     val menuItems = mutableListOf(
-        MenuItem(
-            title = resources.getString(R.string.tab_tray_multiselect_menu_item_bookmark),
+        MenuItem.TextItem(
+            text = Text.Resource(R.string.tab_tray_multiselect_menu_item_bookmark),
             onClick = onBookmarkSelectedTabsClick,
         ),
-        MenuItem(
-            title = resources.getString(R.string.tab_tray_multiselect_menu_item_close),
+        MenuItem.TextItem(
+            text = Text.Resource(R.string.tab_tray_multiselect_menu_item_close),
             onClick = onCloseSelectedTabsClick,
         ),
     )
     if (shouldShowInactiveButton) {
         menuItems.add(
-            MenuItem(
-                title = resources.getString(R.string.inactive_tabs_menu_item),
+            MenuItem.TextItem(
+                text = Text.Resource(R.string.inactive_tabs_menu_item),
                 onClick = onMakeSelectedTabsInactive,
             ),
         )
     }
-
     return menuItems
 }
 
 /**
- *  Builds the menu items list when in normal mode
+ *  Builds the menu items list when in [Mode.Normal].
+ *
+ * @param selectedPage The currently selected page.
+ * @param normalTabCount The number of normal tabs.
+ * @param privateTabCount The number of private tabs.
+ * @param onTabSettingsClick Invoked when the user clicks the menu item to navigate to tab settings.
+ * @param onRecentlyClosedClick Invoked when the user clicks the menu item to navigate to their recently closed tabs.
+ * @param onEnterMultiselectModeClick Invoked when the user the menu item to enter multiselect mode.
+ * @param onShareAllTabsClick Invoked when the user clicks the menu item to share all of their tabs.
+ * @param onDeleteAllTabsClick Invoked when user clicks the menu item to delete all of their tabs.
+ * @param onAccountSettingsClick Invoked when user clicks the menu item to navigate to account settings.
  */
 @Suppress("LongParameterList")
 private fun generateTabPageBannerMenuItems(
-    resources: Resources,
     selectedPage: Page,
     normalTabCount: Int,
     privateTabCount: Int,
@@ -123,39 +133,39 @@ private fun generateTabPageBannerMenuItems(
     onDeleteAllTabsClick: () -> Unit,
     onAccountSettingsClick: () -> Unit,
 ): List<MenuItem> {
-    val tabSettingsItem = MenuItem(
-        title = resources.getString(R.string.tab_tray_menu_tab_settings),
-        testTag = TabsTrayTestTag.tabSettings,
+    val tabSettingsItem = MenuItem.TextItem(
+        text = Text.Resource(R.string.tab_tray_menu_tab_settings),
+        testTag = TabsTrayTestTag.TAB_SETTINGS,
         onClick = onTabSettingsClick,
     )
-    val recentlyClosedTabsItem = MenuItem(
-        title = resources.getString(R.string.tab_tray_menu_recently_closed),
-        testTag = TabsTrayTestTag.recentlyClosedTabs,
+    val recentlyClosedTabsItem = MenuItem.TextItem(
+        text = Text.Resource(R.string.tab_tray_menu_recently_closed),
+        testTag = TabsTrayTestTag.RECENTLY_CLOSED_TABS,
         onClick = onRecentlyClosedClick,
     )
-    val enterSelectModeItem = MenuItem(
-        title = resources.getString(R.string.tabs_tray_select_tabs),
-        testTag = TabsTrayTestTag.selectTabs,
+    val enterSelectModeItem = MenuItem.TextItem(
+        text = Text.Resource(R.string.tabs_tray_select_tabs),
+        testTag = TabsTrayTestTag.SELECT_TABS,
         onClick = onEnterMultiselectModeClick,
     )
-    val shareAllTabsItem = MenuItem(
-        title = resources.getString(R.string.tab_tray_menu_item_share),
-        testTag = TabsTrayTestTag.shareAllTabs,
+    val shareAllTabsItem = MenuItem.TextItem(
+        text = Text.Resource(R.string.tab_tray_menu_item_share),
+        testTag = TabsTrayTestTag.SHARE_ALL_TABS,
         onClick = onShareAllTabsClick,
     )
-    val deleteAllTabsItem = MenuItem(
-        title = resources.getString(R.string.tab_tray_menu_item_close),
-        testTag = TabsTrayTestTag.closeAllTabs,
+    val deleteAllTabsItem = MenuItem.TextItem(
+        text = Text.Resource(R.string.tab_tray_menu_item_close),
+        testTag = TabsTrayTestTag.CLOSE_ALL_TABS,
         onClick = onDeleteAllTabsClick,
     )
-    val accountSettingsItem = MenuItem(
-        title = resources.getString(R.string.tab_tray_menu_account_settings),
-        testTag = TabsTrayTestTag.accountSettings,
+    val accountSettingsItem = MenuItem.TextItem(
+        text = Text.Resource(R.string.tab_tray_menu_account_settings),
+        testTag = TabsTrayTestTag.ACCOUNT_SETTINGS,
         onClick = onAccountSettingsClick,
     )
     return when {
-        selectedPage == Page.NormalTabs && normalTabCount == 0 ||
-            selectedPage == Page.PrivateTabs && privateTabCount == 0 -> listOf(
+        (selectedPage == Page.NormalTabs && normalTabCount == 0) ||
+            (selectedPage == Page.PrivateTabs && privateTabCount == 0) -> listOf(
             tabSettingsItem,
             recentlyClosedTabsItem,
         )

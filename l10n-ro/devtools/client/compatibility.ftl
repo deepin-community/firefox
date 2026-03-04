@@ -14,7 +14,6 @@ compatibility-issue-deprecated = (perimate)
 compatibility-issue-experimental = (experimentale)
 compatibility-issue-prefixneeded = (este nevoie de prefix)
 compatibility-issue-deprecated-experimental = (perimate, experimentale)
-
 compatibility-issue-deprecated-prefixneeded = (perimat, este nevoie de prefix)
 compatibility-issue-experimental-prefixneeded = (experimental, este nevoie de prefix)
 compatibility-issue-deprecated-experimental-prefixneeded = (perimat, experimental, este nevoie de prefix)
@@ -41,8 +40,14 @@ compatibility-issue-occurrences =
         [few] { $number } ocurențe
        *[other] { $number } de ocurențe
     }
-
 compatibility-no-issues-found = Nu s-a depistat nicio problemă de compatibilitate.
 compatibility-close-settings-button =
     .title = Închide setările
-
+# Text used in the element containing the browser icons for a given compatibility issue.
+# Line breaks are significant.
+# Variables:
+#   $browsers (String) - A line-separated list of browser information (e.g. Firefox 98\nChrome 99).
+compatibility-issue-browsers-list =
+    .title =
+        Probleme de compatibilitate în:
+        { $browsers }

@@ -5,10 +5,13 @@
 url-classifier-title = פרטי מסווג כתובות
 url-classifier-search-title = חיפוש
 url-classifier-search-result-title = תוצאות
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = רשימת טבלאות: { $list }
 url-classifier-search-input = כתובת
 url-classifier-search-error-invalid-url = כתובת לא תקנית
 url-classifier-search-error-no-features = לא נבחרו תכונות
+url-classifier-search-error-no-results = לא נמצאו רשומות עבור הכתובת
 url-classifier-search-btn = התחלה בחיפוש
 url-classifier-search-features = תכונות
 url-classifier-search-listType = סוג רשימה
@@ -20,7 +23,7 @@ url-classifier-provider-back-off-time = זמן נסיגה
 url-classifier-provider-last-update-status = מצב העדכון האחרון
 url-classifier-provider-update-btn = עדכון
 url-classifier-cache-title = מטמון
-url-classifier-cache-refresh-btn = רענון
+url-classifier-cache-refresh-btn = ריענון
 url-classifier-cache-clear-btn = פינוי
 url-classifier-cache-table-name = שם טבלה
 url-classifier-cache-ncache-entries = מספר רשומות מטמון שלילי
@@ -39,10 +42,9 @@ url-classifier-debug-sb-modules = מודולי רישום לגלישה בטוח�
 url-classifier-debug-modules = המודולים הנוכחיים לרישום
 url-classifier-debug-sbjs-modules = רישום JS לגלישה בטוחה
 url-classifier-debug-file = קובץ הרישום הנוכחי
-
 url-classifier-trigger-update = בקשת עדכון
 url-classifier-not-available = לא זמין
-url-classifier-disable-sbjs-log = נטרול רישום JS לגלישה בטוחה
+url-classifier-disable-sbjs-log = השבתת רישום JS לגלישה בטוחה
 url-classifier-enable-sbjs-log = הפעלת רישום JS לגלישה בטוחה
 url-classifier-enabled = מופעל
 url-classifier-disabled = מנוטרל

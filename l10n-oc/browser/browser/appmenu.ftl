@@ -27,6 +27,8 @@ appmenuitem-downloads =
     .label = Telecargaments
 appmenuitem-passwords =
     .label = Senhals
+appmenuitem-extensions-and-themes =
+    .label = Extensions e tèmas
 appmenuitem-addons-and-themes =
     .label = Moduls complementaris e tèmas
 appmenuitem-print =
@@ -108,8 +110,10 @@ appmenu-fxa-sync-and-save-data2 = Sincronizar e enregistrar las donadas
 appmenu-fxa-signed-in-label = Connexion
 appmenu-fxa-setup-sync =
     .label = Activar la sincronizacion…
+appmenu-fxa-setup-sync-new = Activar
 appmenuitem-save-page =
     .label = Enregistrar jos…
+appmenuitem-fxa-sync-off-title = La sincronizacion es desactivada
 
 ## What's New panel in App menu.
 
@@ -276,3 +280,16 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Recebètz d’alèrtas de divulgacions de donadas
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenu-services-header = Mos servicis
+
+## Profiles panel
+
+appmenu-other-profiles = Autres perfils
+appmenu-manage-profiles =
+    .label = Gestion dels perfils
+appmenu-create-profile =
+    .label = Perfil nòu
+appmenu-edit-profile =
+    .aria-label = Modificar lo perfil
+appmenu-profiles-2 =
+    .label = Perfils

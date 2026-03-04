@@ -1,4 +1,4 @@
-// |reftest| skip -- explicit-resource-management is not supported
+// |reftest| shell-option(--enable-explicit-resource-management) skip-if(!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('explicit-resource-management'))||!xulRuntime.shell) -- explicit-resource-management is not enabled unconditionally, requires shell-options
 // Copyright (C) 2024 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
@@ -8,20 +8,20 @@ includes: [compareArray.js]
 features: [explicit-resource-management]
 ---*/
 
-// Use using with null --------------
+// Use using with null does not throw --------------
 let withNullvalues = [];
 
 (function TestUsingWithNull() {
-  let using = null;
+  using x = null;
   withNullvalues.push(42);
 })();
 assert.compareArray(withNullvalues, [42]);
 
-// Use using with undefined --------------
+// Use using with undefined does not throw --------------
 let withUndefinedvalues = [];
 
 (function TestUsingWithUndefined() {
-  let using = undefined;
+  using x = undefined;
   withUndefinedvalues.push(42);
 })();
 assert.compareArray(withUndefinedvalues, [42]);

@@ -40,7 +40,7 @@ import re
 from xpidl import xpidl
 
 
-class AutoIndent(object):
+class AutoIndent:
     """A small autoindenting wrapper around a fd.
     Used to make the code output more readable."""
 
@@ -61,9 +61,9 @@ class AutoIndent(object):
 
             self.fd.write("    " * indent + s + "\n")
             for c in s:
-                if c == "(" or c == "{" or c == "[":
+                if c in {"(", "{", "["}:
                     self.indent += 1
-                elif c == ")" or c == "}" or c == "]":
+                elif c in {")", "}", "]"}:
                     self.indent -= 1
 
 
@@ -354,7 +354,7 @@ def print_rust_bindings(idl, fd, relpath):
     # import statements
 
     for p in idl.productions:
-        if p.kind == "include" or p.kind == "cdata" or p.kind == "forward":
+        if p.kind in {"include", "cdata", "forward"}:
             continue
 
         if p.kind == "interface":
@@ -588,7 +588,7 @@ def write_interface(iface, fd):
 
     entries = []
     for member in iface.members:
-        if type(member) == xpidl.Attribute:
+        if type(member) is xpidl.Attribute:
             entries.append(
                 vtable_entry_tmpl
                 % {
@@ -605,7 +605,7 @@ def write_interface(iface, fd):
                     }
                 )
 
-        elif type(member) == xpidl.Method:
+        elif type(member) is xpidl.Method:
             entries.append(
                 vtable_entry_tmpl
                 % {
@@ -626,7 +626,7 @@ def write_interface(iface, fd):
     # Get all of the constants
     consts = []
     for member in iface.members:
-        if type(member) == xpidl.ConstMember:
+        if type(member) is xpidl.ConstMember:
             consts.append(
                 const_wrapper_tmpl
                 % {
@@ -636,7 +636,7 @@ def write_interface(iface, fd):
                     "val": member.getValue(),
                 }
             )
-        if type(member) == xpidl.CEnum:
+        if type(member) is xpidl.CEnum:
             for var in member.variants:
                 consts.append(
                     const_wrapper_tmpl
@@ -650,7 +650,7 @@ def write_interface(iface, fd):
 
     methods = []
     for member in iface.members:
-        if type(member) == xpidl.Attribute:
+        if type(member) is xpidl.Attribute:
             methods.append(
                 method_wrapper_tmpl
                 % {
@@ -669,7 +669,7 @@ def write_interface(iface, fd):
                     }
                 )
 
-        elif type(member) == xpidl.Method:
+        elif type(member) is xpidl.Method:
             methods.append(
                 method_wrapper_tmpl
                 % {

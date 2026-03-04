@@ -16,17 +16,19 @@ import org.mozilla.focus.helpers.MainActivityFirstrunTestRule
 import org.mozilla.focus.helpers.MockWebServerHelper
 import org.mozilla.focus.helpers.TestAssetHelper.getMediaTestAsset
 import org.mozilla.focus.helpers.TestHelper.mDevice
+import org.mozilla.focus.helpers.TestSetup
 import org.mozilla.focus.testAnnotations.SmokeTest
 
-class MediaPlaybackTest {
+class MediaPlaybackTest : TestSetup() {
     private lateinit var webServer: MockWebServer
     private val featureSettingsHelper = FeatureSettingsHelper()
 
     @get:Rule
-    var mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
+    val mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
 
     @Before
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         featureSettingsHelper.setCfrForTrackingProtectionEnabled(false)
         webServer = MockWebServer().apply {
             dispatcher = MockWebServerHelper.AndroidAssetDispatcher()
@@ -43,7 +45,7 @@ class MediaPlaybackTest {
     @SmokeTest
     @Test
     fun testVideoPlayback() {
-        val videoPageUrl = getMediaTestAsset(webServer, "videoPage").url
+        val videoPageUrl = webServer.getMediaTestAsset("videoPage").url
 
         searchScreen {
         }.loadPage(videoPageUrl) {
@@ -59,7 +61,7 @@ class MediaPlaybackTest {
     @SmokeTest
     @Test
     fun testAudioPlayback() {
-        val audioPageUrl = getMediaTestAsset(webServer, "audioPage").url
+        val audioPageUrl = webServer.getMediaTestAsset("audioPage").url
 
         searchScreen {
         }.loadPage(audioPageUrl) {
@@ -75,7 +77,7 @@ class MediaPlaybackTest {
     @SmokeTest
     @Test
     fun testMediaContentNotification() {
-        val audioPageUrl = getMediaTestAsset(webServer, "audioPage").url
+        val audioPageUrl = webServer.getMediaTestAsset("audioPage").url
         val notificationMessage = "A site is playing media"
 
         searchScreen {

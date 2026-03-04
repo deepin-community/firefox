@@ -11,13 +11,17 @@
 ## in the documentation section in about:policies.
 
 policy-3rdparty = მიუთითეთ დებულებები, რომ WebExtension-ებს შეეძლოს chrome.storage.managed-ით წვდომა.
-policy-AllowedDomainsForApps = განსაზღვრა დომენების, რომელთაც წვდომა ექნება Google Workspace-სთან.
+policy-AllowedDomainsForApps = განსაზღვრა დომენებისა, რომელთაც წვდომა ექნება Google Workspace-სთან.
+policy-AllowFileSelectionDialogs = ფაილის შერჩევის ფანჯრების ნებართვა.
 policy-AppAutoUpdate = ჩართვა ან გამორთვა, აპლიკაციის თვითგანახლების.
 policy-AppUpdatePin = არ განახლდეს { -brand-short-name } მითითებული ვერსიის გარდა.
 policy-AppUpdateURL = პროგრამის გასაახლებელი URL-მისამართის დაყენება.
-policy-Authentication = ინტეგრირებული ავთენტურობის გამართვა ვებსაიტებისთვის, რომლებზეც მხარდაჭერილია.
+policy-Authentication = ჩაშენებული დამოწმების გამართვა ვებსაიტებზე, რომლებზეც მხარდაჭერილია.
+policy-AutofillAddressEnabled = მისამართების თვითშევსების შესაძლებლობა.
+policy-AutofillCreditCardEnabled = გადახდის საშუალებების თვითშევსების შესაძლებლობა.
 policy-AutoLaunchProtocolsFromOrigins = განსაზღვრავს ჩამონათვალს გარე ოქმებისა, რომლებიც შეიძლება იყოს გამოყენებული აღნუსხული წყაროებიდან, მომხმარებლის ჩაურევლად.
 policy-BackgroundAppUpdate2 = ფონური განახლების ჩართვა ან გამორთვა.
+policy-Backup = მარქაფის გამორთვა ან პროფილის მონაცემების აღდგენა.
 policy-BlockAboutAddons = დამატებების მმართველთან წვდომის შეზღუდვა (about:addons).
 policy-BlockAboutConfig = წვდომის შეზღუდვა about:config გვერდთან.
 policy-BlockAboutProfiles = წვდომის შეზღუდვა about:profiles გვერდთან.
@@ -25,6 +29,7 @@ policy-BlockAboutSupport = წვდომის შეზღუდვა about:
 policy-Bookmarks = სანიშნის შექმნა სანიშნების ზოლზე, სანიშნების მენიუში ან მათ განსაზღვრულ საქაღალდეში.
 policy-CaptivePortal = შესვლის გვერდის მხარდაჭერის ჩართვა ან გამორთვა.
 policy-CertificatesDescription = სერტიფიკატების დამატება ან ჩაშენებული სერტიფიკატების გამოყენება.
+policy-ContentAnalysis = კავშირის ჩართვა ან გამორთვა მონაცემთა დაკარგვის ასარიდებელ საშუალებებთან.
 policy-Cookies = საიტებისთვის ფუნთუშების დაშვება ან აკრძალვა
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = დებულებების მითითება სათავსებთან დაკავშირებით.
@@ -35,8 +40,11 @@ policy-DisableAppUpdate = ბრაუზერის განახლებ�
 policy-DisableBuiltinPDFViewer = PDF.js-ის გათიშვა, ჩაშენებული PDF-გამხსნელის, რომელსაც იყენებს { -brand-short-name }.
 policy-DisableDefaultBrowserAgent = ნაგულისხმევ ბრაუზერზე მეთვალყურე აგენტისთვის მოქმედებების შეზღუდვა. განკუთვნილია მხოლოდ Windows-ისთვის; სხვა სისტემებს არ აქვთ ამგვარი აგენტი.
 policy-DisableDeveloperTools = შემმუშავებლის ხელსაწყოებთან წვდომის შეზღუდვა.
+policy-DisableEncryptedClientHello = გაითიშოს TLS-შესაძლებლობის მქონე Encrypted Client Hello (ECH).
 policy-DisableFeedbackCommands = უკუკავშირის ბრძანებების გათიშვა დახმარების მენიუდან (გამოხმაურებისა და თაღლითურ საიტზე მოხსენების გაგზავნა)
 policy-DisableFirefoxAccounts = მომსახურებების გათიშვა, რომელთა მუშაობასაც { -fxaccount-brand-name } უზრუნველყოფს, სინქრონიზაციის ჩათვლით.
+# This string is in the process of being deprecated in favor of policy-DisableAccounts.
+policy-DisableFirefoxAccounts1 = ანგარიშზე დამოკიდებული მომსახურებების გათიშვა, მათ შორის დასინქრონებისა.
 # Firefox Screenshots is the name of the feature, and should not be translated.
 policy-DisableFirefoxScreenshots = Firefox Screenshots-ის გათიშვა
 policy-DisableFirefoxStudies = შეზღუდვა, რომ { -brand-short-name } ვერ შეძლებს კვლევების გაშვებას.
@@ -48,6 +56,7 @@ policy-DisablePocket2 = ვებგვერდების { -pocket-brand-nam
 policy-DisablePrivateBrowsing = პირადი დათვალიერების გათიშვა.
 policy-DisableProfileImport = მენიუდან სხვა ბრაუზერის მონაცემების გადმოტანის შესაძლებლობის გათიშვა.
 policy-DisableProfileRefresh = about:support გვერდზე, გაითიშოს ღილაკი { -brand-short-name } – შეკეთება.
+policy-DisableRemoteImprovements = შეზღუდვა, რომ { -brand-short-name } შეცვლის შესაძლებლობებს, წარმადობასა და მდგრადობას განახლებებს შორის შუალედშიც.
 policy-DisableSafeMode = უსაფრთხო რეჟიმში გაშვების შესაძლებლობის გათიშვა. შენიშვნა: Shift-ღილაკით უსაფრთხო რეჟიმში გადასვლის შეზღუდვა, მხოლოდ Windows-ის ჯგუფის წესებიდანაა (Group Policy) შესაძლებელი.
 policy-DisableSecurityBypass = მომხმარებლისთვის, უსაფრთხოების გარკვეული გაფრთხილებების უგულებელყოფის შეზღუდვა.
 policy-DisableSetAsDesktopBackground = მენიუდან, ეკრანის ფონად გამოყენების ბრძანების გათიშვა სურათებისთვის.
@@ -72,11 +81,14 @@ policy-ExtensionSettings = გაფართოების დაყენე�
 policy-ExtensionUpdate = ჩართვა ან გამორთვა, გაფართოების თვითგანახლების.
 policy-FirefoxHome2 = გამართეთ { -firefox-home-brand-name }.
 policy-FirefoxSuggest = გაიმართოს { -firefox-suggest-brand-name }.
+policy-GenerativeAI = შემოქმედებით ხელგონის თვისებების გამართვა.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = იძულებით გადასვლა პირდაპირ შიდა ქსელის საიტზე ცალკეული სიტყვის მისამართების ველში შეყვანისას, ნაცვლად საძიებოში მონახვისა.
 policy-Handlers = გამართვა, ნაგულისხმევი პროგრამების დამმუშავებლების.
 policy-HardwareAcceleration = თუ უარყოფილია, აპარატურული აჩქარების გათიშვა.
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = დაყენება და დამატებით მთავარი გვერდის ჩაკეტვა.
+policy-HttpAllowlist = წყაროები, რომლებიც არ გადადის HTTPS-ზე.
+policy-HttpsOnlyMode = მხოლოდ-HTTPS-რეჟიმის ნებართვა.
 policy-InstallAddonsPermission = ცალკეული ვებსაიტებისთვის დამატებების ჩადგმის დაშვება.
 policy-LegacyProfiles = თითოეული დაყენებისას ცალ-ცალკე პროფილების იძულებითი შექმნის გამორთვა.
 
@@ -88,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = მოძველე�
 ##
 
 policy-LocalFileLinks = ცალკეული საიტების, ადგილობრივ ფაილებთან დაკავშირების შესაძლებლობა
+policy-LocalNetworkAccess = ადგილობრივ ქსელთან წვდომის შემოწმების ჩართვა ან გამორთვა.
 policy-ManagedBookmarks = საშუალებას იძლევა, ადმინისტრატორმა გამართოს სანიშნები, რომელთაც მომხმარებელი ვერ შეცვლის.
 policy-ManualAppUpdateOnly = მხოლოდ ხელით განახლებების დაშვება, განახლების შეტყობინებების გარეშე.
 policy-PrimaryPassword = მოთხოვნა ან არიდება მთავარი პაროლის გამოყენების.
@@ -101,12 +114,17 @@ policy-OverrideFirstRunPage = პირველი გაშვების გ
 policy-OverridePostUpdatePage = განახლების შემდგომი „რა სიახლეებია“ გვერდის ჩანაცვლება. მიუთითეთ დებულებას ცარიელი, თუ გსურთ განახლების შემდგომი გვერდის გათიშვა.
 policy-PasswordManagerEnabled = პაროლების მმართველში, პაროლების შენახვის შესაძლებლობის ჩართვა.
 policy-PasswordManagerExceptions = მიუთითეთ და { -brand-short-name } არ დაიმახსოვრებს ცალკეული საიტების პაროლებს
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Post-Quanten-გასაღებით შეთანხმების ნებართვა TLS-ისთვის.
 # PDF.js and PDF should not be translated
 policy-PDFjs = გათიშვა ან გამართვა PDF.js-ის, ჩაშენებული PDF-გამხსნელის, რომელსაც იყენებს { -brand-short-name }.
 policy-Permissions2 = ნებართვების გამართვა კამერაზე, მიკროფონზე, მდებარეობაზე, შეტყობინებებსა და თვითგაშვებაზე.
 policy-PictureInPicture = ჩაირთოს ან გამოირთოს ეკრანი-ეკრანში
+policy-PopupBlocking2 = ცალკეული ვებსაიტებისთვის ამომხტომებისა და გარე გადამისამართების ჩარჩოების ნებართვა.
 policy-PopupBlocking = ცალკეული ვებსაიტებისთვის ამომხტომი ფანჯრების დაშვება ნაგულისხმევად.
 policy-Preferences = მნიშვნელობების შერჩევა და ჩაკეტვა, პარამეტრების ნაწილისთვის.
+policy-PrivateBrowsingModeAvailability = პირადი დათვალიერების რეჟიმის ხელმისაწვდომობის მითითება.
 policy-PromptForDownloadLocation = ფაილების ჩამოტვირთვისას ადგილმდებარეობის მითითება.
 policy-Proxy = პროქსის პარამეტრების გამართვა.
 policy-RequestedLocales = მიუთითეთ მოთხოვნილი ენების ჩამონათვალი პროგრამისთვის, პარამეტრების მიხედვით.
@@ -117,12 +135,18 @@ policy-SearchSuggestEnabled = ძიების შემოთავაზე�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = დაემატოს ან წაიშალოს მოდულები PKCS #11.
 policy-ShowHomeButton = მთავარი გვერდის ღილაკის გამოჩენა ხელსაწყოთა ზოლზე.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = არ გამოჩნდეს გამოყენების პირობები და პირადულობის დებულება გაშვებისას. თქვენ ადასტურებთ, რომ ეთანხმებით და გაქვთ უფლებამოსილება მიიღოთ გამოყენების პირობები ყველა იმ პირის სახელით, ვისაც ამ ბრაუზერთან წვდომის ნებას რთავთ.
 policy-SSLVersionMax = SSL-ის უმაღლესი ვერსიის განსაზღვრა.
 policy-SSLVersionMin = SSL-ის უმცირესი ვერსიის განსაზღვრა.
 policy-StartDownloadsInTempDirectory = ჩამოტვირთვის იძულებით დაწყება ადგილობრივ, დროებით ადგილას, ნაცვლად ნაგულისხმევი მდებარეობისა.
 policy-SupportMenu = საკუთარი მხარდაჭერის მენიუს დამატება დახმარების მენიუში.
+policy-TranslateEnabled = ვებგვერდის თარგმნის ჩართვა ან გამორთვა.
 policy-UserMessaging = მომხმარებლისთვის, გარკვეული შეტყობინებების ჩვენების შეწყვეტა.
 policy-UseSystemPrintDialog = ამობეჭდვა სისტემის ფანჯრის მეშვეობით.
+policy-VisualSearchEnabled = გამოსახულებით ძიების ჩართვა ან გამორთვა.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = ვებსაიტების მონახულების შეზღუდვა. იხილეთ შესაბამისი მასალა დამატებითი ინფორმაციისთვის ფორმატის თაობაზე.
 policy-Windows10SSO = Windows-ით ერთიანად შესვლის დაშვება, Microsoft-ის, სამუშაოს ან სკოლის ანგარიშებზე.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Microsoft-Entra-ანგარიშებზე ერთიანად შესვლის ნებართვა.

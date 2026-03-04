@@ -6,11 +6,10 @@ import os
 import sys
 import textwrap
 import unittest
+from io import StringIO
 
 import mozpack.path as mozpath
-import six
 from mozunit import MockedOpen, main
-from six import StringIO
 
 from mozbuild.configure import ConfigureError, ConfigureSandbox
 from mozbuild.configure.options import (
@@ -36,14 +35,14 @@ class TestConfigure(unittest.TestCase):
         sandbox.run(mozpath.join(test_data_path, configure))
 
         if "--help" in options:
-            return six.ensure_text(out.getvalue()), config
+            return out.getvalue(), config
         self.assertEqual("", out.getvalue())
         return config
 
     def moz_configure(self, source):
-        return MockedOpen(
-            {os.path.join(test_data_path, "moz.configure"): textwrap.dedent(source)}
-        )
+        return MockedOpen({
+            os.path.join(test_data_path, "moz.configure"): textwrap.dedent(source)
+        })
 
     def test_defaults(self):
         config = self.get_config()
@@ -56,6 +55,8 @@ class TestConfigure(unittest.TestCase):
                 "OTHER_CHOICES": NegativeOptionValue(),
                 "REMAINDER": (
                     PositiveOptionValue(),
+                    NegativeOptionValue(),
+                    NegativeOptionValue(),
                     NegativeOptionValue(),
                     NegativeOptionValue(),
                     NegativeOptionValue(),
@@ -83,7 +84,7 @@ class TestConfigure(unittest.TestCase):
             "\n"
             "Options: [defaults in brackets after descriptions]\n"
             "  Help options:\n"
-            "    --help                    print this message\n"
+            "    --help                    Print this message\n"
             "\n"
             "  Options from python/mozbuild/mozbuild/test/configure/data/moz.configure:\n"
             "    --enable-simple           Enable simple\n"
@@ -91,7 +92,12 @@ class TestConfigure(unittest.TestCase):
             "    --enable-values[=V,...]   Enable values V\n"
             "    --enable-others=V,...     Enable other values V\n"
             "    --enable-triplet=V,V,V    Enable triplet V\n"
-            "    --enable-choices={a,b,c}  Enable choices\n"
+            "    --enable-choices[={a,b,c},...]\n"
+            "                              Enable choices\n"
+            "    --enable-optional-choices[={a,b,c}]\n"
+            "                              Enable optional choices\n"
+            "    --enable-multiple-choices={a,b,c},...\n"
+            "                              Enable multiple choices\n"
             "    --without-thing           Build without thing\n"
             "    --with-stuff              Build with stuff\n"
             "    --option                  Option\n"
@@ -127,7 +133,7 @@ class TestConfigure(unittest.TestCase):
             "\n"
             "Options: [defaults in brackets after descriptions]\n"
             "  Help options:\n"
-            "    --help                    print this message\n"
+            "    --help                    Print this message\n"
             "\n"
             "  Options from python/mozbuild/mozbuild/test/configure/data/moz.configure:\n"
             "    --enable-simple           Enable simple\n"
@@ -135,7 +141,12 @@ class TestConfigure(unittest.TestCase):
             "    --enable-values[=V,...]   Enable values V\n"
             "    --enable-others=V,...     Enable other values V\n"
             "    --enable-triplet=V,V,V    Enable triplet V\n"
-            "    --enable-choices={a,b,c}  Enable choices\n"
+            "    --enable-choices[={a,b,c},...]\n"
+            "                              Enable choices\n"
+            "    --enable-optional-choices[={a,b,c}]\n"
+            "                              Enable optional choices\n"
+            "    --enable-multiple-choices={a,b,c},...\n"
+            "                              Enable multiple choices\n"
             "    --without-thing           Build without thing\n"
             "    --with-stuff              Build with stuff\n"
             "    --option                  Option\n"
@@ -258,16 +269,18 @@ class TestConfigure(unittest.TestCase):
 
     def test_returned_choices(self):
         for val in ("a", "b", "c"):
-            config = self.get_config(
-                ["--enable-values=alpha", "--returned-choices=%s" % val]
-            )
+            config = self.get_config([
+                "--enable-values=alpha",
+                "--returned-choices=%s" % val,
+            ])
             self.assertIn("CHOICES", config)
             self.assertEqual(PositiveOptionValue((val,)), config["CHOICES"])
 
         for val in ("0", "1", "2"):
-            config = self.get_config(
-                ["--enable-values=numeric", "--returned-choices=%s" % val]
-            )
+            config = self.get_config([
+                "--enable-values=numeric",
+                "--returned-choices=%s" % val,
+            ])
             self.assertIn("CHOICES", config)
             self.assertEqual(PositiveOptionValue((val,)), config["CHOICES"])
 
@@ -463,7 +476,7 @@ class TestConfigure(unittest.TestCase):
         class CountApplyImportsSandbox(ConfigureSandbox):
             def _apply_imports(self, *args, **kwargs):
                 imports.append((args, kwargs))
-                super(CountApplyImportsSandbox, self)._apply_imports(*args, **kwargs)
+                super()._apply_imports(*args, **kwargs)
 
         config = {}
         out = StringIO()
@@ -602,7 +615,7 @@ class TestConfigure(unittest.TestCase):
     def test_set_config_when(self):
         with self.moz_configure(
             """
-            option('--with-qux', help='qux')
+            option('--with-qux', help='Qux')
             set_config('FOO', 'foo', when=True)
             set_config('BAR', 'bar', when=False)
             set_config('QUX', 'qux', when='--with-qux')
@@ -673,7 +686,7 @@ class TestConfigure(unittest.TestCase):
     def test_set_define_when(self):
         with self.moz_configure(
             """
-            option('--with-qux', help='qux')
+            option('--with-qux', help='Qux')
             set_define('FOO', 'foo', when=True)
             set_define('BAR', 'bar', when=False)
             set_define('QUX', 'qux', when='--with-qux')
@@ -878,7 +891,7 @@ class TestConfigure(unittest.TestCase):
                 """
                 imply_option('--with-foo', 42, 'bar')
 
-                option('--with-foo', help='foo')
+                option('--with-foo', help='Foo')
                 @depends('--with-foo')
                 def foo(value):
                     return value
@@ -891,9 +904,9 @@ class TestConfigure(unittest.TestCase):
     def test_imply_option_when(self):
         with self.moz_configure(
             """
-            option('--with-foo', help='foo')
+            option('--with-foo', help='Foo')
             imply_option('--with-qux', True, when='--with-foo')
-            option('--with-qux', help='qux')
+            option('--with-qux', help='Qux')
             set_config('QUX', depends('--with-qux')(lambda x: x))
         """
         ):
@@ -916,13 +929,13 @@ class TestConfigure(unittest.TestCase):
     def test_imply_option_dependency_loop(self):
         with self.moz_configure(
             """
-            option('--without-foo', help='foo')
+            option('--without-foo', help='Foo')
 
             @depends('--with-foo')
             def qux_default(foo):
                 return bool(foo)
 
-            option('--with-qux', default=qux_default, help='qux')
+            option('--with-qux', default=qux_default, help='Qux')
 
             imply_option('--with-foo', depends('--with-qux')(lambda x: x or None))
 
@@ -977,13 +990,13 @@ class TestConfigure(unittest.TestCase):
 
         with self.moz_configure(
             """
-            option('--with-foo', help='foo')
+            option('--with-foo', help='Foo')
 
             @depends('--with-foo')
             def qux_default(foo):
                 return bool(foo)
 
-            option('--with-qux', default=qux_default, help='qux')
+            option('--with-qux', default=qux_default, help='Qux')
 
             imply_option('--with-foo', depends('--with-qux')(lambda x: x or None))
 
@@ -1041,13 +1054,13 @@ class TestConfigure(unittest.TestCase):
         # Same test as above, but using `when` in the `imply_option`.
         with self.moz_configure(
             """
-            option('--with-foo', help='foo')
+            option('--with-foo', help='Foo')
 
             @depends('--with-foo')
             def qux_default(foo):
                 return bool(foo)
 
-            option('--with-qux', default=qux_default, help='qux')
+            option('--with-qux', default=qux_default, help='Qux')
 
             imply_option('--with-foo', True, when='--with-qux')
 
@@ -1110,11 +1123,11 @@ class TestConfigure(unittest.TestCase):
 
         with self.moz_configure(
             """
-            option('--without-foo', help='foo')
+            option('--without-foo', help='Foo')
 
             imply_option('--with-qux', depends('--with-foo')(lambda x: x or None))
 
-            option('--with-qux', help='qux')
+            option('--with-qux', help='Qux')
 
             imply_option('--with-foo', depends('--with-qux')(lambda x: x or None))
 
@@ -1142,12 +1155,12 @@ class TestConfigure(unittest.TestCase):
 
     def test_imply_option_conflict(self):
         moz_configure = """
-            option('--with-foo', help='foo')
-            option('--with-env-foo', help='foo')
+            option('--with-foo', help='Foo')
+            option('--with-env-foo', help='Foo')
             imply_option('--with-qux', True)
             imply_option('QUX', "FOO", when='--with-env-foo')
             imply_option('--with-qux', "FOO", when='--with-foo')
-            option('--with-qux', env="QUX", nargs='*', help='qux')
+            option('--with-qux', env="QUX", nargs='*', help='Qux')
             set_config('QUX', depends('--with-qux')(lambda x: x))
         """
         with self.assertRaises(ConflictingOptionError) as e:
@@ -1185,7 +1198,7 @@ class TestConfigure(unittest.TestCase):
 
     def test_option_failures(self):
         with self.assertRaises(ConfigureError) as e:
-            with self.moz_configure('option("--with-foo", help="foo")'):
+            with self.moz_configure('option("--with-foo", help="Foo")'):
                 self.get_config()
 
         self.assertEqual(
@@ -1196,8 +1209,8 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option("--with-foo", help="foo")
-                option("--with-foo", help="foo")
+                option("--with-foo", help="Foo")
+                option("--with-foo", help="Foo")
             """
             ):
                 self.get_config()
@@ -1207,8 +1220,8 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option(env="MOZ_FOO", help="foo")
-                option(env="MOZ_FOO", help="foo")
+                option(env="MOZ_FOO", help="Foo")
+                option(env="MOZ_FOO", help="Foo")
             """
             ):
                 self.get_config()
@@ -1218,8 +1231,8 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option('--with-foo', env="MOZ_FOO", help="foo")
-                option(env="MOZ_FOO", help="foo")
+                option('--with-foo', env="MOZ_FOO", help="Foo")
+                option(env="MOZ_FOO", help="Foo")
             """
             ):
                 self.get_config()
@@ -1229,8 +1242,8 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option(env="MOZ_FOO", help="foo")
-                option('--with-foo', env="MOZ_FOO", help="foo")
+                option(env="MOZ_FOO", help="Foo")
+                option('--with-foo', env="MOZ_FOO", help="Foo")
             """
             ):
                 self.get_config()
@@ -1240,8 +1253,8 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option('--with-foo', env="MOZ_FOO", help="foo")
-                option('--with-foo', help="foo")
+                option('--with-foo', env="MOZ_FOO", help="Foo")
+                option('--with-foo', help="Foo")
             """
             ):
                 self.get_config()
@@ -1251,9 +1264,9 @@ class TestConfigure(unittest.TestCase):
     def test_option_when(self):
         with self.moz_configure(
             """
-            option('--with-foo', help='foo', when=True)
-            option('--with-bar', help='bar', when=False)
-            option('--with-qux', env="QUX", help='qux', when='--with-foo')
+            option('--with-foo', help='Foo', when=True)
+            option('--with-bar', help='Bar', when=False)
+            option('--with-qux', env="QUX", help='Qux', when='--with-foo')
 
             set_config('FOO', depends('--with-foo', when=True)(lambda x: x))
             set_config('BAR', depends('--with-bar', when=False)(lambda x: x))
@@ -1324,10 +1337,10 @@ class TestConfigure(unittest.TestCase):
 
                 Options: [defaults in brackets after descriptions]
                   Help options:
-                    --help                    print this message
+                    --help                    Print this message
 
                   Options from python/mozbuild/mozbuild/test/configure/data/moz.configure:
-                    --with-foo                foo
+                    --with-foo                Foo
 
             """
                 ),
@@ -1342,11 +1355,11 @@ class TestConfigure(unittest.TestCase):
 
                 Options: [defaults in brackets after descriptions]
                   Help options:
-                    --help                    print this message
+                    --help                    Print this message
 
                   Options from python/mozbuild/mozbuild/test/configure/data/moz.configure:
-                    --with-foo                foo
-                    --with-qux                qux
+                    --with-foo                Foo
+                    --with-qux                Qux
 
             """
                 ),
@@ -1354,7 +1367,7 @@ class TestConfigure(unittest.TestCase):
 
         with self.moz_configure(
             """
-            option('--with-foo', help='foo', when=True)
+            option('--with-foo', help='Foo', when=True)
             set_config('FOO', depends('--with-foo')(lambda x: x))
         """
         ):
@@ -1363,7 +1376,7 @@ class TestConfigure(unittest.TestCase):
 
             self.assertEqual(
                 str(e.exception),
-                "@depends function needs the same `when` as " "options it depends on",
+                "@depends function needs the same `when` as options it depends on",
             )
 
         with self.moz_configure(
@@ -1374,7 +1387,7 @@ class TestConfigure(unittest.TestCase):
             @depends(when=True)
             def always2():
                 return True
-            option('--with-foo', help='foo', when=always)
+            option('--with-foo', help='Foo', when=always)
             set_config('FOO', depends('--with-foo', when=always2)(lambda x: x))
         """
         ):
@@ -1383,7 +1396,7 @@ class TestConfigure(unittest.TestCase):
 
             self.assertEqual(
                 str(e.exception),
-                "@depends function needs the same `when` as " "options it depends on",
+                "@depends function needs the same `when` as options it depends on",
             )
 
         with self.moz_configure(
@@ -1395,7 +1408,7 @@ class TestConfigure(unittest.TestCase):
             def always2():
                 return True
             with only_when(always2):
-                option('--with-foo', help='foo', when=always)
+                option('--with-foo', help='Foo', when=always)
                 # include() triggers resolution of its dependencies, and their
                 # side effects.
                 include(depends('--with-foo', when=always)(lambda x: x))
@@ -1409,9 +1422,9 @@ class TestConfigure(unittest.TestCase):
 
         with self.moz_configure(
             """
-            option('--with-foo', help='foo')
-            option('--without-bar', help='bar', when='--with-foo')
-            option('--with-qux', help='qux', when='--with-bar')
+            option('--with-foo', help='Foo')
+            option('--without-bar', help='Bar', when='--with-foo')
+            option('--with-qux', help='Qux', when='--with-bar')
             set_config('QUX', True, when='--with-qux')
         """
         ):
@@ -1474,11 +1487,10 @@ class TestConfigure(unittest.TestCase):
         self.assertEqual(str(e.exception), "Unexpected type: 'int'")
 
     def test_include_when(self):
-        with MockedOpen(
-            {
-                os.path.join(test_data_path, "moz.configure"): textwrap.dedent(
-                    """
-                option('--with-foo', help='foo')
+        with MockedOpen({
+            os.path.join(test_data_path, "moz.configure"): textwrap.dedent(
+                """
+                option('--with-foo', help='Foo')
 
                 include('always.configure', when=True)
                 include('never.configure', when=False)
@@ -1488,28 +1500,28 @@ class TestConfigure(unittest.TestCase):
                 set_config('BAR', bar)
                 set_config('QUX', qux)
             """
-                ),
-                os.path.join(test_data_path, "always.configure"): textwrap.dedent(
-                    """
-                option('--with-bar', help='bar')
+            ),
+            os.path.join(test_data_path, "always.configure"): textwrap.dedent(
+                """
+                option('--with-bar', help='Bar')
                 @depends('--with-bar')
                 def bar(x):
                     if x:
                         return 'bar'
             """
-                ),
-                os.path.join(test_data_path, "never.configure"): textwrap.dedent(
-                    """
-                option('--with-qux', help='qux')
+            ),
+            os.path.join(test_data_path, "never.configure"): textwrap.dedent(
+                """
+                option('--with-qux', help='Qux')
                 @depends('--with-qux')
                 def qux(x):
                     if x:
                         return 'qux'
             """
-                ),
-                os.path.join(test_data_path, "foo.configure"): textwrap.dedent(
-                    """
-                option('--with-foo-really', help='really foo')
+            ),
+            os.path.join(test_data_path, "foo.configure"): textwrap.dedent(
+                """
+                option('--with-foo-really', help='Really foo')
                 @depends('--with-foo-really')
                 def foo(x):
                     if x:
@@ -1517,14 +1529,13 @@ class TestConfigure(unittest.TestCase):
 
                 include('foo2.configure', when='--with-foo-really')
             """
-                ),
-                os.path.join(test_data_path, "foo2.configure"): textwrap.dedent(
-                    """
+            ),
+            os.path.join(test_data_path, "foo2.configure"): textwrap.dedent(
+                """
                 set_config('FOO2', True)
             """
-                ),
-            }
-        ):
+            ),
+        }):
             config = self.get_config()
             self.assertEqual(config, {})
 
@@ -1575,7 +1586,7 @@ class TestConfigure(unittest.TestCase):
                 self.get_config()
 
         self.assertIn(
-            "Cannot assign `foo` because it is neither a @depends nor a " "@template",
+            "Cannot assign `foo` because it is neither a @depends nor a @template",
             str(e.exception),
         )
 
@@ -1604,7 +1615,7 @@ class TestConfigure(unittest.TestCase):
 
         self.assertEqual(
             str(e.exception),
-            "'--with-foo' is not a known option. Maybe it's " "declared too late?",
+            "'--with-foo' is not a known option. Maybe it's declared too late?",
         )
 
         with self.assertRaises(ConfigureError) as e:
@@ -1631,7 +1642,7 @@ class TestConfigure(unittest.TestCase):
 
         self.assertEqual(
             str(e.exception),
-            "Cannot use object of type 'int' as argument " "to @depends",
+            "Cannot use object of type 'int' as argument to @depends",
         )
 
         with self.assertRaises(ConfigureError) as e:
@@ -1679,7 +1690,7 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option('--foo', help='foo')
+                option('--foo', help='Foo')
                 @depends('--foo')
                 def foo(value):
                     return value
@@ -1720,7 +1731,7 @@ class TestConfigure(unittest.TestCase):
 
             set_config('BAR', bar)
 
-            option('--with-qux', help='qux')
+            option('--with-qux', help='Qux')
             @depends(when='--with-qux')
             def qux():
                 return 'qux'
@@ -1756,7 +1767,7 @@ class TestConfigure(unittest.TestCase):
 
             set_config('BAR', bar)
 
-            option('--with-qux', help='qux')
+            option('--with-qux', help='Qux')
             @depends(when='--with-qux')
             def qux():
                 return 'qux'
@@ -1775,7 +1786,7 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(TypeError) as e:
             with self.moz_configure(
                 """
-                option('--foo', help='foo')
+                option('--foo', help='Foo')
 
                 depends('--foo')('foo')
             """
@@ -1803,7 +1814,7 @@ class TestConfigure(unittest.TestCase):
         with self.assertRaises(ConfigureError) as e:
             with self.moz_configure(
                 """
-                option('--foo', help='foo')
+                option('--foo', help='Foo')
                 @imports('os')
                 @depends('--foo')
                 def foo(value):
@@ -1860,13 +1871,13 @@ class TestConfigure(unittest.TestCase):
 
     def test_only_when(self):
         moz_configure = """
-            option('--enable-when', help='when')
+            option('--enable-when', help='When')
             @depends('--enable-when', '--help')
             def when(value, _):
                 return bool(value)
 
             with only_when(when):
-                option('--foo', nargs='*', help='foo')
+                option('--foo', nargs='*', help='Foo')
                 @depends('--foo')
                 def foo(value):
                     return value
@@ -1936,7 +1947,7 @@ class TestConfigure(unittest.TestCase):
 
             self.assertEqual(
                 str(e.exception),
-                "@depends function needs the same `when` as " "options it depends on",
+                "@depends function needs the same `when` as options it depends on",
             )
 
         with self.moz_configure(
@@ -1974,7 +1985,7 @@ class TestConfigure(unittest.TestCase):
     def test_depends_unary_ops_func(self):
         with self.moz_configure(
             """
-            option('--foo', nargs=1, help='foo')
+            option('--foo', nargs=1, help='Foo')
             @depends('--foo')
             def foo(value):
                 return value
@@ -2009,7 +2020,7 @@ class TestConfigure(unittest.TestCase):
     def test_depends_unary_ops_val(self):
         with self.moz_configure(
             """
-            option("--cond", help="condition")
+            option("--cond", help="Condition")
             cond = depends("--cond")(lambda c: c)
             foo = depends(when=cond)("foo")
             set_config('Foo', foo)
@@ -2040,17 +2051,17 @@ class TestConfigure(unittest.TestCase):
     def test_depends_binary_ops(self):
         with self.moz_configure(
             """
-            option('--foo', nargs=1, help='foo')
+            option('--foo', nargs=1, help='Foo')
             @depends('--foo')
             def foo(value):
                 return value or 0
 
-            option('--bar', nargs=1, help='bar')
+            option('--bar', nargs=1, help='Bar')
             @depends('--bar')
             def bar(value):
                 return value or ''
 
-            option('--baz', nargs=1, help='baz')
+            option('--baz', nargs=1, help='Baz')
             @depends('--baz')
             def baz(value):
                 return value
@@ -2073,9 +2084,9 @@ class TestConfigure(unittest.TestCase):
                         ("", NegativeOptionValue()),
                         ("--baz=baz", PositiveOptionValue(("baz",))),
                     ):
-                        config = self.get_config(
-                            [x for x in (foo_opt, bar_opt, baz_opt) if x]
-                        )
+                        config = self.get_config([
+                            x for x in (foo_opt, bar_opt, baz_opt) if x
+                        ])
                         self.assertEqual(
                             config,
                             {
@@ -2091,12 +2102,12 @@ class TestConfigure(unittest.TestCase):
     def test_depends_getattr(self):
         with self.moz_configure(
             """
-            option('--foo', nargs=1, help='foo')
+            option('--foo', nargs=1, help='Foo')
             @depends('--foo')
             def foo(value):
                 return value
 
-            option('--bar', nargs=1, help='bar')
+            option('--bar', nargs=1, help='Bar')
             @depends('--bar')
             def bar(value):
                 return value or None

@@ -126,6 +126,12 @@ interface WebExtensionPolicy {
   attribute boolean ignoreQuarantine;
 
   /**
+   * True if this extension has recommended state.
+   */
+  [Cached, Pure]
+  readonly attribute boolean hasRecommendedState;
+
+  /**
    * True if both e10s and webextensions.remote are enabled.  This must be
    * used instead of checking the remote pref directly since remote extensions
    * require both to be enabled.
@@ -259,7 +265,7 @@ interface WebExtensionPolicy {
   static WebExtensionPolicy? getByHostname(ByteString hostname);
 
   /**
-   * Returns the currently-active policy for the extension extension URI, or
+   * Returns the currently-active policy for the extension URI, or
    * null if the URI is not an extension URI, or no policy is currently active
    * for it.
    */
@@ -323,6 +329,8 @@ dictionary WebExtensionInit {
   boolean isPrivileged = false;
 
   boolean ignoreQuarantine = false;
+
+  boolean hasRecommendedState = false;
 
   boolean temporarilyInstalled = false;
 

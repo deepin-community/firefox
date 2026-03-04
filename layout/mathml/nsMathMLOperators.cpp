@@ -5,16 +5,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsMathMLOperators.h"
-#include "nsCOMPtr.h"
-#include "nsTHashMap.h"
-#include "nsHashKeys.h"
-#include "nsNetUtil.h"
-#include "nsTArray.h"
 
+#include "mozilla/StaticPrefs_mathml.h"
 #include "mozilla/intl/UnicodeProperties.h"
+#include "nsCOMPtr.h"
+#include "nsCRT.h"
+#include "nsHashKeys.h"
 #include "nsIPersistentProperties2.h"
 #include "nsISimpleEnumerator.h"
-#include "nsCRT.h"
+#include "nsNetUtil.h"
+#include "nsTArray.h"
+#include "nsTHashMap.h"
+
+using namespace mozilla;
 
 // operator dictionary entry
 struct OperatorData {
@@ -48,53 +51,64 @@ static uint32_t ToUnicodeCodePoint(const nsString& aOperator) {
 }
 
 static void SetBooleanProperty(OperatorData* aOperatorData, nsString aName) {
-  if (aName.IsEmpty()) return;
+  if (aName.IsEmpty()) {
+    return;
+  }
 
-  if (aName.EqualsLiteral("stretchy") && (1 == aOperatorData->mStr.Length()))
+  if (aName.EqualsLiteral("stretchy") && (1 == aOperatorData->mStr.Length())) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_STRETCHY;
-  else if (aName.EqualsLiteral("fence"))
+  } else if (aName.EqualsLiteral("fence")) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_FENCE;
-  else if (aName.EqualsLiteral("accent"))
+  } else if (!StaticPrefs::mathml_operator_dictionary_accent_disabled() &&
+             aName.EqualsLiteral("accent")) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_ACCENT;
-  else if (aName.EqualsLiteral("largeop"))
+  } else if (aName.EqualsLiteral("largeop")) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_LARGEOP;
-  else if (aName.EqualsLiteral("separator"))
+  } else if (aName.EqualsLiteral("separator")) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_SEPARATOR;
-  else if (aName.EqualsLiteral("movablelimits"))
+  } else if (aName.EqualsLiteral("movablelimits")) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_MOVABLELIMITS;
-  else if (aName.EqualsLiteral("symmetric"))
+  } else if (aName.EqualsLiteral("symmetric")) {
     aOperatorData->mFlags |= NS_MATHML_OPERATOR_SYMMETRIC;
+  }
 }
 
 static void SetProperty(OperatorData* aOperatorData, nsString aName,
                         nsString aValue) {
-  if (aName.IsEmpty() || aValue.IsEmpty()) return;
+  if (aName.IsEmpty() || aValue.IsEmpty()) {
+    return;
+  }
 
   if (aName.EqualsLiteral("direction")) {
-    if (aValue.EqualsLiteral("vertical"))
+    if (aValue.EqualsLiteral("vertical")) {
       aOperatorData->mFlags |= NS_MATHML_OPERATOR_DIRECTION_VERTICAL;
-    else if (aValue.EqualsLiteral("horizontal"))
+    } else if (aValue.EqualsLiteral("horizontal")) {
       aOperatorData->mFlags |= NS_MATHML_OPERATOR_DIRECTION_HORIZONTAL;
-    else
+    } else {
       return;  // invalid value
+    }
   } else {
     bool isLeadingSpace;
-    if (aName.EqualsLiteral("lspace"))
+    if (aName.EqualsLiteral("lspace")) {
       isLeadingSpace = true;
-    else if (aName.EqualsLiteral("rspace"))
+    } else if (aName.EqualsLiteral("rspace")) {
       isLeadingSpace = false;
-    else
+    } else {
       return;  // input is not applicable
+    }
 
     // aValue is assumed to be a digit from 0 to 7
     nsresult error = NS_OK;
     float space = aValue.ToFloat(&error) / 18.0;
-    if (NS_FAILED(error)) return;
+    if (NS_FAILED(error)) {
+      return;
+    }
 
-    if (isLeadingSpace)
+    if (isLeadingSpace) {
       aOperatorData->mLeadingSpace = space;
-    else
+    } else {
       aOperatorData->mTrailingSpace = space;
+    }
   }
 }
 
@@ -114,23 +128,34 @@ static bool SetOperator(OperatorData* aOperatorData, nsOperatorFlags aForm,
   char16_t uchar = 0;
   while (i <= len) {
     if (0 == state) {
-      if (c != '\\') return false;
-      if (i < len) c = aOperator[i];
+      if (c != '\\') {
+        return false;
+      }
+      if (i < len) {
+        c = aOperator[i];
+      }
       i++;
-      if (('u' != c) && ('U' != c)) return false;
-      if (i < len) c = aOperator[i];
+      if (('u' != c) && ('U' != c)) {
+        return false;
+      }
+      if (i < len) {
+        c = aOperator[i];
+      }
       i++;
       state++;
     } else {
-      if (('0' <= c) && (c <= '9'))
+      if (('0' <= c) && (c <= '9')) {
         uchar = (uchar << 4) | (c - '0');
-      else if (('a' <= c) && (c <= 'f'))
+      } else if (('a' <= c) && (c <= 'f')) {
         uchar = (uchar << 4) | (c - 'a' + 0x0a);
-      else if (('A' <= c) && (c <= 'F'))
+      } else if (('A' <= c) && (c <= 'F')) {
         uchar = (uchar << 4) | (c - 'A' + 0x0a);
-      else
+      } else {
         return false;
-      if (i < len) c = aOperator[i];
+      }
+      if (i < len) {
+        c = aOperator[i];
+      }
       i++;
       state++;
       if (5 == state) {
@@ -140,12 +165,16 @@ static bool SetOperator(OperatorData* aOperatorData, nsOperatorFlags aForm,
       }
     }
   }
-  if (0 != state) return false;
+  if (0 != state) {
+    return false;
+  }
 
   // Quick return when the caller doesn't care about the attributes and just
   // wants to know if this is a valid operator (this is the case at the first
   // pass of the parsing of the dictionary in InitOperators())
-  if (!aForm) return true;
+  if (!aForm) {
+    return true;
+  }
 
   // Add operator to hash table
   aOperatorData->mFlags |= aForm;
@@ -211,7 +240,9 @@ static nsresult InitOperators(void) {
       getter_AddRefs(mathfontProp),
       "resource://gre/res/fonts/mathfont.properties"_ns);
 
-  if (NS_FAILED(rv)) return rv;
+  if (NS_FAILED(rv)) {
+    return rv;
+  }
 
   // Parse the Operator Dictionary in two passes.
   // The first pass is to count the number of operators; the second pass is to
@@ -246,12 +277,15 @@ static nsresult InitOperators(void) {
               } else if (kNotFound != name.RFind(".prefix")) {
                 form = NS_MATHML_OPERATOR_FORM_PREFIX;
                 len -= 7;  // 7 is the length of ".prefix";
-              } else
+              } else {
                 continue;  // input is not applicable
+              }
               name.SetLength(len);
               if (2 == pass) {  // allocate space and start the storage
                 if (!gOperatorArray) {
-                  if (0 == gOperatorCount) return NS_ERROR_UNEXPECTED;
+                  if (0 == gOperatorCount) {
+                    return NS_ERROR_UNEXPECTED;
+                  }
                   gOperatorArray = new OperatorData[gOperatorCount];
                 }
                 operatorData = &gOperatorArray[index];
@@ -261,7 +295,9 @@ static nsresult InitOperators(void) {
               // See if the operator should be retained
               if (SetOperator(operatorData, form, name, attributes)) {
                 index++;
-                if (1 == pass) gOperatorCount = index;
+                if (1 == pass) {
+                  gOperatorCount = index;
+                }
               }
             }
           }
@@ -279,7 +315,9 @@ static nsresult InitOperatorGlobals() {
   if (gOperatorTable) {
     rv = InitOperators();
   }
-  if (NS_FAILED(rv)) nsMathMLOperators::CleanUp();
+  if (NS_FAILED(rv)) {
+    nsMathMLOperators::CleanUp();
+  }
   return rv;
 }
 
@@ -393,9 +431,18 @@ bool nsMathMLOperators::LookupOperatorWithFallback(const nsString& aOperator,
 /* static */
 bool nsMathMLOperators::IsMirrorableOperator(const nsString& aOperator) {
   if (auto codePoint = ToUnicodeCodePoint(aOperator)) {
-    return mozilla::intl::UnicodeProperties::IsMirrored(codePoint);
+    return intl::UnicodeProperties::IsMirrored(codePoint);
   }
   return false;
+}
+
+/* static */
+nsString nsMathMLOperators::GetMirroredOperator(const nsString& aOperator) {
+  nsString result;
+  if (auto codePoint = ToUnicodeCodePoint(aOperator)) {
+    result.Assign(intl::UnicodeProperties::CharMirror(codePoint));
+  }
+  return result;
 }
 
 /* static */

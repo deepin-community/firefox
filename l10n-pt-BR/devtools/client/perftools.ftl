@@ -26,6 +26,7 @@ perftools-heading-local-build = Build local
 
 perftools-description-intro = As gravações abrem o <a>profiler.firefox.com</a> em uma nova aba. Todos os dados são armazenados localmente, mas você pode escolher enviar para compartilhar.
 perftools-description-local-build = Se você está gravando um profile de uma build que você mesmo compilou nesta máquina, adicione o objdir da sua build à lista abaixo para que ele possa ser usado para procurar informações de símbolos.
+perftools-pick-local-build-directory = Escolha o diretório de compilação
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -61,6 +62,14 @@ perftools-button-restart = Reiniciar
 perftools-button-add-directory = Adicionar um diretório
 perftools-button-remove-directory = Remover selecionados
 perftools-button-edit-settings = Editar configurações…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Mais ações
+perftools-menu-more-actions-restart-with-profiling = Reiniciar o { -brand-shorter-name } com gravação de profile de inicialização ativada
+perftools-menu-more-actions-copy-for-startup = Copiar variáveis ​​de ambiente de gravação de profile de inicialização
+perftools-menu-more-actions-copy-for-perf-tests = Copiar parâmetros para testes de desempenho
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -134,6 +143,8 @@ perftools-presets-graphics-label = Gráficos
 perftools-presets-graphics-description = Ajuste prévio para investigar bugs gráficos no { -brand-shorter-name }.
 perftools-presets-media-label = Mídia
 perftools-presets-media-description2 = Ajuste prévio para investigar bugs de áudio e vídeo no { -brand-shorter-name }.
+perftools-presets-ml-label = Aprendizado de máquina
+perftools-presets-ml-description2 = Ajuste prévio para investigar bugs de aprendizado de máquina no { -brand-shorter-name }.
 perftools-presets-networking-label = Rede
 perftools-presets-networking-description = Ajuste prévio para investigar bugs de rede no { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -141,7 +152,6 @@ perftools-presets-power-label = Energia
 perftools-presets-power-description = Ajuste prévio para investigar bugs de uso de energia no { -brand-shorter-name }, com baixa sobrecarga.
 perftools-presets-debug-label = Debug
 perftools-presets-debug-description = Configuração prévia de depuração no { -brand-shorter-name }. Alta sobrecarga, não usar para analisar desempenho, útil para se concentrar em entender o comportamento do navegador.
+perftools-presets-web-compat-label = Compatibilidade web
+perftools-presets-web-compat-description = Ajuste prévio recomendado para depurar problemas de compatibilidade na web em sites, em vez de acompanhar desempenho.
 perftools-presets-custom-label = Personalizado
-
-##
-

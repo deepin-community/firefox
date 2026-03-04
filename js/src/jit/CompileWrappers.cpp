@@ -34,7 +34,7 @@ const JitRuntime* CompileRuntime::jitRuntime() {
   return runtime()->jitRuntime();
 }
 
-GeckoProfilerRuntime& CompileRuntime::geckoProfiler() {
+const GeckoProfilerRuntime& CompileRuntime::geckoProfiler() {
   return runtime()->geckoProfiler();
 }
 
@@ -64,12 +64,20 @@ const void* CompileRuntime::mainContextPtr() {
   return runtime()->mainContextFromAnyThread();
 }
 
+const void* CompileRuntime::addressOfJitActivation() {
+  return runtime()->mainContextFromAnyThread()->addressOfJitActivation();
+}
+
 const void* CompileRuntime::addressOfJitStackLimit() {
   return runtime()->mainContextFromAnyThread()->addressOfJitStackLimit();
 }
 
 const void* CompileRuntime::addressOfInterruptBits() {
   return runtime()->mainContextFromAnyThread()->addressOfInterruptBits();
+}
+
+const void* CompileRuntime::addressOfRealm() {
+  return runtime()->mainContextFromAnyThread()->addressOfRealm();
 }
 
 const void* CompileRuntime::addressOfZone() {
@@ -92,20 +100,21 @@ const void* CompileRuntime::addressOfLastBufferedWholeCell() {
   return runtime()->gc.addressOfLastBufferedWholeCell();
 }
 
-const void* CompileRuntime::addressOfHasSeenObjectEmulateUndefinedFuse() {
+const void* CompileRuntime::addressOfRuntimeFuse(
+    RuntimeFuses::FuseIndex index) {
   // We're merely accessing the address of the fuse here, and so we don't need
   // the MainThreadData check here.
-  return runtime()->hasSeenObjectEmulateUndefinedFuse.refNoCheck().fuseRef();
+  return runtime()->runtimeFuses.refNoCheck().getFuseByIndex(index)->fuseRef();
 }
 
-bool CompileRuntime::hasSeenObjectEmulateUndefinedFuseIntact() {
+bool CompileRuntime::runtimeFuseIntact(RuntimeFuses::FuseIndex index) {
   // Note: This accesses the bit; this would be unsafe off-thread, however
   // this should only be accessed by CompileInfo in its constructor on main
   // thread and so should be safe.
   //
   // (This value is also checked by ref() rather than skipped like the address
   // call above.)
-  return runtime()->hasSeenObjectEmulateUndefinedFuse.ref().intact();
+  return runtime()->runtimeFuses.ref().getFuseByIndex(index)->intact();
 }
 
 const DOMCallbacks* CompileRuntime::DOMcallbacks() {
@@ -166,8 +175,10 @@ void* CompileZone::addressOfNurseryPosition() {
 
 void* CompileZone::addressOfNurseryAllocatedSites() {
   JSRuntime* rt = zone()->runtimeFromAnyThread();
-  return rt->gc.nursery().addressOfNurseryAllocatedSites();
+  return rt->gc.addressOfNurseryAllocatedSites();
 }
+
+void* CompileZone::jitZone() { return zone()->jitZone(); }
 
 bool CompileZone::canNurseryAllocateStrings() {
   return zone()->allocNurseryStrings();
@@ -183,6 +194,10 @@ gc::AllocSite* CompileZone::catchAllAllocSite(JS::TraceKind traceKind,
     return zone()->optimizedAllocSite();
   }
   return zone()->unknownAllocSite(traceKind);
+}
+
+gc::AllocSite* CompileZone::tenuringAllocSite() {
+  return zone()->tenuringAllocSite();
 }
 
 JS::Realm* CompileRealm::realm() { return reinterpret_cast<JS::Realm*>(this); }
@@ -202,8 +217,6 @@ const mozilla::non_crypto::XorShift128PlusRNG*
 CompileRealm::addressOfRandomNumberGenerator() {
   return realm()->addressOfRandomNumberGenerator();
 }
-
-const JitZone* CompileZone::jitZone() { return zone()->jitZone(); }
 
 const GlobalObject* CompileRealm::maybeGlobal() {
   // This uses unsafeUnbarrieredMaybeGlobal() so as not to trigger the read

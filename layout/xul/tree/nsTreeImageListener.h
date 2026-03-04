@@ -7,10 +7,9 @@
 #ifndef nsTreeImageListener_h__
 #define nsTreeImageListener_h__
 
-#include "nsString.h"
 #include "nsCOMPtr.h"
+#include "nsString.h"
 #include "nsTreeBodyFrame.h"
-#include "mozilla/Attributes.h"
 
 class nsTreeColumn;
 
@@ -22,7 +21,7 @@ class nsTreeImageListener final : public imgINotificationObserver {
   NS_DECL_ISUPPORTS
   NS_DECL_IMGINOTIFICATIONOBSERVER
 
-  NS_IMETHOD ClearFrame();
+  void ClearFrame() { mTreeFrame = nullptr; }
 
   friend class nsTreeBodyFrame;
 

@@ -5,27 +5,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/MIDIAccess.h"
-#include "mozilla/dom/MIDIAccessManager.h"
-#include "mozilla/dom/MIDIPort.h"
-#include "mozilla/dom/MIDIAccessBinding.h"
-#include "mozilla/dom/MIDIConnectionEvent.h"
-#include "mozilla/dom/MIDIOptionsBinding.h"
-#include "mozilla/dom/MIDIOutputMapBinding.h"
-#include "mozilla/dom/MIDIInputMapBinding.h"
-#include "mozilla/dom/MIDIOutputMap.h"
-#include "mozilla/dom/MIDIInputMap.h"
-#include "mozilla/dom/MIDIOutput.h"
-#include "mozilla/dom/MIDIInput.h"
-#include "mozilla/dom/MIDITypes.h"
-#include "mozilla/dom/Promise.h"
-#include "mozilla/dom/PContent.h"
-#include "mozilla/dom/Document.h"
-#include "nsPIDOMWindow.h"
-#include "nsGlobalWindowInner.h"
-#include "nsContentPermissionHelper.h"
-#include "nsISupportsImpl.h"  // for MOZ_COUNT_CTOR, MOZ_COUNT_DTOR
-#include "ipc/IPCMessageUtils.h"
+
 #include "MIDILog.h"
+#include "ipc/IPCMessageUtils.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/MIDIAccessBinding.h"
+#include "mozilla/dom/MIDIAccessManager.h"
+#include "mozilla/dom/MIDIConnectionEvent.h"
+#include "mozilla/dom/MIDIInput.h"
+#include "mozilla/dom/MIDIInputMap.h"
+#include "mozilla/dom/MIDIInputMapBinding.h"
+#include "mozilla/dom/MIDIOptionsBinding.h"
+#include "mozilla/dom/MIDIOutput.h"
+#include "mozilla/dom/MIDIOutputMap.h"
+#include "mozilla/dom/MIDIOutputMapBinding.h"
+#include "mozilla/dom/MIDIPort.h"
+#include "mozilla/dom/MIDITypes.h"
+#include "mozilla/dom/PContent.h"
+#include "mozilla/dom/Promise.h"
+#include "nsContentPermissionHelper.h"
+#include "nsGlobalWindowInner.h"
+#include "nsISupportsImpl.h"  // for MOZ_COUNT_CTOR, MOZ_COUNT_DTOR
+#include "nsPIDOMWindow.h"
 
 namespace mozilla::dom {
 
@@ -75,7 +76,6 @@ void MIDIAccess::Shutdown() {
   if (mHasShutdown) {
     return;
   }
-  mDestructionObservers.Broadcast(void_t());
   if (MIDIAccessManager::IsRunning()) {
     MIDIAccessManager::Get()->RemoveObserver(this);
   }
@@ -189,8 +189,6 @@ void MIDIAccess::MaybeCreateMIDIPort(const MIDIPortInfo& aInfo,
     // That is bad.
     MOZ_CRASH("We shouldn't be here!");
   }
-  // Set up port to listen for destruction of this access object.
-  mDestructionObservers.AddObserver(port);
 
   // If we haven't resolved the promise for handing the MIDIAccess object to
   // content, this means we're still populating the list of already connected
@@ -205,7 +203,7 @@ void MIDIAccess::MaybeCreateMIDIPort(const MIDIPortInfo& aInfo,
 // received, that will be handled by the MIDIPort object itself, and it will
 // request removal from MIDIAccess's maps.
 void MIDIAccess::Notify(const MIDIPortList& aEvent) {
-  LOG("MIDIAcess::Notify");
+  LOG("MIDIAccess::Notify");
   if (!GetOwnerWindow()) {
     // Do nothing if we've already been disconnected from the document.
     return;
@@ -235,10 +233,6 @@ void MIDIAccess::Notify(const MIDIPortList& aEvent) {
 JSObject* MIDIAccess::WrapObject(JSContext* aCx,
                                  JS::Handle<JSObject*> aGivenProto) {
   return MIDIAccess_Binding::Wrap(aCx, this, aGivenProto);
-}
-
-void MIDIAccess::RemovePortListener(MIDIAccessDestructionObserver* aObs) {
-  mDestructionObservers.RemoveObserver(aObs);
 }
 
 void MIDIAccess::DisconnectFromOwner() {

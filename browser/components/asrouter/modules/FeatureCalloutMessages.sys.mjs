@@ -41,10 +41,10 @@ const matchCurrentScreenTargeting = (prefName, screenIdRegEx = ".*") => {
  * Creates a "hasn't been viewed in > 24 hours"
  * JEXL string and adds it to each message specified
  *
- * @param {array} messageIds - IDs of messages that the targeting string will be added to
+ * @param {Array} messageIds - IDs of messages that the targeting string will be added to
  * @param {string} prefix - The prefix of messageIDs that will used to create the JEXL string
- * @param {array} messages - The array of messages that will be edited
- * @returns {array} - The array of messages with the appropriate targeting strings edited
+ * @param {Array} messages - The array of messages that will be edited
+ * @returns {Array} - The array of messages with the appropriate targeting strings edited
  */
 function add24HourImpressionJEXLTargeting(
   messageIds,
@@ -83,6 +83,634 @@ function add24HourImpressionJEXLTargeting(
 // acts as a safety guard against mutations of the original objects
 const MESSAGES = () => {
   let messages = [
+    {
+      id: "TAB_GROUP_ONBOARDING_CALLOUT",
+      template: "feature_callout",
+      groups: ["cfr"],
+      content: {
+        id: "TAB_GROUP_ONBOARDING_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "TAB_GROUP_ONBOARDING_CALLOUT_HORIZONTAL",
+            anchors: [
+              {
+                selector:
+                  "#tabbrowser-tabs:not([overflow]) .tab-content[selected]:not([pinned])",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+              {
+                selector:
+                  "#tabbrowser-tabs:not([overflow]) tab:not([pinned]):last-of-type",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+              {
+                selector:
+                  "#tabbrowser-tabs:not([overflow]) #tabs-newtab-button",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+              {
+                selector: "#tabbrowser-tabs",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              width: "333px",
+              padding: 16,
+              logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/hort-animated-light.svg",
+                darkModeImageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/hort-animated-dark.svg",
+                reducedMotionImageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/hort-static-light.svg",
+                darkModeReducedMotionImageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/hort-static-dark.svg",
+                height: "172px",
+                width: "300px",
+              },
+              title: {
+                string_id: "tab-groups-onboarding-feature-callout-title",
+              },
+              subtitle: {
+                string_id: "tab-groups-onboarding-feature-callout-subtitle",
+              },
+              dismiss_button: {
+                action: {
+                  dismiss: true,
+                },
+                background: true,
+                size: "small",
+                marginInline: "0 20px",
+                marginBlock: "20px 0",
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "tabsClosedCount >= 1 && currentTabsOpen >= 8 && ('browser.tabs.groups.enabled' | preferenceValue) && (!'sidebar.verticalTabs' | preferenceValue) && currentTabGroups == 0 && savedTabGroups == 0 && !activeNotifications",
+      trigger: {
+        id: "nthTabClosed",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+    },
+    {
+      id: "TAB_GROUP_ONBOARDING_CALLOUT",
+      template: "feature_callout",
+      groups: ["cfr"],
+      content: {
+        id: "TAB_GROUP_ONBOARDING_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "TAB_GROUP_ONBOARDING_CALLOUT_VERTICAL",
+            anchors: [
+              {
+                selector:
+                  "#tabbrowser-tabs:not([overflow]) .tab-content[selected]:not([pinned])",
+                panel_position: {
+                  anchor_attachment: "rightcenter",
+                  callout_attachment: "topleft",
+                },
+              },
+              {
+                selector:
+                  "#tabbrowser-tabs:not([overflow]) tab:not([pinned]):last-of-type",
+                panel_position: {
+                  anchor_attachment: "rightcenter",
+                  callout_attachment: "topleft",
+                },
+              },
+              {
+                selector:
+                  "#tabbrowser-tabs:not([overflow]) #tabs-newtab-button",
+                panel_position: {
+                  anchor_attachment: "rightcenter",
+                  callout_attachment: "topleft",
+                },
+              },
+              {
+                selector: "#tabbrowser-tabs",
+                panel_position: {
+                  anchor_attachment: "rightcenter",
+                  callout_attachment: "topleft",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              width: "333px",
+              padding: 16,
+              logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/vert-animated-light.svg",
+                darkModeImageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/vert-animated-dark.svg",
+                reducedMotionImageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/vert-static-light.svg",
+                darkModeReducedMotionImageURL:
+                  "chrome://browser/content/asrouter/assets/tabgroups/vert-static-dark.svg",
+                height: "172px",
+                width: "300px",
+              },
+              title: {
+                string_id: "tab-groups-onboarding-feature-callout-title",
+              },
+              subtitle: {
+                string_id: "tab-groups-onboarding-feature-callout-subtitle",
+              },
+              dismiss_button: {
+                action: {
+                  dismiss: true,
+                },
+                background: true,
+                size: "small",
+                marginInline: "0 20px",
+                marginBlock: "20px 0",
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "tabsClosedCount >= 1 && currentTabsOpen >= 8 && ('browser.tabs.groups.enabled' | preferenceValue) && ('sidebar.revamp' | preferenceValue) && ('sidebar.verticalTabs' | preferenceValue) && currentTabGroups == 0 && savedTabGroups == 0 && !activeNotifications",
+      trigger: {
+        id: "nthTabClosed",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+    },
+    // Appears the first time a user uses the "save and close" action on a tab group,
+    // anchored to the alltabs-button. Will only show if at least an hour has passed
+    // since the CREATE_TAB_GROUP callout showed.
+    {
+      id: "SAVE_TAB_GROUP_ONBOARDING_CALLOUT",
+      template: "feature_callout",
+      groups: [],
+      content: {
+        id: "SAVE_TAB_GROUP_ONBOARDING_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "SAVE_TAB_GROUP_ONBOARDING_CALLOUT_ALLTABS_BUTTON",
+            anchors: [
+              {
+                selector: "#alltabs-button",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              padding: 16,
+              width: "330px",
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "0 16px",
+                alignment: "top",
+              },
+              title: {
+                string_id: "tab-groups-onboarding-saved-groups-title-3",
+              },
+              primary_button: {
+                label: {
+                  string_id: "tab-groups-onboarding-dismiss",
+                },
+                action: {
+                  dismiss: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "('browser.tabs.groups.enabled' | preferenceValue) && userPrefs.cfrFeatures && (!messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] || messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] < currentDate|date - 3600000) && alltabsButtonAreaType != null",
+      trigger: {
+        id: "tabGroupSaved",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+    },
+    // Appears the first time a user uses the "save and close" action on a tab group,
+    // if the alltabs-button has been removed. Anchored to the urlbar. Will only show
+    // if CREATE_TAB_GROUP callout has not shown, or at least an hour has passed since
+    // the CREATE_TAB_GROUP callout showed.
+    {
+      id: "SAVE_TAB_GROUP_ONBOARDING_CALLOUT",
+      template: "feature_callout",
+      groups: [],
+      content: {
+        id: "SAVE_TAB_GROUP_ONBOARDING_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "SAVE_TAB_GROUP_ONBOARDING_CALLOUT_URLBAR",
+            anchors: [
+              {
+                selector: ".urlbar-input-box",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topcenter",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              padding: 16,
+              width: "330px",
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "0 16px",
+                alignment: "top",
+              },
+              title: {
+                string_id:
+                  "tab-groups-onboarding-saved-groups-no-alltabs-button-title-2",
+              },
+              primary_button: {
+                label: {
+                  string_id: "tab-groups-onboarding-dismiss",
+                },
+                action: {
+                  dismiss: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "('browser.tabs.groups.enabled' | preferenceValue) && userPrefs.cfrFeatures && (!messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] || messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.CREATE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] < currentDate|date - 3600000) && alltabsButtonAreaType == null",
+      trigger: {
+        id: "tabGroupSaved",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+    },
+    // Appears the first time a user creates a tab group, after clicking the "Done"
+    // button. Anchored to the alltabs-button. Will only show if the SAVE_TAB_GROUP
+    // callout has not shown, or if at least an hour has passed
+    // since the SAVE_TAB_GROUP callout showed.
+    {
+      id: "CREATE_TAB_GROUP_ONBOARDING_CALLOUT",
+      template: "feature_callout",
+      groups: [],
+      content: {
+        id: "CREATE_TAB_GROUP_ONBOARDING_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "CREATE_TAB_GROUP_ONBOARDING_CALLOUT_ALLTABS_BUTTON",
+            anchors: [
+              {
+                selector: "#alltabs-button",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              padding: 16,
+              width: "330px",
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "0 16px",
+                alignment: "top",
+              },
+              title: {
+                string_id: "tab-groups-onboarding-create-group-title-3",
+              },
+              primary_button: {
+                label: {
+                  string_id: "tab-groups-onboarding-dismiss",
+                },
+                action: {
+                  dismiss: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "('browser.tabs.groups.enabled' | preferenceValue) && userPrefs.cfrFeatures && (!messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] || messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] < currentDate|date - 3600000) && alltabsButtonAreaType != null",
+      trigger: {
+        id: "tabGroupCreated",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+    },
+    // Appears the first time a user creates a tab group, after clicking the "Done"
+    // button, if the alltabs-button has been removed. Anchored to the urlbar. Will
+    // only show if the SAVE_TAB_GROUP callout has not shown, or if at least an hour
+    // has passed since the SAVE_TAB_GROUP callout showed.
+    {
+      id: "CREATE_TAB_GROUP_ONBOARDING_CALLOUT",
+      template: "feature_callout",
+      groups: [],
+      content: {
+        id: "CREATE_TAB_GROUP_ONBOARDING_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "CREATE_TAB_GROUP_ONBOARDING_CALLOUT_URLBAR",
+            anchors: [
+              {
+                selector: ".urlbar-input-box",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topcenter",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              padding: 16,
+              width: "330px",
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "0 16px",
+                alignment: "top",
+              },
+              title: {
+                string_id:
+                  "tab-groups-onboarding-create-group-no-alltabs-button-title",
+              },
+              primary_button: {
+                label: {
+                  string_id: "tab-groups-onboarding-dismiss",
+                },
+                action: {
+                  dismiss: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "('browser.tabs.groups.enabled' | preferenceValue) && userPrefs.cfrFeatures && (!messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] || messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT[messageImpressions.SAVE_TAB_GROUP_ONBOARDING_CALLOUT | length - 1] < currentDate|date - 3600000) && alltabsButtonAreaType == null",
+      trigger: {
+        id: "tabGroupCreated",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+    },
+    // Appears after a browser restart if Session Restore is disabled, to direct
+    // users to tab groups that were saved automatically. Anchored to the alltabs-button.
+    {
+      id: "SESSION_RESTORE_TAB_GROUP_CALLOUT",
+      template: "feature_callout",
+      groups: [],
+      content: {
+        id: "SESSION_RESTORE_TAB_GROUP_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "SESSION_RESTORE_TAB_GROUP_CALLOUT_ALLTABS_BUTTON",
+            anchors: [
+              {
+                selector: "#alltabs-button",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              padding: 16,
+              width: "330px",
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "0 16px",
+                alignment: "top",
+              },
+              title: {
+                string_id: "tab-groups-onboarding-session-restore-title-2",
+              },
+              primary_button: {
+                label: {
+                  string_id: "tab-groups-onboarding-dismiss",
+                },
+                action: {
+                  dismiss: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "('browser.tabs.groups.enabled' | preferenceValue) && userPrefs.cfrFeatures && previousSessionEnd && ('browser.startup.page' | preferenceValue != 3) && savedTabGroups >= 1 && alltabsButtonAreaType != null",
+      trigger: {
+        id: "defaultBrowserCheck",
+      },
+      priority: 2,
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "not tested in automation",
+    },
+    // Appears after a browser restart if Session Restore is disabled, to direct
+    // users to tab groups that were saved automatically, for users who have
+    // removed the alltabs button. Anchored to the urlbar.
+    {
+      id: "SESSION_RESTORE_TAB_GROUP_CALLOUT",
+      template: "feature_callout",
+      groups: [],
+      content: {
+        id: "SESSION_RESTORE_TAB_GROUP_CALLOUT",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "SESSION_RESTORE_TAB_GROUP_CALLOUT_URLBAR",
+            anchors: [
+              {
+                selector: ".urlbar-input-box",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topcenter",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              padding: 16,
+              width: "330px",
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "0 16px",
+                alignment: "top",
+              },
+              title: {
+                string_id:
+                  "tab-groups-onboarding-saved-groups-no-alltabs-button-title-2",
+              },
+              primary_button: {
+                label: {
+                  string_id: "tab-groups-onboarding-dismiss",
+                },
+                action: {
+                  dismiss: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "('browser.tabs.groups.enabled' | preferenceValue) && userPrefs.cfrFeatures && previousSessionEnd && ('browser.startup.page' | preferenceValue != 3) && savedTabGroups >= 1 && alltabsButtonAreaType == null",
+      trigger: {
+        id: "defaultBrowserCheck",
+      },
+      priority: 2,
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "not tested in automation",
+    },
+    {
+      id: "ADDONS_STAFF_PICK_PT_2",
+      template: "feature_callout",
+      groups: ["cfr"],
+      content: {
+        id: "ADDONS_STAFF_PICK_PT_2",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "ADDONS_STAFF_PICK_PT_2_A",
+            anchors: [
+              {
+                selector: "#unified-extensions-button",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topright",
+                },
+                arrow_width: "26.9",
+              },
+            ],
+            content: {
+              position: "callout",
+              width: "310px",
+              padding: 16,
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/smiling-fox-icon.svg",
+                width: "24px",
+                height: "24px",
+                marginInline: "4px 14px",
+              },
+              title: {
+                raw: "Give your browsing a boost",
+                marginInline: "0 48px",
+              },
+              subtitle: {
+                raw: "Make browsing faster, safer, or just plain fun with Firefox add-ons. See what our staff recommends!",
+                paddingInline: "34px 0",
+              },
+              primary_button: {
+                label: {
+                  raw: "Explore add-ons",
+                },
+                action: {
+                  dismiss: true,
+                  type: "OPEN_URL",
+                  data: {
+                    args: "https://addons.mozilla.org/en-US/firefox/collections/4757633/36d285535db74c6986abbeeed3e214/?page=1&collection_sort=added",
+                    where: "tabshifted",
+                  },
+                },
+              },
+              dismiss_button: {
+                action: {
+                  dismiss: true,
+                },
+                size: "small",
+                marginInline: "0 14px",
+                marginBlock: "14px 0",
+              },
+            },
+          },
+        ],
+      },
+      targeting:
+        "userPrefs.cfrAddons && userPrefs.cfrFeatures && localeLanguageCode == 'en' && ((currentDate|date - profileAgeCreated|date) / 86400000 < 28) && !screenImpressions.AW_AMO_INTRODUCE && !willShowDefaultPrompt && !activeNotifications && source == 'newtab' && previousSessionEnd",
+      trigger: {
+        id: "defaultBrowserCheck",
+      },
+      frequency: {
+        lifetime: 1,
+      },
+    },
     {
       id: "FIREFOX_VIEW_TAB_PICKUP_REMINDER",
       template: "feature_callout",
@@ -401,589 +1029,6 @@ const MESSAGES = () => {
       )} && ${matchIncompleteTargeting(PDFJS_PREF)}`,
       trigger: { id: "pdfJsFeatureCalloutCheck" },
     },
-    {
-      // "Callout 1" in the Fakespot Figma spec
-      id: "FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              title_logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/shopping.svg",
-                alignment: "top",
-              },
-              title: {
-                string_id: "shopping-callout-closed-opted-in-subtitle",
-                marginInline: "3px 40px",
-                fontWeight: "inherit",
-              },
-              dismiss_button: {
-                action: { dismiss: true },
-                size: "small",
-                marginBlock: "24px 0",
-                marginInline: "0 24px",
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-            },
-          },
-        ],
-      },
-      priority: 1,
-      // Auto-open feature flag is not enabled; User is opted in; First time closing sidebar; Has not seen either on-closed callout before; Has not opted out of CFRs.
-      targeting: `isSidebarClosing && 'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue != true && 'browser.shopping.experience2023.optedIn' | preferenceValue == 1 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false && !messageImpressions.FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT|length && !messageImpressions.FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT|length`,
-      trigger: { id: "shoppingProductPageWithSidebarClosed" },
-      frequency: { lifetime: 1 },
-    },
-    {
-      // "Callout 3" in the Fakespot Figma spec
-      id: "FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              title_logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/shopping.svg",
-              },
-              title: {
-                string_id: "shopping-callout-closed-not-opted-in-title",
-                marginInline: "3px 40px",
-              },
-              subtitle: {
-                string_id: "shopping-callout-closed-not-opted-in-subtitle",
-              },
-              dismiss_button: {
-                action: { dismiss: true },
-                size: "small",
-                marginBlock: "24px 0",
-                marginInline: "0 24px",
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-            },
-          },
-        ],
-      },
-      priority: 1,
-      // Auto-open feature flag is not enabled; User is not opted in; First time closing sidebar; Has not seen either on-closed callout before; Has not opted out of CFRs.
-      targeting: `isSidebarClosing && 'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue != true && 'browser.shopping.experience2023.optedIn' | preferenceValue != 1 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false && !messageImpressions.FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT|length && !messageImpressions.FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT|length`,
-      trigger: { id: "shoppingProductPageWithSidebarClosed" },
-      frequency: { lifetime: 1 },
-    },
-    {
-      // "callout 2" in the Fakespot Figma spec
-      id: "FAKESPOT_CALLOUT_PDP_OPTED_IN_DEFAULT",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_PDP_OPTED_IN_DEFAULT",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_PDP_OPTED_IN_DEFAULT",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              title: { string_id: "shopping-callout-pdp-opted-in-title" },
-              subtitle: { string_id: "shopping-callout-pdp-opted-in-subtitle" },
-              logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/ratingLight.avif",
-                darkModeImageURL:
-                  "chrome://browser/content/shopping/assets/ratingDark.avif",
-                height: "216px",
-              },
-              dismiss_button: {
-                action: { dismiss: true },
-                size: "small",
-                marginBlock: "24px 0",
-                marginInline: "0 24px",
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-            },
-          },
-        ],
-      },
-      priority: 1,
-      // Auto-open feature flag is not enabled; User is opted in; Has not opted out of CFRs; Has seen either on-closed callout before, but not within the last 24hrs or in this session.
-      targeting: `!isSidebarClosing && 'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue != true && 'browser.shopping.experience2023.optedIn' | preferenceValue == 1 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false && ((currentDate | date - messageImpressions.FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT[messageImpressions.FAKESPOT_CALLOUT_CLOSED_OPTED_IN_DEFAULT | length - 1] | date) / 3600000 > 24 || (currentDate | date - messageImpressions.FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT[messageImpressions.FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_DEFAULT | length - 1] | date) / 3600000 > 24)`,
-      trigger: { id: "shoppingProductPageWithSidebarClosed" },
-      frequency: { lifetime: 1 },
-    },
-    {
-      // "Callout 1" in the Fakespot Figma spec, but
-      // targeting not opted-in users only for rediscoverability experiment 2.
-      id: "FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_AUTO_OPEN",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_AUTO_OPEN",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_AUTO_OPEN",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              width: "401px",
-              title: {
-                string_id: "shopping-callout-closed-not-opted-in-revised-title",
-              },
-              subtitle: {
-                string_id:
-                  "shopping-callout-closed-not-opted-in-revised-subtitle",
-                letterSpacing: "0",
-              },
-              logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/priceTagButtonCallout.svg",
-                height: "214px",
-              },
-              dismiss_button: {
-                action: { dismiss: true },
-                size: "small",
-                marginBlock: "28px 0",
-                marginInline: "0 28px",
-              },
-              primary_button: {
-                label: {
-                  string_id:
-                    "shopping-callout-closed-not-opted-in-revised-button",
-                  marginBlock: "0 -8px",
-                },
-                style: "secondary",
-                action: {
-                  dismiss: true,
-                },
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-            },
-          },
-        ],
-      },
-      priority: 1,
-      // Auto-open feature flag is enabled; User is not opted in; First time closing sidebar; Has not opted out of CFRs.
-      targeting: `isSidebarClosing && 'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue == true && 'browser.shopping.experience2023.optedIn' | preferenceValue != 1 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false`,
-      trigger: { id: "shoppingProductPageWithSidebarClosed" },
-      frequency: { lifetime: 1 },
-      skip_in_tests:
-        "not tested in automation and might pop up unexpectedly during review checker tests",
-    },
-    {
-      // "Callout 3" in the Fakespot Figma spec, but
-      // displayed if auto-open version of "callout 1" was seen already and 24 hours have passed.
-      id: "FAKESPOT_CALLOUT_PDP_NOT_OPTED_IN_REMINDER",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_PDP_NOT_OPTED_IN_REMINDER",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_PDP_NOT_OPTED_IN_REMINDER",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              width: "401px",
-              title: {
-                string_id: "shopping-callout-not-opted-in-reminder-title",
-                fontSize: "20px",
-                letterSpacing: "0",
-              },
-              subtitle: {
-                string_id: "shopping-callout-not-opted-in-reminder-subtitle",
-                letterSpacing: "0",
-              },
-              logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/reviewsVisualCallout.svg",
-                alt: {
-                  string_id: "shopping-callout-not-opted-in-reminder-img-alt",
-                },
-                height: "214px",
-              },
-              dismiss_button: {
-                action: {
-                  type: "MULTI_ACTION",
-                  collectSelect: true,
-                  data: {
-                    actions: [],
-                  },
-                  dismiss: true,
-                },
-                size: "small",
-                marginBlock: "28px 0",
-                marginInline: "0 28px",
-              },
-              primary_button: {
-                label: {
-                  string_id:
-                    "shopping-callout-not-opted-in-reminder-close-button",
-                  marginBlock: "0 -8px",
-                },
-                style: "secondary",
-                action: {
-                  type: "MULTI_ACTION",
-                  collectSelect: true,
-                  data: {
-                    actions: [],
-                  },
-                  dismiss: true,
-                },
-              },
-              secondary_button: {
-                label: {
-                  string_id:
-                    "shopping-callout-not-opted-in-reminder-open-button",
-                  marginBlock: "0 -8px",
-                },
-                style: "primary",
-                action: {
-                  type: "MULTI_ACTION",
-                  collectSelect: true,
-                  data: {
-                    actions: [
-                      {
-                        type: "SET_PREF",
-                        data: {
-                          pref: {
-                            name: "browser.shopping.experience2023.active",
-                            value: true,
-                          },
-                        },
-                      },
-                    ],
-                  },
-                  dismiss: true,
-                },
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-              tiles: {
-                type: "multiselect",
-                style: {
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                },
-                data: [
-                  {
-                    id: "checkbox-dont-show-again",
-                    type: "checkbox",
-                    defaultValue: false,
-                    style: {
-                      alignItems: "center",
-                    },
-                    label: {
-                      string_id:
-                        "shopping-callout-not-opted-in-reminder-ignore-checkbox",
-                    },
-                    icon: {
-                      style: {
-                        width: "16px",
-                        height: "16px",
-                        marginInline: "0 8px",
-                      },
-                    },
-                    action: {
-                      type: "SET_PREF",
-                      data: {
-                        pref: {
-                          name: "messaging-system-action.shopping-callouts-1-block",
-                          value: true,
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        ],
-      },
-      priority: 2,
-      // Auto-open feature flag is enabled; User is not opted in; Has not opted out of CFRs; Has seen callout 1 before, but not within the last 5 days.
-      targeting:
-        "!isSidebarClosing && 'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue == true && 'browser.shopping.experience2023.optedIn' | preferenceValue == 0 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false && !'messaging-system-action.shopping-callouts-1-block' | preferenceValue && (currentDate | date - messageImpressions.FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_AUTO_OPEN[messageImpressions.FAKESPOT_CALLOUT_CLOSED_NOT_OPTED_IN_AUTO_OPEN | length - 1] | date) / 3600000 > 24",
-      trigger: {
-        id: "shoppingProductPageWithSidebarClosed",
-      },
-      frequency: {
-        custom: [
-          {
-            cap: 1,
-            period: 432000000,
-          },
-        ],
-        lifetime: 3,
-      },
-      skip_in_tests:
-        "not tested in automation and might pop up unexpectedly during review checker tests",
-    },
-    {
-      // "Callout 4" in the Fakespot Figma spec, for rediscoverability experiment 2.
-      id: "FAKESPOT_CALLOUT_DISABLED_AUTO_OPEN",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_DISABLED_AUTO_OPEN",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_DISABLED_AUTO_OPEN",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              width: "401px",
-              title: {
-                string_id: "shopping-callout-disabled-auto-open-title",
-              },
-              subtitle: {
-                string_id: "shopping-callout-disabled-auto-open-subtitle",
-                letterSpacing: "0",
-              },
-              logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/priceTagButtonCallout.svg",
-                height: "214px",
-              },
-              dismiss_button: {
-                action: { dismiss: true },
-                size: "small",
-                marginBlock: "28px 0",
-                marginInline: "0 28px",
-              },
-              primary_button: {
-                label: {
-                  string_id: "shopping-callout-disabled-auto-open-button",
-                  marginBlock: "0 -8px",
-                },
-                style: "secondary",
-                action: {
-                  dismiss: true,
-                },
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-            },
-          },
-        ],
-      },
-      priority: 1,
-      // Auto-open feature flag is enabled; User disabled auto-open behavior; User is opted in; Has not opted out of CFRs.
-      targeting: `'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue == true && 'browser.shopping.experience2023.autoOpen.userEnabled' | preferenceValue == false && 'browser.shopping.experience2023.optedIn' | preferenceValue == 1 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false`,
-      trigger: {
-        id: "preferenceObserver",
-        params: ["browser.shopping.experience2023.autoOpen.userEnabled"],
-      },
-      frequency: { lifetime: 1 },
-      skip_in_tests:
-        "not tested in automation and might pop up unexpectedly during review checker tests",
-    },
-    {
-      // "Callout 5" in the Fakespot Figma spec, for rediscoverability experiment 2.
-      id: "FAKESPOT_CALLOUT_OPTED_OUT_AUTO_OPEN",
-      template: "feature_callout",
-      content: {
-        id: "FAKESPOT_CALLOUT_OPTED_OUT_AUTO_OPEN",
-        template: "multistage",
-        backdrop: "transparent",
-        transitions: false,
-        disableHistoryUpdates: true,
-        screens: [
-          {
-            id: "FAKESPOT_CALLOUT_OPTED_OUT_AUTO_OPEN",
-            anchors: [
-              {
-                selector: "#shopping-sidebar-button",
-                panel_position: {
-                  anchor_attachment: "bottomcenter",
-                  callout_attachment: "topright",
-                },
-                no_open_on_anchor: true,
-              },
-            ],
-            content: {
-              position: "callout",
-              width: "401px",
-              title: {
-                string_id: "shopping-callout-opted-out-title",
-              },
-              subtitle: {
-                string_id: "shopping-callout-opted-out-subtitle",
-                letterSpacing: "0",
-              },
-              logo: {
-                imageURL:
-                  "chrome://browser/content/shopping/assets/priceTagButtonCallout.svg",
-                height: "214px",
-              },
-              dismiss_button: {
-                action: { dismiss: true },
-                size: "small",
-                marginBlock: "28px 0",
-                marginInline: "0 28px",
-              },
-              primary_button: {
-                label: {
-                  string_id: "shopping-callout-opted-out-button",
-                  marginBlock: "0 -8px",
-                },
-                style: "secondary",
-                action: {
-                  dismiss: true,
-                },
-              },
-              page_event_listeners: [
-                {
-                  params: {
-                    type: "click",
-                    selectors: "#shopping-sidebar-button",
-                  },
-                  action: { dismiss: true },
-                },
-              ],
-            },
-          },
-        ],
-      },
-      priority: 1,
-      // Auto-open feature flag is enabled; User has opted out; Has not opted out of CFRs.
-      targeting: `'browser.shopping.experience2023.autoOpen.enabled' | preferenceValue == true && 'browser.shopping.experience2023.optedIn' | preferenceValue == 2 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false`,
-      trigger: {
-        id: "preferenceObserver",
-        params: ["browser.shopping.experience2023.optedIn"],
-      },
-      frequency: { lifetime: 1 },
-      skip_in_tests:
-        "not tested in automation and might pop up unexpectedly during review checker tests",
-    },
-
     // cookie banner reduction onboarding
     {
       id: "CFR_COOKIEBANNER",
@@ -1056,6 +1101,237 @@ const MESSAGES = () => {
         id: "cookieBannerHandled",
       },
       targeting: `'cookiebanners.ui.desktop.enabled'|preferenceValue == true && 'cookiebanners.ui.desktop.showCallout'|preferenceValue == true && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false`,
+    },
+    {
+      id: "FX_VIEW_DISCOVERABILITY_ALL_USERS",
+      template: "feature_callout",
+      groups: ["cfr"],
+      content: {
+        id: "FX_VIEW_DISCOVERABILITY_ALL_USERS",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        screens: [
+          {
+            id: "FX_VIEW_DISCOVERABILITY_ALL_USERS_SCREEN",
+            anchors: [
+              {
+                selector: "#firefox-view-button",
+                panel_position: {
+                  anchor_attachment: "bottomcenter",
+                  callout_attachment: "topleft",
+                },
+                no_open_on_anchor: true,
+                arrow_width: "15.5563",
+              },
+            ],
+            content: {
+              position: "callout",
+              width: "342px",
+              padding: 16,
+              page_event_listeners: [
+                {
+                  params: {
+                    type: "click",
+                    selectors: "#firefox-view-button",
+                  },
+                  action: {
+                    dismiss: true,
+                  },
+                },
+              ],
+              title_logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/fox-question-mark-icon.svg",
+                width: "25px",
+                height: "29px",
+                marginInline: "4px 14px",
+                alignment: "top",
+              },
+              title: {
+                string_id: "fx-view-discoverability-title",
+                marginInline: "0 16px",
+              },
+              subtitle: {
+                string_id: "fx-view-discoverability-subtitle",
+                paddingInline: "34px 0",
+                marginBlock: "-8px -4px",
+              },
+              additional_button: {
+                label: {
+                  string_id: "fx-view-discoverability-secondary-button-label",
+                },
+                style: "secondary",
+                action: {
+                  type: "BLOCK_MESSAGE",
+                  data: {
+                    id: "FX_VIEW_DISCOVERABILITY_ALL_USERS",
+                  },
+                  dismiss: true,
+                },
+              },
+              secondary_button: {
+                label: {
+                  string_id: "fx-view-discoverability-primary-button-label",
+                },
+                style: "primary",
+                action: {
+                  type: "OPEN_FIREFOX_VIEW",
+                  navigate: true,
+                },
+              },
+              submenu_button: {
+                submenu: [
+                  {
+                    type: "action",
+                    label: {
+                      string_id: "split-dismiss-button-dont-show-option",
+                    },
+                    action: {
+                      type: "BLOCK_MESSAGE",
+                      data: {
+                        id: "FX_VIEW_DISCOVERABILITY_ALL_USERS",
+                      },
+                      dismiss: true,
+                    },
+                    id: "block_recommendation",
+                  },
+                  {
+                    type: "action",
+                    label: {
+                      string_id: "split-dismiss-button-show-fewer-option",
+                    },
+                    action: {
+                      type: "MULTI_ACTION",
+                      dismiss: true,
+                      data: {
+                        actions: [
+                          {
+                            type: "SET_PREF",
+                            data: {
+                              pref: {
+                                name: "messaging-system-action.firefox-view-recommendations",
+                                value: true,
+                              },
+                            },
+                          },
+                          {
+                            type: "BLOCK_MESSAGE",
+                            data: {
+                              id: "FX_VIEW_DISCOVERABILITY_ALL_USERS",
+                            },
+                          },
+                        ],
+                      },
+                    },
+                    id: "show_fewer_recommendations",
+                  },
+                  {
+                    type: "separator",
+                  },
+                  {
+                    type: "action",
+                    label: {
+                      string_id: "split-dismiss-button-manage-settings-option",
+                    },
+                    action: {
+                      type: "OPEN_ABOUT_PAGE",
+                      data: {
+                        args: "preferences#general-cfrfeatures",
+                        where: "tab",
+                      },
+                      dismiss: true,
+                    },
+                    id: "manage_settings",
+                  },
+                ],
+                attached_to: "additional_button",
+              },
+            },
+          },
+        ],
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+      targeting:
+        "!isMajorUpgrade && !willShowDefaultPrompt && !activeNotifications && previousSessionEnd && fxViewButtonAreaType != null && tabsClosedCount >= 5 && (currentDate|date - profileAgeCreated|date) / 86400000 >= 7 && 'browser.newtabpage.activity-stream.asrouter.userprefs.cfr.features' | preferenceValue != false",
+      trigger: {
+        id: "nthTabClosed",
+      },
+    },
+    {
+      id: "NEW_PROFILE_APP_MENU_TOUR",
+      groups: [],
+      profileScope: "single",
+      targeting:
+        "'browser.profiles.profile-name.updated' | preferenceValue == true && userPrefs.cfrFeatures",
+      trigger: {
+        id: "preferenceObserver",
+        params: ["browser.profiles.profile-name.updated"],
+      },
+      frequency: {
+        lifetime: 1,
+      },
+      skip_in_tests: "it's not tested in automation",
+      template: "feature_callout",
+      content: {
+        id: "NEW_PROFILE_APP_MENU_TOUR",
+        template: "multistage",
+        backdrop: "transparent",
+        transitions: false,
+        disableHistoryUpdates: true,
+        screens: [
+          {
+            id: "NEW_PROFILE_APP_MENU_TOUR",
+            anchors: [
+              {
+                selector: "#PanelUI-button",
+                panel_position: {
+                  anchor_attachment: "leftcenter",
+                  callout_attachment: "topright",
+                },
+              },
+            ],
+            content: {
+              position: "callout",
+              logo: {
+                imageURL:
+                  "chrome://browser/content/asrouter/assets/fox-with-profiles.svg",
+                height: "100%",
+                width: "100%",
+              },
+              title: {
+                string_id: "profiles-appmenu-callout-tour-title",
+                paddingBlock: "8px",
+              },
+              subtitle: {
+                string_id: "profiles-appmenu-callout-tour-subtitle",
+              },
+              dismiss_button: {
+                size: "small",
+                background: true,
+                marginInline: "0 21px",
+                marginBlock: "21px 0",
+                action: {
+                  dismiss: true,
+                },
+              },
+              primary_button: {
+                label: {
+                  string_id: "profiles-appmenu-callout-tour-primary-button",
+                },
+                action: {
+                  navigate: true,
+                  type: "HIGHLIGHT_FEATURE",
+                  data: { args: "profilesAppMenuButton" },
+                },
+              },
+            },
+          },
+        ],
+      },
     },
   ];
   messages = add24HourImpressionJEXLTargeting(

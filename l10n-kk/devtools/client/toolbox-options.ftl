@@ -30,6 +30,10 @@ options-context-inspector = Бақылаушы
 options-show-user-agent-styles-label = Браузер стильдерін көрсету
 options-show-user-agent-styles-tooltip =
     .title = Бұны іске қосу нәтижесінде браузер жүктеген үнсіз келісім стильдері көрсетілетін болады.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Браузердің көлеңкелі DOM-ын көрсету
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Бұл мүмкіндікті қосу браузер басқаратын көлеңкелі DOM элементтерін көрсетеді.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM атрибуттарын қысқарту
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP кэшін сөндіру (құралд�
 options-disable-http-cache-tooltip =
     .title = Бұл опцияны іске қосу HTTP кэшін барлық құралдар панелі ашық беттері үшін сөндіреді. Бұл опция Service Workers үшін іске аспайды.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript сөндіру
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript сөндіру *
 options-disable-javascript-tooltip =
     .title = Бұл баптауды іске қосу нәтижесінде ағымдағы бетте JavaScript сөндіріледі. Егер бет немесе құралдар панелі жабылса, бұл баптау ұмытылады.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Бастапқы код карталарын іске қосу
 options-source-maps-tooltip =
     .title = Бұл опцияны іске қоссаңыз, бастапқы код құралдарда сәйкестелген болады.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (тек ағымдағы сессия, бетті қайта жүктейді)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Ағымдағы сессия ғана, парақты қайта жүктейді
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (бетті қайта жүктейді)

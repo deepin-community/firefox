@@ -3,11 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Settings
-
 ## Removing
 
 site-data-removing-dialog =
     .title = { site-data-removing-header }
     .buttonlabelaccept = Kaa
-

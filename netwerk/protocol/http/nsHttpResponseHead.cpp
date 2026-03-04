@@ -10,7 +10,6 @@
 #include "mozilla/dom/MimeType.h"
 #include "mozilla/StaticPrefs_network.h"
 #include "mozilla/TextUtils.h"
-#include "mozilla/Unused.h"
 #include "nsHttpResponseHead.h"
 #include "nsIHttpHeaderVisitor.h"
 #include "nsPrintfCString.h"
@@ -83,7 +82,34 @@ nsHttpResponseHead& nsHttpResponseHead::operator=(
   return *this;
 }
 
-HttpVersion nsHttpResponseHead::Version() {
+nsHttpResponseHead::nsHttpResponseHead(nsHttpResponseHead&& aOther) {
+  nsHttpResponseHead& other = aOther;
+  RecursiveMutexAutoLock monitor(other.mRecursiveMutex);
+
+  mHeaders = std::move(other.mHeaders);
+  mVersion = std::move(other.mVersion);
+  mStatus = std::move(other.mStatus);
+  mStatusText = std::move(other.mStatusText);
+  mContentLength = std::move(other.mContentLength);
+  mContentType = std::move(other.mContentType);
+  mContentCharset = std::move(other.mContentCharset);
+  mHasCacheControl = std::move(other.mHasCacheControl);
+  mCacheControlPublic = std::move(other.mCacheControlPublic);
+  mCacheControlPrivate = std::move(other.mCacheControlPrivate);
+  mCacheControlNoStore = std::move(other.mCacheControlNoStore);
+  mCacheControlNoCache = std::move(other.mCacheControlNoCache);
+  mCacheControlImmutable = std::move(other.mCacheControlImmutable);
+  mCacheControlStaleWhileRevalidateSet =
+      std::move(other.mCacheControlStaleWhileRevalidateSet);
+  mCacheControlStaleWhileRevalidate =
+      std::move(other.mCacheControlStaleWhileRevalidate);
+  mCacheControlMaxAgeSet = std::move(other.mCacheControlMaxAgeSet);
+  mCacheControlMaxAge = std::move(other.mCacheControlMaxAge);
+  mPragmaNoCache = std::move(other.mPragmaNoCache);
+  mInVisitHeaders = false;
+}
+
+HttpVersion nsHttpResponseHead::Version() const {
   RecursiveMutexAutoLock monitor(mRecursiveMutex);
   return mVersion;
 }
@@ -164,6 +190,19 @@ nsresult nsHttpResponseHead::SetHeader(const nsHttpAtom& hdr,
   }
 
   return SetHeader_locked(hdr, ""_ns, val, merge);
+}
+
+// override the current value
+nsresult nsHttpResponseHead::SetHeaderOverride(const nsHttpAtom& atom,
+                                               const nsACString& val) {
+  RecursiveMutexAutoLock monitor(mRecursiveMutex);
+
+  if (mInVisitHeaders) {
+    return NS_ERROR_FAILURE;
+  }
+
+  return mHeaders.SetHeader(atom, ""_ns, val, false,
+                            nsHttpHeaderArray::eVarietyResponseOverride);
 }
 
 nsresult nsHttpResponseHead::SetHeader_locked(const nsHttpAtom& atom,
@@ -286,8 +325,8 @@ nsresult nsHttpResponseHead::ParseCachedHead(const char* block) {
     p = strstr(block, "\r\n");
     if (!p) return NS_ERROR_UNEXPECTED;
 
-    Unused << ParseHeaderLine_locked(nsDependentCSubstring(block, p - block),
-                                     false);
+    (void)ParseHeaderLine_locked(nsDependentCSubstring(block, p - block),
+                                 false);
 
   } while (true);
 
@@ -360,7 +399,7 @@ nsresult nsHttpResponseHead::ParseStatusLine(const nsACString& line) {
 
 nsresult nsHttpResponseHead::ParseStatusLine_locked(const nsACString& line) {
   //
-  // Parse Status-Line:: HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+  // Parse Status-Line: HTTP-Version SP Status-Code SP Reason-Phrase CRLF
   //
 
   const char* start = line.BeginReading();
@@ -371,57 +410,42 @@ nsresult nsHttpResponseHead::ParseStatusLine_locked(const nsACString& line) {
 
   int32_t index = line.FindChar(' ');
 
-  if ((mVersion == HttpVersion::v0_9) || (index == -1)) {
+  if (mVersion == HttpVersion::v0_9 || index == -1) {
     mStatus = 200;
     AssignDefaultStatusText();
-  } else if (StaticPrefs::network_http_strict_response_status_line_parsing()) {
-    // Status-Code: all ASCII digits after any whitespace
-    const char* p = start + index + 1;
-    while (p < end && NS_IsHTTPWhitespace(*p)) ++p;
-    if (p == end || !mozilla::IsAsciiDigit(*p)) {
-      return NS_ERROR_PARSING_HTTP_STATUS_LINE;
-    }
-    const char* codeStart = p;
-    while (p < end && mozilla::IsAsciiDigit(*p)) ++p;
-
-    // Only accept 3 digits (including all leading zeros)
-    // Also if next char isn't whitespace, fail (ie, code is 0x2)
-    if (p - codeStart > 3 || (p < end && !NS_IsHTTPWhitespace(*p))) {
-      return NS_ERROR_PARSING_HTTP_STATUS_LINE;
-    }
-
-    // At this point the code is between 0 and 999 inclusive
-    nsDependentCSubstring strCode(codeStart, p - codeStart);
-    nsresult rv;
-    mStatus = strCode.ToInteger(&rv);
-    if (NS_FAILED(rv)) {
-      return NS_ERROR_PARSING_HTTP_STATUS_LINE;
-    }
-
-    // Reason-Phrase: whatever remains after any whitespace (even empty)
-    while (p < end && NS_IsHTTPWhitespace(*p)) ++p;
-    if (p != end) {
-      mStatusText = nsDependentCSubstring(p, end - p);
-    }
-  } else {
-    // Status-Code
-    const char* p = start + index + 1;
-    mStatus = (uint16_t)atoi(p);
-    if (mStatus == 0) {
-      LOG(("mal-formed response status; assuming status = 200\n"));
-      mStatus = 200;
-    }
-
-    // Reason-Phrase is whatever is remaining of the line
-    index = line.FindChar(' ', p - start);
-    if (index == -1) {
-      AssignDefaultStatusText();
-    } else {
-      p = start + index + 1;
-      mStatusText = nsDependentCSubstring(p, end - p);
-    }
+    LOG1(("Have status line [version=%u status=%u statusText=%s]\n",
+          unsigned(mVersion), unsigned(mStatus), mStatusText.get()));
+    return NS_OK;
   }
 
+  // Status-Code: all ASCII digits after any whitespace
+  const char* p = start + index + 1;
+  while (p < end && NS_IsHTTPWhitespace(*p)) ++p;
+  if (p == end || !mozilla::IsAsciiDigit(*p)) {
+    return NS_ERROR_PARSING_HTTP_STATUS_LINE;
+  }
+  const char* codeStart = p;
+  while (p < end && mozilla::IsAsciiDigit(*p)) ++p;
+
+  // Only accept 3 digits (including all leading zeros)
+  // Also if next char isn't whitespace, fail (ie, code is 0x2)
+  if (p - codeStart > 3 || (p < end && !NS_IsHTTPWhitespace(*p))) {
+    return NS_ERROR_PARSING_HTTP_STATUS_LINE;
+  }
+
+  // At this point the code is between 0 and 999 inclusive
+  nsDependentCSubstring strCode(codeStart, p - codeStart);
+  nsresult rv;
+  mStatus = strCode.ToInteger(&rv);
+  if (NS_FAILED(rv)) {
+    return NS_ERROR_PARSING_HTTP_STATUS_LINE;
+  }
+
+  // Reason-Phrase: whatever remains after any whitespace (even empty)
+  while (p < end && NS_IsHTTPWhitespace(*p)) ++p;
+  if (p != end) {
+    mStatusText = nsDependentCSubstring(p, end - p);
+  }
   LOG1(("Have status line [version=%u status=%u statusText=%s]\n",
         unsigned(mVersion), unsigned(mStatus), mStatusText.get()));
   return NS_OK;
@@ -445,8 +469,7 @@ nsresult nsHttpResponseHead::ParseHeaderLine_locked(
 
   // reject the header if there are 0x00 bytes in the value.
   // (see https://github.com/httpwg/http-core/issues/215 for details).
-  if (StaticPrefs::network_http_reject_NULs_in_response_header_values() &&
-      val.FindChar('\0') >= 0) {
+  if (val.FindChar('\0') >= 0) {
     return NS_ERROR_DOM_INVALID_HEADER_VALUE;
   }
 
@@ -485,7 +508,7 @@ nsresult nsHttpResponseHead::ParseHeaderLine_locked(
     LOG(("ParseContentType [input=%s, type=%s, charset=%s]\n", val.get(),
          mContentType.get(), mContentCharset.get()));
   } else if (hdr == nsHttp::Cache_Control) {
-    ParseCacheControl(val.get());
+    ParseCacheControl(mHeaders.PeekHeader(hdr));
   } else if (hdr == nsHttp::Pragma) {
     ParsePragma(val.get());
   }
@@ -574,8 +597,7 @@ nsresult nsHttpResponseHead::ComputeFreshnessLifetime(uint32_t* result) {
   }
 
   // These responses can be cached indefinitely.
-  if ((mStatus == 300) || (mStatus == 410) ||
-      nsHttp::IsPermanentRedirect(mStatus)) {
+  if (mStatus == 410) {
     LOG(
         ("nsHttpResponseHead::ComputeFreshnessLifetime [this = %p] "
          "Assign an infinite heuristic lifetime\n",
@@ -592,12 +614,13 @@ nsresult nsHttpResponseHead::ComputeFreshnessLifetime(uint32_t* result) {
     return NS_OK;
   }
 
-  // From RFC 7234 Section 4.2.2, heuristics can only be used on responses
-  // without explicit freshness whose status codes are defined as cacheable
-  // by default, and those responses without explicit freshness that have been
-  // marked as explicitly cacheable.
+  // From RFC 9111 Section 4.2.2
+  // (https://www.rfc-editor.org/rfc/rfc9111.html#name-calculating-heuristic-fresh),
+  // heuristics can only be used on responses without explicit freshness whose
+  // status codes are defined as cacheable by default, and those responses
+  // without explicit freshness that have been marked as explicitly cacheable.
   // Note that |MustValidate| handled most of non-cacheable status codes.
-  if ((mStatus == 302 || mStatus == 304 || mStatus == 307) &&
+  if ((mStatus == 302 || mStatus == 303 || mStatus == 304 || mStatus == 307) &&
       !mCacheControlPublic && !mCacheControlPrivate) {
     LOG((
         "nsHttpResponseHead::ComputeFreshnessLifetime [this = %p] "
@@ -644,6 +667,7 @@ bool nsHttpResponseHead::MustValidate() {
     case 300:
     case 301:
     case 302:
+    case 303:
     case 304:
     case 307:
     case 308:
@@ -651,7 +675,6 @@ bool nsHttpResponseHead::MustValidate() {
     case 410:
       break;
       // Uncacheable redirects
-    case 303:
     case 305:
       // Other known errors
     case 401:
@@ -1193,7 +1216,7 @@ bool nsHttpResponseHead::GetContentTypeOptionsHeader(nsACString& aOutput) {
   // We need to fetch original headers and manually merge them because empty
   // header values are not retrieved with GetHeader. Ref - Bug 1819642
   RefPtr<ContentTypeOptionsVisitor> visitor = new ContentTypeOptionsVisitor();
-  Unused << GetOriginalHeader(nsHttp::X_Content_Type_Options, visitor);
+  (void)GetOriginalHeader(nsHttp::X_Content_Type_Options, visitor);
   visitor->GetMergedHeader(contentTypeOptionsHeader);
   if (contentTypeOptionsHeader.IsEmpty()) {
     // if there is no XCTO header, then there is nothing to do.

@@ -59,10 +59,7 @@ history-section-label = Тарих
 item-history-and-downloads =
     .label = Қарап шығу және жүктемелер тарихы
     .accesskey = ш
-item-history-form-data-downloads =
-    .label = Тарих
-    .accesskey = Т
-item-history-form-data-downloads-description = Сайттарды шолу және жүктемелер тарихын, сақталған форма ақпаратын және іздеулерді тазартады
+item-history-and-downloads-description2 = Сайт пен жүктеп алу тарихын тазартады
 item-cookies =
     .label = Cookies файлдары
     .accesskey = ф
@@ -77,7 +74,7 @@ item-cookies-site-data =
     .accesskey = е
 item-cookies-site-data-description = Сізді сайттардан шығуға немесе себеттер босатылуына әкеп соғуы мүмкін
 item-active-logins =
-    .label = Белсенді сеанстар
+    .label = Белсенді сессиялар
     .accesskey = Б
 item-cache =
     .label = Кэш
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Сайт баптаулары
     .accesskey = й
+item-formdata-prefs =
+    .label = Сақталған форма ақпараты
+    .accesskey = о
+item-formdata-description = Формаларда енгізген аттар, эл. пошта және басқа элементтер сияқты нәрселерді өшіреді
 item-site-prefs-description = Рұқсаттарыңыз бен сайт баптауларын бастапқы параметрлерге тастау
 data-section-label = Мәліметтер
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Барлық тарих өшіріледі.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Барлық таңдалған нәрселер өшіріледі.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Есептелуде…

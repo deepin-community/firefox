@@ -7,6 +7,10 @@
 #ifndef mozilla_dom_NavigationTransition_h___
 #define mozilla_dom_NavigationTransition_h___
 
+#include "mozilla/RefPtr.h"
+#include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsISupports.h"
 #include "nsWrapperCache.h"
 
 class nsIGlobalObject;
@@ -15,22 +19,46 @@ namespace mozilla::dom {
 
 class NavigationHistoryEntry;
 enum class NavigationType : uint8_t;
+class Promise;
 
+// https://html.spec.whatwg.org/#navigationtransition
 class NavigationTransition final : public nsISupports, public nsWrapperCache {
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(NavigationTransition)
 
-  enum NavigationType NavigationType() const { return {}; }
-  already_AddRefed<NavigationHistoryEntry> From() const { return {}; }
-  already_AddRefed<Promise> Finished() const { return {}; }
+  NavigationTransition(nsIGlobalObject* aGlobalObject,
+                       NavigationType aNavigationType,
+                       NavigationHistoryEntry* aFrom, Promise* aCommitted,
+                       Promise* aFinished);
+
+  enum NavigationType NavigationType() const;
+  NavigationHistoryEntry* From() const;
+
+  Promise* Committed() const;
+
+  Promise* Finished() const;
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
-  nsIGlobalObject* GetParentObject() const { return {}; }
+  nsIGlobalObject* GetParentObject() const;
 
  private:
   ~NavigationTransition() = default;
+
+  nsCOMPtr<nsIGlobalObject> mGlobalObject;
+
+  // https://html.spec.whatwg.org/#concept-navigationtransition-navigationtype
+  enum NavigationType mNavigationType;
+
+  // https://html.spec.whatwg.org/#concept-navigationtransition-from
+  RefPtr<NavigationHistoryEntry> mFrom;
+
+  // https://html.spec.whatwg.org/#concept-navigationtransition-committed
+  RefPtr<Promise> mCommitted;
+
+  // https://html.spec.whatwg.org/#concept-navigationtransition-finished
+  RefPtr<Promise> mFinished;
 };
 
 }  // namespace mozilla::dom

@@ -28,11 +28,18 @@ function reportMarks(prefix = "") {
   return markstr;
 }
 
-function startGCMarking() {
+function startGCMarking(untilQueuePos) {
   startgc(100000);
-  while (gcstate() === "Prepare") {
+  while (gcstate() === "Prepare" || gcstate() === "MarkRoots") {
     gcslice(100000);
   }
+  // If running with --no-threads, the GC might decide to suspend early if
+  // scanning the ephemeron table takes too long. Wait until all of the queue
+  // entries that the test expects have been processed.
+  while (currentgc().queuePos < untilQueuePos) {
+    gcslice(1000);
+  }
+
 }
 
 function purgeKey() {
@@ -54,7 +61,7 @@ function purgeKey() {
 
   vals.key = vals.val = null;
 
-  startGCMarking();
+  startGCMarking(2);
   // getMarks() returns map/key/value
   assertEq(getMarks().join("/"), "black/unmarked/unmarked",
            "marked the map black");
@@ -94,7 +101,7 @@ function removeKey() {
   enqueueMark(m);
   enqueueMark("yield");
 
-  startGCMarking();
+  startGCMarking(2);
   reportMarks("first: ");
   var marks = getMarks();
   assertEq(marks[0], "black", "map is black");
@@ -112,10 +119,7 @@ function removeKey() {
   // Do it again, but this time, remove all other roots.
   m.set(vals.key, vals.val);
   vals.key = vals.val = null;
-  startgc(10000);
-  while (gcstate() !== "Mark") {
-    gcslice(100000);
-  }
+  startGCMarking(2);
   marks = getMarks();
   assertEq(marks[0], "black", "map is black");
   assertEq(marks[1], "unmarked", "key not marked yet");
@@ -171,7 +175,7 @@ function nukeMarking() {
 
   // Okay, run through the GC now.
   startgc(1000000);
-  while (gcstate() !== "Mark") {
+  while (gcstate() === "Prepare" || gcstate() === "MarkRoots") {
     gcslice(100000);
   }
   assertEq(gcstate(), "Mark", "expected to yield after marking map");
@@ -220,7 +224,7 @@ function nukeMarkingSweepGroups() {
 
   // Okay, run through the GC now.
   startgc(1);
-  while (gcstate() === "Prepare") {
+  while (gcstate() !== "Mark") {
     gcslice(100000);
   }
   assertEq(gcstate(), "Mark", "expected to yield after marking map");
@@ -317,7 +321,7 @@ function grayMarkingMapFirst() {
   };
 
   print("Starting incremental GC");
-  startGCMarking();
+  startGCMarking(2);
   // Checkpoint 1, after marking map
   showmarks();
   var marks = getMarks();
@@ -409,7 +413,7 @@ function grayMarkingMapLast() {
   };
 
   print("Starting incremental GC");
-  startGCMarking();
+  startGCMarking(3);
   // Checkpoint 1, after marking key
   showmarks();
   var marks = labeledMarks();
@@ -474,7 +478,7 @@ function grayMapKey() {
 
   vals.key = vals.val = null;
 
-  startGCMarking();
+  startGCMarking(4);
   assertEq(getMarks().join("/"), "gray/unmarked/unmarked",
            "marked the map gray");
 
@@ -607,7 +611,7 @@ function blackDuringGray() {
   };
 
   print("Starting incremental GC");
-  startGCMarking();
+  startGCMarking(2);
   // Checkpoint 1, after marking delegate black
   showmarks();
   var marks = getMarks();
@@ -669,7 +673,7 @@ function blackDuringGrayImplicit() {
   };
 
   print("Starting incremental GC");
-  startGCMarking();
+  startGCMarking(3);
   // Checkpoint 1, after marking map gray
   showmarks();
   var marks = getMarks();

@@ -10,41 +10,48 @@
 
 #include "rtc_base/async_udp_socket.h"
 
+#include <cstdint>
 #include <memory>
-#include <string>
 
-#include "rtc_base/gunit.h"
-#include "rtc_base/physical_socket_server.h"
+#include "rtc_base/async_packet_socket.h"
+#include "rtc_base/socket.h"
+#include "rtc_base/socket_address.h"
 #include "rtc_base/virtual_socket_server.h"
+#include "test/create_test_environment.h"
+#include "test/gmock.h"
+#include "test/gtest.h"
 
-namespace rtc {
+namespace webrtc {
 
-class AsyncUdpSocketTest : public ::testing::Test, public sigslot::has_slots<> {
- public:
-  AsyncUdpSocketTest()
-      : pss_(new rtc::PhysicalSocketServer),
-        vss_(new rtc::VirtualSocketServer(pss_.get())),
-        socket_(vss_->CreateSocket(SOCK_DGRAM)),
-        udp_socket_(new AsyncUDPSocket(socket_)),
-        ready_to_send_(false) {
-    udp_socket_->SignalReadyToSend.connect(this,
-                                           &AsyncUdpSocketTest::OnReadyToSend);
-  }
+using ::testing::NotNull;
 
-  void OnReadyToSend(rtc::AsyncPacketSocket* socket) { ready_to_send_ = true; }
+TEST(AsyncUDPSocketTest, SetSocketOptionIfEctChange) {
+  const SocketAddress kAddr("22.22.22.22", 0);
+  VirtualSocketServer socket_server;
+  std::unique_ptr<AsyncUDPSocket> udp_socket =
+      AsyncUDPSocket::Create(CreateTestEnvironment(), kAddr, socket_server);
+  ASSERT_THAT(udp_socket, NotNull());
 
- protected:
-  std::unique_ptr<PhysicalSocketServer> pss_;
-  std::unique_ptr<VirtualSocketServer> vss_;
-  Socket* socket_;
-  std::unique_ptr<AsyncUDPSocket> udp_socket_;
-  bool ready_to_send_;
-};
+  int ect = 0;
+  udp_socket->GetOption(Socket::OPT_SEND_ECN, &ect);
+  ASSERT_EQ(ect, 0);
 
-TEST_F(AsyncUdpSocketTest, OnWriteEvent) {
-  EXPECT_FALSE(ready_to_send_);
-  socket_->SignalWriteEvent(socket_);
-  EXPECT_TRUE(ready_to_send_);
+  uint8_t buffer[] = "hello";
+  AsyncSocketPacketOptions packet_options;
+  packet_options.ect_1 = false;
+  udp_socket->SendTo(buffer, 5, kAddr, packet_options);
+  udp_socket->GetOption(Socket::OPT_SEND_ECN, &ect);
+  EXPECT_EQ(ect, 0);
+
+  packet_options.ect_1 = true;
+  udp_socket->SendTo(buffer, 5, kAddr, packet_options);
+  udp_socket->GetOption(Socket::OPT_SEND_ECN, &ect);
+  EXPECT_EQ(ect, 1);
+
+  packet_options.ect_1 = false;
+  udp_socket->SendTo(buffer, 5, kAddr, packet_options);
+  udp_socket->GetOption(Socket::OPT_SEND_ECN, &ect);
+  EXPECT_EQ(ect, 0);
 }
 
-}  // namespace rtc
+}  // namespace webrtc

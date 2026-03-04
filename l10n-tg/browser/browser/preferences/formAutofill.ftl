@@ -17,7 +17,9 @@ autofill-manage-remove-button = Тоза кардан
 autofill-manage-add-button = Илова кардан…
 autofill-manage-edit-button = Таҳрир кардан…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Нишониро нигоҳ медоред?
 address-capture-save-doorhanger-description = Маълумотро ба «{ -brand-short-name }» нигоҳ доред, то ки шумо тавонед шаклҳоро тез пур намоед.
@@ -39,8 +41,6 @@ address-capture-manage-address-button =
     .label = Танзимоти нишонӣ
 address-capture-learn-more-button =
     .label = Маълумоти бештар
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Илова кардани нишонии нав
 address-capture-open-menu-button =
     .aria-label = Кушодани меню
 address-capture-edit-address-button =
@@ -49,68 +49,78 @@ address-capture-edit-address-button =
 autofill-add-address-title = Илова кардани нишонӣ
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Таҳрир кардани нишонӣ
-autofill-address-name = Ном
 autofill-address-given-name = Ном
 autofill-address-additional-name = Номи падар
 autofill-address-family-name = Насаб
+autofill-address-name = Ном
 autofill-address-organization = Ташкилот
 autofill-address-street-address = Нишонии кӯча
 autofill-address-street = Нишонии кӯча
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Микрорайон
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Деҳа ё шаҳрак
 autofill-address-island = Ҷазира
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Маҳалла
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Шаҳр
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Ноҳия
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Шаҳри почта
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Атрофи шаҳр
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Вилоят
 autofill-address-state = Иёлот
 autofill-address-county = Мулки граф
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Маҳалла
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Префектура
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Минтақа
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = До/Си
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Шуъба
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Аморат
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Вилоят
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Пин
 autofill-address-postal-code = Рамзи почта
+# Postal code field.
 autofill-address-zip = Рамзи ZIP
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Рамзи почта
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Илова кардани нишонии нав
 autofill-address-country = Кишвар ё минтақа
 autofill-address-country-only = Кишвар
 autofill-address-tel = Телефон
@@ -122,11 +132,6 @@ autofill-country-warning-message = Айни ҳол, пуркунии шакл б
 autofill-add-new-card-title = Илова кардани корти кредитии нав
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Таҳрир кардани корти кредитӣ
-autofill-message-tooltip = Дидани паём дар бораи пуркунии худкор
-# The dialog title for creating credit cards in browser preferences.
-autofill-add-card-title = Илова кардани корт
-# The dialog title for editing credit cards in browser preferences.
-autofill-edit-card-title2 = Таҳрир кардани корт
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -135,6 +140,11 @@ autofill-edit-card-password-prompt =
         [windows] «{ -brand-short-name }» кӯшиш мекунад, ки маълумоти корти кредитиро нишон диҳад. Дастрасиро ба ин ҳисоби «Windows» дар зер тасдиқ намоед.
        *[other] «{ -brand-short-name }» кӯшиш мекунад, ки маълумоти корти кредитиро нишон диҳад.
     }
+autofill-message-tooltip = Дидани паём дар бораи пуркунии худкор
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Илова кардани корт
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Таҳрир кардани корт
 autofill-card-number = Рақами корт
 autofill-card-invalid-number = Лутфан, рақами корти дурустро ворид намоед
 autofill-card-name-on-card = Ном дар корт
@@ -142,6 +152,12 @@ autofill-card-expires-month = Моҳи анҷоми муҳлат
 autofill-card-expires-year = Соли анҷоми муҳлат
 autofill-card-billing-address = Нишонӣ барои санади ҳисоббарорӣ
 autofill-card-network = Навъи корт
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = кортҳои бонкӣ, қарз, кортҳо, кортҳои дебетӣ, дебет, ҳамён, ба тартиб даровардани фармоиш
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

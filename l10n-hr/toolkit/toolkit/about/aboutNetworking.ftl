@@ -4,21 +4,24 @@
 
 about-networking-title = O umrežavanju
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Izbriši HTTP predmemoriju
 about-networking-sockets = Sockets
 about-networking-dns = DNS
-about-networking-dns-clear-cache-button = Poništi predmemoriju DNS-a
+about-networking-dns-clear-cache-button = Izbriši DNS predmemoriju
 about-networking-dns-trr-url = DoH URL
+about-networking-dns-trr-mode = DoH modus
 about-networking-dns-suffix = DNS sufiks
 about-networking-websockets = WebSockets
 about-networking-refresh = Osvježi
 about-networking-auto-refresh = Automatski osviježi svake 3 sekunde
 about-networking-hostname = Ime računala
 about-networking-port = Priključak
-about-networking-http-version = HTTP inačica
+about-networking-http-version = HTTP verzija
 about-networking-ssl = SSL
 about-networking-active = Aktivno
 about-networking-idle = U pripravi
 about-networking-host = Računalo
+about-networking-type = Vrsta
 about-networking-sent = Poslano
 about-networking-received = Primljeno
 about-networking-family = Obitelj
@@ -26,15 +29,17 @@ about-networking-trr = TRR
 about-networking-addresses = Adrese
 about-networking-expires = Ističe (sekunde)
 about-networking-originAttributesSuffix = Ključ izolacije
+about-networking-flags = Dodatne zastavice
 about-networking-messages-sent = Poruka poslana
 about-networking-messages-received = Poruka primljena
 about-networking-bytes-sent = Poslano bajtova
 about-networking-bytes-received = Primljeno bajtova
 about-networking-logging = Zapisnik
 about-networking-dns-lookup = DNS upit
-about-networking-dns-lookup-button = Razrješi
+about-networking-dns-lookup-button = Razriješi
 about-networking-dns-domain = Domena:
 about-networking-dns-lookup-table-column = IP adrese
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RR-ovi
 about-networking-dns-https-rr-lookup-table-column = HTTP RR-ovi
 about-networking-rcwn = RCWN statistika
 about-networking-rcwn-status = RCWN status
@@ -53,11 +58,10 @@ about-networking-rcwn-cache-slow = Broj spore predmemorije
 about-networking-rcwn-cache-not-slow = Broj ne-spore predmemorije
 about-networking-networkid = ID mreže
 about-networking-networkid-id = ID mreže
+# Note: do not translate about:logging, as it is a URL.
+about-networking-moved-about-logging = Ova je stranica premještena na <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 
 about-networking-networkid-is-up = Poveznica aktivna
 about-networking-networkid-status-known = Stanje poveznice je poznato
-
-##
-

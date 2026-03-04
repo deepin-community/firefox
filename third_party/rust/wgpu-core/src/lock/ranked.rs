@@ -55,8 +55,11 @@
 //!
 //! [`lock::rank`]: crate::lock::rank
 
+use core::{cell::Cell, fmt, ops, panic::Location};
+
 use super::rank::LockRank;
-use std::{cell::Cell, panic::Location};
+
+pub use LockState as RankData;
 
 /// A `Mutex` instrumented for deadlock prevention.
 ///
@@ -80,13 +83,13 @@ pub struct MutexGuard<'a, T> {
     saved: LockStateGuard,
 }
 
-thread_local! {
+std::thread_local! {
     static LOCK_STATE: Cell<LockState> = const { Cell::new(LockState::INITIAL) };
 }
 
 /// Per-thread state for the deadlock checker.
 #[derive(Debug, Copy, Clone)]
-struct LockState {
+pub struct LockState {
     /// The last lock we acquired, and where.
     last_acquired: Option<(LockRank, &'static Location<'static>)>,
 
@@ -182,7 +185,7 @@ impl<T> Mutex<T> {
     }
 
     #[track_caller]
-    pub fn lock(&self) -> MutexGuard<T> {
+    pub fn lock(&self) -> MutexGuard<'_, T> {
         let saved = acquire(self.rank, Location::caller());
         MutexGuard {
             inner: self.inner.lock(),
@@ -191,7 +194,7 @@ impl<T> Mutex<T> {
     }
 }
 
-impl<'a, T> std::ops::Deref for MutexGuard<'a, T> {
+impl<'a, T> ops::Deref for MutexGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -199,14 +202,14 @@ impl<'a, T> std::ops::Deref for MutexGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::DerefMut for MutexGuard<'a, T> {
+impl<'a, T> ops::DerefMut for MutexGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.inner.deref_mut()
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Debug for Mutex<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: fmt::Debug> fmt::Debug for Mutex<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.inner.fmt(f)
     }
 }
@@ -253,7 +256,7 @@ impl<T> RwLock<T> {
     }
 
     #[track_caller]
-    pub fn read(&self) -> RwLockReadGuard<T> {
+    pub fn read(&self) -> RwLockReadGuard<'_, T> {
         let saved = acquire(self.rank, Location::caller());
         RwLockReadGuard {
             inner: self.inner.read(),
@@ -262,12 +265,33 @@ impl<T> RwLock<T> {
     }
 
     #[track_caller]
-    pub fn write(&self) -> RwLockWriteGuard<T> {
+    pub fn write(&self) -> RwLockWriteGuard<'_, T> {
         let saved = acquire(self.rank, Location::caller());
         RwLockWriteGuard {
             inner: self.inner.write(),
             saved: LockStateGuard(saved),
         }
+    }
+
+    /// Force an read-unlock operation on this lock.
+    ///
+    /// Safety:
+    /// - A read lock must be held which is not held by a guard.
+    pub unsafe fn force_unlock_read(&self, data: RankData) {
+        release(data);
+        unsafe { self.inner.force_unlock_read() };
+    }
+}
+
+impl<'a, T> RwLockReadGuard<'a, T> {
+    // Forget the read guard, leaving the lock in a locked state with no guard.
+    //
+    // Equivalent to std::mem::forget, but preserves the information about the lock
+    // rank.
+    pub fn forget(this: Self) -> RankData {
+        core::mem::forget(this.inner);
+
+        this.saved.0
     }
 }
 
@@ -280,13 +304,13 @@ impl<'a, T> RwLockWriteGuard<'a, T> {
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Debug for RwLock<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: fmt::Debug> fmt::Debug for RwLock<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.inner.fmt(f)
     }
 }
 
-impl<'a, T> std::ops::Deref for RwLockReadGuard<'a, T> {
+impl<'a, T> ops::Deref for RwLockReadGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -294,7 +318,7 @@ impl<'a, T> std::ops::Deref for RwLockReadGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::Deref for RwLockWriteGuard<'a, T> {
+impl<'a, T> ops::Deref for RwLockWriteGuard<'a, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -302,7 +326,7 @@ impl<'a, T> std::ops::Deref for RwLockWriteGuard<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::DerefMut for RwLockWriteGuard<'a, T> {
+impl<'a, T> ops::DerefMut for RwLockWriteGuard<'a, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.inner.deref_mut()
     }
@@ -381,7 +405,7 @@ fn non_stack_like() {
 
     // Avoid a double panic from dropping this while unwinding due to the panic
     // we're testing for.
-    std::mem::forget(guard2);
+    core::mem::forget(guard2);
 
     drop(guard1);
 }

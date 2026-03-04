@@ -30,6 +30,10 @@ options-context-inspector = Inspector
 options-show-user-agent-styles-label = Browserstijlen tonen
 options-show-user-agent-styles-tooltip =
     .title = Aanzetten hiervan toont standaardstijlen die door de browser worden geladen.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Shadow DOM van browser tonen
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Als u dit inschakelt, worden schaduw-DOM-elementen weergegeven die door de browser worden verwerkt.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-attributen afkappen
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP-buffer uitschakelen (als werkset is geop
 options-disable-http-cache-tooltip =
     .title = Door deze optie aan te zetten, wordt de HTTP-buffer voor alle tabbladen die de werkset hebben geopend uitgeschakeld. Service Workers worden niet door deze optie beïnvloed.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript uitschakelen
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript uitschakelen *
 options-disable-javascript-tooltip =
     .title = Door deze optie aan te zetten, wordt JavaScript voor het huidige tabblad uitgeschakeld. Als het tabblad of de werkset wordt gesloten, wordt deze instelling vergeten.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Brontoewijzingen inschakelen
 options-source-maps-tooltip =
     .title = Als u deze optie inschakelt, zullen bronnen in de hulpmiddelen worden toegewezen.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (alleen huidige sessie, vernieuwt de pagina)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Alleen huidige sessie, vernieuwt de pagina
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (laadt de pagina opnieuw)

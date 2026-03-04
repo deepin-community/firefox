@@ -6,7 +6,6 @@
 #define GeckoMVMContext_h_
 
 #include "MVMContext.h"
-
 #include "mozilla/Attributes.h"  // for MOZ_NON_OWNING_REF
 #include "mozilla/RefPtr.h"
 #include "nsCOMPtr.h"
@@ -50,6 +49,7 @@ class GeckoMVMContext final : public MVMContext {
   bool AllowZoomingForDocument() const override;
   bool IsInReaderMode() const override;
   bool IsDocumentLoading() const override;
+  bool IsDocumentFullscreen() const override;
 
   void SetResolutionAndScaleTo(float aResolution,
                                ResolutionChangeOrigin aOrigin) override;

@@ -42,7 +42,7 @@ detail-last-updated =
     .label = Hizivadur diwezhañ
 addon-detail-description-expand = Diskouez muioc’h
 addon-detail-description-collapse = Diskouez nebeutoc’h
-detail-contributions-description = Goulenn a ra paotr an diorren ma vefe skoazellet diorroadur an askouezh-mañ ganeoc'h dre ur perzhiadur-arc'hant vihan.
+detail-contributions-description = Goulenn a ra an diorroer ma vefe skoazellet diorroadur an askouezh-mañ ganeoc'h dre ur perzhiadur-arc'hant vihan.
 detail-contributions-button = Kemer perzh
     .title = Kemer perzh e diorren an enlugellad
     .accesskey = K
@@ -381,6 +381,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Aotreet er prenestroù prevez
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Aotreet er prenestroù prevez
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -457,12 +461,10 @@ details-notification-unsigned2 =
     .message = N'haller ket gwiriekaat arver { $name } e { -brand-short-name }. Kendalc'hit gant evezh.
 details-notification-unsigned-link = Muioc'h a ditouroù
 details-notification-blocked = Diweredekaet eo bet { $name } en abeg da gudennoù a-fet diogelroez pe stabilded.
-details-notification-blocked2 =
-    .message = Diweredekaet eo bet { $name } en abeg da gudennoù a-fet diogelroez pe stabilded.
+details-notification-blocked-link2 = Gwelet ar munudoù
+details-notification-softblocked-link2 = Gwelet ar munudoù
 details-notification-blocked-link = Muioc'h a ditouroù
 details-notification-softblocked = Anavezet eo { $name } evit degas kudennoù e-keñver diogelroez pe stabilded.
-details-notification-softblocked2 =
-    .message = Anavezet eo { $name } evit degas kudennoù e-keñver diogelroez pe stabilded.
 details-notification-softblocked-link = Muioc'h a ditouroù
 details-notification-gmp-pending = Staliet e vo { $name } a-benn nebeut.
 details-notification-gmp-pending2 =

@@ -190,7 +190,7 @@ about-debugging-runtime-service-workers-not-compatible = Οι ρυθμίσεις
 # "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
-about-debugging-browser-version-too-old = Το συνδεδεμένο πρόγραμμα περιήγησης έχει παλιά έκδοση ({ $runtimeVersion }). Η ελάχιστη υποστηριζόμενη έκδοση είναι ({ $minVersion }).  Πρόκειται για μη υποστηριζόμενη ρύθμιση και ενδέχεται να προκαλέσει αποτυχία του DevTools. Παρακαλούμε ενημερώστε το συνδεδεμένο πρόγραμμα περιήγησης. <a>Αντιμετώπιση προβλημάτων</a>
+about-debugging-browser-version-too-old = Η έκδοση του συνδεδεμένου προγράμματος περιήγησης είναι παλιά ({ $runtimeVersion }). Η ελάχιστη υποστηριζόμενη έκδοση είναι ({ $minVersion }). Αυτή η διαμόρφωση δεν υποστηρίζεται και ενδέχεται να προκαλέσει αποτυχία του DevTools. Ενημερώστε το συνδεδεμένο πρόγραμμα περιήγησης. <a>Επίλυση προβλημάτων</a>
 # Dedicated message for a backward compatibility issue that occurs when connecting:
 # from Fx 70+ to the old Firefox for Android (aka Fennec) which uses Fx 68.
 about-debugging-browser-version-too-old-fennec = Αυτή η έκδοση του Firefox δεν μπορεί να χρησιμοποιηθεί για έλεγχο σφαλμάτων στο Firefox για Android (68). Προτείνουμε να εγκαταστήσετε το Firefox για Android Nightly στο τηλέφωνό σας για δοκιμή. <a>Περισσότερες λεπτομέρειες</a>
@@ -200,7 +200,7 @@ about-debugging-browser-version-too-old-fennec = Αυτή η έκδοση του
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $localVersion } is the version of your current browser (same format)
-about-debugging-browser-version-too-recent = Το συνδεδεμένο πρόγραμμα περιήγησης είναι πιο πρόσφατο ({ $runtimeVersion }, buildID { $runtimeID }) από το { -brand-shorter-name } ({ $localVersion }, buildID { $localID }) σας. Πρόκειται για μη υποστηριζόμενη ρύθμιση και ενδέχεται να προκαλέσει αποτυχία του DevTools. Παρακαλούμε ενημερώστε το Firefox. <a>Αντιμετώπιση προβλημάτων</a>
+about-debugging-browser-version-too-recent = Το συνδεδεμένο πρόγραμμα περιήγησης ({ $runtimeVersion }, buildID: { $runtimeID }) είναι πιο πρόσφατο από το { -brand-shorter-name } ({ $localVersion }, buildID: { $localID }) που χρησιμοποιείτε. Αυτή η διαμόρφωση δεν υποστηρίζεται και ενδέχεται να προκαλέσει αποτυχία του DevTools. Ενημερώστε το Firefox. <a>Επίλυση προβλημάτων</a>
 # Displayed for runtime info in runtime pages.
 # { $name } is brand name such as "Firefox Nightly"
 # { $version } is version such as "64.0a1"
@@ -284,7 +284,7 @@ about-debugging-extension-backgroundscript-status-stopped = Διακόπηκε
 # probably better to not localize it.
 # .disabledTitle is processed by the fluent-react / ActionButton code.
 about-debugging-worker-action-push2 = Push
-    .disabledTitle = Το push του service worker είναι ανενεργό αυτή τη στιγμή για το { -brand-shorter-name } πολλαπλών διεργασιών
+    .disabledTitle = Η υπηρεσία push του service worker είναι προς το παρόν απενεργοποιημένη για το { -brand-shorter-name } πολλαπλών διεργασιών
 # This string is displayed as a label of the button that starts a service worker.
 # .disabledTitle is processed by the fluent-react / ActionButton code.
 about-debugging-worker-action-start2 = Έναρξη
@@ -313,6 +313,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Υπηρεσία Push
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Προέλευση
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Η επιθεώρηση του service worker είναι απενεργοποιημένη αυτήν τη στιγμή για το { -brand-shorter-name } πολλαπλών διεργασιών

@@ -24,20 +24,16 @@ class JS_PUBLIC_API ContextOptions {
   ContextOptions()
       : wasm_(true),
         wasmForTrustedPrinciples_(true),
-        wasmVerbose_(false),
         wasmBaseline_(true),
         wasmIon_(true),
         testWasmAwaitTier2_(false),
         disableIon_(false),
         disableEvalSecurityChecks_(false),
+        disableFilenameSecurityChecks_(false),
         asyncStack_(true),
         asyncStackCaptureDebuggeeOnly_(false),
         throwOnDebuggeeWouldRun_(true),
         dumpStackOnDebuggeeWouldRun_(false),
-#ifdef JS_ENABLE_SMOOSH
-        trackNotImplemented_(false),
-        trySmoosh_(false),
-#endif
         fuzzing_(false) {
   }
   // clang-format on
@@ -68,12 +64,6 @@ class JS_PUBLIC_API ContextOptions {
   bool wasmForTrustedPrinciples() const { return wasmForTrustedPrinciples_; }
   ContextOptions& setWasmForTrustedPrinciples(bool flag) {
     wasmForTrustedPrinciples_ = flag;
-    return *this;
-  }
-
-  bool wasmVerbose() const { return wasmVerbose_; }
-  ContextOptions& setWasmVerbose(bool flag) {
-    wasmVerbose_ = flag;
     return *this;
   }
 
@@ -116,25 +106,27 @@ class JS_PUBLIC_API ContextOptions {
     return *this;
   }
 
-  bool importAttributes() const { return compileOptions_.importAttributes(); }
-  ContextOptions& setImportAttributes(bool enabled) {
-    compileOptions_.setImportAttributes(enabled);
-    return *this;
-  }
-
-  bool importAttributesAssertSyntax() const {
-    return compileOptions_.importAttributesAssertSyntax();
-  }
-  ContextOptions& setImportAttributesAssertSyntax(bool enabled) {
-    compileOptions_.setImportAttributesAssertSyntax(enabled);
-    return *this;
-  }
+  // These next two checks are needed for PAC Scripts: we cannot enforce
+  // restrictions on them because they are user provided.
 
   // Override to allow disabling the eval restriction security checks for
   // this context.
   bool disableEvalSecurityChecks() const { return disableEvalSecurityChecks_; }
   ContextOptions& setDisableEvalSecurityChecks() {
     disableEvalSecurityChecks_ = true;
+    return *this;
+  }
+
+  // Override to allow disabling the filename security checks (checks that
+  // ensure the script doesn't come from the web) for this context. There is a
+  // lower-level flag for this same check in CompileOptions which will be set by
+  // this flag; this is needed here to propagate the flag down into eval
+  // contexts
+  bool disableFilenameSecurityChecks() const {
+    return disableFilenameSecurityChecks_;
+  }
+  ContextOptions& setDisableFilenameSecurityChecks() {
+    disableFilenameSecurityChecks_ = true;
     return *this;
   }
 
@@ -173,24 +165,6 @@ class JS_PUBLIC_API ContextOptions {
     return *this;
   }
 
-#ifdef JS_ENABLE_SMOOSH
-  // Track Number of Not Implemented Calls by writing to a file
-  bool trackNotImplemented() const { return trackNotImplemented_; }
-  ContextOptions& setTrackNotImplemented(bool flag) {
-    trackNotImplemented_ = flag;
-    return *this;
-  }
-
-  // Try compiling SmooshMonkey frontend first, and fallback to C++
-  // implementation when it fails.
-  bool trySmoosh() const { return trySmoosh_; }
-  ContextOptions& setTrySmoosh(bool flag) {
-    trySmoosh_ = flag;
-    return *this;
-  }
-
-#endif  // JS_ENABLE_SMOOSH
-
   bool fuzzing() const { return fuzzing_; }
   // Defined out-of-line because it depends on a compile-time option
   ContextOptions& setFuzzing(bool flag);
@@ -209,24 +183,20 @@ class JS_PUBLIC_API ContextOptions {
   // WASM options.
   bool wasm_ : 1;
   bool wasmForTrustedPrinciples_ : 1;
-  bool wasmVerbose_ : 1;
   bool wasmBaseline_ : 1;
   bool wasmIon_ : 1;
   bool testWasmAwaitTier2_ : 1;
 
   // JIT options.
   bool disableIon_ : 1;
-  bool disableEvalSecurityChecks_ : 1;
 
   // Runtime options.
+  bool disableEvalSecurityChecks_ : 1;
+  bool disableFilenameSecurityChecks_ : 1;
   bool asyncStack_ : 1;
   bool asyncStackCaptureDebuggeeOnly_ : 1;
   bool throwOnDebuggeeWouldRun_ : 1;
   bool dumpStackOnDebuggeeWouldRun_ : 1;
-#ifdef JS_ENABLE_SMOOSH
-  bool trackNotImplemented_ : 1;
-  bool trySmoosh_ : 1;
-#endif
   bool fuzzing_ : 1;
 
   // Compile options.

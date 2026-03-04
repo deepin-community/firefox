@@ -17,7 +17,7 @@ autofill-edit-payment-method-os-prompt-windows = { -brand-short-name } กำล
 autofill-edit-payment-method-os-prompt-other = { -brand-short-name } กำลังพยายามจะแสดงข้อมูลวิธีการชำระเงินที่เก็บไว้
 # The links lead users to Form Autofill browser preferences.
 autofill-options-link = ตัวเลือกการกรอกแบบฟอร์มอัตโนมัติ
-autofill-options-link-osx = การกำหนดลักษณะการกรอกแบบฟอร์มอัตโนมัติ
+autofill-options-link-osx = ค่าปรับแต่งการกรอกแบบฟอร์มอัตโนมัติ
 
 ## The credit card capture doorhanger
 
@@ -81,3 +81,6 @@ autofill-category-name = ชื่อ
 autofill-category-organization = องค์กร
 autofill-category-tel = โทรศัพท์
 autofill-category-email = อีเมล
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } ตรวจพบไซต์ที่ไม่ปลอดภัย การกรอกแบบฟอร์มอัตโนมัติถูกปิดใช้งานชั่วคราว

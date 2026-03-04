@@ -114,10 +114,7 @@ static uint32_t ErrorNumber(RegExpError err) {
     case RegExpError::kInvalidFlagGroup:
       return JSMSG_INVALID_FLAG_GROUP;
     case RegExpError::kMultipleFlagDashes:
-      // V8 contains experimental support for turning regexp flags on
-      // and off in the middle of a regular expression. Unless it
-      // becomes standardized, SM does not support this feature.
-      MOZ_CRASH("Mode modifiers not supported");
+      return JSMSG_MULTIPLE_FLAG_DASHES;
     case RegExpError::kNotLinear:
       // V8 has an experimental non-backtracking engine. We do not
       // support it yet.
@@ -420,12 +417,10 @@ class RegExpDepthCheck final : public v8::internal::RegExpVisitor {
   }
 
   // Leaf nodes with no children
-#define LEAF_DEPTH(Kind)                                                \
-  void* Visit##Kind(v8::internal::RegExp##Kind* node, void*) override { \
-    uint8_t padding[FRAME_PADDING];                                     \
-    dummy_ = padding; /* Prevent padding from being optimized away.*/   \
-    AutoCheckRecursionLimit recursion(cx_);                             \
-    return (void*)recursion.checkDontReport(cx_);                       \
+#define LEAF_DEPTH(Kind)                                                  \
+  void* Visit##Kind(v8::internal::RegExp##Kind* node, void*) override {   \
+    AutoCheckRecursionLimit recursion(cx_);                               \
+    return (void*)recursion.checkWithExtraDontReport(cx_, FRAME_PADDING); \
   }
 
   LEAF_DEPTH(Assertion)
@@ -440,10 +435,8 @@ class RegExpDepthCheck final : public v8::internal::RegExpVisitor {
   // Wrapper nodes with one child
 #define WRAPPER_DEPTH(Kind)                                             \
   void* Visit##Kind(v8::internal::RegExp##Kind* node, void*) override { \
-    uint8_t padding[FRAME_PADDING];                                     \
-    dummy_ = padding; /* Prevent padding from being optimized away.*/   \
     AutoCheckRecursionLimit recursion(cx_);                             \
-    if (!recursion.checkDontReport(cx_)) {                              \
+    if (!recursion.checkWithExtraDontReport(cx_, FRAME_PADDING)) {      \
       return nullptr;                                                   \
     }                                                                   \
     return node->body()->Accept(this, nullptr);                         \
@@ -457,10 +450,8 @@ class RegExpDepthCheck final : public v8::internal::RegExpVisitor {
 
   void* VisitAlternative(v8::internal::RegExpAlternative* node,
                          void*) override {
-    uint8_t padding[FRAME_PADDING];
-    dummy_ = padding; /* Prevent padding from being optimized away.*/
     AutoCheckRecursionLimit recursion(cx_);
-    if (!recursion.checkDontReport(cx_)) {
+    if (!recursion.checkWithExtraDontReport(cx_, FRAME_PADDING)) {
       return nullptr;
     }
     for (auto* child : *node->nodes()) {
@@ -472,10 +463,8 @@ class RegExpDepthCheck final : public v8::internal::RegExpVisitor {
   }
   void* VisitDisjunction(v8::internal::RegExpDisjunction* node,
                          void*) override {
-    uint8_t padding[FRAME_PADDING];
-    dummy_ = padding; /* Prevent padding from being optimized away.*/
     AutoCheckRecursionLimit recursion(cx_);
-    if (!recursion.checkDontReport(cx_)) {
+    if (!recursion.checkWithExtraDontReport(cx_, FRAME_PADDING)) {
       return nullptr;
     }
     for (auto* child : *node->alternatives()) {
@@ -487,10 +476,8 @@ class RegExpDepthCheck final : public v8::internal::RegExpVisitor {
   }
   void* VisitClassSetExpression(v8::internal::RegExpClassSetExpression* node,
                                 void*) override {
-    uint8_t padding[FRAME_PADDING];
-    dummy_ = padding; /* Prevent padding from being optimized away.*/
     AutoCheckRecursionLimit recursion(cx_);
-    if (!recursion.checkDontReport(cx_)) {
+    if (!recursion.checkWithExtraDontReport(cx_, FRAME_PADDING)) {
       return nullptr;
     }
     for (auto* child : *node->operands()) {
@@ -503,11 +490,15 @@ class RegExpDepthCheck final : public v8::internal::RegExpVisitor {
 
  private:
   JSContext* cx_;
-  void* dummy_ = nullptr;
 
   // This size is picked to be comfortably larger than any
   // RegExp*::ToNode stack frame.
+#if !defined(DEBUG) && !defined(MOZ_CODE_COVERAGE)
   static const size_t FRAME_PADDING = 256;
+#else
+  // Use a slightly larger padding for debug and code coverage builds.
+  static const size_t FRAME_PADDING = 256 * 2;
+#endif
 };
 
 enum class AssembleResult {
@@ -587,7 +578,7 @@ enum class AssembleResult {
 #ifdef DEBUG
   UniquePtr<RegExpMacroAssembler> tracer_masm;
   if (jit::JitOptions.trace_regexp_assembler) {
-    tracer_masm = MakeUnique<RegExpMacroAssemblerTracer>(cx->isolate, masm_ptr);
+    tracer_masm = MakeUnique<RegExpMacroAssemblerTracer>(masm_ptr);
     masm_ptr = tracer_masm.get();
   }
 #endif
@@ -656,7 +647,7 @@ struct RegExpNamedCaptureIndexLess {
     // lowest capture index.
     MOZ_ASSERT(!lhs.indices.empty());
     MOZ_ASSERT(!rhs.indices.empty());
-    MOZ_ASSERT(lhs.indices[0] != rhs.indices[0]);
+    MOZ_ASSERT_IF(&lhs != &rhs, lhs.indices[0] != rhs.indices[0]);
     return lhs.indices[0] < rhs.indices[0];
   }
 };
@@ -797,8 +788,7 @@ bool CompilePattern(JSContext* cx, MutableHandleRegExpShared re,
   // Avoid stack overflow while recursively walking the AST.
   RegExpDepthCheck depthCheck(cx);
   if (!depthCheck.check(data.tree)) {
-    JS_ReportErrorASCII(cx, "regexp too big");
-    cx->reportResourceExhaustion();
+    ReportOverRecursed(cx);
     return false;
   }
 
@@ -846,6 +836,12 @@ bool CompilePattern(JSContext* cx, MutableHandleRegExpShared re,
 
   SampleCharacters(input, compiler);
   data.node = compiler.PreprocessRegExp(&data, isLatin1);
+  if (data.error != RegExpError::kNone) {
+    MOZ_ASSERT(data.error == RegExpError::kTooLarge);
+    JS_ReportErrorASCII(cx, "regexp too big");
+    cx->reportResourceExhaustion();
+    return false;
+  }
   data.error = AnalyzeRegExp(cx->isolate, isLatin1, flags, data.node);
   if (data.error != RegExpError::kNone) {
     MOZ_ASSERT(data.error == RegExpError::kAnalysisStackOverflow);

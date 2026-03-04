@@ -16,7 +16,6 @@
 #include "JavaBuiltins.h"
 #include "nsAccessibilityService.h"
 #include "nsAccUtils.h"
-#include "nsViewManager.h"
 
 #include "mozilla/PresShell.h"
 #include "mozilla/dom/BrowserParent.h"
@@ -63,9 +62,7 @@ class Settings final
 SessionAccessibility::SessionAccessibility(
     jni::NativeWeakPtr<widget::GeckoViewSupport> aWindow,
     java::SessionAccessibility::NativeProvider::Param aSessionAccessibility)
-    : mWindow(aWindow), mSessionAccessibility(aSessionAccessibility) {
-  SetAttached(true, nullptr);
-}
+    : mWindow(aWindow), mSessionAccessibility(aSessionAccessibility) {}
 
 void SessionAccessibility::SetAttached(bool aAttached,
                                        already_AddRefed<Runnable> aRunnable) {
@@ -338,12 +335,7 @@ void SessionAccessibility::Copy(int32_t aID) {
 void SessionAccessibility::Paste(int32_t aID) {
   if (Accessible* acc = GetAccessibleByID(aID)) {
     if (auto* textAcc = acc->AsHyperTextBase()) {
-      int32_t startSel, endSel;
-      GetSelectionOrCaret(textAcc, &startSel, &endSel);
-      if (startSel != endSel) {
-        textAcc->DeleteText(startSel, endSel);
-      }
-      textAcc->PasteText(startSel);
+      textAcc->PasteText(nsIAccessibleText::TEXT_OFFSET_CARET);
     }
   }
 }
@@ -395,12 +387,7 @@ RefPtr<SessionAccessibility> SessionAccessibility::GetInstanceFor(
     return nullptr;
   }
 
-  nsViewManager* vm = aPresShell->GetViewManager();
-  if (!vm) {
-    return nullptr;
-  }
-
-  nsCOMPtr<nsIWidget> rootWidget = vm->GetRootWidget();
+  nsCOMPtr<nsIWidget> rootWidget = aPresShell->GetRootWidget();
   // `rootWidget` can be one of several types. Here we make sure it is an
   // android nsWindow.
   if (RefPtr<nsWindow> window = nsWindow::From(rootWidget)) {
@@ -640,7 +627,7 @@ void SessionAccessibility::SendAnnouncementEvent(Accessible* aAccessible,
 void SessionAccessibility::PopulateNodeInfo(
     Accessible* aAccessible, mozilla::jni::Object::Param aNodeInfo) {
   nsAutoString name;
-  aAccessible->Name(name);
+  ENameValueFlag nameFlag = aAccessible->Name(name);
   nsAutoString textValue;
   aAccessible->Value(textValue);
   nsAutoString nodeID;
@@ -649,7 +636,6 @@ void SessionAccessibility::PopulateNodeInfo(
   aAccessible->Description(accDesc);
   uint64_t state = aAccessible->State();
   LayoutDeviceIntRect bounds = aAccessible->Bounds();
-  uint8_t actionCount = aAccessible->ActionCount();
   int32_t virtualViewID = AccessibleWrap::GetVirtualViewID(aAccessible);
   Accessible* parent = virtualViewID != kNoID ? aAccessible->Parent() : nullptr;
   int32_t parentID = parent ? AccessibleWrap::GetVirtualViewID(parent) : 0;
@@ -660,7 +646,8 @@ void SessionAccessibility::PopulateNodeInfo(
     role = roles::TEXT;
   }
 
-  uint32_t flags = AccessibleWrap::GetFlags(role, state, actionCount);
+  uint32_t flags = AccessibleWrap::GetFlags(aAccessible);
+
   int32_t className = AccessibleWrap::AndroidClass(aAccessible);
 
   nsAutoString hint;
@@ -673,7 +660,12 @@ void SessionAccessibility::PopulateNodeInfo(
   } else {
     if (role == roles::LINK || role == roles::HEADING) {
       description.Assign(name);
-    } else {
+    } else if (role != roles::CELL || nameFlag != eNameFromSubtree) {
+      // In most cases, use the name as the text. We discard the name completely
+      // for a table cell where the name is computed from the subtree because
+      // we don't want UI Automator to find the cell instead of a link inside
+      // it. TraversalRule ignores table cells anyway, so this is only relevant
+      // to UI Automator.
       text.Assign(name);
     }
   }
@@ -699,6 +691,7 @@ void SessionAccessibility::PopulateNodeInfo(
   }
 
   RefPtr<AccAttributes> attributes = aAccessible->Attributes();
+  nsAccUtils::SetAccGroupAttrs(attributes, aAccessible);
 
   nsAutoString geckoRole;
   nsAutoString roleDescription;

@@ -4,10 +4,10 @@
 
 page-title = දොස් සෙවීමේ තොරතුරු
 page-subtitle = ඔබ ගැටලුවක් විසඳීමට උත්සාහ කරමින් සිටින විට ප්‍රයෝජනවත් විය හැකි තාක්‍ෂණික තොරතුරු මෙම පිටුවෙහි අඩංගු වේ. { -brand-short-name } ගැන සරල ප්‍රශ්නවලට පිළිතුරු සොයන්නේ නම්, අපගේ <a data-l10n-name="support-link">සහාය අඩවිය</a> බලන්න.
-crashes-title = බිඳ වැටීමේ වාර්තා
+crashes-title = බිඳවැටීම් වාර්තා
 crashes-id = වාර්තාවේ හැඳු.
 crashes-send-date = යොමුකළ
-crashes-all-reports = සියළුම බිඳවැටීම් වාර්තා
+crashes-all-reports = සියළු බිඳවැටීම් වාර්තා
 crashes-no-config = මෙම යෙදුම බිඳ වැටීම් වාර්තා පෙන්වීමට වින්‍යාසගත කර නැත.
 support-addons-title = එක්කහු
 support-addons-name = නම
@@ -98,6 +98,7 @@ a11y-activated = ක්‍රියාත්මකයි
 a11y-force-disabled = පිවිසුම අබල කරන්න
 copy-text-to-clipboard-label = පෙළ පිටපතක් පසුරු පුවරුවට
 copy-raw-data-to-clipboard-label = අමු දත්ත පිටපතක් පසුරු පුවරුවට
+sandbox-sys-call-log-title = ප්‍රතික්‍ෂේපිත පද්ධති ඇමතුම්
 sandbox-sys-call-index = #
 sandbox-sys-call-age = තත්. කිහිපයකට පෙර
 sandbox-sys-call-pid = PID
@@ -122,14 +123,6 @@ media-device-preferred = වඩා කැමති
 media-device-format = ආකෘතිය
 media-device-channels = නාලිකා
 media-device-latency = ගුප්තතාව
-
-## Codec support table
-
-
-## Media Content Decryption Modules (CDM)
-## See EME Spec for more explanation for following technical terms
-## https://w3c.github.io/encrypted-media/
-
 
 ##
 
@@ -184,6 +177,7 @@ text-copied = පෙළ පසුරු පුවරුවට පිටපත්
 
 ## The verb "blocked" here refers to a graphics feature such as "Direct2D" or "OpenGL layers".
 
+blocked-driver = ඔබගේ චිත්‍රණ ධාවක අනුවාදය සඳහා අවහිර කර ඇත.
 blocked-os-version = ඔබගේ මෙහෙයුම් පද්ධතියේ අනුවාදය සඳහා අවහිරයි.
 hardware-h264 = දෘඩාංග H264 විකේතනය
 yes = ඔව්
@@ -222,6 +216,9 @@ target-frame-rate = ඉලක්කගත රාමු අනුපා.
 min-lib-versions = අපේක්‍ෂිත අවම අනුවාදය
 loaded-lib-versions = භාවිතා වන අනුවාදය
 has-seccomp-bpf = Seccomp-BPF (පද්ධතියේ ඇමතුම් පෙරීීම)
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — මෙම විශේෂාංගයට ඔබගේ පද්ධතියෙන් ඉඩ නොදේ. මෙයින් { -brand-short-name } ආරක්‍ෂණ විශේෂාංග සීමාවට හැකිය.
 sandbox-proc-type-content = අන්තර්ගතය
 sandbox-proc-type-media-plugin = මාධ්‍ය පේනුව
 sandbox-proc-type-data-decoder = දත්ත විකේතකය
@@ -253,10 +250,6 @@ touch-enabled = ස්පර්ශ ආදානය සබලයි
 drag-enabled = අනුචලන තීරුව ඇදීම සබලයි
 keyboard-enabled = යතුරුපුවරුව සබලයි
 
-## Variables
-## $preferenceKey (string) - String ID of preference
-
-
 ## Strings representing the status of the Enterprise Policies engine.
 
 policies-inactive = අක්‍රිය
@@ -284,9 +277,3 @@ support-remote-experiments-name = නම
 support-remote-features-title = දුරස්ථ විශේෂාංග
 support-remote-features-name = නම
 support-remote-features-status = තත්‍වය
-
-## Pointing devices
-
-
-## Content Analysis (DLP)
-

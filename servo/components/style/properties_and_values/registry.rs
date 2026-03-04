@@ -6,6 +6,7 @@
 
 use super::rule::{Inherits, InitialValue, PropertyRuleName};
 use super::syntax::Descriptor;
+use crate::derives::*;
 use crate::selector_map::PrecomputedHashMap;
 use crate::stylesheets::UrlExtraData;
 use crate::Atom;
@@ -69,6 +70,7 @@ impl PropertyRegistration {
 /// The script registry of custom properties.
 /// <https://drafts.css-houdini.org/css-properties-values-api-1/#dom-window-registeredpropertyset-slot>
 #[derive(Default)]
+#[cfg_attr(feature = "servo", derive(MallocSizeOf))]
 pub struct ScriptRegistry {
     properties: PrecomputedHashMap<Atom, PropertyRegistration>,
 }

@@ -6,21 +6,20 @@
 
 #include "PushNotifier.h"
 
-#include "nsContentUtils.h"
-#include "nsCOMPtr.h"
-#include "nsICategoryManager.h"
-#include "nsIXULRuntime.h"
-#include "nsNetUtil.h"
-#include "nsXPCOM.h"
-#include "mozilla/dom/ServiceWorkerManager.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
-#include "mozilla/Unused.h"
-
 #include "mozilla/dom/BodyUtil.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/ContentParent.h"
+#include "mozilla/dom/ServiceWorkerManager.h"
+#include "nsCOMPtr.h"
+#include "nsContentUtils.h"
+#include "nsICategoryManager.h"
+#include "nsIPushService.h"
+#include "nsIXULRuntime.h"
+#include "nsNetUtil.h"
+#include "nsXPCOM.h"
 
 namespace mozilla::dom {
 
@@ -66,9 +65,11 @@ PushNotifier::NotifyPush(const nsACString& aScope, nsIPrincipal* aPrincipal,
 
 NS_IMETHODIMP
 PushNotifier::NotifySubscriptionChange(const nsACString& aScope,
-                                       nsIPrincipal* aPrincipal) {
+                                       nsIPrincipal* aPrincipal,
+                                       nsIPushSubscription* aOldSubscription) {
   NS_ENSURE_ARG(aPrincipal);
-  PushSubscriptionChangeDispatcher dispatcher(aScope, aPrincipal);
+  PushSubscriptionChangeDispatcher dispatcher(aScope, aPrincipal,
+                                              aOldSubscription);
   return Dispatch(dispatcher);
 }
 
@@ -91,7 +92,7 @@ PushNotifier::NotifyError(const nsACString& aScope, nsIPrincipal* aPrincipal,
 nsresult PushNotifier::Dispatch(PushDispatcher& aDispatcher) {
   if (XRE_IsParentProcess()) {
     // Always notify XPCOM observers in the parent process.
-    Unused << NS_WARN_IF(NS_FAILED(aDispatcher.NotifyObservers()));
+    (void)NS_WARN_IF(NS_FAILED(aDispatcher.NotifyObservers()));
 
     // e10s is disabled; notify workers in the parent.
     return aDispatcher.NotifyWorkers();
@@ -106,7 +107,7 @@ nsresult PushNotifier::Dispatch(PushDispatcher& aDispatcher) {
 
   ContentChild* parentActor = ContentChild::GetSingleton();
   if (!NS_WARN_IF(!parentActor)) {
-    Unused << NS_WARN_IF(!aDispatcher.SendToParent(parentActor));
+    (void)NS_WARN_IF(!aDispatcher.SendToParent(parentActor));
   }
 
   return rv;
@@ -209,7 +210,7 @@ PushDispatcher::~PushDispatcher() = default;
 nsresult PushDispatcher::HandleNoChildProcesses() { return NS_OK; }
 
 nsresult PushDispatcher::NotifyObserversAndWorkers() {
-  Unused << NS_WARN_IF(NS_FAILED(NotifyObservers()));
+  (void)NS_WARN_IF(NS_FAILED(NotifyObservers()));
   return NotifyWorkers();
 }
 
@@ -311,8 +312,9 @@ bool PushMessageDispatcher::SendToChild(ContentParent* aContentActor) {
 }
 
 PushSubscriptionChangeDispatcher::PushSubscriptionChangeDispatcher(
-    const nsACString& aScope, nsIPrincipal* aPrincipal)
-    : PushDispatcher(aScope, aPrincipal) {}
+    const nsACString& aScope, nsIPrincipal* aPrincipal,
+    nsIPushSubscription* aOldSubscription)
+    : PushDispatcher(aScope, aPrincipal), mOldSubscription(aOldSubscription) {}
 
 PushSubscriptionChangeDispatcher::~PushSubscriptionChangeDispatcher() = default;
 
@@ -334,18 +336,18 @@ nsresult PushSubscriptionChangeDispatcher::NotifyWorkers() {
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
-  return swm->SendPushSubscriptionChangeEvent(originSuffix, mScope);
+  return swm->SendPushSubscriptionChangeEvent(originSuffix, mScope,
+                                              mOldSubscription);
 }
 
 bool PushSubscriptionChangeDispatcher::SendToParent(
     ContentChild* aParentActor) {
-  return aParentActor->SendNotifyPushSubscriptionChangeObservers(mScope,
-                                                                 mPrincipal);
+  return true;
 }
 
 bool PushSubscriptionChangeDispatcher::SendToChild(
     ContentParent* aContentActor) {
-  return aContentActor->SendPushSubscriptionChange(mScope, mPrincipal);
+  return true;
 }
 
 PushSubscriptionModifiedDispatcher::PushSubscriptionModifiedDispatcher(

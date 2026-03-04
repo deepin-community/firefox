@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -28,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% ᱯᱩᱨᱟᱹᱣ ᱮ
 firefoxview-tabpickup-step-signin-header = ᱥᱟᱫᱷᱚᱱ ᱛᱟᱞᱟ ᱨᱮ ᱚᱫᱚᱞᱵᱚᱫᱚᱞᱚᱜ ᱢᱮ
 firefoxview-tabpickup-step-signin-description = ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱴᱮᱵᱽ ᱠᱚ ᱱᱚᱰᱮ ᱦᱟᱛᱟᱣ ᱞᱟᱹᱜᱤᱫ, ᱢᱟᱲᱟᱝ ᱫᱚ ᱟᱢ ᱥᱩᱦᱤ ᱮᱢ ᱛᱮ ᱦᱩᱭᱟᱢᱟᱸ ᱟᱨᱵᱟᱝ ᱢᱤᱫᱴᱟᱝ ᱠᱷᱟᱛᱟ ᱛᱮᱭᱟᱨ ᱛᱮ ᱦᱩᱭᱟᱢᱟᱸ ᱾
 firefoxview-tabpickup-step-signin-primarybutton = ᱞᱮᱛᱟᱲ
-firefoxview-syncedtabs-signin-header = ᱡᱟᱦᱟᱸ ᱠᱷᱚᱱ ᱜᱮ ᱴᱮᱵᱽᱠᱚ ᱦᱟᱛᱟᱣ ᱢᱮ
-firefoxview-syncedtabs-signin-description = ᱟᱢᱟᱜ ᱴᱮᱵᱽ ᱠᱚ ᱡᱟᱦᱟᱸ ᱠᱷᱚᱱ ᱟᱢ { -brand-product-name } ᱵᱮᱵᱷᱟᱨᱟ ᱚᱱᱟ ᱧᱮᱞ ᱞᱟᱹᱜᱤᱫ, ᱟᱢᱟᱜ ᱠᱷᱟᱛᱟ ᱨᱮ ᱢᱮ ᱾ ᱡᱩᱫᱤ ᱟᱢ ᱴᱷᱮᱱ ᱢᱤᱫᱴᱟᱝ ᱵᱟᱹᱱᱩᱜ ᱠᱷᱟᱱ, ᱟᱢ ᱥᱟᱞᱟᱜ ᱥᱩᱦᱤ ᱮᱢ ᱠᱚᱨᱮ ᱟᱢ ᱥᱟᱶ ᱞᱮ ᱛᱟᱦᱮᱸᱱᱟ ᱾
-firefoxview-syncedtabs-signin-primarybutton = ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱥᱮ ᱧᱩᱛᱩᱢ ᱚᱞ ᱦᱚᱪᱚᱭ ᱢᱮ
+firefoxview-syncedtabs-signin-header-2 = ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱟᱢᱟᱜ { -brand-product-name }
+firefoxview-syncedtabs-signin-description-2 = ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱟᱨ ᱮᱴᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱠᱚ ᱨᱮ ᱡᱷᱤᱡ ᱟᱠᱟᱱ ᱴᱮᱵᱽ ᱠᱚ ᱧᱮᱞ ᱞᱟᱹᱜᱤᱫ, ᱥᱩᱦᱤ ᱮᱢᱚᱜ ᱢᱮ ᱵᱟᱝᱠᱷᱟᱱ ᱢᱤᱫ ᱮᱠᱟᱣᱩᱱᱴ ᱞᱟᱹᱜᱤᱫ ᱧᱩᱛᱩᱢ ᱮᱢᱚᱜ ᱢᱮ ᱾  ᱢᱤᱫᱴᱟᱹᱝ ᱮᱠᱟᱣᱩᱱᱴ ᱥᱟᱶᱛᱮ, ᱟᱢ ᱟᱢᱟᱜ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ, ᱱᱟᱜᱟᱢ ᱟᱨ ᱟᱭᱢᱟ ᱡᱤᱱᱤᱥᱠᱚ ᱥᱤᱝᱠ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ᱾
+firefoxview-syncedtabs-signin-primarybutton-2 = ᱵᱚᱞᱚᱱ ᱥᱩᱦᱤ
 firefoxview-tabpickup-adddevice-header = { -brand-product-name } ᱫᱚ ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱟᱨᱵᱟᱝ ᱴᱮᱵᱞᱮᱴ ᱨᱮ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱢᱮ
 firefoxview-tabpickup-adddevice-description = ᱢᱚᱵᱟᱭᱤᱞ ᱞᱟᱹᱜᱤᱫ  { -brand-product-name } ᱰᱟᱣᱱᱞᱳᱰ ᱢᱮ ᱟᱨ ᱚᱱᱰᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱾
 firefoxview-tabpickup-adddevice-learn-how = ᱪᱮᱫᱢᱮ
 firefoxview-tabpickup-adddevice-primarybutton = { -brand-product-name } ᱫᱚ ᱟᱢᱟᱜ ᱢᱚᱵᱟᱭᱤᱞ ᱞᱟᱹᱜᱤᱫ ᱟᱹᱜᱩᱭ ᱢᱮ
-firefoxview-syncedtabs-adddevice-header = ᱮᱴᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱛᱮ { -brand-product-name } ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ
-firefoxview-syncedtabs-adddevice-description = ᱟᱢᱟᱜ ᱴᱮᱵᱽ ᱠᱚ ᱡᱟᱦᱟᱸ ᱠᱷᱚᱱ ᱟᱢ { -brand-product-name } ᱵᱮᱵᱷᱟᱨᱟ ᱮᱫᱟ ᱚᱱᱟ ᱧᱮᱞ ᱞᱟᱹᱜᱤᱫ, ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱥᱚᱫᱷᱚᱱ ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱾ <a data-l10n-name="url">ᱵᱟᱹᱲᱛᱤ ᱥᱟᱫᱷᱚᱱᱠᱚ ᱥᱟᱞᱟᱜ ᱡᱩᱲᱟᱹᱣ ᱞᱟᱹᱜᱤᱫ</a> ᱰᱷᱮᱨ ᱵᱟᱲᱟᱭ ᱢᱮ ᱾
+firefoxview-syncedtabs-adddevice-header-2 = ᱡᱟᱦᱟᱸ ᱠᱷᱚᱱ ᱜᱮ ᱴᱮᱵᱽᱠᱚ ᱦᱟᱛᱟᱣ ᱢᱮ
+firefoxview-syncedtabs-adddevice-description-2 = ᱱᱚᱸᱰᱮ ᱴᱮᱵᱽ ᱧᱮᱞ ᱞᱟᱹᱜᱤᱫ ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱥᱮ ᱮᱴᱟᱜ ᱠᱚᱢᱯᱭᱩᱴᱟᱨ ᱨᱮ { -brand-product-name } ᱨᱮ ᱧᱩᱛᱩᱢ ᱞᱮᱠᱷᱟᱭ ᱢᱮ ᱾  ᱪᱮᱫ ᱢᱮ ᱪᱮᱫ ᱞᱮᱠᱟ ᱛᱮ <a data-l10n-name="url">ᱵᱟᱹᱲᱛᱤ ᱥᱟᱫᱷᱚᱱ ᱠᱚ ᱡᱚᱯᱲᱟᱣ ᱦᱩᱭᱩᱜᱼᱟ</a>᱾
 firefoxview-syncedtabs-adddevice-primarybutton = ᱢᱚᱵᱟᱭᱤᱞ ᱞᱟᱹᱜᱤᱫ ᱛᱮ { -brand-product-name } ᱪᱮᱥᱴᱟᱭ ᱢᱮ
 firefoxview-tabpickup-synctabs-header = ᱴᱮᱵᱽ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱮᱢ ᱪᱷᱚᱭ ᱢᱮ
 firefoxview-tabpickup-synctabs-description = ᱥᱟᱫᱷᱚᱱ ᱵᱷᱤᱛᱤᱨ ᱨᱮ ᱴᱮᱵᱽ ᱠᱚ ᱦᱟᱹᱴᱤᱧ ᱞᱟᱹᱜᱤᱫ { -brand-short-name } ᱠᱚᱨᱟᱣ ᱪᱷᱚᱭᱮᱢ ᱾
@@ -44,10 +46,11 @@ firefoxview-tabpickup-synctabs-learn-how = ᱪᱮᱫᱢᱮ
 firefoxview-tabpickup-synctabs-primarybutton = ᱠᱷᱩᱞᱟᱹ ᱠᱟᱱ ᱴᱮᱵᱽ ᱠᱚ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱢᱮ
 firefoxview-syncedtabs-synctabs-header = ᱟᱢᱟᱜ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱥᱟᱡᱟᱣᱠᱚ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮ
 firefoxview-syncedtabs-synctabs-description = ᱮᱴᱟᱜ ᱥᱟᱫᱷᱟᱱ ᱠᱷᱚᱱ ᱴᱮᱵᱽᱠᱚ ᱧᱮᱞ ᱞᱟᱹᱜᱤᱫ ᱛᱮ, ᱟᱢ ᱫᱚ ᱟᱢᱟᱜ ᱠᱷᱩᱞᱟᱹ ᱴᱮᱵᱽ ᱠᱷᱚᱱ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱠᱚᱨᱟᱣ ᱞᱟᱹᱠᱛᱤ ᱠᱟᱱᱟ ᱾
-firefoxview-syncedtabs-synctabs-checkbox = ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱞᱟᱹᱜᱤᱫ ᱛᱮ ᱴᱮᱵᱽ ᱠᱚ ᱠᱷᱩᱞᱟᱹ ᱪᱷᱚᱭ ᱢᱮ
 firefoxview-syncedtabs-loading-header = ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱪᱟᱹᱞᱩ ᱠᱟᱱᱟ
+firefoxview-syncedtabs-loading-description = ᱡᱚᱠᱷᱚᱱ ᱱᱚᱣᱟ ᱯᱩᱨᱟᱹᱣ ᱞᱮᱱᱠᱷᱟᱱ, ᱟᱢ ᱮᱴᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱟᱢ ᱡᱷᱤᱡ ᱟᱠᱟᱱ ᱡᱟᱦᱟᱱ ᱴᱮᱵᱽ ᱜᱮᱢ ᱧᱮᱞᱟ ᱾ ᱞᱚᱜᱚᱱ ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱢᱮ᱾
 firefoxview-tabpickup-fxa-admin-disabled-header = ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱵᱚᱱᱫ ᱠᱟᱫᱟᱭ
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } ᱫᱚ ᱥᱟᱫᱷᱚᱱ ᱵᱷᱤᱛᱨᱤ ᱨᱮ ᱴᱮᱵᱽ ᱠᱚ ᱵᱟᱝ ᱥᱤᱝᱠ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟᱭ ᱪᱮᱫᱟᱜ ᱥᱮ ᱟᱢᱤᱡ ᱮᱰᱢᱤᱱ ᱫᱚ ᱥᱤᱝᱠ ᱵᱚᱸᱫ ᱠᱟᱫᱟᱭ ᱾
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } ᱫᱚ ᱥᱟᱫᱷᱚᱱ ᱵᱷᱤᱛᱨᱤ ᱨᱮ ᱴᱮᱵᱽ ᱠᱚ ᱵᱟᱝ ᱥᱤᱝᱠ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟᱭ ᱪᱮᱫᱟᱜ ᱥᱮ ᱟᱢ ᱜᱟᱶᱛᱮ ᱫᱚ ᱥᱤᱝᱠ ᱵᱚᱸᱫ ᱠᱟᱫᱟᱭ ᱾
 firefoxview-tabpickup-network-offline-header = ᱟᱢᱟᱜ ᱤᱱᱴᱟᱹᱨᱱᱮᱴ ᱡᱚᱱᱚᱲᱟᱣ ᱧᱮᱞ ᱵᱤᱲᱟᱣ ᱢᱮ
 firefoxview-tabpickup-network-offline-description = ᱡᱩᱫᱤ ᱟᱢ ᱯᱷᱟᱭᱟᱨᱣᱟᱞ ᱟᱨ ᱯᱨᱚᱠᱥᱤ ᱵᱮᱵᱷᱟᱨᱮᱫ ᱠᱷᱟᱱ, ᱧᱮᱞ ᱢᱮ ᱡᱮ { -brand-short-name } ᱴᱷᱮᱱ ᱣᱮᱵᱽ ᱟᱫᱮᱨ ᱞᱟᱹᱜᱤᱫ ᱥᱚᱦᱢᱚᱛ ᱫᱚᱨᱠᱟᱨ ᱠᱟᱱᱟ ᱥᱮ ᱵᱟᱝᱟ ᱾
 firefoxview-tabpickup-network-offline-primarybutton = ᱫᱩᱦᱲᱟᱹ ᱠᱩᱨᱩᱢᱩᱴᱩᱭ ᱢᱮ
@@ -64,6 +67,7 @@ firefoxview-tabpickup-password-locked-primarybutton = ᱢᱩᱞ ᱫᱟᱱᱟᱝ 
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ</a>
 firefoxview-tabpickup-signed-out-header = ᱫᱩᱲᱟᱹ ᱡᱚᱲᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱛᱮ ᱵᱚᱞᱚᱱ ᱥᱩᱦᱤ ᱢᱮ
 firefoxview-tabpickup-signed-out-description = ᱫᱩᱦᱲᱟᱹ ᱡᱩᱲᱟᱹᱣ ᱟᱨ ᱴᱮᱵᱽ ᱠᱚ ᱦᱟᱛᱟᱣ ᱞᱟᱹᱜᱤᱫ, ᱟᱢᱟᱜ { -fxaccount-brand-name } ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱾
+firefoxview-tabpickup-signed-out-description2 = ᱫᱩᱦᱲᱟᱹ ᱡᱩᱲᱟᱹᱣ ᱟᱨ ᱴᱮᱵᱽ ᱠᱚ ᱦᱟᱛᱟᱣ ᱞᱟᱹᱜᱤᱫ, ᱟᱢᱟᱜ ᱠᱷᱟᱛᱟ ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱾
 firefoxview-tabpickup-signed-out-primarybutton = ᱵᱚᱞᱚᱱ ᱥᱩᱦᱤ
 firefoxview-tabpickup-syncing = ᱟᱢᱟᱜ ᱴᱮᱵᱽ ᱥᱤᱝᱠ ᱡᱷᱚᱜ ᱟᱨᱟᱢ ᱨᱮ ᱫᱩᱲᱩᱵ ᱠᱚᱜ ᱢᱮ ᱾ ᱱᱚᱶᱟ ᱫᱚ ᱞᱚᱜᱚᱱ ᱜᱮ ᱦᱩᱭ ᱜᱚᱫᱚᱜᱼᱟ ᱾
 firefoxview-mobile-promo-header = ᱟᱢᱟᱜ ᱯᱷᱚᱱ ᱵᱟᱝᱠᱷᱟᱱ ᱴᱮᱵᱽᱞᱮᱴ ᱠᱷᱚᱱ ᱴᱮᱵᱽ ᱠᱚ ᱦᱚᱛᱟᱣ ᱢᱮ
@@ -75,7 +79,6 @@ firefoxview-closed-tabs-title = ᱱᱤᱛᱚᱜ ᱵᱚᱸᱫᱚᱼᱟᱜ
 firefoxview-closed-tabs-description2 = ᱱᱚᱶᱟ ᱣᱤᱱᱰᱳ ᱨᱮ ᱵᱚᱸᱫ ᱟᱠᱟᱱ ᱥᱟᱦᱴᱟ ᱠᱚ ᱫᱩᱦᱲᱟᱹ ᱠᱷᱩᱞᱟᱹᱭ ᱢᱮ ᱾
 firefoxview-closed-tabs-placeholder-header = ᱱᱤᱛᱚᱜᱽᱼᱟᱜ ᱵᱚᱸᱫᱚᱼᱟᱜ ᱴᱮᱵᱽ ᱠᱚ ᱵᱟᱹᱱᱩᱜᱼᱟ
 firefoxview-closed-tabs-placeholder-body = ᱛᱤᱧ ᱡᱷᱚᱜ ᱟᱢ ᱱᱚᱶᱟ ᱣᱤᱱᱰᱳ ᱨᱮ ᱴᱮᱵᱽ ᱮᱢ ᱵᱚᱱᱫ ᱮᱫᱟ, ᱟᱢ ᱫᱚ ᱱᱚᱰᱮ ᱠᱷᱚᱱ ᱟᱹᱛᱩᱨ ᱟᱬᱜᱚ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
-firefoxview-closed-tabs-placeholder-body2 = ᱛᱤᱧ ᱡᱷᱚᱜ ᱟᱢ ᱱᱚᱶᱟ ᱴᱮᱵᱽ ᱮᱢ ᱵᱚᱱᱫ ᱮᱫᱟ, ᱟᱢ ᱫᱚ ᱱᱚᱰᱮ ᱠᱷᱚᱱ ᱟᱹᱛᱩᱨ ᱟᱬᱜᱚ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -141,16 +144,46 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = ᱣᱤᱱᱰᱳ { $winID } (ᱱᱤᱛᱚᱜᱟᱜ)
-firefoxview-opentabs-focus-tab =
-    .title = ᱱᱚᱶᱟ ᱴᱮᱵᱽ ᱨᱮ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
 firefoxview-show-more = ᱵᱚᱲᱛᱤ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
 firefoxview-show-less = ᱠᱚᱢ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
+firefoxview-show-all = ᱡᱷᱚᱛᱚ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
+firefoxview-search-text-box-clear-button =
+    .title = ᱯᱷᱟᱨᱪᱟ
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = ᱥᱮᱸᱫᱽᱨᱟ
+# Placeholder for the input field to search in history ("search" is a verb).
+firefoxview-search-text-box-history =
+    .placeholder = ᱱᱟᱜᱟᱢ ᱠᱚ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+# Placeholder for the input field to search in recently closed tabs ("search" is a verb).
+firefoxview-search-text-box-recentlyclosed =
+    .placeholder = ᱱᱮᱛᱟᱨ ᱜᱮ ᱵᱚᱱᱫᱚ ᱟᱠᱟᱱ ᱴᱮᱵᱽ ᱠᱚ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = ᱴᱮᱵᱽ ᱠᱚ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = ᱠᱷᱩᱞᱟᱹ ᱠᱟᱱ ᱴᱮᱵᱽ ᱠᱚ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = “{ $query }” ᱞᱟᱹᱜᱤᱫ ᱛᱮᱞᱟ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } ᱥᱟᱭᱤᱴ
+        [two] { $count } ᱥᱟᱭᱤᱴᱠᱤᱱ
+       *[other] { $count } ᱥᱟᱭᱤᱴᱠᱚ
+    }
+# Message displayed when a search is performed and no matching results were found.
+# Variables:
+#   $query (String) - The search query.
+firefoxview-search-results-empty = “{ $query }” ᱞᱟᱹᱜᱤᱫ ᱪᱮᱫ ᱛᱮᱞᱟ ᱦᱚᱸ ᱵᱟᱹᱱᱩᱜᱼᱟ
 firefoxview-sort-history-by-date-label = ᱢᱟᱦᱟᱸ ᱫᱟᱨᱟᱭ ᱛᱮ ᱥᱮᱴ ᱢᱮ
 firefoxview-sort-history-by-site-label = ᱥᱟᱭᱤᱴ ᱫᱟᱨᱟᱭ ᱛᱮ ᱥᱮᱴ ᱢᱮ
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = { $url } ᱛᱮ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
+firefoxview-sort-open-tabs-by-recency-label = ᱱᱮᱛᱟᱨ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱞᱮᱠᱟᱛᱮ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+firefoxview-sort-open-tabs-by-order-label = ᱴᱮᱵᱽ ᱚᱨᱰᱟᱨ ᱞᱮᱠᱟᱛᱮ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -167,7 +200,6 @@ firefoxview-history-site-localhost = (ᱱᱚᱰᱮᱱᱟᱜ ᱨᱮᱫ ᱠᱚ )
 ##
 
 firefoxview-show-all-history = ᱡᱷᱚᱛᱚ ᱦᱤᱛᱟᱹᱞ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
-firefoxview-view-more-browsing-history = ᱟᱨᱦᱚᱸ ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱦᱤᱛᱟᱹᱞ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -183,9 +215,8 @@ firefoxview-choose-browser-button = ᱵᱽᱨᱟᱣᱡᱚᱨ ᱵᱟᱪᱷᱟᱣ 
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = ᱫᱮᱠᱷᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱫᱦᱚᱸ ᱵᱟᱹᱱᱩᱜ ᱠᱟᱫᱼᱟ
-firefoxview-dont-remember-history-empty-description = ᱟᱢᱟᱜ ᱱᱤᱥᱚᱢ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱫᱚ ᱟᱞᱮᱭᱟᱜ ᱡᱤᱜᱚᱨ ᱨᱮ ᱢᱮᱱᱟᱜ ᱠᱟᱫᱟ ᱾ ᱚᱱᱟ ᱛᱮ { -brand-short-name } ᱩᱭᱦᱟᱹᱨᱮᱫ ᱡᱷᱚᱛᱚ ᱠᱟᱹᱢᱤᱠᱚᱨᱮ ᱟᱢᱟᱜ ᱠᱚᱵᱚᱡᱽ ᱢᱮᱱᱟᱜ ᱠᱟᱫᱟ ᱾
-firefoxview-dont-remember-history-empty-description-two = ᱟᱢᱟᱜ ᱱᱤᱛᱚᱜᱟᱜ ᱥᱟᱡᱟᱣ ᱦᱤᱥᱟᱹᱵ ᱛᱮ, ᱟᱢ ᱯᱟᱱᱛᱮ ᱮᱫ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱠᱚ { -brand-short-name } ᱵᱟᱭ ᱩᱭᱦᱟᱹᱨᱮᱫᱟᱭ ᱾ ᱚᱱᱟ ᱵᱚᱫᱚᱞ ᱞᱟᱹᱜᱤᱫ ᱛᱮ, <a data-l10n-name="history-settings-url-two">ᱟᱢᱟᱜ ᱱᱟᱜᱟᱢ ᱩᱭᱦᱟᱹᱨ ᱞᱟᱹᱜᱤᱫ ᱛᱮ ᱟᱢᱟᱜ ᱱᱟᱜᱟᱢ ᱥᱟᱡᱟᱣᱠᱚ ᱵᱚᱫᱚᱞᱢᱮ</a> ᱾
+firefoxview-dont-remember-history-empty-header-2 = ᱟᱢ ᱫᱚ ᱚᱱᱟ ᱠᱚᱵᱚᱡᱽ ᱨᱮ ᱢᱮᱱᱟᱢᱟ { -brand-short-name } ᱪᱮᱫ ᱩᱭᱦᱟᱹᱨ ᱮᱫᱟᱭ
+firefoxview-dont-remember-history-empty-description-one = ᱱᱤᱛᱚᱜ, { -brand-short-name } ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱵᱟᱭ ᱩᱭᱦᱟᱹᱨᱟ ᱾ ᱚᱱᱟ ᱵᱚᱫᱚᱞ ᱞᱟᱹᱜᱤᱫ, <a data-l10n-name="history-settings-url-two">ᱟᱢᱟᱜ ᱱᱟᱜᱟᱢ ᱥᱮᱴᱤᱝ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱢᱮ</a>᱾
 
 ##
 
@@ -208,3 +239,26 @@ firefoxview-recentlyclosed-empty-description-two = ᱡᱟᱦᱱᱟᱜ ᱢᱟᱨ�
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
 firefoxview-syncedtabs-device-notabs = ᱱᱚᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱪᱮᱫ ᱴᱮᱵᱽ ᱵᱟᱭ ᱠᱷᱩᱞᱟᱹ ᱠᱟᱱᱟ
+firefoxview-syncedtabs-connect-another-device = ᱚᱞᱜᱟ ᱥᱟᱫᱷᱚᱱ ᱡᱩᱰᱟᱹᱣ ᱢᱮ
+firefoxview-pinned-tabs =
+    .title = ᱠᱟᱴᱷᱟ ᱠᱟᱱ ᱴᱮᱵᱽᱠᱚ
+firefoxview-tabs =
+    .title = ᱴᱮᱵᱽ ᱠᱚ
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = { $tabTitle } ᱛᱮ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = ᱛᱮ ᱵᱚᱫᱚᱞᱚᱜ ᱢᱮ (ᱵᱩᱠᱢᱟᱨᱠ) { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (ᱵᱩᱠᱢᱟᱨᱠ ᱠᱟᱱ) { $url }

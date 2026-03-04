@@ -34,22 +34,8 @@ sidebar-customize-extensions-header = Sānjoslas paplašinājumi
 sidebar-customize-firefox-tools-header =
     .label = { -brand-product-name } rīki
 sidebar-customize-firefox-settings = Pārvaldīt { -brand-short-name } iestatījumus
-sidebar-position-left =
-    .label = Rādīt pa kreisi
-sidebar-position-right =
-    .label = Rādīt pa labi
 sidebar-vertical-tabs =
     .label = Vertikālas cilnes
-sidebar-horizontal-tabs =
-    .label = Horizontālas cilnes
-sidebar-customize-tabs-header =
-    .label = Ciļņu iestatījumi
-sidebar-customize-settings-header =
-    .label = Sānjoslas iestatījumi
-sidebar-visibility-always-show =
-    .label = Vienmēr rādīt
-sidebar-visibility-hide-sidebar =
-    .label = Slēpt sānjoslu
 
 ## Labels for sidebar context menu items
 
@@ -81,3 +67,9 @@ sidebar-menu-history-header =
     .heading = Vēsture
 sidebar-menu-syncedtabs-header =
     .heading = Cilnes no citām ierīcēm
+
+## Context for closing synced tabs when hovering over the items
+
+show-sidebars =
+    .tooltiptext = Rādīt sānu joslas
+    .label = Sānu joslas

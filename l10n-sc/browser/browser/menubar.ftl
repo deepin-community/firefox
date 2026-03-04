@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -81,7 +69,7 @@ menu-file-open-file =
 menu-file-close-tab =
     .label =
         { $tabCount ->
-            [1] Serra s'ischeda
+            [1] Serra s’ischeda
             [one] Serra { $tabCount } ischeda
            *[other] Serra { $tabCount } ischedas
         }
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Cronologia
 menu-view-synced-tabs-sidebar =
     .label = Ischedas sincronizadas
-menu-view-megalist-sidebar =
-    .label = Craes
 menu-view-full-zoom =
     .label = Ingrandimentu
     .accesskey = I
@@ -240,7 +226,7 @@ menu-bookmarks-menu =
 menu-bookmarks-manage =
     .label = Gesti is sinnalibros
 menu-bookmark-tab =
-    .label = Pone s'ischeda atuale in is sinnalibros…
+    .label = Pone s’ischeda atuale in is sinnalibros…
 menu-edit-bookmark =
     .label = Modìfica custu sinnalibru…
 # "Search" is a verb, as in "Search in bookmarks"
@@ -255,6 +241,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Sinnalibros de su telèfonu mòbile
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profilos
+menu-profiles-manage-profiles =
+    .label = Gesti is profilos
+menu-profiles-new-profile =
+    .label = Profilu nou
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (atuale)
+menu-profiles-menu =
+    .label = Profilos
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +265,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Iscarrigamentos
     .accesskey = I
+menu-tools-extensions-and-themes =
+    .label = Estensiones e temas
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Cumplementos e temas
     .accesskey = C

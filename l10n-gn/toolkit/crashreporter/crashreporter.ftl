@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } iñapañuái ha ndoik�
 crashreporter-plea = Orepytyvõ hag̃ua rojuhu ha romyatyrõ ko apañuái, ikatu egueruka oréve marandu’i jejavy rehegua.
 crashreporter-information = Ko tembiporu’i oku’ejeýta jejavy rire omomarandu hag̃ua apañuái { -vendor-short-name }-pe. Ndereiporuiva’erã peichaite.
 crashreporter-error = { -brand-short-name } ojuhu peteĩ apañuái ha ndoikói. Ivaimíramo jepe, ndaikatúi oñemomarandu ko jejavy rehegua.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Mba’eju’i: { $details }
+crashreporter-error-details-header = Mba’emimi:
 crashreporter-no-run-message = Ko tembiporu’i oku’ejeýta jejavy rire omomarandu hag̃ua pe apañuái tembiporu’i me’ẽhárape. Ndereiporuiva’erã pepete.
 crashreporter-button-details = Mba’emimi…
 crashreporter-loading-details = Henyhẽhína…
 crashreporter-view-report-title = Marandu’i retepy
 crashreporter-comment-prompt = Embojuaju je’epyre (je’epyre ohecháta opavavete)
 crashreporter-report-info = Ko marandu’i aguereko avei marandu mba’éichapa tembiporu’i oĩkuri oñembotýramo guare.
-crashreporter-send-report = Emombe’u { -vendor-short-name }-pe jejavygua omoĩporã hag̃ua.
-crashreporter-include-url = Ehai kuatiarogue kundaharape eikehague.
+crashreporter-checkbox-test-hardware = Ehechajey hardware apañuái ha ñemboheko che mba’e’okápe.
+crashreporter-checkbox-send-report = Emombe’u { -vendor-short-name }-pe jejavy rehegua oñemoĩporã hag̃ua.
+crashreporter-checkbox-include-url = Ehai kuatiarogue kundaharape eikehague.
 crashreporter-submit-status = Nemarandu’i jejavy rehegua oñemondóta esẽ térã emoñepyrũjey mboyve.
+crashreporter-submit-waiting-hardware-tests = Ahechajeyhína hardware apañuái ha iñemboheko…
 crashreporter-submit-in-progress = Omondohína imarandu’i…
 crashreporter-submit-success = ¡Marandu emondopyre og̃uahẽma!
 crashreporter-submit-failure = Iñapysẽ peteĩ apañuái emondokuévo nemarandu.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Ehechakuaa ko apañuái rehegua { $url } ndive.
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Ojavy emongu’évo minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = Ndaijurujái marandurenda ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Noĩri marandurenda’aty ñepyrũha
 # $to (String) - the destination path
 crashreporter-error-moving-path = Ojavy emongu’évo { $from } { $to }-pe
 crashreporter-error-version-eol = Hekove ru’ã: noñemoneĩvéima marandu jejavy rehegua.
+crashreporter-error-failed-to-generate-minidump = Tembiporu’i iñapañuái omoheñóivo marandu jejavygua.

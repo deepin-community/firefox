@@ -144,6 +144,10 @@ addon-category-recent-updates-title =
 addon-category-sitepermission = Права на страницата
 addon-category-sitepermission-title =
     .title = Права на страницата
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = Права на страници за { $host }
 
 ## These are global warnings
 
@@ -267,6 +271,7 @@ discopane-notice-recommendations2 =
         Някои от тези препоръки са персонализирани. Те се основават на други
         инсталирани разширения, предпочитания запазени в профила и статистика за използване.
 discopane-notice-learn-more = Научете повече
+colorway-removal-notice-learn-more = Научете повече
 privacy-policy = Политика за поверителност
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -310,7 +315,7 @@ release-notes-addon-button = Бележки към изданието
 permissions-addon-button = Права
 extension-enabled-heading = Включени
 extension-disabled-heading = Изключени
-theme-enabled-heading = Активна
+theme-enabled-heading = Включена
 theme-disabled-heading2 = Запазени теми
 plugin-enabled-heading = Активни
 plugin-disabled-heading = Изключени
@@ -355,11 +360,11 @@ addon-detail-reviews-link =
 
 # Variables:
 #   $addon (string) - Name of the add-on
-pending-uninstall-description = <span data-l10n-name="addon-name">{ $addon }</span> е премахнато.
+pending-uninstall-description = Разширението <span data-l10n-name="addon-name">{ $addon }</span> е премахнато.
 # Variables:
 #   $addon (string) - Name of the add-on
 pending-uninstall-description2 =
-    .message = { $addon } е премахнато.
+    .message = Разширението { $addon } е премахнато.
 pending-uninstall-undo-button = Отменяне
 addon-detail-updates-label = Автоматично обновяване
 addon-detail-updates-radio-default = Стандартно
@@ -373,6 +378,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Разрешено в поверителни прозорци
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Разрешено в поверителни прозорци
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -383,10 +392,6 @@ addon-detail-private-browsing-disallow = Забраняване
 # of input controls being entered.
 addon-detail-group-label-private-browsing =
     .aria-label = { detail-private-browsing-label }
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
 
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
@@ -402,6 +407,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Това разширение е прегледано и отговаря на нашите стандарти за сигурност и производителност
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Официално разширение то Mozilla. Отговаря на стандартите за сигурност и производителност
 
 ##
 
@@ -424,7 +433,7 @@ recommended-theme-1 = Чувствате се креативни? <a data-l10n-n
 
 ## Page headings
 
-extension-heading = Управлявайте вашите разширения
+extension-heading = Управление на разширения
 theme-heading = Управление на теми
 plugin-heading = Управление на приставки
 dictionary-heading = Управление на речници
@@ -460,12 +469,8 @@ details-notification-unsigned2 =
     .message = Добавката { $name } не може да бъде проверена, за да бъде използвана от { -brand-short-name }. Бъдете внимателни.
 details-notification-unsigned-link = Повече информация
 details-notification-blocked = Добавката { $name } беше изключена поради съображения за сигурност или стабилност.
-details-notification-blocked2 =
-    .message = Добавката { $name } беше изключена поради съображения за сигурност или стабилност.
 details-notification-blocked-link = Повече информация
 details-notification-softblocked = Добавката { $name } може да причини проблеми със сигурността или стабилността.
-details-notification-softblocked2 =
-    .message = Добавката { $name } може да причини проблеми със сигурността или стабилността.
 details-notification-softblocked-link = Повече информация
 details-notification-gmp-pending = Добавката { $name } ще бъде инсталирана след малко.
 details-notification-gmp-pending2 =
@@ -477,5 +482,10 @@ plugins-gmp-license-info = Лицензна информация
 plugins-gmp-privacy-info = Информация за личните данни
 plugins-openh264-name = Видео кодек OpenH264, доставен от Cisco Systems, Inc.
 plugins-openh264-description = Тази приставка се инсталира автоматично от Mozilla за съвместимост със спецификацията на WebRTC, и за да направи възможни обаждания към устройства изискващи видео кодек H.264. Посетете http://www.openh264.org/, за да разгледате изходния код и да научите повече за реализацията.
-plugins-widevine-name = Дешифриращият модул на съдържание Widevine е предоставен от Google Inc.
+plugins-widevine-name = Модул за декриптиране на съдържание Widevine, предоставен от Google Inc.
 plugins-widevine-description = Тази приставка позволява възпроизвеждане на шифрована медия в съответствие със съответната спецификация. Шифровани (кодирани) медии обикновено се използват от сайтовете за защита срещу копиране на платено медийно съдържание. Посетете https://www.w3.org/TR/encrypted-media/ за повече информация относно разширенията за шифровани медии.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-data-collection-learnmore = Научете повече за събирането на данни

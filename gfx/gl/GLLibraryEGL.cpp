@@ -12,12 +12,11 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/Logging.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/DomCanvasMetrics.h"
 #include "mozilla/Tokenizer.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/StaticPrefs_webgl.h"
-#include "mozilla/Unused.h"
 #include "nsDirectoryServiceDefs.h"
 #include "nsDirectoryServiceUtils.h"
 #include "nsPrintfCString.h"
@@ -38,7 +37,7 @@
 #include "ScopedGLHelpers.h"
 #ifdef MOZ_WIDGET_GTK
 #  include "mozilla/WidgetUtilsGtk.h"
-#  include "mozilla/widget/DMABufLibWrapper.h"
+#  include "mozilla/widget/DMABufDevice.h"
 #  ifdef MOZ_WAYLAND
 #    include "mozilla/widget/nsWaylandDisplay.h"
 #  endif  // MOZ_WIDGET_GTK
@@ -266,9 +265,11 @@ static std::shared_ptr<EglDisplay> GetAndInitSurfacelessDisplay(
 
 static auto EglDebugLayersEnabled() {
   EGLAttrib ret = LOCAL_EGL_FALSE;
+#ifdef XP_WIN
   if (StaticPrefs::gfx_direct3d11_enable_debug_layer_AtStartup()) {
     ret = LOCAL_EGL_TRUE;
   }
+#endif
   return ret;
 }
 
@@ -389,7 +390,7 @@ class AngleErrorReporting {
   nsACString* mFailureId;
 };
 
-AngleErrorReporting gAngleErrorReporter;
+MOZ_RUNINIT AngleErrorReporting gAngleErrorReporter;
 
 static std::shared_ptr<EglDisplay> GetAndInitDisplayForAccelANGLE(
     GLLibraryEGL& egl, nsACString* const out_failureId,
@@ -558,7 +559,9 @@ bool GLLibraryEGL::Init(nsACString* const out_failureId) {
 #define SYMBOL(X)                 \
   {                               \
     (PRFuncPtr*)&mSymbols.f##X, { \
-      { "egl" #X }                \
+      {                           \
+        "egl" #X                  \
+      }                           \
     }                             \
   }
 #define END_OF_SYMBOLS \
@@ -908,15 +911,14 @@ std::shared_ptr<EglDisplay> GLLibraryEGL::CreateDisplayLocked(
     // Report the acceleration status to telemetry
     if (!ret) {
       if (accelAngleFailureId.IsEmpty()) {
-        Telemetry::Accumulate(Telemetry::CANVAS_WEBGL_ACCL_FAILURE_ID,
-                              "FEATURE_FAILURE_ACCL_ANGLE_UNKNOWN"_ns);
+        glean::canvas::webgl_accl_failure_id
+            .Get("FEATURE_FAILURE_ACCL_ANGLE_UNKNOWN"_ns)
+            .Add(1);
       } else {
-        Telemetry::Accumulate(Telemetry::CANVAS_WEBGL_ACCL_FAILURE_ID,
-                              accelAngleFailureId);
+        glean::canvas::webgl_accl_failure_id.Get(accelAngleFailureId).Add(1);
       }
     } else {
-      Telemetry::Accumulate(Telemetry::CANVAS_WEBGL_ACCL_FAILURE_ID,
-                            "SUCCESS"_ns);
+      glean::canvas::webgl_accl_failure_id.Get("SUCCESS"_ns).Add(1);
     }
 
     // Fallback to a WARP display if ANGLE fails, or if WARP is forced
@@ -938,14 +940,14 @@ std::shared_ptr<EglDisplay> GLLibraryEGL::CreateDisplayLocked(
       ret = GetAndInitSoftwareDisplay(*this, aProofOfLock);
     }
     // Initialize the display the normal way
-    if (!ret && !gdk_display_get_default()) {
+    if (!ret && !gdk_display_get_default() && !forceSoftware) {
       ret = GetAndInitDeviceDisplay(*this, aProofOfLock);
       if (!ret) {
         ret = GetAndInitSurfacelessDisplay(*this, aProofOfLock);
       }
     }
 #  ifdef MOZ_WAYLAND
-    else if (!ret && widget::GdkIsWaylandDisplay()) {
+    else if (!ret && widget::GdkIsWaylandDisplay() && !forceSoftware) {
       // Wayland does not support EGL_DEFAULT_DISPLAY
       nativeDisplay = widget::WaylandDisplayGetWLDisplay();
       if (!nativeDisplay) {
@@ -955,7 +957,7 @@ std::shared_ptr<EglDisplay> GLLibraryEGL::CreateDisplayLocked(
     }
 #  endif
 #endif
-    if (!ret) {
+    if (!ret && !forceSoftware) {
       ret = GetAndInitDisplay(*this, nativeDisplay, aProofOfLock);
     }
   }

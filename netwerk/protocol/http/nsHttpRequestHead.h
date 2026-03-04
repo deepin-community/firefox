@@ -23,6 +23,8 @@ struct ParamTraits;
 namespace mozilla {
 namespace net {
 
+class DictionaryCacheEntry;
+
 //-----------------------------------------------------------------------------
 // nsHttpRequestHead represents the request line and headers from an HTTP
 // request.
@@ -54,6 +56,8 @@ class nsHttpRequestHead {
   void SetVersion(HttpVersion version);
   void SetRequestURI(const nsACString& s);
   void SetPath(const nsACString& s);
+  // keep a ref to the dictionary we offered, if any
+  void SetDictionary(DictionaryCacheEntry* aDict);
   uint32_t HeaderCount();
 
   // Using this function it is possible to itereate through all headers
@@ -101,6 +105,7 @@ class nsHttpRequestHead {
     kMethod_Custom,
     kMethod_Get,
     kMethod_Post,
+    kMethod_Patch,
     kMethod_Options,
     kMethod_Connect,
     kMethod_Head,
@@ -115,6 +120,7 @@ class nsHttpRequestHead {
   bool EqualsMethod(ParsedMethodType aType);
   bool IsGet() { return EqualsMethod(kMethod_Get); }
   bool IsPost() { return EqualsMethod(kMethod_Post); }
+  bool IsPatch() { return EqualsMethod(kMethod_Patch); }
   bool IsOptions() { return EqualsMethod(kMethod_Options); }
   bool IsConnect() { return EqualsMethod(kMethod_Connect); }
   bool IsHead() { return EqualsMethod(kMethod_Head); }
@@ -133,6 +139,8 @@ class nsHttpRequestHead {
   // TODO: nsIURI is thread-safe now, should be fixable.
   nsCString mRequestURI MOZ_GUARDED_BY(mRecursiveMutex);
   nsCString mPath MOZ_GUARDED_BY(mRecursiveMutex);
+
+  RefPtr<DictionaryCacheEntry> mDict MOZ_GUARDED_BY(mRecursiveMutex);
 
   nsCString mOrigin MOZ_GUARDED_BY(mRecursiveMutex);
   ParsedMethodType mParsedMethod MOZ_GUARDED_BY(mRecursiveMutex){kMethod_Get};

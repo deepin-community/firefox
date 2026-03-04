@@ -90,6 +90,16 @@ function onEvent(aEvent) {
   if (gCallPreventDefault) {
     aEvent.preventDefault();
   }
+  if (
+    gEvent &&
+    gEvent.type == "input" &&
+    aEvent.type == "input" &&
+    gEvent.isComposing &&
+    !aEvent.isComposing &&
+    SpecialPowers.getBoolPref("dom.input_events.dispatch_before_compositionend")
+  ) {
+    return; // `input` may be fired twice at committing composition.  Ignore, the second one.
+  }
   ok(gEvent === null, gDescription + `: We should receive only one event to check per test: already got: ${gEvent ? gEvent.type : "null"}, got: ${aEvent.type}`);
   gEvent = aEvent;
   for (var attr in aEvent) {
@@ -99,7 +109,7 @@ function onEvent(aEvent) {
       gCopiedEvent.push({ name: attr, value: aEvent[attr]});
     }
   }
-  setTimeout(gCallback, 0);
+  SimpleTest.executeSoon(gCallback);
 }
 
 function observeKeyUpOnContent(aKeyCode, aCallback) {
@@ -112,26 +122,6 @@ function observeKeyUpOnContent(aKeyCode, aCallback) {
 }
 
 const kTests = [
-  { description: "InternalScrollPortEvent (overflow, vertical)",
-    targetID: "scrollable-div", eventType: "overflow",
-    dispatchEvent() {
-      document.getElementById("scrolled-div").style.height = "500px";
-    },
-    canRun() {
-      return true;
-    },
-    todoMismatch: [],
-  },
-  { description: "InternalScrollPortEvent (overflow, horizontal)",
-    targetID: "scrollable-div", eventType: "overflow",
-    dispatchEvent() {
-      document.getElementById("scrolled-div").style.width = "500px";
-    },
-    canRun() {
-      return true;
-    },
-    todoMismatch: [],
-  },
   { description: "InternalScrollAreaEvent (MozScrolledAreaChanged, spreading)",
     target() { return document; }, eventType: "MozScrolledAreaChanged",
     dispatchEvent() {
@@ -260,7 +250,18 @@ const kTests = [
     },
     todoMismatch: [],
   },
-  { description: "WidgetMouseEvent (click of middle button with Shift)",
+  { description: "WidgetPointerEvent (pointerdown of left button without modifier)",
+    targetID: "button", eventType: "pointerdown",
+    dispatchEvent() {
+      synthesizeMouseAtCenter(document.getElementById(this.targetID),
+                              { button: 0 });
+    },
+    canRun() {
+      return true;
+    },
+    todoMismatch: [],
+  },
+  { description: "WidgetPointerEvent (click of middle button with Shift)",
     targetID: "button", eventType: "auxclick",
     dispatchEvent() {
       document.getElementById(this.targetID).value = "";
@@ -274,6 +275,18 @@ const kTests = [
   },
   { description: "WidgetMouseEvent (mouseup of right button with Alt)",
     targetID: "button", eventType: "mouseup",
+    dispatchEvent() {
+      document.getElementById(this.targetID).value = "";
+      synthesizeMouseAtCenter(document.getElementById(this.targetID),
+                              { button: 2, altKey: true });
+    },
+    canRun() {
+      return true;
+    },
+    todoMismatch: [],
+  },
+  { description: "WidgetPointerEvent (pointerup of right button with Alt)",
+    targetID: "button", eventType: "pointerup",
     dispatchEvent() {
       document.getElementById(this.targetID).value = "";
       synthesizeMouseAtCenter(document.getElementById(this.targetID),
@@ -594,38 +607,6 @@ const kTests = [
     },
     todoMismatch: [],
   },
-  { description: "InternalMutationEvent (DOMAttrModified)",
-    targetID: "animated-div", eventType: "DOMAttrModified",
-    dispatchEvent() {
-      document.getElementById(this.targetID).setAttribute("x-data", "foo");
-    },
-    canRun() {
-      return true;
-    },
-    todoMismatch: [],
-  },
-  { description: "InternalMutationEvent (DOMNodeInserted)",
-    targetID: "animated-div", eventType: "DOMNodeInserted",
-    dispatchEvent() {
-      var div = document.createElement("div");
-      div.id = "inserted-div";
-      document.getElementById("animated-div").appendChild(div);
-    },
-    canRun() {
-      return true;
-    },
-    todoMismatch: [],
-  },
-  { description: "InternalMutationEvent (DOMNodeRemoved)",
-    targetID: "animated-div", eventType: "DOMNodeRemoved",
-    dispatchEvent() {
-      document.getElementById("animated-div").removeChild(document.getElementById("inserted-div"));
-    },
-    canRun() {
-      return true;
-    },
-    todoMismatch: [],
-  },
   { description: "PointerEvent (pointerdown)",
     targetID: "pointer-target", eventType: "mousedown",
     dispatchEvent() {
@@ -656,9 +637,11 @@ const kTests = [
 
 async function doTest(aTest) {
   if (!aTest.canRun()) {
+    info(`skipping: ${aTest.description}`);
     SimpleTest.executeSoon(runNextTest);
     return;
   }
+  info(`starting: ${aTest.description}`);
   gEvent = null;
   gCopiedEvent = [];
   gDescription = aTest.description + " (gCallPreventDefault=" + gCallPreventDefault + ")";
@@ -714,7 +697,7 @@ function runNextTest() {
       document.activeElement.blur();
     }
     window.requestAnimationFrame(function() {
-      setTimeout(runNextTest, 0);
+      SimpleTest.executeSoon(runNextTest);
     });
     return;
   }
@@ -735,8 +718,7 @@ function init() {
                                     ["mousewheel.with_alt.action.override_x", -1],
                                     ["mousewheel.with_meta.action", 0],
                                     ["mousewheel.with_meta.action.override_x", -1],
-                                    ["dom.events.textevent.enabled", true],
-                                    ["layout.overflow-underflow.content.enabled", true]]}, runNextTest);
+                                    ["dom.events.textevent.enabled", true]]}, runNextTest);
 }
 
 function finish() {

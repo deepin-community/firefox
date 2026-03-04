@@ -7,7 +7,6 @@
 #ifndef nsMathMLTokenFrame_h___
 #define nsMathMLTokenFrame_h___
 
-#include "mozilla/Attributes.h"
 #include "nsMathMLContainerFrame.h"
 
 namespace mozilla {
@@ -29,8 +28,8 @@ class nsMathMLTokenFrame : public nsMathMLContainerFrame {
   TransmitAutomaticData() override {
     // The REC defines the following elements to be space-like:
     // * an mtext, mspace, maligngroup, or malignmark element;
-    if (mContent->IsMathMLElement(nsGkAtoms::mtext_)) {
-      mPresentationData.flags |= NS_MATHML_SPACE_LIKE;
+    if (mContent->IsMathMLElement(nsGkAtoms::mtext)) {
+      mPresentationData.flags += MathMLPresentationFlag::SpaceLike;
     }
     return NS_OK;
   }
@@ -38,7 +37,7 @@ class nsMathMLTokenFrame : public nsMathMLContainerFrame {
   NS_IMETHOD
   InheritAutomaticData(nsIFrame* aParent) override;
 
-  virtual eMathMLFrameType GetMathMLFrameType() override;
+  MathMLFrameType GetMathMLFrameType() override;
 
   void SetInitialChildList(ChildListID aListID,
                            nsFrameList&& aChildList) override;
@@ -49,12 +48,12 @@ class nsMathMLTokenFrame : public nsMathMLContainerFrame {
                     const nsLineList::iterator* aPrevFrameLine,
                     nsFrameList&& aChildList) override;
 
-  virtual void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
-                      const ReflowInput& aReflowInput,
-                      nsReflowStatus& aStatus) override;
+  void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
+              const ReflowInput& aReflowInput,
+              nsReflowStatus& aStatus) override;
 
-  nsresult Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                 ReflowOutput& aDesiredSize) override;
+  void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+             ReflowOutput& aDesiredSize) override;
 
  protected:
   explicit nsMathMLTokenFrame(ComputedStyle* aStyle,

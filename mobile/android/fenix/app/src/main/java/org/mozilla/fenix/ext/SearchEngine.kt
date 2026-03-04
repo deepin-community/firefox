@@ -5,9 +5,11 @@
 package org.mozilla.fenix.ext
 
 import mozilla.components.browser.state.search.SearchEngine
-import org.mozilla.fenix.components.Core.Companion.BOOKMARKS_SEARCH_ENGINE_ID
-import org.mozilla.fenix.components.Core.Companion.HISTORY_SEARCH_ENGINE_ID
-import org.mozilla.fenix.components.Core.Companion.TABS_SEARCH_ENGINE_ID
+import mozilla.components.browser.state.search.SearchEngine.Type.APPLICATION
+import org.mozilla.fenix.R
+import org.mozilla.fenix.components.search.BOOKMARKS_SEARCH_ENGINE_ID
+import org.mozilla.fenix.components.search.HISTORY_SEARCH_ENGINE_ID
+import org.mozilla.fenix.components.search.TABS_SEARCH_ENGINE_ID
 
 // List of well known search domains, taken from
 // https://searchfox.org/mozilla-central/source/toolkit/components/search/SearchService.jsm#2405
@@ -50,3 +52,31 @@ fun SearchEngine.telemetryName(): String =
             }
         else -> name
     }
+
+/**
+ * Returns the correct toolbar‐placeholder string resource for this search engine.
+ *
+ * @param defaultEngine The “default” engine to compare to (nullable).
+ */
+fun SearchEngine?.toolbarHintRes(defaultEngine: SearchEngine?): Int {
+    if (this == null) return R.string.search_hint
+
+    val isDefault = this.id == defaultEngine?.id
+    return when (this.type) {
+        APPLICATION -> when (this.id) {
+            HISTORY_SEARCH_ENGINE_ID -> R.string.history_search_hint
+            BOOKMARKS_SEARCH_ENGINE_ID -> R.string.bookmark_search_hint
+            TABS_SEARCH_ENGINE_ID -> R.string.tab_search_hint
+            else -> R.string.application_search_hint
+        }
+        else -> {
+            if (!this.isGeneral) {
+                R.string.application_search_hint
+            } else if (isDefault) {
+                R.string.search_hint
+            } else {
+                R.string.search_hint_general_engine
+            }
+        }
+    }
+}

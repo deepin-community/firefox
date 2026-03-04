@@ -10,6 +10,7 @@
 ##  $appName (string) - Name of the application that will be opened.
 ##  $extension (string) - Name of extension that initiated the request
 
+permission-dialog-description-app = Да се разреши ли на този сайт да отваря връзки { $scheme } с { $appName }?
 permission-dialog-description-host-app = Разрешаване на { $host } да направи { $scheme } свързване с { $appName }?
 
 ## Please keep the emphasis around the hostname and scheme (ie the
@@ -24,8 +25,8 @@ permission-dialog-remember = Винаги да се позволява на <str
 ##
 
 permission-dialog-btn-open-link =
-    .label = Свържи
-    .accessKey = С
+    .label = Отваряне
+    .accessKey = о
 permission-dialog-btn-choose-app =
     .label = Изберете Приложение
     .accessKey = п
@@ -40,8 +41,8 @@ chooser-window =
     .title = Изберете приложение
     .style = min-width: 26em; min-height: 26em;
 chooser-dialog =
-    .buttonlabelaccept = Свържи
-    .buttonaccesskeyaccept = С
+    .buttonlabelaccept = Отваряне
+    .buttonaccesskeyaccept = о
 chooser-dialog-remember-extra =
     { PLATFORM() ->
         [windows] Това може да бъде променено в настройките на { -brand-short-name }.

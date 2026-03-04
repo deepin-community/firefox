@@ -196,7 +196,10 @@ async function triggerAutofillAndCheckProfile(profile) {
         element.addEventListener(
           "input",
           event => {
-            if (element.tagName == "INPUT" && element.type == "text") {
+            if (
+              (element.tagName == "INPUT" && element.type == "text") ||
+              element.tagName == "TEXTAREA"
+            ) {
               if (hadEditor) {
                 ok(
                   beforeInputFired,
@@ -394,9 +397,7 @@ async function waitForOSKeyStoreLoginTestSetupComplete() {
         "resource://gre/modules/shared/FormAutofillUtils.sys.mjs"
       );
 
-      return FormAutofillUtils.getOSAuthEnabled(
-        FormAutofillUtils.AUTOFILL_CREDITCARDS_REAUTH_PREF
-      );
+      return FormAutofillUtils.getOSAuthEnabled();
     }))
   ) {
     return;
@@ -440,9 +441,7 @@ async function waitForOSKeyStoreLogin(login = false) {
         "resource://gre/modules/shared/FormAutofillUtils.sys.mjs"
       );
 
-      return FormAutofillUtils.getOSAuthEnabled(
-        FormAutofillUtils.AUTOFILL_CREDITCARDS_REAUTH_PREF
-      );
+      return FormAutofillUtils.getOSAuthEnabled();
     }))
   ) {
     return;
@@ -493,9 +492,10 @@ function initPopupListener() {
 }
 
 async function triggerPopupAndHoverItem(fieldSelector, selectIndex) {
+  const promise = expectPopup();
   await focusAndWaitForFieldsIdentified(fieldSelector);
   synthesizeKey("KEY_ArrowDown");
-  await expectPopup();
+  await promise;
   for (let i = 0; i <= selectIndex; i++) {
     synthesizeKey("KEY_ArrowDown");
   }

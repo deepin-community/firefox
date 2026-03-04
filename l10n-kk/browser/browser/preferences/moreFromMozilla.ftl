@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Салауатты интернетті қолдау үшін жұмыс істейтін басқа { -vendor-short-name } өнімдерін қараңыз.
 more-from-moz-firefox-mobile-title = Мобильді { -brand-product-name }
 more-from-moz-firefox-mobile-description = Сіздің жекелігіңізді бірінші орынға қоятын мобильді браузер.
+more-from-moz-firefox-mobile-title-1 = Мобильді { -brand-product-name }
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Анонимді шолу мен қорғаныстың қосымша қабатын өзіңіз үшін ашыңыз.
 more-from-moz-qr-code-box-firefox-mobile-title = Мобильді құрылғы арқылы жүктеп алыңыз. Камераны QR кодқа бағыттаңыз. Сілтеме пайда болған кезде оны шертіңіз.
@@ -32,3 +33,17 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Ашылған жеке ақпаратыңызды автоматты түрде қайтарыңыз.
 more-from-moz-mozilla-monitor-global-description = Деректеріңіз бұзылған кезде ескертулер алыңыз.
 more-from-moz-mozilla-monitor-button = { -monitor-brand-short-name } алу
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } ЖИ
+more-from-moz-solo-description = Өз сайтыңызды бірден жасап, жеке доменіңізді тегін қосыңыз.
+more-from-moz-solo-button = { -solo-ai-brand-name } қолданып көру
+more-from-moz-solo-title-2 = { -solo-ai-brand-name } веб-сайттарды ЖИ жасаушысы
+
+## These strings are for the MDN card in about:preferences moreFromMozilla page
+
+more-from-moz-mdn-title = MDN Web Docs
+more-from-moz-mdn-description = Тегін, жан-жақты нұсқаулықтар мен сілтемелер арқылы веб-әзірлеуді үйреніңіз.
+more-from-moz-mdn-button = Веб әзірлеуді үйрену
+more-from-moz-mdn-title2 = { -mdn-brand-name }

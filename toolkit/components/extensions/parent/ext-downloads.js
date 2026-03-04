@@ -237,7 +237,7 @@ class DownloadItem {
     return (
       (this.download.stopped || this.download.canceled) &&
       this.download.hasPartialData &&
-      !this.download.error
+      (!this.download.error || this.download.error.becauseSourceFailed)
     );
   }
 
@@ -348,7 +348,7 @@ const DownloadMap = new (class extends EventEmitter {
       this.loadPromise = (async () => {
         const list = await Downloads.getList(Downloads.ALL);
 
-        await list.addView({
+        list.addView({
           onDownloadAdded: download => {
             const item = this.newFromDownload(download, null);
             this.emit("create", item);
@@ -774,7 +774,7 @@ this.downloads = class extends ExtensionAPIPersistent {
                 const stream = Cc[
                   "@mozilla.org/io/string-input-stream;1"
                 ].createInstance(Ci.nsIStringInputStream);
-                stream.setData(options.body, options.body.length);
+                stream.setByteStringData(options.body);
 
                 channel.QueryInterface(Ci.nsIUploadChannel2);
                 channel.explicitSetUploadStream(
@@ -1211,12 +1211,6 @@ this.downloads = class extends ExtensionAPIPersistent {
 
           let windowlessBrowser =
             Services.appShell.createWindowlessBrowser(true);
-          let systemPrincipal =
-            Services.scriptSecurityManager.getSystemPrincipal();
-          windowlessBrowser.docShell.createAboutBlankDocumentViewer(
-            systemPrincipal,
-            systemPrincipal
-          );
 
           let canvas = windowlessBrowser.document.createElement("canvas");
           let img = new windowlessBrowser.docShell.domWindow.Image(size, size);

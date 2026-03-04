@@ -223,6 +223,10 @@ impl RenderCommandEncoderRef {
         unsafe { msg_send![self, setViewport: viewport] }
     }
 
+    pub fn set_viewports(&self, viewports: &[MTLViewport]) {
+        unsafe { msg_send![self, setViewports: viewports.as_ptr() count: viewports.len() as u64] }
+    }
+
     pub fn set_front_facing_winding(&self, winding: MTLWinding) {
         unsafe { msg_send![self, setFrontFacingWinding: winding] }
     }
@@ -245,6 +249,10 @@ impl RenderCommandEncoderRef {
 
     pub fn set_scissor_rect(&self, rect: MTLScissorRect) {
         unsafe { msg_send![self, setScissorRect: rect] }
+    }
+
+    pub fn set_scissor_rects(&self, rects: &[MTLScissorRect]) {
+        unsafe { msg_send![self, setScissorRects: rects.as_ptr() count: rects.len()] }
     }
 
     pub fn set_triangle_fill_mode(&self, mode: MTLTriangleFillMode) {
@@ -418,7 +426,7 @@ impl RenderCommandEncoderRef {
     pub fn set_vertex_acceleration_structure(
         &self,
         index: NSUInteger,
-        accel: Option<&accelerator_structure::AccelerationStructureRef>,
+        accel: Option<&AccelerationStructureRef>,
     ) {
         unsafe {
             msg_send![
@@ -868,7 +876,7 @@ impl RenderCommandEncoderRef {
     pub fn set_fragment_acceleration_structure(
         &self,
         index: NSUInteger,
-        accel: Option<&accelerator_structure::AccelerationStructureRef>,
+        accel: Option<&AccelerationStructureRef>,
     ) {
         unsafe {
             msg_send![
@@ -1030,6 +1038,7 @@ impl RenderCommandEncoderRef {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn draw_indexed_primitives_instanced_base_instance(
         &self,
         primitive_type: MTLPrimitiveType,
@@ -1339,6 +1348,7 @@ impl BlitCommandEncoderRef {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn copy_from_texture(
         &self,
         source_texture: &TextureRef,
@@ -1366,6 +1376,7 @@ impl BlitCommandEncoderRef {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn copy_from_buffer_to_texture(
         &self,
         source_buffer: &BufferRef,
@@ -1396,6 +1407,7 @@ impl BlitCommandEncoderRef {
     }
 
     /// See <https://developer.apple.com/documentation/metal/mtlblitcommandencoder/1400756-copy>
+    #[allow(clippy::too_many_arguments)]
     pub fn copy_from_texture_to_buffer(
         &self,
         source_texture: &TextureRef,
@@ -1815,7 +1827,7 @@ impl ComputeCommandEncoderRef {
     pub fn set_acceleration_structure(
         &self,
         index: NSUInteger,
-        accel: Option<&accelerator_structure::AccelerationStructureRef>,
+        accel: Option<&AccelerationStructureRef>,
     ) {
         unsafe {
             msg_send![

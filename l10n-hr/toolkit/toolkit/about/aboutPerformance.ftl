@@ -54,7 +54,6 @@ close-tab =
     .title = Zatvori karticu
 show-addon =
     .title = Prikaži u upravljaču dodataka
-
 # Tooltip when hovering an item of the about:performance table
 # Variables:
 #   $totalDispatches (Number) - how many dispatches occurred for this page since it loaded
@@ -64,4 +63,4 @@ show-addon =
 item =
     .title =
         Pošiljke od učitavanja: { $totalDispatches } ({ $totalDuration } ms)
-        Pošiljke u posljednjim sekundama: { $dispatchesSincePrevious } ({ $durationSincePrevious } ms)
+        Pošiljke u zadnjim sekundama: { $dispatchesSincePrevious } ({ $durationSincePrevious } ms)

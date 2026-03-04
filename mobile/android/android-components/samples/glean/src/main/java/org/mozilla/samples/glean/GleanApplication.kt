@@ -6,7 +6,7 @@ package org.mozilla.samples.glean
 
 import android.app.Application
 import android.content.Context
-import android.net.Uri
+import androidx.core.content.edit
 import mozilla.components.lib.fetch.httpurlconnection.HttpURLConnectionClient
 import mozilla.components.service.glean.net.ConceptFetchHttpUploader
 import mozilla.components.service.nimbus.Nimbus
@@ -58,9 +58,9 @@ class GleanApplication : Application() {
             buildInfo = GleanBuildInfo.buildInfo,
         )
 
-        /** Begin Nimbus component specific code. Note: this is not relevant to Glean */
+        // Begin Nimbus component specific code. Note: this is not relevant to Glean
         initNimbus(isFirstRun)
-        /** End Nimbus specific code. */
+        // End Nimbus specific code.
 
         Test.timespan.start()
 
@@ -69,10 +69,7 @@ class GleanApplication : Application() {
         // Set a sample value for a metric.
         Basic.os.set("Android")
 
-        settings
-            .edit()
-            .putBoolean(PREF_IS_FIRST_RUN, false)
-            .apply()
+        settings.edit { putBoolean(PREF_IS_FIRST_RUN, false) }
     }
 
     /**
@@ -82,7 +79,6 @@ class GleanApplication : Application() {
     private fun initNimbus(isFirstRun: Boolean) {
         RustLog.enable()
         RustHttpConfig.setClient(lazy { HttpURLConnectionClient() })
-        val url = Uri.parse(getString(R.string.nimbus_default_endpoint))
         val appInfo = NimbusAppInfo(
             appName = "samples-glean",
             channel = "samples",
@@ -90,7 +86,7 @@ class GleanApplication : Application() {
         nimbus = Nimbus(
             context = this,
             appInfo = appInfo,
-            server = NimbusServerSettings(url),
+            server = NimbusServerSettings(remoteSettingsService = null),
             recordedContext = null,
         ).also { nimbus ->
             if (isFirstRun) {

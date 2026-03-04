@@ -15,6 +15,10 @@ support-addons-type = Type
 support-addons-enabled = Slått på
 support-addons-version = Versjon
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Plassering
 legacy-user-stylesheets-title = Eldre brukar-stilsett
 legacy-user-stylesheets-enabled = Aktiv
 legacy-user-stylesheets-stylesheet-types = Stilsett
@@ -71,7 +75,7 @@ app-basics-launcher-process-status = Oppstartsprosess
 app-basics-multi-process-support = Multiprosess-vindauge
 app-basics-fission-support = Fission-vindauge
 app-basics-remote-processes-count = Fjernprosessar
-app-basics-enterprise-policies = Bedriftspolitikk
+app-basics-enterprise-policies = Bedriftspolicyar
 app-basics-location-service-key-google = Google Location Service-nøkkel
 app-basics-safebrowsing-key-google = Google Safebrowsing-nøkkel
 app-basics-key-mozilla = Mozilla Location Service-nykel
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Effektivitet (%)
 place-database-stats-sequentiality-perc = Sekvensitet (%)
 place-database-integrity = Integritet
 place-database-verify-integrity = Stadfest integritet
+place-database-last-idle-maintenance-data = Dato for siste vedlikehald i inaktiv periode
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Dato for siste databaseopprydding
+place-database-last-integrity-corruption-date = Dato for siste integritetskorrupsjon
 a11y-title = Tilgjenge
 a11y-activated = Aktivert
 a11y-force-disabled = Hindra tilgjenge
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Telje opp databasen
 
 media-codec-support-sw-decoding = Programvaredekoding
 media-codec-support-hw-decoding = Maskinvaredekoding
+media-codec-support-sw-encoding = Programvarekoding
+media-codec-support-hw-encoding = Maskinvarekoding
 media-codec-support-codec-name = Kodeknamn
 media-codec-support-supported = Støtta
 media-codec-support-unsupported = Ikkje støtta

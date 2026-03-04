@@ -21,12 +21,7 @@ cfr-doorhanger-extension-learn-more-link = Nong ngec mapol
 #   $name (String) - Add-on author name
 cfr-doorhanger-extension-author = ki { $name }
 
-## Add-on statistics
-## These strings are used to display the total number of
-## users and rating for an add-on. They are shown next to each other.
-
-
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-link-text = Rib alama buk kombedi…
 
@@ -56,19 +51,6 @@ cfr-doorhanger-milestone-close-button = Lor
 
 cfr-doorhanger-doh-secondary-button = Juki
     .accesskey = J
-
-## Full Video Support CFR message
-
-
-## VPN promotion dialog for public Wi-Fi users
-##
-## If a user is detected to be on a public Wi-Fi network, they are given a
-## bit of info about how to improve their privacy and then offered a button
-## to the Mozilla VPN page and a link to dismiss the dialog.
-
-
-## Emotive Continuous Onboarding
-
 
 ## MR2022 Background Update Windows native toast notification strings.
 ##
@@ -108,26 +90,9 @@ firefoxview-spotlight-promo-title = Wac irii bot { -firefoxview-brand-name }
 firefoxview-spotlight-promo-primarybutton = Nen kit ma tiyo kwede
 firefoxview-spotlight-promo-secondarybutton = Kal
 
-## Colorways expiry reminder CFR
-
-
-## Cookie Banner Handling CFR
-
-
-## These strings are used in the Fox doodle Pin/set default spotlights
-
-
-## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
-
-
 ## FxA sync CFR
 
 fxa-sync-cfr-primary = Nong ngec mapol
     .accesskey = N
 fxa-sync-cfr-secondary = Poo wiya lacen
     .accesskey = P
-
-## Device Migration FxA Spotlight
-
-device-migration-fxa-spotlight-header = Itye ka tic ki nyonyo ma otii?
-device-migration-fxa-spotlight-link = Poo wiya lacen

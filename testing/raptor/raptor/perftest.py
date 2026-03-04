@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 import mozinfo
 import mozproxy.utils as mpu
 import mozversion
-import six
 from mozprofile import create_profile
 from mozproxy import get_playback
 
@@ -28,12 +27,13 @@ paths = [here]
 
 for path in paths:
     if not os.path.exists(path):
-        raise IOError("%s does not exist. " % path)
+        raise OSError("%s does not exist. " % path)
     sys.path.insert(0, path)
 
 from chrome_trace import ChromeTrace
 from cmdline import (
     CHROME_ANDROID_APPS,
+    DESKTOP_APPS,
     FIREFOX_ANDROID_APPS,
     FIREFOX_APPS,
     GECKO_PROFILER_APPS,
@@ -63,8 +63,7 @@ POST_DELAY_DEBUG = 3000
 POST_DELAY_DEFAULT = 30000
 
 
-@six.add_metaclass(ABCMeta)
-class Perftest(object):
+class Perftest(metaclass=ABCMeta):
     """Abstract base class for perftests that execute via a subharness,
     either Raptor or browsertime."""
 
@@ -112,7 +111,7 @@ class Perftest(object):
         clean=False,
         screenshot_on_failure=False,
         power_test=False,
-        **kwargs
+        **kwargs,
     ):
         self._remote_test_root = None
         self._dirs_to_remove = []
@@ -349,9 +348,7 @@ class Perftest(object):
         # create a temp file to help ensure uniqueness
         temp_download_dir = self._get_temp_dir()
         LOG.info(
-            "Making temp_download_dir from inside get_conditioned_profile {}".format(
-                temp_download_dir
-            )
+            f"Making temp_download_dir from inside get_conditioned_profile {temp_download_dir}"
         )
         # call condprof's client API to yield our platform-specific
         # conditioned-profile binary
@@ -401,17 +398,13 @@ class Perftest(object):
         )
         if not os.path.exists(cond_prof_target_dir):
             LOG.critical(
-                "Can't find target_dir {}, from get_profile()"
-                "temp_download_dir {}, platform {}, scenario {}".format(
-                    cond_prof_target_dir, temp_download_dir, platform, profile_scenario
-                )
+                f"Can't find target_dir {cond_prof_target_dir}, from get_profile()"
+                f"temp_download_dir {temp_download_dir}, platform {platform}, scenario {profile_scenario}"
             )
             raise OSError
 
         LOG.info(
-            "Original self.conditioned_profile_dir is now set: {}".format(
-                self.conditioned_profile_dir
-            )
+            f"Original self.conditioned_profile_dir is now set: {self.conditioned_profile_dir}"
         )
         return self.conditioned_profile_copy
 
@@ -428,12 +421,12 @@ class Perftest(object):
             self.profile = None
             return
         # Merge extra profile data from testing/profiles
-        with open(os.path.join(self.profile_data_dir, "profiles.json"), "r") as fh:
+        with open(os.path.join(self.profile_data_dir, "profiles.json")) as fh:
             base_profiles = json.load(fh)["raptor"]
 
         for profile in base_profiles:
             path = os.path.join(self.profile_data_dir, profile)
-            LOG.info("Merging profile: {}".format(path))
+            LOG.info(f"Merging profile: {path}")
             self.profile.merge(path)
 
         LOG.info("Browser preferences: {}".format(self.config["extra_prefs"]))
@@ -441,7 +434,7 @@ class Perftest(object):
 
         # share the profile dir with the config and the control server
         self.config["local_profile_dir"] = self.profile.profile
-        LOG.info("Local browser profile: {}".format(self.profile.profile))
+        LOG.info(f"Local browser profile: {self.profile.profile}")
 
     @property
     def profile_data_dir(self):
@@ -567,7 +560,7 @@ class Perftest(object):
         for dir_to_rm in self._dirs_to_remove:
             if not os.path.exists(dir_to_rm):
                 continue
-            LOG.info("Removing temporary directory: {}".format(dir_to_rm))
+            LOG.info(f"Removing temporary directory: {dir_to_rm}")
             shutil.rmtree(dir_to_rm, ignore_errors=True)
         self._dirs_to_remove = []
 
@@ -605,19 +598,24 @@ class Perftest(object):
     def start_playback(self, test):
         # creating the playback tool
         playback_dir = os.path.join(here, "tooltool-manifests", "playback")
-        playback_manifest = test.get("playback_pageset_manifest")
+
+        # Bug 1926419 avoid using mitm11 manifest on linux desktop tests.
+        if "linux" in self.config["platform"] and self.config["app"] in DESKTOP_APPS:
+            playback_manifest = test.get(
+                "playback_pageset_manifest_backup",
+                test.get("playback_pageset_manifest"),
+            )
+        else:
+            playback_manifest = test.get("playback_pageset_manifest")
         playback_manifests = playback_manifest.split(",")
 
-        self.config.update(
-            {
-                "playback_tool": test.get("playback"),
-                "playback_version": test.get("playback_version", "8.1.1"),
-                "playback_files": [
-                    os.path.join(playback_dir, manifest)
-                    for manifest in playback_manifests
-                ],
-            }
-        )
+        self.config.update({
+            "playback_tool": test.get("playback"),
+            "playback_version": test.get("playback_version", "8.1.1"),
+            "playback_files": [
+                os.path.join(playback_dir, manifest) for manifest in playback_manifests
+            ],
+        })
 
         LOG.info("test uses playback tool: %s " % self.config["playback_tool"])
 
@@ -732,7 +730,7 @@ class PerftestAndroid(Perftest):
         return (browser_name, browser_version)
 
     def set_reverse_port(self, port):
-        tcp_port = "tcp:{}".format(port)
+        tcp_port = f"tcp:{port}"
         self.device.create_socket_connection("reverse", tcp_port, tcp_port)
 
     def set_reverse_ports(self):
@@ -748,12 +746,12 @@ class PerftestAndroid(Perftest):
             LOG.info("Reverse port forwarding is used only on local devices")
 
     def build_browser_profile(self):
-        super(PerftestAndroid, self).build_browser_profile()
+        super().build_browser_profile()
 
         if self.config["app"] in FIREFOX_ANDROID_APPS:
             # Merge in the Android profile.
             path = os.path.join(self.profile_data_dir, "raptor-android")
-            LOG.info("Merging profile: {}".format(path))
+            LOG.info(f"Merging profile: {path}")
             self.profile.merge(path)
 
     def clear_app_data(self):
@@ -793,9 +791,7 @@ class PerftestAndroid(Perftest):
         proxy_prefs["network.proxy.no_proxies_on"] = self.config["host"]
 
         LOG.info(
-            "setting profile prefs to turn on the android app proxy: {}".format(
-                proxy_prefs
-            )
+            f"setting profile prefs to turn on the android app proxy: {proxy_prefs}"
         )
         self.profile.set_preferences(proxy_prefs)
 
@@ -804,7 +800,7 @@ class PerftestDesktop(Perftest):
     """Mixin class for Desktop-specific Perftest subclasses"""
 
     def __init__(self, *args, **kwargs):
-        super(PerftestDesktop, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def setup_chrome_args(self, test):
         """Sets up chrome/chromium cmd-line arguments.
@@ -877,7 +873,7 @@ class PerftestDesktop(Perftest):
                 elif "linux" in self.config["platform"]:
                     command = [self.config["binary"], "--version"]
                     proc = subprocess.run(
-                        command, timeout=10, capture_output=True, text=True
+                        command, check=False, timeout=10, capture_output=True, text=True
                     )
 
                     bmeta = proc.stdout.split("\n")
@@ -890,19 +886,26 @@ class PerftestDesktop(Perftest):
                     else:
                         LOG.info("Couldn't get browser version and name")
                 else:
-                    # On windows we need to use wimc to get the version
-                    command = r'wmic datafile where name="{0}"'.format(
-                        self.config["binary"].replace("\\", r"\\")
+                    # Define the PowerShell command. We use this method on Windows since WMIC will
+                    # soon be deprecated.
+                    binary_path = self.config.get("binary")
+                    command = rf'(Get-ItemProperty -Path "{binary_path}").VersionInfo.FileVersion'
+                    LOG.info(
+                        "Attempting to get browser application version with powershell..."
                     )
-                    bmeta = subprocess.check_output(command)
-
-                    meta_re = re.compile(r"\s+([\d.a-z]+)\s+")
-                    match = meta_re.findall(bmeta.decode("utf-8"))
-                    if len(match) > 0:
-                        browser_name = self.config["app"]
-                        browser_version = match[-1]
+                    bmeta = subprocess.check_output(
+                        ["powershell", "-Command", command],
+                        text=True,
+                    )
+                    if not bmeta:
+                        LOG.warning("Unable to acquire browser version")
                     else:
-                        LOG.info("Couldn't get browser version and name")
+                        browser_version = bmeta.strip()
+                        browser_name = self.config["app"]
+                        LOG.info(
+                            "Successfully acquired browser version: %s"
+                            % browser_version
+                        )
             except Exception as e:
                 LOG.warning(
                     "Failed to get browser meta data through fallback method: %s-%s"

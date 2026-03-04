@@ -21,6 +21,7 @@ EXPORTS.mozilla.dom += [
     "ScriptLoadContext.h",
     "ScriptLoader.h",
     "ScriptLoadHandler.h",
+    "ScriptLoadRequestType.h",
     "ScriptSettings.h",
     "ScriptTrace.h",
     "ShadowRealmGlobalScope.h",
@@ -37,6 +38,7 @@ UNIFIED_SOURCES += [
     "ScriptLoader.cpp",
     "ScriptLoadHandler.cpp",
     "ScriptSettings.cpp",
+    "ScriptTrace.cpp",
     "ShadowRealmGlobalScope.cpp",
     "SharedScriptCache.cpp",
 ]
@@ -44,6 +46,9 @@ UNIFIED_SOURCES += [
 LOCAL_INCLUDES += [
     "/dom/base",
     "/js/loader",
+    # For nsHttpChannel.h
+    "/netwerk/base",
+    "/netwerk/protocol/http",
 ]
 
 include("/ipc/chromium/chromium-config.mozbuild")

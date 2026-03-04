@@ -7,9 +7,8 @@
 #ifndef wasm_WasmMetadata_h
 #define wasm_WasmMetadata_h
 
-#include "mozilla/Atomics.h"
-
 #include "wasm/WasmBinaryTypes.h"
+#include "wasm/WasmHeuristics.h"
 #include "wasm/WasmInstanceData.h"  // various of *InstanceData
 #include "wasm/WasmModuleTypes.h"
 #include "wasm/WasmProcess.h"  // IsHugeMemoryEnabled
@@ -57,6 +56,9 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   // This may be empty for internally constructed modules which don't care
   // about this information.
   BuiltinModuleFuncIdVector knownFuncImports;
+  // Treat imported wasm functions as if they were JS functions. This is used
+  // when compiling the module for new WebAssembly.Function.
+  bool funcImportsAreJS;
   // The number of imported globals in the module.
   uint32_t numGlobalImports;
 
@@ -101,55 +103,13 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   BranchHintCollection branchHints;
 
   // Name section information
-  mozilla::Maybe<Name> moduleName;
-  NameVector funcNames;
-  // namePayload points at the name section's CustomSection::payload so that
-  // the Names (which are use payload-relative offsets) can be used
-  // independently of the Module without duplicating the name section.
-  SharedBytes namePayload;
-  mozilla::Maybe<uint32_t> nameCustomSectionIndex;
+  mozilla::Maybe<NameSection> nameSection;
 
   // Bytecode ranges for custom sections.
   CustomSectionRangeVector customSectionRanges;
 
   // Bytecode range for the code section.
-  MaybeSectionRange codeSection;
-
-  // The ranges of every function defined in this module. This is only
-  // accessible after we've decoded the code section. This means it is not
-  // available while doing a 'tier-1' or 'once' compilation.
-  FuncDefRangeVector funcDefRanges;
-
-  // The feature usage for every function defined in this module. This is only
-  // accessible after we've decoded the code section. This means it is not
-  // available while doing a 'tier-1' or 'once' compilation.
-  FeatureUsageVector funcDefFeatureUsages;
-
-  // Tracks the range of CallRefMetrics created for each function definition in
-  // this module. This is only accessible after we've decoded the code section.
-  // This means it is not available while doing a 'tier-1' or 'once'
-  // compilation.
-  CallRefMetricsRangeVector funcDefCallRefs;
-
-  // The bytecode for this module. Only available for debuggable modules, or if
-  // doing lazy tiering. This is only accessible after we've decoded the whole
-  // module. This means it is not available while doing a 'tier-1' or 'once'
-  // compilation.
-  SharedBytes bytecode;
-
-  // An array of hints to use when compiling a call_ref. This is only
-  // accessible after we've decoded the code section. This means it is not
-  // available while doing a 'tier-1' or 'once' compilation.
-  //
-  // This is written into when an instance requests a function to be tiered up,
-  // and read from our function compilers.
-  MutableCallRefHints callRefHints;
-
-  // Whether this module was compiled with debugging support.
-  bool debugEnabled;
-  // A SHA-1 hash of the module bytecode for use in display urls. Only
-  // available if we're debugging.
-  ModuleHash debugHash;
+  MaybeBytecodeRange codeSectionRange;
 
   // ==== Instance layout fields
   //
@@ -177,18 +137,13 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   // The total size of the instance data.
   uint32_t instanceDataLength;
 
-  // The number of call ref metrics in Instance::callRefs_
-  uint32_t numCallRefMetrics;
-
   explicit CodeMetadata(const CompileArgs* compileArgs = nullptr,
                         ModuleKind kind = ModuleKind::Wasm)
       : kind(kind),
         compileArgs(compileArgs),
         numFuncImports(0),
+        funcImportsAreJS(false),
         numGlobalImports(0),
-        callRefHints(nullptr),
-        debugEnabled(false),
-        debugHash(),
         funcDefsOffsetStart(UINT32_MAX),
         funcImportsOffsetStart(UINT32_MAX),
         funcExportsOffsetStart(UINT32_MAX),
@@ -196,8 +151,7 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
         memoriesOffsetStart(UINT32_MAX),
         tablesOffsetStart(UINT32_MAX),
         tagsOffsetStart(UINT32_MAX),
-        instanceDataLength(UINT32_MAX),
-        numCallRefMetrics(UINT32_MAX) {}
+        instanceDataLength(UINT32_MAX) {}
 
   [[nodiscard]] bool init() {
     MOZ_ASSERT(!types);
@@ -226,7 +180,8 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
 
   bool hugeMemoryEnabled(uint32_t memoryIndex) const {
     return !isAsmJS() && memoryIndex < memories.length() &&
-           IsHugeMemoryEnabled(memories[memoryIndex].indexType());
+           IsHugeMemoryEnabled(memories[memoryIndex].addressType(),
+                               memories[memoryIndex].pageSize());
   }
   bool usesSharedMemory(uint32_t memoryIndex) const {
     return memoryIndex < memories.length() && memories[memoryIndex].isShared();
@@ -253,23 +208,6 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   const FuncType& getFuncType(uint32_t funcIndex) const {
     return getFuncTypeDef(funcIndex).funcType();
   }
-  uint32_t funcBytecodeOffset(uint32_t funcIndex) const {
-    if (funcIndex < numFuncImports) {
-      return 0;
-    }
-    uint32_t funcDefIndex = funcIndex - numFuncImports;
-    return funcDefRanges[funcDefIndex].bytecodeOffset;
-  }
-  const FuncDefRange& funcDefRange(uint32_t funcIndex) const {
-    MOZ_ASSERT(funcIndex >= numFuncImports);
-    uint32_t funcDefIndex = funcIndex - numFuncImports;
-    return funcDefRanges[funcDefIndex];
-  }
-  FeatureUsage funcDefFeatureUsage(uint32_t funcIndex) const {
-    MOZ_ASSERT(funcIndex >= numFuncImports);
-    uint32_t funcDefIndex = funcIndex - numFuncImports;
-    return funcDefFeatureUsages[funcDefIndex];
-  }
 
   BuiltinModuleFuncId knownFuncImport(uint32_t funcIndex) const {
     MOZ_ASSERT(funcIndex < numFuncImports);
@@ -279,31 +217,23 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
     return knownFuncImports[funcIndex];
   }
 
-  CallRefMetricsRange getFuncDefCallRefs(uint32_t funcIndex) const {
-    MOZ_ASSERT(funcIndex >= numFuncImports);
-    uint32_t funcDefIndex = funcIndex - numFuncImports;
-    return funcDefCallRefs[funcDefIndex];
-  }
-
   // Find the exported function index for a function index
   uint32_t findFuncExportIndex(uint32_t funcIndex) const;
 
   // The number of functions that are exported in this module
   uint32_t numExportedFuncs() const { return exportedFuncIndices.length(); }
 
-  CallRefHint getCallRefHint(uint32_t callRefIndex) const {
-    if (!callRefHints) {
-      return CallRefHint::unknown();
+  size_t codeSectionSize() const {
+    if (codeSectionRange) {
+      return codeSectionRange->size();
     }
-    return CallRefHint::fromRepr(callRefHints[callRefIndex]);
-  }
-  void setCallRefHint(uint32_t callRefIndex, CallRefHint hint) const {
-    callRefHints[callRefIndex] = hint.toRepr();
+    return 0;
   }
 
   // This gets names for wasm only.
   // For asm.js, see CodeMetadataForAsmJS::getFuncNameForAsmJS.
   bool getFuncNameForWasm(NameContext ctx, uint32_t funcIndex,
+                          const ShareableBytes* nameSectionPayload,
                           UTF8Bytes* name) const;
 
   uint32_t offsetOfFuncDefInstanceData(uint32_t funcIndex) const {
@@ -367,6 +297,123 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
 using MutableCodeMetadata = RefPtr<CodeMetadata>;
 using SharedCodeMetadata = RefPtr<const CodeMetadata>;
 
+using InliningBudget = ExclusiveData<int64_t>;
+
+// wasm::CodeTailMetadata contains all metadata needed by wasm::Code that is
+// only after the whole module has been downloaded. It is sometimes available
+// for Ion compilation, and never available for baseline compilation.
+struct CodeTailMetadata : public ShareableBase<CodeTailMetadata> {
+  // Default initializer only used for serialization.
+  CodeTailMetadata();
+
+  // Initialize the metadata with a given wasm::CodeMetadata.
+  explicit CodeTailMetadata(const CodeMetadata& codeMeta);
+
+  // The code metadata for this module.
+  SharedCodeMetadata codeMeta;
+
+  // The bytes for the code section.
+  SharedBytes codeSectionBytecode;
+
+  // Whether this module was compiled with debugging support.
+  bool debugEnabled;
+
+  // A SHA-1 hash of the module bytecode for use in display urls. Only
+  // available if we're debugging.
+  ModuleHash debugHash;
+
+  // The full bytecode for this module. Only available for debuggable modules.
+  BytecodeBuffer debugBytecode;
+
+  // Shared and mutable inlining budget for this module.
+  mutable InliningBudget inliningBudget;
+
+  // The ranges of every function defined in this module.
+  BytecodeRangeVector funcDefRanges;
+
+  // The feature usage for every function defined in this module.
+  FeatureUsageVector funcDefFeatureUsages;
+
+  // Tracks the range of CallRefMetrics created for each function definition in
+  // this module.
+  CallRefMetricsRangeVector funcDefCallRefs;
+
+  // Tracks the range of AllocSites created for each function definition in
+  // this module. If we are compiling with a 'once' compilation and using just
+  // ion, this will be empty and ion will instead use per-typedef alloc sites.
+  AllocSitesRangeVector funcDefAllocSites;
+
+  // An array of hints to use when compiling a call_ref.
+  //
+  // This is written into when an instance requests a function to be tiered up,
+  // and read from our function compilers.
+  MutableCallRefHints callRefHints;
+
+  // nameSectionPayload points at the name section's CustomSection::payload so
+  // that the Names (which are use payload-relative offsets) can be used
+  // independently of the Module without duplicating the name section.
+  SharedBytes nameSectionPayload;
+
+  // The number of call ref metrics in Instance::callRefs_
+  uint32_t numCallRefMetrics;
+
+  // The number of AllocSites in Instance::allocSites_.
+  uint32_t numAllocSites;
+
+  // Given a bytecode offset inside a function definition, find the function
+  // index.
+  uint32_t findFuncIndex(uint32_t bytecodeOffset) const;
+  uint32_t funcBytecodeOffset(uint32_t funcIndex) const {
+    if (funcIndex < codeMeta->numFuncImports) {
+      return 0;
+    }
+    uint32_t funcDefIndex = funcIndex - codeMeta->numFuncImports;
+    return funcDefRanges[funcDefIndex].start;
+  }
+  const BytecodeRange& funcDefRange(uint32_t funcIndex) const {
+    MOZ_ASSERT(funcIndex >= codeMeta->numFuncImports);
+    uint32_t funcDefIndex = funcIndex - codeMeta->numFuncImports;
+    return funcDefRanges[funcDefIndex];
+  }
+  BytecodeSpan funcDefBody(uint32_t funcIndex) const {
+    return funcDefRange(funcIndex)
+        .relativeTo(*codeMeta->codeSectionRange)
+        .toSpan(*codeSectionBytecode);
+  }
+  FeatureUsage funcDefFeatureUsage(uint32_t funcIndex) const {
+    MOZ_ASSERT(funcIndex >= codeMeta->numFuncImports);
+    uint32_t funcDefIndex = funcIndex - codeMeta->numFuncImports;
+    return funcDefFeatureUsages[funcDefIndex];
+  }
+
+  CallRefMetricsRange getFuncDefCallRefs(uint32_t funcIndex) const {
+    MOZ_ASSERT(funcIndex >= codeMeta->numFuncImports);
+    uint32_t funcDefIndex = funcIndex - codeMeta->numFuncImports;
+    return funcDefCallRefs[funcDefIndex];
+  }
+
+  AllocSitesRange getFuncDefAllocSites(uint32_t funcIndex) const {
+    MOZ_ASSERT(funcIndex >= codeMeta->numFuncImports);
+    uint32_t funcDefIndex = funcIndex - codeMeta->numFuncImports;
+    return funcDefAllocSites[funcDefIndex];
+  }
+
+  bool hasFuncDefAllocSites() const { return !funcDefAllocSites.empty(); }
+
+  CallRefHint getCallRefHint(uint32_t callRefIndex) const {
+    if (!callRefHints) {
+      return CallRefHint();
+    }
+    return CallRefHint::fromRepr(callRefHints[callRefIndex]);
+  }
+  void setCallRefHint(uint32_t callRefIndex, CallRefHint hint) const {
+    callRefHints[callRefIndex] = hint.toRepr();
+  }
+};
+
+using MutableCodeTailMetadata = RefPtr<CodeTailMetadata>;
+using SharedCodeTailMetadata = RefPtr<const CodeTailMetadata>;
+
 // wasm::ModuleMetadata contains metadata whose lifetime ends at the same time
 // that the lifetime of wasm::Module ends.  In practice that means metadata
 // that is needed only for creating wasm::Instances.  Hence this metadata
@@ -377,8 +424,15 @@ struct ModuleMetadata : public ShareableBase<ModuleMetadata> {
   // update CodeModuleMetadata() to keep it in sync.
 
   // The subset of module metadata that is shared between a module and
-  // instance.
+  // instance (i.e. wasm::Code), and is available for all compilation. It
+  // does not contain any data that is only available after the whole module
+  // has been downloaded.
   MutableCodeMetadata codeMeta;
+
+  // The subset of module metadata that is shared between a module and
+  // instance (i.e. wasm::Code), and is only available after the whole module
+  // has been downloaded.
+  MutableCodeTailMetadata codeTailMeta;
 
   // Module fields decoded from the module environment (or initialized while
   // validating an asm.js module) and immutable during compilation:
@@ -401,7 +455,7 @@ struct ModuleMetadata : public ShareableBase<ModuleMetadata> {
   CustomSectionVector customSections;
 
   // Which features were observed when compiling this module.
-  FeatureUsage featureUsage;
+  FeatureUsage featureUsage = FeatureUsage::None;
 
   explicit ModuleMetadata() = default;
 

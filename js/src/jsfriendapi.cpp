@@ -48,11 +48,6 @@
 #include "vm/StringObject.h"
 #include "vm/Watchtower.h"
 #include "vm/WrapperObject.h"
-#ifdef ENABLE_RECORD_TUPLE
-#  include "vm/RecordType.h"
-#  include "vm/TupleType.h"
-#endif
-
 #include "gc/Marking-inl.h"
 #include "vm/Compartment-inl.h"  // JS::Compartment::wrap
 #include "vm/JSObject-inl.h"
@@ -278,12 +273,6 @@ JS_PUBLIC_API bool JS::GetBuiltinClass(JSContext* cx, HandleObject obj,
     *cls = ESClass::Error;
   } else if (obj->is<BigIntObject>()) {
     *cls = ESClass::BigInt;
-#ifdef ENABLE_RECORD_TUPLE
-  } else if (obj->is<RecordType>()) {
-    *cls = ESClass::Record;
-  } else if (obj->is<TupleType>()) {
-    *cls = ESClass::Tuple;
-#endif
   } else if (obj->is<JSFunction>()) {
     *cls = ESClass::Function;
   } else {
@@ -497,6 +486,10 @@ void js::SetPreserveWrapperCallbacks(
   cx->runtime()->hasReleasedWrapperCallback = hasReleasedWrapper;
 }
 
+void js::CommitPendingWrapperPreservations(JSContext* cx) {
+  cx->runtime()->commitPendingWrapperPreservations();
+}
+
 JS_PUBLIC_API unsigned JS_PCToLineNumber(
     JSScript* script, jsbytecode* pc,
     JS::LimitedColumnNumberOneOrigin* columnp) {
@@ -618,6 +611,9 @@ JS_PUBLIC_API JSObject* JS_CloneObject(JSContext* cx, HandleObject obj,
       return nullptr;
     }
   }
+
+  MOZ_ASSERT(gc::GetFinalizeKind(obj->allocKind()) ==
+             gc::GetFinalizeKind(clone->allocKind()));
 
   return clone;
 }
@@ -745,9 +741,13 @@ JS_PUBLIC_API void js::SetAllocationMetadataBuilder(
 }
 
 JS_PUBLIC_API JSObject* js::GetAllocationMetadata(JSObject* obj) {
-  ObjectWeakMap* map = ObjectRealm::get(obj).objectMetadataTable.get();
+  ObjectRealm::ObjectMetadataTable* map =
+      ObjectRealm::get(obj).objectMetadataTable.get();
   if (map) {
-    return map->lookup(obj);
+    auto ptr = map->lookup(obj);
+    if (ptr) {
+      return ptr->value();
+    }
   }
   return nullptr;
 }
@@ -778,14 +778,6 @@ AutoAssertNoContentJS::~AutoAssertNoContentJS() {
 }
 
 JS_PUBLIC_API void js::EnableCodeCoverage() { js::coverage::EnableLCov(); }
-
-JS_PUBLIC_API JS::Value js::MaybeGetScriptPrivate(JSObject* object) {
-  if (!object->is<ScriptSourceObject>()) {
-    return UndefinedValue();
-  }
-
-  return object->as<ScriptSourceObject>().getPrivate();
-}
 
 JS_PUBLIC_API uint64_t js::GetMemoryUsageForZone(Zone* zone) {
   // We do not include zone->sharedMemoryUseCounts since that's already included

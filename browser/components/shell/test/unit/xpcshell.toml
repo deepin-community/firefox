@@ -1,7 +1,11 @@
 [DEFAULT]
-skip-if = ["os == 'android'"] # bug 1730213
+run-if = [
+  "os != 'android'",
+]
 firefox-appdir = "browser"
 tags = "os_integration"
 
 ["test_macOS_showSecurityPreferences.js"]
-run-if = ["os == 'mac'"]
+run-if = [
+  "os == 'mac'",
+]

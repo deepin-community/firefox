@@ -38,18 +38,9 @@ loader.lazyRequireGetter(
   "resource://devtools/shared/async-storage.js"
 );
 
-const CSS_GRID_COUNT_HISTOGRAM_ID = "DEVTOOLS_NUMBER_OF_CSS_GRIDS_IN_A_PAGE";
-
 const SHOW_GRID_AREAS = "devtools.gridinspector.showGridAreas";
 const SHOW_GRID_LINE_NUMBERS = "devtools.gridinspector.showGridLineNumbers";
 const SHOW_INFINITE_LINES_PREF = "devtools.gridinspector.showInfiniteLines";
-
-const TELEMETRY_GRID_AREAS_OVERLAY_CHECKED =
-  "devtools.grid.showGridAreasOverlay.checked";
-const TELEMETRY_GRID_LINE_NUMBERS_CHECKED =
-  "devtools.grid.showGridLineNumbers.checked";
-const TELEMETRY_INFINITE_LINES_CHECKED =
-  "devtools.grid.showInfiniteLines.checked";
 
 // Default grid colors.
 const GRID_COLORS = [
@@ -174,7 +165,7 @@ class GridInspector {
     this.inspector.sidebar.off("select", this.onSidebarSelect);
     this.inspector.off("new-root", this.onNavigate);
 
-    this.inspector.off("reflow-in-selected-target", this.onReflow);
+    this.inspector.off("reflow", this.onReflow);
 
     this._highlighters = null;
     this.document = null;
@@ -198,11 +189,11 @@ class GridInspector {
    *
    * @param  {NodeFront} nodeFront
    *         The NodeFront for which we need the color.
-   * @param  {String} customColor
+   * @param  {string} customColor
    *         The color fetched from the custom palette, if it exists.
-   * @param  {String} fallbackColor
+   * @param  {string} fallbackColor
    *         The color to use if no color could be found for the node front.
-   * @return {String} color
+   * @return {string} color
    *         The color to use.
    */
   getInitialGridColor(nodeFront, customColor, fallbackColor) {
@@ -252,7 +243,7 @@ class GridInspector {
    *
    * @param  {Array} newGridFronts
    *         A list of GridFront objects.
-   * @return {Boolean}
+   * @return {boolean}
    */
   haveCurrentFragmentsChanged(newGridFronts) {
     const gridHighlighters = this.highlighters.gridHighlighters;
@@ -336,9 +327,9 @@ class GridInspector {
 
     // Log how many CSS Grid elements DevTools sees.
     if (currentUrl != this.inspector.previousURL) {
-      this.telemetry
-        .getHistogramById(CSS_GRID_COUNT_HISTOGRAM_ID)
-        .add(gridFronts.length);
+      Glean.devtoolsInspector.numberOfCssGridsInAPage.accumulateSingleSample(
+        gridFronts.length
+      );
       this.inspector.previousURL = currentUrl;
     }
 
@@ -403,9 +394,8 @@ class GridInspector {
         let parentGridNodeFront;
 
         try {
-          parentGridNodeFront = await nodeFront.walkerFront.getParentGridNode(
-            nodeFront
-          );
+          parentGridNodeFront =
+            await nodeFront.walkerFront.getParentGridNode(nodeFront);
         } catch (e) {
           // This call might fail if called asynchrously after the toolbox is finished
           // closing.
@@ -438,7 +428,6 @@ class GridInspector {
 
   /**
    * Get all GridFront instances from the server(s).
-   *
    *
    * @return {Array} The list of GridFronts
    */
@@ -490,7 +479,7 @@ class GridInspector {
    * @param  {NodeFront} nodeFront
    *         The NodeFront of the grid container element for which the grid highlighter
    *         is shown for.
-   * @param  {Boolean} highlighted
+   * @param  {boolean} highlighted
    *         If the grid should be updated to highlight or hide.
    */
   onHighlighterChange(nodeFront, highlighted) {
@@ -583,7 +572,7 @@ class GridInspector {
    * @param  {NodeFront} node
    *         The NodeFront of the grid container element for which the grid color is
    *         being updated.
-   * @param  {String} color
+   * @param  {string} color
    *         A hex string representing the color to use.
    */
   async onSetGridOverlayColor(node, color) {
@@ -639,11 +628,13 @@ class GridInspector {
    */
   onSidebarSelect() {
     if (!this.isPanelVisible()) {
-      this.inspector.off("reflow-in-selected-target", this.onReflow);
+      this.inspector.off("reflow", this.onReflow);
       return;
     }
 
-    this.inspector.on("reflow-in-selected-target", this.onReflow);
+    // The panel shows grids from all debugged document, so we need to listen for the
+    // `reflow` event (and not `reflow-in-selected-target`).
+    this.inspector.on("reflow", this.onReflow);
     this.updateGridPanel();
   }
 
@@ -667,16 +658,12 @@ class GridInspector {
    * component. Toggles on/off the option to show the grid areas in the grid highlighter.
    * Refreshes the shown grid highlighter for the grids currently highlighted.
    *
-   * @param  {Boolean} enabled
+   * @param  {boolean} enabled
    *         Whether or not the grid highlighter should show the grid areas.
    */
   onToggleShowGridAreas(enabled) {
     this.store.dispatch(updateShowGridAreas(enabled));
     Services.prefs.setBoolPref(SHOW_GRID_AREAS, enabled);
-
-    if (enabled) {
-      this.telemetry.scalarSet(TELEMETRY_GRID_AREAS_OVERLAY_CHECKED, 1);
-    }
 
     const { grids } = this.store.getState();
 
@@ -693,16 +680,12 @@ class GridInspector {
    * numbers in the grid highlighter. Refreshes the shown grid highlighter for the
    * grids currently highlighted.
    *
-   * @param  {Boolean} enabled
+   * @param  {boolean} enabled
    *         Whether or not the grid highlighter should show the grid line numbers.
    */
   onToggleShowGridLineNumbers(enabled) {
     this.store.dispatch(updateShowGridLineNumbers(enabled));
     Services.prefs.setBoolPref(SHOW_GRID_LINE_NUMBERS, enabled);
-
-    if (enabled) {
-      this.telemetry.scalarSet(TELEMETRY_GRID_LINE_NUMBERS_CHECKED, 1);
-    }
 
     const { grids } = this.store.getState();
 
@@ -719,16 +702,12 @@ class GridInspector {
    * lines infinitely in the grid highlighter. Refreshes the shown grid highlighter
    * for grids currently highlighted.
    *
-   * @param  {Boolean} enabled
+   * @param  {boolean} enabled
    *         Whether or not the grid highlighter should extend grid lines infinitely.
    */
   onToggleShowInfiniteLines(enabled) {
     this.store.dispatch(updateShowInfiniteLines(enabled));
     Services.prefs.setBoolPref(SHOW_INFINITE_LINES_PREF, enabled);
-
-    if (enabled) {
-      this.telemetry.scalarSet(TELEMETRY_INFINITE_LINES_CHECKED, 1);
-    }
 
     const { grids } = this.store.getState();
 
@@ -746,7 +725,7 @@ class GridInspector {
    *
    * @param {Error} error
    *        The original error object.
-   * @param {String} message
+   * @param {string} message
    *        The message to log in case the inspector is already destroyed and
    *        the error is swallowed.
    */
@@ -765,9 +744,9 @@ class GridInspector {
    *
    * @param {Array} grids
    *        A list of grid data.
-   * @param {Object} parent
+   * @param {object} parent
    *        A grid data of parent.
-   * @param {Number} zIndex
+   * @param {number} zIndex
    *        z-index for the parent.
    */
   _updateZOrder(grids, parent, zIndex = 0) {

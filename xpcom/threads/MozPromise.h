@@ -477,6 +477,23 @@ class MozPromise : public MozPromiseBase {
         MOZ_DIAGNOSTIC_ASSERT(!mPromise->IsPending());
       }
 
+#ifdef MOZ_COLLECTING_RUNNABLE_TELEMETRY
+      // nsINamed
+      NS_IMETHOD GetName(nsACString& aName) override {
+        nsresult rv = PrioritizableCancelableRunnable::GetName(aName);
+        if (NS_FAILED(rv)) {
+          return rv;
+        }
+
+        if (mPromise) {
+          aName.Append(" ");
+          aName.Append(mPromise->mCreationSite);
+        };
+
+        return NS_OK;
+      }
+#endif
+
       ~ResolveOrRejectRunnable() {
         if (mThenValue) {
           mThenValue->AssertIsDead();
@@ -1112,21 +1129,21 @@ class MozPromise : public MozPromiseBase {
 
     template <typename... Ts>
     auto Then(Ts&&... aArgs) -> decltype(std::declval<PromiseType>().Then(
-                                 std::forward<Ts>(aArgs)...)) {
+        std::forward<Ts>(aArgs)...)) {
       return static_cast<RefPtr<PromiseType>>(*this)->Then(
           std::forward<Ts>(aArgs)...);
     }
 
     template <typename... Ts>
     auto Map(Ts&&... aArgs) -> decltype(std::declval<PromiseType>().Map(
-                                std::forward<Ts>(aArgs)...)) {
+        std::forward<Ts>(aArgs)...)) {
       return static_cast<RefPtr<PromiseType>>(*this)->Map(
           std::forward<Ts>(aArgs)...);
     }
 
     template <typename... Ts>
     auto MapErr(Ts&&... aArgs) -> decltype(std::declval<PromiseType>().MapErr(
-                                   std::forward<Ts>(aArgs)...)) {
+        std::forward<Ts>(aArgs)...)) {
       return static_cast<RefPtr<PromiseType>>(*this)->MapErr(
           std::forward<Ts>(aArgs)...);
     }
@@ -1257,9 +1274,14 @@ class MozPromise : public MozPromiseBase {
     }
   }
 
-  bool IsResolved() const { return mValue.IsResolve(); }
-
  protected:
+  // NOTE: Methods like `IsPending()` and `Value()` are intentionally marked as
+  // `protected`, as they are not safe to call from outside of the MozPromise
+  // code.  The only way to inspect the state of a MozPromise is intentionally
+  // to call `->Then` on the promise, and receive an async callback.
+  //
+  // MozPromise has somewhat complex locking and thread safety properties which
+  // can't be extended outside of the code in this file.
   bool IsPending() const { return mValue.IsNothing(); }
 
   ResolveOrRejectValue& Value() {
@@ -1309,7 +1331,7 @@ class MozPromise : public MozPromiseBase {
 #endif
   };
 
-  StaticString mCreationSite;  // For logging
+  StaticString mCreationSite;  // For logging and profiling
   Mutex mMutex MOZ_UNANNOTATED;
   ResolveOrRejectValue mValue;
   bool mUseSynchronousTaskDispatch = false;

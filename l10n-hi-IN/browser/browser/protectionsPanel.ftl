@@ -23,12 +23,6 @@ protections-panel-etp-more-info =
     .aria-label = उन्नत ट्रैकिंग सुरक्षा के बारे में अधिक जानकारी
 protections-panel-etp-on-header = इस साइट के लिए उन्नत ट्रैकिंग सुरक्षा चालू है।
 protections-panel-etp-off-header = इस साइट के लिए उन्नत ट्रैकिंग सुरक्षा बंद है।
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = साइट काम नहीं कर रही?
 # The heading/title of the sub-panel view

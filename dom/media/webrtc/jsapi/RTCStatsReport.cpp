@@ -5,12 +5,21 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "RTCStatsReport.h"
+
+#include "WebrtcGlobal.h"
 #include "libwebrtcglue/SystemTime.h"
 #include "mozilla/dom/Performance.h"
 #include "nsRFPService.h"
-#include "WebrtcGlobal.h"
 
 namespace mozilla::dom {
+
+RTCStatsTimestampState::RTCStatsTimestampState(TimeStamp aStartDomRealtime,
+                                               webrtc::Timestamp aStartRealtime)
+    : mRandomTimelineSeed(0),
+      mStartDomRealtime(aStartDomRealtime),
+      mStartRealtime(webrtc::Timestamp::Micros(0)),
+      mRTPCallerType(RTPCallerType::Normal),
+      mStartWallClockRaw(0) {}
 
 RTCStatsTimestampState::RTCStatsTimestampState()
     : mRandomTimelineSeed(0),

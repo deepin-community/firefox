@@ -11,7 +11,9 @@
 #include "mozilla/dom/ScriptLoader.h"
 #include "mozilla/dom/nsCSPContext.h"
 #include "mozilla/dom/nsCSPService.h"
+#include "mozilla/dom/PolicyContainer.h"
 
+#include "imgLoader.h"
 #include "mozAutoDocUpdate.h"
 #include "mozilla/IdleTaskRunner.h"
 #include "mozilla/Preferences.h"
@@ -106,7 +108,15 @@ class MOZ_RAII nsHtml5AutoFlush final {
           "How do we have mParser but the doc update isn't open?");
     }
     mExecutor->EndFlush();
+    if (mExecutor->IsComplete()) {
+      // `mExecutor->EndDocUpdate()` caused a call to `nsIParser::Terminate`,
+      // so now we should clear the whole op queue in order to be able to
+      // assert in the destructor of `nsHtml5TreeOpExecutor`.
+      mOpsToRemove = mExecutor->OpQueueLength();
+    }
     mExecutor->RemoveFromStartOfOpQueue(mOpsToRemove);
+    // We might have missed a speculative load flush due to sync XHR
+    mExecutor->FlushSpeculativeLoads();
   }
   void SetNumberOfOpsToRemove(size_t aOpsToRemove) {
     MOZ_ASSERT(aOpsToRemove < mOpsToRemove,
@@ -155,7 +165,8 @@ nsHtml5TreeOpExecutor::WillParse() {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
-nsresult nsHtml5TreeOpExecutor::WillBuildModel() {
+NS_IMETHODIMP
+nsHtml5TreeOpExecutor::WillBuildModel() {
   mDocument->AddObserver(this);
   WillBuildModelImpl();
   GetDocument()->BeginLoad();
@@ -183,9 +194,9 @@ nsHtml5TreeOpExecutor::DidBuildModel(bool aTerminated) {
     }
   });
 
-  // This comes from nsXMLContentSink and nsHTMLContentSink
-  // If this parser has been marked as broken, treat the end of parse as
-  // forced termination.
+  // This comes from nsXMLContentSink and the old (now removed)
+  // nsHTMLContentSink. If this parser has been marked as broken, treat the end
+  // of parse as forced termination.
   DidBuildModelImpl(aTerminated || NS_FAILED(IsBroken()));
 
   bool destroying = true;
@@ -451,7 +462,7 @@ void nsHtml5TreeOpExecutor::ContinueInterruptedParsingAsync() {
     // Now we set up a repetitive idle scheduler for flushing background list.
     gBackgroundFlushRunner = IdleTaskRunner::Create(
         &BackgroundFlushCallback,
-        "nsHtml5TreeOpExecutor::BackgroundFlushCallback",
+        "nsHtml5TreeOpExecutor::BackgroundFlushCallback"_ns,
         0,  // Start looking for idle time immediately.
         TimeDuration::FromMilliseconds(250),  // The hard deadline.
         TimeDuration::FromMicroseconds(
@@ -516,6 +527,8 @@ void nsHtml5TreeOpExecutor::RunFlushLoop() {
 
   if (mRunFlushLoopOnStack) {
     // There's already a RunFlushLoop() on the call stack.
+    // The instance of RunFlushLoop() already on the stack is
+    // expected to ensure that we don't stall.
     return;
   }
 
@@ -526,7 +539,7 @@ void nsHtml5TreeOpExecutor::RunFlushLoop() {
   if (mParser) {
     streamParserGrip = GetParser()->GetStreamParser();
   }
-  Unused << streamParserGrip;  // Intentionally not used within function
+  (void)streamParserGrip;  // Intentionally not used within function
 
   // Remember the entry time
   (void)nsContentSink::WillParseImpl();
@@ -544,18 +557,26 @@ void nsHtml5TreeOpExecutor::RunFlushLoop() {
 
     if (!parserKungFuDeathGrip->IsParserEnabled()) {
       // The parser is blocked.
+      // Whatever blocked the parser is responsible for ensuring that
+      // we don't stall.
       return;
     }
 
     if (mFlushState != eNotFlushing) {
-      // XXX Can this happen? In case it can, let's avoid crashing.
+      // It's not clear whether this case can ever happen. It's not
+      // supposed to, but in case this can happen, let's return
+      // early to avoid an even worse state. In case this happens,
+      // there in no obvious other mechanism to prevent stalling,
+      // so let's call `ContinueInterruptedParsingAsync()` to
+      // make sure we don't stall.
+      nsHtml5TreeOpExecutor::ContinueInterruptedParsingAsync();
       return;
     }
 
-    // If there are scripts executing, then the content sink is jumping the gun
-    // (probably due to a synchronous XMLHttpRequest) and will re-enable us
-    // later, see bug 460706.
+    // If there are scripts executing, this is probably due to a synchronous
+    // XMLHttpRequest, see bug 460706 and 1938290.
     if (IsScriptExecuting()) {
+      ContinueParsingDocumentAfterCurrentScript();
       return;
     }
 
@@ -624,6 +645,11 @@ void nsHtml5TreeOpExecutor::RunFlushLoop() {
       // SetNumberOfOpsToRemove is called first, in which case only
       // some ops from the start of the queue are cleared.
       nsHtml5AutoFlush autoFlush(this);
+      // Profiler marker deliberately not counting layout and script
+      // execution.
+      AUTO_PROFILER_MARKER_UNTYPED(
+          "HTMLParserTreeOps", DOM,
+          MarkerOptions(MarkerInnerWindowIdFromDocShell(mDocShell)));
 
       nsHtml5TreeOperation* first = mOpQueue.Elements();
       nsHtml5TreeOperation* last = first + mOpQueue.Length() - 1;
@@ -650,6 +676,10 @@ void nsHtml5TreeOpExecutor::RunFlushLoop() {
           autoFlush.SetNumberOfOpsToRemove((iter - first) + 1);
 
           nsHtml5TreeOpExecutor::ContinueInterruptedParsingAsync();
+          if (!interrupted) {
+            PROFILER_MARKER_UNTYPED("HTMLParserTreeOpsYieldedOnDeadline", DOM,
+                                    MarkerInnerWindowIdFromDocShell(mDocShell));
+          }
           return;
         }
       }
@@ -720,12 +750,12 @@ nsresult nsHtml5TreeOpExecutor::FlushDocumentWrite() {
   // avoid crashing near EOF
   RefPtr<nsHtml5TreeOpExecutor> kungFuDeathGrip(this);
   RefPtr<nsParserBase> parserKungFuDeathGrip(mParser);
-  Unused << parserKungFuDeathGrip;  // Intentionally not used within function
+  (void)parserKungFuDeathGrip;  // Intentionally not used within function
   RefPtr<nsHtml5StreamParser> streamParserGrip;
   if (mParser) {
     streamParserGrip = GetParser()->GetStreamParser();
   }
-  Unused << streamParserGrip;  // Intentionally not used within function
+  (void)streamParserGrip;  // Intentionally not used within function
 
   MOZ_RELEASE_ASSERT(!mReadingFromStage,
                      "Got doc write flush when reading from stage");
@@ -741,6 +771,12 @@ nsresult nsHtml5TreeOpExecutor::FlushDocumentWrite() {
   {
     // autoFlush clears mOpQueue in its destructor.
     nsHtml5AutoFlush autoFlush(this);
+    // Profiler marker deliberately not counting layout and script
+    // execution.
+    AUTO_PROFILER_MARKER_TEXT(
+        "HTMLParserTreeOps", DOM,
+        MarkerOptions(MarkerInnerWindowIdFromDocShell(mDocShell)),
+        "document.write"_ns);
 
     nsHtml5TreeOperation* start = mOpQueue.Elements();
     nsHtml5TreeOperation* end = start + mOpQueue.Length();
@@ -800,6 +836,7 @@ void nsHtml5TreeOpExecutor::CommitToInternalEncoding() {
   }
   mStreamParser->ContinueAfterScriptsOrEncodingCommitment(nullptr, nullptr,
                                                           false);
+  ContinueInterruptedParsingAsync();
 }
 
 [[nodiscard]] bool nsHtml5TreeOpExecutor::TakeOpsFromStage() {
@@ -882,9 +919,7 @@ void nsHtml5TreeOpExecutor::RunScript(nsIContent* aScriptElement,
     MOZ_ASSERT(sele->GetScriptDeferred() || sele->GetScriptAsync() ||
                sele->GetScriptIsModule() || sele->GetScriptIsImportMap() ||
                aScriptElement->AsElement()->HasAttr(nsGkAtoms::nomodule));
-    DebugOnly<bool> block = sele->AttemptToExecute();
-    MOZ_ASSERT(!block,
-               "Defer, async, module, importmap, or nomodule tried to block.");
+    sele->AttemptToExecute(nullptr /* aParser */);
     return;
   }
 
@@ -897,15 +932,10 @@ void nsHtml5TreeOpExecutor::RunScript(nsIContent* aScriptElement,
   // Copied from nsXMLContentSink
   // Now tell the script that it's ready to go. This may execute the script
   // or return true, or neither if the script doesn't need executing.
-  bool block = sele->AttemptToExecute();
+  bool block = sele->AttemptToExecute(GetParser());
 
   // If the act of insertion evaluated the script, we're fine.
-  // Else, block the parser till the script has loaded.
-  if (block) {
-    if (mParser) {
-      GetParser()->BlockParser();
-    }
-  } else {
+  if (!block) {
     // mParser may have been nulled out by now, but the flusher deals
 
     // If this event isn't needed, it doesn't do anything. It is sometimes
@@ -1138,6 +1168,14 @@ bool nsHtml5TreeOpExecutor::ShouldPreloadURI(nsIURI* aURI) {
   return mPreloadedURLs.EnsureInserted(spec);
 }
 
+bool nsHtml5TreeOpExecutor::ImageTypeSupports(const nsAString& aType) {
+  if (aType.IsEmpty()) {
+    return true;
+  }
+  return imgLoader::SupportImageWithMimeType(
+      NS_ConvertUTF16toUTF8(aType), AcceptedMimeTypes::IMAGES_AND_DOCUMENTS);
+}
+
 dom::ReferrerPolicy nsHtml5TreeOpExecutor::GetPreloadReferrerPolicy(
     const nsAString& aReferrerPolicy) {
   dom::ReferrerPolicy referrerPolicy =
@@ -1160,6 +1198,10 @@ void nsHtml5TreeOpExecutor::PreloadScript(
     const nsAString& aNonce, const nsAString& aFetchPriority,
     const nsAString& aIntegrity, dom::ReferrerPolicy aReferrerPolicy,
     bool aScriptFromHead, bool aAsync, bool aDefer, bool aLinkPreload) {
+  dom::ScriptLoader* loader = mDocument->GetScriptLoader();
+  if (!loader) {
+    return;
+  }
   nsCOMPtr<nsIURI> uri = ConvertIfNotPreloadedYetAndMediaApplies(aURL, aMedia);
   if (!uri) {
     return;
@@ -1168,10 +1210,9 @@ void nsHtml5TreeOpExecutor::PreloadScript(
   if (mDocument->Preloads().PreloadExists(key)) {
     return;
   }
-  mDocument->ScriptLoader()->PreloadURI(
-      uri, aCharset, aType, aCrossOrigin, aNonce, aFetchPriority, aIntegrity,
-      aScriptFromHead, aAsync, aDefer, aLinkPreload,
-      GetPreloadReferrerPolicy(aReferrerPolicy), 0);
+  loader->PreloadURI(uri, aCharset, aType, aCrossOrigin, aNonce, aFetchPriority,
+                     aIntegrity, aScriptFromHead, aAsync, aDefer, aLinkPreload,
+                     GetPreloadReferrerPolicy(aReferrerPolicy), 0);
 }
 
 void nsHtml5TreeOpExecutor::PreloadStyle(
@@ -1207,12 +1248,13 @@ void nsHtml5TreeOpExecutor::PreloadImage(
     const nsAString& aURL, const nsAString& aCrossOrigin,
     const nsAString& aMedia, const nsAString& aSrcset, const nsAString& aSizes,
     const nsAString& aImageReferrerPolicy, bool aLinkPreload,
-    const nsAString& aFetchPriority) {
+    const nsAString& aFetchPriority, const nsAString& aType) {
   nsCOMPtr<nsIURI> baseURI = BaseURIForPreload();
   bool isImgSet = false;
   nsCOMPtr<nsIURI> uri =
       mDocument->ResolvePreloadImage(baseURI, aURL, aSrcset, aSizes, &isImgSet);
-  if (uri && ShouldPreloadURI(uri) && MediaApplies(aMedia)) {
+  if (uri && ShouldPreloadURI(uri) && MediaApplies(aMedia) &&
+      ImageTypeSupports(aType)) {
     // use document wide referrer policy
     mDocument->MaybePreLoadImage(uri, aCrossOrigin,
                                  GetPreloadReferrerPolicy(aImageReferrerPolicy),
@@ -1296,7 +1338,8 @@ void nsHtml5TreeOpExecutor::SetSpeculationBase(const nsAString& aURL) {
   }
 
   // Check the document's CSP usually delivered via the CSP header.
-  if (nsCOMPtr<nsIContentSecurityPolicy> csp = mDocument->GetCsp()) {
+  if (nsCOMPtr<nsIContentSecurityPolicy> csp =
+          PolicyContainer::GetCSP(mDocument->GetPolicyContainer())) {
     // base-uri should not fallback to the default-src and preloads should not
     // trigger violation reports.
     bool cspPermitsBaseURI = true;

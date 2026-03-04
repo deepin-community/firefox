@@ -130,9 +130,6 @@ tabbrowser-confirm-caretbrowsing-title = Okem pa K'amaya'l Rik'in Retal Ch'oy
 tabbrowser-confirm-caretbrowsing-message = Toq nipitz' ri pitz'b'äl F7 nitzij/nichup ri okem pa Caret. Re rub'anikil re' nuya' pe jun retal silonel ch'oy pa ri ruxaq k'amaya'l, ri nuya' q'ij richin nicha' rucholajem tzij rik'in ri pitz'b'äl. ¿La nawajo' natz'ïj re rub'anikil re'?
 tabbrowser-confirm-caretbrowsing-checkbox = Man tik'ut chik pe re rutzuwach tzijonem jub'ey chik.
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -164,6 +161,3 @@ tabbrowser-context-unmute-selected-tabs =
 #   $tabCount (Number): The number of tabs in the current browser window. It will always be 2 at least.
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = Kecholajïx konojel ri { $tabCount } taq ruwi'
-
-## Tab manager menu buttons
-

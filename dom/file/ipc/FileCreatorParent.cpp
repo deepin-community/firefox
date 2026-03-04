@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FileCreatorParent.h"
+
 #include "mozilla/dom/FileBlobImpl.h"
 #include "mozilla/dom/IPCBlobUtils.h"
 #include "mozilla/dom/MultipartBlobImpl.h"
@@ -73,7 +74,7 @@ nsresult FileCreatorParent::CreateBlobImpl(
   MOZ_ASSERT(!NS_IsMainThread());
 
   nsCOMPtr<nsIFile> file;
-  nsresult rv = NS_NewLocalFile(aPath, true, getter_AddRefs(file));
+  nsresult rv = NS_NewLocalFile(aPath, getter_AddRefs(file));
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }

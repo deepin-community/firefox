@@ -87,6 +87,8 @@ login-item-copied-username-button-text = कॉपी हो गया!
 login-item-password-label = पासवर्ड
 login-item-password-reveal-checkbox =
     .aria-label = पासवर्ड दिखाएं
+login-item-password-conceal-checkbox =
+    .aria-label = पासवर्ड छिपाएं
 login-item-copy-password-button-text = कॉपी करें
 login-item-copied-password-button-text = कॉपी हो गया!
 login-item-save-changes-button = परिवर्तनों को सहेजें
@@ -114,6 +116,9 @@ about-logins-edit-login-os-auth-dialog-message-win = अपने लॉगि�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = सहेजे गए लॉगिन को संपादित करें
+# This message can be seen when attempting to edit a login in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-edit-login-os-auth-dialog-message2-macosx = सहेजे गए पासवर्ड को संपादित करें
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = अपना पासवर्ड देखने के लिए, अपनी Windows लॉगिन क्रेडेंशियल्स दर्ज करें। यह आपके खातों की सुरक्षा को बनाए रखने में मदद करता है।
 # This message can be seen when attempting to reveal a password in about:logins
@@ -236,16 +241,3 @@ about-logins-import-dialog-error-learn-more = अधिक जानें
 about-logins-import-dialog-error-cancel = रद्द करें
 about-logins-import-report-title = आयात सारांश
 about-logins-import-report-row-description-added = नया लॉगिन जोड़ा गया
-
-##
-## Variables:
-##  $field (String) - The name of the field from the CSV file for example url, username or password
-
-
-##
-## Variables:
-##  $count (number) - The number of affected elements
-
-
-## Logins import report page
-

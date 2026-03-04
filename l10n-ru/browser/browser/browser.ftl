@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Приватный просмотр { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Приватный просмотр { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Приватный просмотр { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Приватный просмотр { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Приватный просмотр { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Приватный просмотр
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Приватный просмотр { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Приватный просмотр
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Приватный просмотр
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Приватный просмотр
+       *[other] Приватный просмотр { -brand-full-name }
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Приватный просмотр
+popups-infobar-dont-show-message2 =
+    .label = Не показывать это сообщение при блокировке всплывающих окон или сторонних перенаправлений
+    .accesskey = В
+edit-popup-settings2 =
+    .label = Управление настройками всплывающих окон и сторонних перенаправлений…
+    .accesskey = Ь
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Открыть панель сообщений
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Открыть панель запроса местоположения
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Управление доступом к локальному устройству для этого сайта
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Управление доступом к вашей локальной сети для этого сайта
 urlbar-xr-notification-anchor =
     .tooltiptext = Открыть панель разрешений виртуальной реальности
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Получить помощь
     .accesskey = м
+urlbar-result-menu-dismiss-suggestion =
+    .label = Скрыть это предложение
+    .accesskey = В
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Узнайте больше о { -firefox-suggest-brand-name }
+    .accesskey = Д
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Управление { -firefox-suggest-brand-name }
+    .accesskey = Ь
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Сообщить о некорректном местоположении
+urlbar-result-menu-show-less-frequently =
+    .label = Показывать реже
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Не показывать предложения о погоде
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Открыть меню
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Спасибо за ваш отзыв
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Спасибо за ваш отзыв. Вы больше не увидите предложения о погоде.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = Действия
 
 urlbar-geolocation-blocked =
     .tooltiptext = Вы заблокировали доступ этого веб-сайта к информации о местоположении.
+urlbar-localhost-blocked =
+    .tooltiptext = Вы заблокировали подключение локальных устройств для этого веб-сайта.
+urlbar-local-network-blocked =
+    .tooltiptext = Вы заблокировали подключение к локальной сети для этого веб-сайта.
 urlbar-xr-blocked =
     .tooltiptext = Вы заблокировали доступ этого веб-сайта к устройству виртуальной реальности.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = Вы заблокировали доступ этого веб-сайта к вашему экрану.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Вы заблокировали доступ этого веб-сайта к постоянному хранилищу.
+urlbar-popup-blocked2 =
+    .tooltiptext = Вы заблокировали всплывающие окна и сторонние перенаправления с этого веб-сайта.
 urlbar-popup-blocked =
     .tooltiptext = Вы заблокировали всплывающие окна с этого веб-сайта.
 urlbar-autoplay-media-blocked =
@@ -178,6 +292,9 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Добавить страницу в закладки ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Разделение экрана
+    .aria-label = Разделение экрана
 
 ## Page Action Context Menu
 
@@ -254,10 +371,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Просмотр дополнений
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = расширения, темы, дополнения
 quickactions-cmd-addons2 = дополнения
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Управление закладками
 quickactions-cmd-bookmarks = закладки
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Очистить недавнюю историю
+quickactions-cmd-clearrecenthistory = очистить недавнюю историю, история
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Удаление истории
 quickactions-cmd-clearhistory = удалить историю
@@ -266,9 +390,20 @@ quickactions-downloads2 = Просмотреть загрузки
 quickactions-cmd-downloads = загрузки
 # Opens about:addons page in the extensions section
 quickactions-extensions = Управление расширениями
+quickactions-cmd-extensions2 = расширения, дополнения
 quickactions-cmd-extensions = расширения
+# Opens Firefox View
+quickactions-firefoxview = Открыть { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = открыть { -firefoxview-brand-name }, { -firefoxview-brand-name }, открыть view, view
+# Opens SUMO home page
+quickactions-help = Справка по { -brand-product-name }
+quickactions-cmd-help = справка, поддержка
 # Opens the devtools web inspector
 quickactions-inspector2 = Открыть Инструменты разработчика
+quickactions-cmd-inspector2 = инспектор, devtools, инструменты разработчика
 quickactions-cmd-inspector = инспектор, инструменты разработки
 # Opens about:logins
 quickactions-logins2 = Управление паролями
@@ -281,7 +416,7 @@ quickactions-print2 = Распечатать страницу
 quickactions-cmd-print = печать
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Сохранить страницу как PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, сохранить страницу
 # Opens a new private browsing window
 quickactions-private2 = Открыть приватное окно
 quickactions-cmd-private = приватный просмотр
@@ -293,22 +428,37 @@ quickactions-restart = Перезапустить { -brand-short-name }
 quickactions-cmd-restart = перезапустить
 # Opens the screenshot tool
 quickactions-screenshot3 = Сделать снимок экрана
+quickactions-cmd-screenshot2 = скриншот, сделать скриншот
+# Opens about:translations
+quickactions-translate = Перевести
+quickactions-cmd-translate = перевести
 quickactions-cmd-screenshot = скриншот
 # Opens about:preferences
 quickactions-settings2 = Управление настройками
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = настройки, параметры, опции, управление
 quickactions-cmd-settings = настройки, параметры, опции
 # Opens about:addons page in the themes section
 quickactions-themes = Управление темами
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = темы, дополнения
 quickactions-cmd-themes = темы
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Обновить { -brand-short-name }
 quickactions-cmd-update = обновление
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Исходный код страницы
+quickactions-cmd-viewsource2 = просмотр кода, исходный код, код страницы
 quickactions-cmd-viewsource = просмотр исходного текста, кода
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Узнать больше о Быстрых действиях
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Нажмите вкладку для выбора:
 
 ## Bookmark Panel
 
@@ -383,6 +533,8 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Вы подключились к этому сайту по незащищённому соединению.
 identity-connection-verified = Вы подключились к этому сайту по защищённому соединению.
 identity-ev-owner-label = Сертификат выдан:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = Квалифицировано, как указано в Регламенте (EU) 2024/1183.
 identity-description-custom-root2 = Mozilla не может распознать этого издателя сертификатов. Возможно, он был добавлен из вашей операционной системы или администратором.
 identity-remove-cert-exception =
     .label = Удалить исключение
@@ -500,6 +652,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Введите поисковый запрос или адрес
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Введите адрес
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -554,8 +710,6 @@ urlbar-page-action-button =
     .tooltiptext = Действия на странице
 urlbar-revert-button =
     .tooltiptext = Показать адрес в Строке местоположения
-urlbar-show-page-actions-button =
-    .tooltiptext = Показать все действия на странице
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -575,12 +729,15 @@ urlbar-result-action-search-in-private = Искать в приватном ок
 urlbar-result-action-search-w-engine = Поиск через { $engine }
 urlbar-result-action-sponsored = Спонсировано
 urlbar-result-action-switch-tab = Перейти на вкладку
+urlbar-result-action-move-tab-to-split-view = Переместить вкладку в раздельный просмотр
 urlbar-result-action-visit = Посетить
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Перейти на вкладку · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Безымянная группа
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Посетить из буфера обмена
 # Directs a user to press the Tab key to perform a search with the specified
@@ -610,12 +767,199 @@ urlbar-result-action-copy-to-clipboard = Копировать
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = не определено
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = Расширение { -brand-product-name }
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = Рекомендуется
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature } °{ $unit }</strong> в { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature } °{ $unit }</strong> в { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature } °{ $unit }</strong> в { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · На правах рекламы
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Спросить
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Получайте данные о фондовом рынке прямо в панели поиска
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Показывать новости рынка и многое другое от наших партнёров, когда вы делитесь данными поисковых запросов с { -vendor-short-name }. <a data-l10n-name="learn-more-link">Подробнее</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Показывать предложения
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Не сейчас
+urlbar-result-realtime-opt-in-dismiss = Убрать
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Не показывать эти предложения
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Не показывать предложения с рынка
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Спасибо за ваш отзыв. Вы больше не увидите предложения о рынке.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Предложения фондовой биржи
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Спасибо за ваш отзыв. Вы больше не увидите эти предложения.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · Через { $daysUntilStart } день
+        [few] { $name } · Через { $daysUntilStart } дня
+       *[many] { $name } · Через { $daysUntilStart } дней
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Начнётся через { $daysUntilStart } день
+        [few] { $name } · Начнётся через { $daysUntilStart } дня
+       *[many] { $name } · Начнётся через { $daysUntilStart } дней
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Заканчивается через { $daysUntilEnd } день
+        [few] { $name } · Заканчивается через { $daysUntilEnd } дня
+       *[many] { $name } · Заканчивается через { $daysUntilEnd } дней
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Сегодня
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Заканчивается сегодня
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Поиск через { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Поиск в { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Поиск с помощью { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Выберите поисковую систему
+urlbar-searchmode-bookmarks =
+    .label = Закладки
+urlbar-searchmode-tabs =
+    .label = Вкладки
+urlbar-searchmode-history =
+    .label = Журнал
+urlbar-searchmode-actions =
+    .label = Действия
+urlbar-searchmode-exit-button =
+    .tooltiptext = Закрыть
+urlbar-searchmode-default =
+    .tooltiptext = Поисковая система по умолчанию
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = В этот раз искать в:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-sticky-description = Искать в:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Параметры поиска
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Создать
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, выберите поисковую систему
+    .tooltiptext = { $engine }, выберите поисковую систему
+urlbar-searchmode-button-no-engine =
+    .label = Ярлык не выбран, выберите ярлык
+    .tooltiptext = Ярлык не выбран, выберите ярлык
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword =
+    .label = Поиск по ключевым словам отключён
+    .tooltiptext = Поиск по ключевым словам отключён
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -625,6 +969,12 @@ urlbar-result-action-search-bookmarks = Искать в закладках
 urlbar-result-action-search-history = Искать в журнале
 urlbar-result-action-search-tabs = Искать во вкладках
 urlbar-result-action-search-actions = Искать в действиях
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Переключиться на «{ $group }»
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Открыть { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -651,6 +1001,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Популярные на { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Спонсировано
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Не показывать популярные поисковые запросы
@@ -809,7 +1162,7 @@ toolbar-button-email-link =
     .tooltiptext = Отправить по почте ссылку на эту страницу
 toolbar-button-logins =
     .label = Пароли
-    .tooltiptext = Просмотр и управление сохраненными паролями
+    .tooltiptext = Просмотр и управление сохранёнными паролями
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -847,6 +1200,9 @@ panel-save-update-password = Пароль
 # "More" item in macOS share menu
 menu-share-more =
     .label = Ещё…
+menu-share-copy-link =
+    .label = Копировать ссылку
+    .accesskey = Д
 ui-tour-info-panel-close =
     .tooltiptext = Закрыть
 
@@ -859,6 +1215,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = Блокировать всплывающие окна для { $uriHost }
     .accesskey = в
+popups-infobar-allow2 =
+    .label = Разрешить всплывающие окна и сторонние перенаправления для { $uriHost }
+    .accesskey = з
 
 ##
 
@@ -894,6 +1253,8 @@ navbar-accessible =
     .aria-label = Навигация
 navbar-downloads =
     .label = Загрузки
+navbar-overflow-2 =
+    .tooltiptext = Другие инструменты
 navbar-overflow =
     .tooltiptext = Другие инструменты…
 # Variables:
@@ -920,10 +1281,14 @@ tabs-toolbar-list-all-tabs =
     .label = Список всех вкладок
     .tooltiptext = Список всех вкладок
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Перетащите сюда вкладку, чтобы закрепить
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
-restore-session-startup-suggestion-message = <strong>Открыть предыдущие вкладки?</strong> Вы можете восстановить предыдущий сеанс из меню { -brand-short-name } <img data-l10n-name="icon"/> в разделе История.
+restore-session-startup-suggestion-message = <strong>Открыть предыдущие вкладки?</strong> Вы можете восстановить предыдущий сеанс из меню { -brand-short-name } <img data-l10n-name="icon"/> в разделе «История».
 restore-session-startup-suggestion-button = Показать мне как
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
@@ -938,6 +1303,9 @@ data-reporting-notification-button =
     .accesskey = В
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Приватный просмотр
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Приватный просмотр
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -946,7 +1314,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Защита данных
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Ваша организация использует { $agentName } для защиты от утечек данных. <a data-l10n-name="info">Подробнее</a>
+content-analysis-panel-text-styled = Ваша организация использует <b>{ $agentName }</b> для защиты от потери данных. <a data-l10n-name="info">Подробнее</a>
 
 ## Unified extensions (toolbar) button
 
@@ -971,6 +1339,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Расширения
         Некоторые расширения не разрешены
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Расширения
+    .tooltiptext =
+        Расширения
+        Некоторые расширения отключены
 
 ## Private browsing reset button
 
@@ -1005,16 +1382,23 @@ firefox-relay-offer-why-to-use-relay = Наши безопасные и прос
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Все электронные письма, отправленные на ваши псевдонимы электронной почты, будут перенаправлены на <strong>{ $useremail }</strong> (если вы не решите их заблокировать).
 firefox-relay-offer-legal-notice = Нажимая «Использовать псевдоним электронной почты», вы соглашаетесь с <label data-l10n-name="tos-url">Условиями использования</label> и <label data-l10n-name="privacy-url">Примечанием о конфиденциальности</label>.
+firefox-relay-offer-legal-notice-1 = Регистрируясь и создавая псевдоним электронной почты, вы соглашаетесь с <label data-l10n-name="tos-url">Условиями использования</label> и <label data-l10n-name="privacy-url">Уведомлением о конфиденциальности</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Не проверено)
 popup-notification-xpinstall-prompt-learn-more = Узнайте больше о безопасной установке дополнений
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Запуск в приватных окнах
-    .accesskey = З
+popup-notification-xpinstall-prompt-block-url = Узнать подробнее
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Разрешить расширению работать в приватных окнах
+    .accesskey = р
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Делиться техническими данными и данными взаимодействия с разработчиком расширений
+    .accesskey = Ы
 
 ## Pop-up warning
 
@@ -1026,6 +1410,16 @@ popup-warning-message =
         [few] { -brand-short-name } заблокировал { $popupCount } всплывающих окна с этого сайта.
        *[many] { -brand-short-name } заблокировал { $popupCount } всплывающих окон с этого сайта.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } заблокировал перенаправление с этого сайта.
+        [1] { -brand-short-name } заблокировал открытие всплывающего окна и перенаправление с этого сайта.
+        [one] { -brand-short-name } заблокировал открытие { $popupCount } всплывающего окна и перенаправления с этого сайта.
+        [few] { -brand-short-name } заблокировал открытие { $popupCount } всплывающих окна и перенаправления с этого сайта.
+       *[many] { -brand-short-name } заблокировал открытие { $popupCount } всплывающих окон и перенаправлений с этого сайта.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
@@ -1034,6 +1428,14 @@ popup-warning-exceeded-message =
         [one] { -brand-short-name } заблокировал более { $popupCount } всплывающего окна с этого сайта.
         [few] { -brand-short-name } заблокировал более { $popupCount } всплывающих окон с этого сайта.
        *[many] { -brand-short-name } заблокировал более { $popupCount } всплывающих окон с этого сайта.
+    }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } заблокировал более { $popupCount } всплывающего окна и перенаправления с этого сайта.
+        [few] { -brand-short-name } заблокировал более { $popupCount } всплывающих окон и перенаправлений с этого сайта.
+       *[many] { -brand-short-name } заблокировал более { $popupCount } всплывающих окон и перенаправлений с этого сайта.
     }
 popup-warning-button =
     .label =
@@ -1050,6 +1452,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Показать «{ $popupURI }»
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Показать «{ $redirectURI }»
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1071,3 +1477,169 @@ file-picker-crashed-save-nowhere = Произошло падение диало�
 file-picker-crashed-show-in-folder =
     .label = Показать в папке
     .accessKey = А
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Завершить настройку
+onboarding-aw-finish-setup-button =
+    .label = Завершить настройку
+    .tooltiptext = Завершение настройки { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Улучшенная защита от отслеживания включена
+trustpanel-etp-label-disabled = Улучшенная защита от отслеживания отключена
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Улучшенная защита от отслеживания: Включена для { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Улучшенная защита от отслеживания: Отключена для { $host }
+trustpanel-etp-description-enabled = Если что-то на этом сайте не работает, попробуйте отключить защиту.
+trustpanel-etp-description-disabled = { -brand-product-name } считает, что компании должны меньше следить за вами. Когда вы включаете защиту, мы блокируем столько трекеров, сколько можем.
+trustpanel-connection-label-secure = Защищённое соединение
+trustpanel-connection-label-insecure = Незащищённое соединение
+trustpanel-header-enabled = { -brand-product-name } на страже
+trustpanel-description-enabled2 = Вы защищены. Если мы что-то заметим, мы сообщим вам.
+trustpanel-header-enabled-insecure = Будьте осторожны на этом сайте
+trustpanel-description-enabled-insecure = { -brand-product-name } заметил что-то подозрительное.
+trustpanel-header-disabled = Вы отключили защиту
+trustpanel-description-disabled = { -brand-product-name } не защищает. Мы предлагаем снова включить защиту.
+trustpanel-clear-cookies-button = Удалить куки и данные сайтов
+trustpanel-privacy-link = Настройки приватности
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Удалить куки и данные сайта для { $host }
+trustpanel-clear-cookies-description = Удаление кук и данных сайтов может привести к разлогину на веб-сайтах и очищению корзины покупок.
+trustpanel-clear-cookies-subview-button-clear = Очистить
+trustpanel-clear-cookies-subview-button-cancel = Отмена
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Защита соединения с { $host }
+trustpanel-siteinformation-morelink = Больше информации о сайте
+trustpanel-blocker-see-all = Показать все
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Защита от отслеживания на { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Не защищено
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] <span>{ $count }</span> трекер заблокирован на этом сайте
+        [few] <span>{ $count }</span> трекера заблокировано на этом сайте
+       *[many] <span>{ $count }</span> трекеров заблокировано на этом сайте
+    }
+trustpanel-blocker-description = { -brand-product-name } считает, что компании должны меньше следить за вами. Поэтому мы блокируем столько, сколько можем.
+trustpanel-blocked-header = { -brand-product-name } заблокировал для вас это:
+trustpanel-tracking-header = { -brand-product-name } разрешил это, чтобы сайты не ломались:
+trustpanel-tracking-description = Без трекеров некоторые кнопки, формы и поля для входа могут не работать.
+trustpanel-insecure-section-header = Ваше соединение не защищено
+trustpanel-insecure-description = Данные, отправляемые вами на этот сайт, не зашифрованы. Его можно просмотреть, украсть или изменить.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } межсайтовый отслеживающий куки
+        [few] { $count } межсайтовых отслеживающих куки
+       *[many] { $count } межсайтовых отслеживающих куки
+    }
+trustpanel-list-label-tracking-content = Отслеживающее содержимое
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } сборщик цифровых отпечатков
+        [few] { $count } сборщика цифровых отпечатков
+       *[many] { $count } сборщиков цифровых отпечатков
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } трекер соцсетей
+        [few] { $count } трекера соцсетей
+       *[many] { $count } трекеров соцсетей
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } криптомайнер
+        [few] { $count } криптомайнера
+       *[many] { $count } криптомайнеров
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } заблокировал { $count } трекер социальных сетей
+        [few] { -brand-product-name } заблокировал { $count } трекера социальных сетей
+       *[many] { -brand-product-name } заблокировал { $count } трекеров социальных сетей
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разрешил { $count } трекер социальных сетей
+        [few] { -brand-product-name } разрешил { $count } трекера социальных сетей
+       *[many] { -brand-product-name } разрешил { $count } трекеров социальных сетей
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } заблокировал { $count } межсайтовый отслеживающий куки
+        [few] { -brand-product-name } заблокировал { $count } межсайтовых отслеживающих куки
+       *[many] { -brand-product-name } заблокировал { $count } межсайтовых отслеживающих куки
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разрешил { $count } межсайтовый отслеживающих куки
+        [few] { -brand-product-name } разрешил { $count } межсайтовых отслеживающих куки
+       *[many] { -brand-product-name } разрешил { $count } межсайтовых отслеживающих куки
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } заблокировал { $count } трекер
+        [few] { -brand-product-name } заблокировал { $count } трекера
+       *[many] { -brand-product-name } заблокировал { $count } трекеров
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разрешил { $count } трекер
+        [few] { -brand-product-name } разрешил { $count } трекера
+       *[many] { -brand-product-name } разрешил { $count } трекеров
+    }
+trustpanel-tracking-content-tab-list-header = Следующие сайты пытаются вас отследить:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } заблокировал { $count } сборщик цифровых отпечатков
+        [few] { -brand-product-name } заблокировал { $count } сборщика цифровых отпечатков
+       *[many] { -brand-product-name } заблокировал { $count } сборщиков цифровых отпечатков
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разрешил { $count } сборщик цифровых отпечатков
+        [few] { -brand-product-name } разрешил { $count } сборщика цифровых отпечатков
+       *[many] { -brand-product-name } разрешил { $count } сборщиков цифровых отпечатков
+    }
+trustpanel-fingerprinter-list-header = Следующие сайты пытаются собрать ваши цифровые отпечатки:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } заблокировал { $count } криптомайнер
+        [few] { -brand-product-name } заблокировал { $count } криптомайнера
+       *[many] { -brand-product-name } заблокировал { $count } криптомайнеров
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разрешил { $count } криптомайнер
+        [few] { -brand-product-name } разрешил { $count } криптомайнера
+       *[many] { -brand-product-name } разрешил { $count } криптомайнеров
+    }
+trustpanel-cryptominer-tab-list-header = Следующие сайты пытаются заниматься криптомайнингом:
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] На этом сайте заблокирован <span data-l10n-name="count">{ $count }</span> трекер
+        [few] На этом сайте заблокировано <span data-l10n-name="count">{ $count }</span> трекера
+       *[many] На этом сайте заблокировано <span data-l10n-name="count">{ $count }</span> трекеров
+    }

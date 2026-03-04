@@ -7,13 +7,10 @@
 #include "GamepadServiceTest.h"
 
 #include "mozilla/ErrorResult.h"
-#include "mozilla/Unused.h"
-
 #include "mozilla/dom/GamepadManager.h"
 #include "mozilla/dom/GamepadPlatformService.h"
 #include "mozilla/dom/GamepadServiceTestBinding.h"
 #include "mozilla/dom/GamepadTestChannelChild.h"
-
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
 
@@ -124,8 +121,7 @@ already_AddRefed<Promise> GamepadServiceTest::AddGamepad(
   // assertion
   GamepadHandle gamepadHandle{1, GamepadHandleKind::GamepadPlatformManager};
 
-  // Only VR controllers has displayID, we give 0 to the general gamepads.
-  GamepadAdded a(nsString(aID), aMapping, aHand, 0, aNumButtons, aNumAxes,
+  GamepadAdded a(nsString(aID), aMapping, aHand, aNumButtons, aNumAxes,
                  aNumHaptics, aNumLightIndicator, aNumTouchEvents);
   GamepadChangeEventBody body(a);
   GamepadChangeEvent e(gamepadHandle, body);
@@ -270,13 +266,13 @@ already_AddRefed<Promise> GamepadServiceTest::NewPoseMove(
                     GamepadCapabilityFlags::Cap_LinearAcceleration;
   if (!aOrient.IsNull()) {
     DebugOnly<bool> ok = aOrient.Value().CopyDataTo(poseState.orientation);
-    MOZ_ASSERT(
-        ok, "aOrient.Value().Length() != ArrayLength(poseState.orientation)");
+    MOZ_ASSERT(ok,
+               "aOrient.Value().Length() != std::size(poseState.orientation)");
     poseState.isOrientationValid = true;
   }
   if (!aPos.IsNull()) {
     DebugOnly<bool> ok = aPos.Value().CopyDataTo(poseState.position);
-    MOZ_ASSERT(ok, "aPos.Value().Length() != ArrayLength(poseState.position)");
+    MOZ_ASSERT(ok, "aPos.Value().Length() != std::size(poseState.position)");
     poseState.isPositionValid = true;
   }
   if (!aAngVelocity.IsNull()) {
@@ -284,28 +280,28 @@ already_AddRefed<Promise> GamepadServiceTest::NewPoseMove(
         aAngVelocity.Value().CopyDataTo(poseState.angularVelocity);
     MOZ_ASSERT(ok,
                "aAngVelocity.Value().Length() != "
-               "ArrayLength(poseState.angularVelocity)");
+               "std::size(poseState.angularVelocity)");
   }
   if (!aAngAcceleration.IsNull()) {
     DebugOnly<bool> ok =
         aAngAcceleration.Value().CopyDataTo(poseState.angularAcceleration);
     MOZ_ASSERT(ok,
                "aAngAcceleration.Value().Length() != "
-               "ArrayLength(poseState.angularAcceleration)");
+               "std::size(poseState.angularAcceleration)");
   }
   if (!aLinVelocity.IsNull()) {
     DebugOnly<bool> ok =
         aLinVelocity.Value().CopyDataTo(poseState.linearVelocity);
     MOZ_ASSERT(ok,
                "aLinVelocity.Value().Length() != "
-               "ArrayLength(poseState.linearVelocity)");
+               "std::size(poseState.linearVelocity)");
   }
   if (!aLinAcceleration.IsNull()) {
     DebugOnly<bool> ok =
         aLinAcceleration.Value().CopyDataTo(poseState.linearAcceleration);
     MOZ_ASSERT(ok,
                "aLinAcceleration.Value().Length() != "
-               "ArrayLength(poseState.linearAcceleration)");
+               "std::size(poseState.linearAcceleration)");
   }
 
   GamepadPoseInformation a(poseState);
@@ -339,12 +335,12 @@ already_AddRefed<Promise> GamepadServiceTest::NewTouch(
   touchState.touchId = aTouchId;
   touchState.surfaceId = aSurfaceId;
   DebugOnly<bool> ok = aPos.CopyDataTo(touchState.position);
-  MOZ_ASSERT(ok, "aPos.Length() != ArrayLength(touchState.position)");
+  MOZ_ASSERT(ok, "aPos.Length() != std::size(touchState.position)");
 
   if (!aSurfDim.IsNull()) {
     ok = aSurfDim.Value().CopyDataTo(touchState.surfaceDimensions);
-    MOZ_ASSERT(
-        ok, "aSurfDim.Length() != ArrayLength(touchState.surfaceDimensions)");
+    MOZ_ASSERT(ok,
+               "aSurfDim.Length() != std::size(touchState.surfaceDimensions)");
     touchState.isSurfaceDimensionsValid = true;
   }
 

@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Tab Newydd
     .accesskey = T
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Cau Tabiau i'r Chwith
     .accesskey = h
+close-tabs-to-the-start-vertical =
+    .label = Cau'r Tabiau Uchod
+    .accesskey = U
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Cau Tabiau i'r Dde
     .accesskey = D
+close-tabs-to-the-end-vertical =
+    .label = Cau'r Tabiau Isod
+    .accesskey = I
 close-other-tabs =
     .label = Cau Tabiau Eraill
     .accesskey = C
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Symud i Ffenestr Newydd
     .accesskey = N
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Mynd at “{ $profileName }”
 tab-context-close-multiple-tabs =
     .label = Cau Tabiau Lluosog
     .accesskey = L
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Rhannu
     .accesskey = R
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Tab Newydd i'r Dde
+    .accesskey = D
+tab-context-new-tab-open-vertical =
+    .label = Tab Newydd Isod
+    .accesskey = s
+tab-context-new-group =
+    .label = Grŵp Newydd
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -118,6 +142,19 @@ tab-context-move-tabs =
            *[other] Symud Tab
         }
     .accesskey = S
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Anfon Tab i Ddyfais
+            [zero] Anfon { $tabCount } Tab i Ddyfais
+            [one] Anfon { $tabCount } Tab i Ddyfais
+            [two] Anfon { $tabCount } Thab i Ddyfais
+            [few] Anfon { $tabCount } Tab i Ddyfais
+            [many] Anfon { $tabCount } Thab i Ddyfais
+           *[other] Anfon { $tabCount } Tab i Ddyfais
+        }
+    .accesskey = A
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -129,3 +166,15 @@ tab-context-send-tabs-to-device =
            *[other] Anfon { $tabCount } Thab i Ddyfais
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Dadlwytho { $tabCount } Tab
+            [zero] Dadlwytho { $tabCount } Tabiau
+            [one] Dadlwytho { $tabCount } Tab
+            [two] Dadlwythwch { $tabCount } Dab
+            [few] Dadlwytho { $tabCount } Tab
+            [many] Dadlwytho { $tabCount } Tab
+           *[other] Dadlwytho { $tabCount } Tab
+        }
+    .accesskey = D

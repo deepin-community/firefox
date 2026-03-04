@@ -8,11 +8,24 @@
 newtab-page-title = Új lap
 newtab-settings-button =
     .title = Az Új lap oldal személyre szabása
+newtab-customize-panel-icon-button =
+    .title = Oldal testreszabása
+newtab-customize-panel-icon-button-label = Testreszabás
+newtab-personalize-settings-icon-label =
+    .title = Új lap testreszabása
+    .aria-label = Beállítások
+newtab-settings-dialog-label =
+    .aria-label = Beállítások
 newtab-personalize-icon-label =
     .title = Új lap testreszabása
     .aria-label = Új lap testreszabása
 newtab-personalize-dialog-label =
     .aria-label = Testreszabás
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+newtab-card-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Eltüntetés
 
 ## Search box component.
 
@@ -46,6 +59,9 @@ newtab-topsites-add-shortcut-header = Új gyorskereső
 newtab-topsites-edit-topsites-header = Népszerű oldal szerkesztése
 newtab-topsites-edit-shortcut-header = Gyorskereső szerkesztése
 newtab-topsites-add-shortcut-label = Indítóikon hozzáadása
+newtab-topsites-add-shortcut-title =
+    .title = Indítóikon hozzáadása
+    .aria-label = Indítóikon hozzáadása
 newtab-topsites-title-label = Cím
 newtab-topsites-title-input =
     .placeholder = Cím megadása
@@ -74,6 +90,14 @@ newtab-confirm-delete-history-p2 = Ez a művelet nem vonható vissza.
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Szponzorált
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (rögzítve)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +133,21 @@ newtab-menu-save-to-pocket = Mentés a { -pocket-brand-name }be
 newtab-menu-delete-pocket = Törlés a { -pocket-brand-name }ből
 newtab-menu-archive-pocket = Archiválás a { -pocket-brand-name }ben
 newtab-menu-show-privacy-info = Támogatóink és az Ön adatvédelme
+newtab-menu-about-fakespot = A { -fakespot-brand-name } névjegye
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Jelentés
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Tiltás
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Téma követésének megszüntetése
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Szponzorált tartalmak kezelése
+newtab-menu-our-sponsors-and-your-privacy = Támogatóink és az Ön adatvédelme
+newtab-menu-report-this-ad = Hirdetés jelentése
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +209,8 @@ newtab-label-sponsored-by = Szponzorálta: { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } perc
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Szponzorált
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +273,6 @@ newtab-pocket-learn-more = További tudnivalók
 newtab-pocket-cta-button = { -pocket-brand-name } beszerzése
 newtab-pocket-cta-text = Mentse az Ön által kedvelt történeteket a { -pocket-brand-name }be, és töltse fel elméjét lebilincselő olvasnivalókkal.
 newtab-pocket-pocket-firefox-family = A { -pocket-brand-name } a { -brand-product-name } család része
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Mentés
 newtab-pocket-saved = Mentve
 
@@ -244,7 +284,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nem nekem való
-newtab-toast-thumbs-up-or-down = Köszönjük. Visszajelzése segít nekünk a hírforrás fejlesztésében.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Köszönjük. Visszajelzése segít nekünk a hírforrás fejlesztésében.
 newtab-toast-dismiss-button =
     .title = Eltüntetés
     .aria-label = Eltüntetés
@@ -280,16 +322,32 @@ newtab-custom-pocket-subtitle = Kivételes tartalmak a { -pocket-brand-name } v�
 newtab-custom-stories-toggle =
     .label = Ajánlott történetek
     .description = Kivételes tartalmak a { -brand-product-name } család válogatásában
+newtab-custom-stories-personalized-toggle =
+    .label = Történetek
+newtab-custom-stories-personalized-checkbox-label = Személyre szabott történetek a tevékenysége alapján
 newtab-custom-pocket-sponsored = Szponzorált történetek
 newtab-custom-pocket-show-recent-saves = Legutóbbi mentések megjelenítése
 newtab-custom-recent-title = Legutóbbi tevékenység
 newtab-custom-recent-subtitle = Válogatás a legutóbbi webhelyekből és tartalmakból
-newtab-custom-recent-toggle =
-    .label = Legutóbbi tevékenység
-    .description = Válogatás a legutóbbi webhelyekből és tartalmakból
 newtab-custom-weather-toggle =
     .label = Időjárás
     .description = A mai előrejelzés egy pillantásra
+newtab-custom-widget-weather-toggle =
+    .label = Időjárás
+newtab-custom-widget-lists-toggle =
+    .label = Listák
+newtab-custom-widget-timer-toggle =
+    .label = Időzítő
+newtab-custom-widget-section-title = Kisalkalmazások
+newtab-custom-widget-section-toggle =
+    .label = Kisalkalmazások
+newtab-widget-manage-title = Kisalkalmazások
+newtab-widget-manage-widget-button =
+    .label = Kisalkalmazások kezelése
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Bezárás
+    .aria-label = Menü bezárása
 newtab-custom-close-button = Bezárás
 newtab-custom-settings = További beállítások kezelése
 
@@ -297,6 +355,13 @@ newtab-custom-settings = További beállítások kezelése
 
 newtab-wallpaper-title = Háttérképek
 newtab-wallpaper-reset = Visszaállítás az alapértelmezésre
+newtab-wallpaper-upload-image = Kép feltöltése
+newtab-wallpaper-custom-color = Válasszon színt
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = A kép túllépte a { $file_size } MB-os fájlméretkorlátot. Próbáljon meg egy kisebb fájlt feltölteni.
+newtab-wallpaper-error-upload-file-type = Nem tudtuk feltölteni a fájlt. Próbálja meg újra egy képfájllal.
+newtab-wallpaper-error-file-type = Nem tudtuk feltölteni a fájlt. Próbálja meg újra egy másik fájltípussal.
 newtab-wallpaper-light-red-panda = Vörös panda
 newtab-wallpaper-light-mountain = Fehér hegy
 newtab-wallpaper-light-sky = Ég, lila és rózsaszín felhőkkel
@@ -309,6 +374,8 @@ newtab-wallpaper-dark-panda = Vörös panda elrejtve az erdőben
 newtab-wallpaper-dark-sky = Városi táj éjszakai égbolttal
 newtab-wallpaper-dark-mountain = Hegyvidéki táj
 newtab-wallpaper-dark-city = Lila városi táj
+newtab-wallpaper-dark-fox-anniversary = Egy róka a járdán, közel egy erdőhöz
+newtab-wallpaper-light-fox-anniversary = Egy róka egy füves mezőben, ködös hegyi tájjal
 
 ## Solid Colors
 
@@ -338,8 +405,12 @@ newtab-wallpaper-abstract-purple = Lila alakzatok
 newtab-wallpaper-abstract-orange = Narancssárga alakzatok
 newtab-wallpaper-gradient-orange = Narancssárga és rózsaszín átmenet
 newtab-wallpaper-abstract-blue-purple = Kék és lila alakzatok
+newtab-wallpaper-abstract-white-curves = Fehér, árnyalt ívekkel
+newtab-wallpaper-abstract-purple-green = Lila és zöld fényátmenet
+newtab-wallpaper-abstract-blue-purple-waves = Kék és lila hullámos alakzatok
+newtab-wallpaper-abstract-black-waves = Fekete hullámos alakzatok
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Fényképek
 newtab-wallpaper-beach-at-sunrise = Strand napkeltekor
@@ -348,6 +419,12 @@ newtab-wallpaper-storm-sky = Viharos égbolt
 newtab-wallpaper-sky-with-pink-clouds = Égbolt rózsaszín felhőkkel
 newtab-wallpaper-red-panda-yawns-in-a-tree = Vörös panda ásít egy fán
 newtab-wallpaper-white-mountains = Fehér hegyek
+newtab-wallpaper-hot-air-balloons = Különböző színű hőlégballonok napközben
+newtab-wallpaper-starry-canyon = Kék csillagos éjszaka
+newtab-wallpaper-suspension-bridge = Fénykép egy szürke függőhídról, napközben
+newtab-wallpaper-sand-dunes = Fehér homokdűnék
+newtab-wallpaper-palm-trees = Kókuszpálmák sziluettje alkonyatkor
+newtab-wallpaper-blue-flowers = Közeli fénykép kék szirmú virágokról virágzás közben
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +440,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Mennyei
+newtab-wallpaper-celestial-lunar-eclipse = Holdfogyatkozás
+newtab-wallpaper-celestial-earth-night = Éjszakai fénykép alacsony Föld körüli pályáról
+newtab-wallpaper-celestial-starry-sky = Csillagos égbolt
+newtab-wallpaper-celestial-eclipse-time-lapse = Holdfogyatkozás gyorsítva
+newtab-wallpaper-celestial-black-hole = Illusztráció egy galaxisról egy fekete lyukkal
+newtab-wallpaper-celestial-river = Folyó műholdképe
+
 ## New Tab Weather
 
 # Variables:
@@ -373,8 +467,12 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Szponzorálva
 newtab-weather-menu-change-location = Hely módosítása
-newtab-weather-change-location-search-input = Keresési hely
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Keresési hely
+    .aria-label = Keresési hely
 newtab-weather-menu-weather-display = Időjárás-kijelző
+newtab-weather-todays-forecast = Mai előrejelzés
+newtab-weather-see-full-forecast = Teljes előrejelzés megtekintése
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
@@ -387,10 +485,24 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Váltás Fahrenheitre
 newtab-weather-menu-change-temperature-units-celsius = Váltás Celsiusra
+newtab-weather-menu-hide-weather-v2 = Időjárás elrejtése
 newtab-weather-menu-hide-weather = Időjárás elrejtése az Új lapon
 newtab-weather-menu-learn-more = További tudnivalók
+newtab-weather-menu-detect-my-location = Saját hely észlelése
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Az időjárásadatok most nem érhetők el
+newtab-weather-opt-in-see-weather = Szeretné látni a helye időjárását?
+newtab-weather-opt-in-not-now =
+    .label = Most nem
+newtab-weather-opt-in-yes =
+    .label = Igen
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = New York City
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Előrejelzés megtekintése itt: { $provider }
+    .aria-description = { $provider } ∙ Szponzorálva
 
 ## Topic Labels
 
@@ -431,3 +543,201 @@ newtab-topic-selection-button-maybe-later = Talán később
 newtab-topic-selection-privacy-link = Tudja meg, hogyan védjük és kezeljük az adatait
 newtab-topic-selection-button-update-interests = Frissítse az érdeklődési köreit
 newtab-topic-selection-button-pick-interests = Válassza ki az érdeklődési köreit
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Követés
+newtab-section-following-button = Követés
+newtab-section-unfollow-button = Követés megszüntetése
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Finomhangolja a hírfolyamát
+newtab-section-follow-highlight-subtitle = Kövesse az érdeklődési köreit, hogy többet lásson abból, amit kedvel.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokkolás
+newtab-section-blocked-button = Blokkolva
+newtab-section-unblock-button = Blokkolás feloldása
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Most nem
+newtab-section-confirm-block-topic-p1 = Biztos, hogy blokkolja ezt a témát?
+newtab-section-confirm-block-topic-p2 = A blokkolt témák többé nem fognak megjelenni a hírfolyamában.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } blokkolása
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Témák
+newtab-section-manage-topics-button-v2 =
+    .label = Témák kezelése
+newtab-section-mangage-topics-followed-topics = Követve
+newtab-section-mangage-topics-followed-topics-empty-state = Még nem követ egyetlen témát sem.
+newtab-section-mangage-topics-blocked-topics = Blokkolva
+newtab-section-mangage-topics-blocked-topics-empty-state = Még nem blokkol egyetlen témát sem.
+newtab-custom-wallpaper-title = Itt vannak az egyéni háttérképek
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Töltse fel a saját háttérképét, vagy válasszon egy egyéni háttérszínt, hogy a { -brand-product-name } a sajátja legyen.
+newtab-custom-wallpaper-cta = Próbálja ki
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Válasszon háttérképet, hogy a { -brand-product-name }ot a sajátjává tegye
+newtab-new-user-custom-wallpaper-subtitle = Tegyen minden új lapot otthonossá az egyéni háttérképekkel és színekkel.
+newtab-new-user-custom-wallpaper-cta = Próbálja ki most
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = Töltse le a mobilos { -brand-product-name }ot
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Olvassa le a kódot, hogy biztonságosan böngésszen útközben.
+newtab-download-mobile-highlight-body-variant-b = Folytassa ott, ahol abbahagyta, és szinkronizálja lapjait, jelszavait és egyebeit.
+newtab-download-mobile-highlight-body-variant-c = Tudta, hogy magával viheti a { -brand-product-name }ot? Ugyanaz a böngésző. A zsebében.
+newtab-download-mobile-highlight-image =
+    .aria-label = QR-kód a mobilos { -brand-product-name } letöltéséhez
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = A kedvencei egy karnyújtásnyira
+newtab-shortcuts-highlight-subtitle = Adjon hozzá egy indítót, hogy a kedvenc oldalai egy kattintásra legyenek.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Miért jelenti ezt be?
+newtab-report-ads-reason-not-interested =
+    .label = Nem érdekel
+newtab-report-ads-reason-inappropriate =
+    .label = Nem megfelelő
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Túl sokszor láttam
+newtab-report-content-wrong-category =
+    .label = Hibás kategória
+newtab-report-content-outdated =
+    .label = Elavult
+newtab-report-content-inappropriate-offensive =
+    .label = Nem megfelelő vagy sértő
+newtab-report-content-spam-misleading =
+    .label = Kéretlen vagy félrevezető
+newtab-report-content-requires-payment-subscription =
+    .label = Fizetést vagy előfizetést igényel
+newtab-report-content-requires-payment-subscription-learn-more = További tudnivalók
+newtab-report-cancel = Mégse
+newtab-report-submit = Elküldés
+newtab-toast-thanks-for-reporting =
+    .message = Köszönjük, hogy bejelentette.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = A lehetőségek végtelenek. Adjon hozzá egyet.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Új
+newtab-widget-lists-label-beta =
+    .label = Beta
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Kész ({ $number })
+newtab-widget-task-list-menu-copy = Másolás
+newtab-widget-lists-menu-edit = Listanév szerkesztése
+newtab-widget-lists-menu-create = Új lista létrehozása
+newtab-widget-lists-menu-delete = Lista törlése
+newtab-widget-lists-menu-copy = Lista vágólapra másolása
+newtab-widget-lists-menu-hide = Összes lista elrejtése
+newtab-widget-lists-menu-learn-more = További tudnivalók
+newtab-widget-lists-input-add-an-item =
+    .placeholder = Elem hozzáadása
+newtab-widget-lists-input-error = Elem hozzáadásához adjon meg szöveget.
+newtab-widget-lists-input-menu-open-link = Hivatkozás megnyitása
+newtab-widget-lists-input-menu-move-up = Mozgatás felfelé
+newtab-widget-lists-input-menu-move-down = Mozgatás lefelé
+newtab-widget-lists-input-menu-delete = Törlés
+newtab-widget-lists-input-menu-edit = Szerkesztés
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Új lista létrehozása
+newtab-widget-lists-name-label-default =
+    .label = Feladatlista
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Feladatlista
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Új lista
+newtab-widget-section-title = Kisalkalmazások
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Kisalkalmazások elrejtése
+    .aria-label = Összes kisalkalmazás elrejtése
+newtab-widget-section-maximize =
+    .title = Kisalkalmazások kibontása
+    .aria-label = Összes kisalkalmazás kibontása teljes méretűre
+newtab-widget-section-minimize =
+    .title = Kisalkalmazások minimalizálása
+    .aria-label = Összes kisalkalmazás összecsukása kompakt méretre
+
+## Strings for timer productivity widget
+## When the timer ends, a system notification may be shown. Depending on which mode the timer is in, that message would be shown
+
+newtab-widget-timer-notification-title = Időzítő
+newtab-widget-timer-notification-focus = Lejárt a fókuszidő. Szép munka. Szüksége van egy kis szünetre?
+newtab-widget-timer-notification-break = A szünete véget ért. Készen áll az összpontosításra?
+newtab-widget-timer-notification-warning = Az értesítések ki vannak kapcsolva
+newtab-widget-timer-mode-focus =
+    .label = Fókusz
+newtab-widget-timer-mode-break =
+    .label = Szünet
+newtab-widget-timer-label-play =
+    .label = Lejátszás
+newtab-widget-timer-label-pause =
+    .label = Szünet
+newtab-widget-timer-reset =
+    .title = Visszaállítás
+newtab-widget-timer-menu-notifications = Értesítések kikapcsolása
+newtab-widget-timer-menu-notifications-on = Értesítések bekapcsolása
+newtab-widget-timer-menu-hide = Időzítő elrejtése
+newtab-widget-timer-menu-learn-more = További tudnivalók
+# The title displays above a set of top news headlines.
+newtab-daily-briefing-card-title = Legfontosabb szalagcímek
+newtab-daily-briefing-card-menu-dismiss = Eltüntetés
+# Variables:
+#   $minutes (number) - Time since the feed has been refreshed
+newtab-daily-briefing-card-timestamp = Frissítve: { $minutes } perce
+newtab-widget-message-title = Maradjon fókuszált a listákkal és a beépített időzítővel
+# to-dos stands for "things to do".
+newtab-widget-message-copy = A gyors emlékeztetőktől a napi tennivalókig, fókuszált munkaszakaszoktól a nyújtó szünetekig — maradjon a feladatnál és időben.
+newtab-promo-card-title = Támogassa a { -brand-product-name }ot
+newtab-promo-card-body = Szponzoraink támogatják a küldetésünket, hogy jobb webet építsünk
+newtab-promo-card-cta = További tudnivalók
+newtab-promo-card-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Eltüntetés
+
+## Strings for activation window message variants. In certain experiment configurations,
+## the strings from these variants may be displayed in a message below the search input
+## for the first 48 hours of a new profile's lifetime. Some messages include buttons with
+## labels, but not all.
+
+newtab-activation-window-message-dismiss-button =
+    .title = Eltüntetés
+    .aria-label = Eltüntetés
+# "This space" refers to about:newtab. The call to action here ("make it your own")
+# is to customize newtab with a background image or colour, or by tweaking the
+# existing widgetry that appears on it.
+newtab-activation-window-message-customization-focus-header = Tegye sajátjává ezt a helyet
+newtab-activation-window-message-customization-focus-message = Válasszon egy friss háttérképet, adjon hozzá indítóikonokat a kedvenc webhelyeihez, és legyen naprakész az Önt érdeklő történetekről.
+newtab-activation-window-message-customization-focus-primary-button =
+    .label = Testreszabás megkezdése
+# "This space" refers to about:newtab. The sentiment of "plays by your rules" is
+# meant to evoke the idea that newtab is malleable and customizable. The call to
+# action is to customize newtab with a background image or colour, or by tweaking
+# the existing widgetry that appears on it.
+newtab-activation-window-message-values-focus-header = Ez a hely az Ön szabályai szerint játszik
+newtab-activation-window-message-values-focus-message = A { -brand-product-name } használatával úgy böngészhet, ahogy tetszik, és személyesebben kezdheti a napját online. Tegye sajátjává a { -brand-product-name } böngészőt.

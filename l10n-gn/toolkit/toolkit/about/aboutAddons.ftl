@@ -169,6 +169,8 @@ extensions-warning-update-security-button = Myandy
 extensions-warning-imported-addons2 =
     .message = Emohu’ã jepysokue guerupyre ñemohenda { -brand-short-name } peve
 extensions-warning-imported-addons-button = Emohenda Jepysokue
+extensions-warning-safe-mode3 =
+    .message = Opaite jepysokue oñemboguepáma apañuái ñemoĩporã rekópe.
 
 ## Strings connected to add-on updates
 
@@ -204,6 +206,10 @@ addon-updates-manual-updates-found = Ehecha ñembohekopyahu eiporukuaáva
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Emohenda moĩmbaha marandurenda guive…
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Emohenda térã embohekopyahu moĩmbaha marandurenda guive…
     .accesskey = I
 addon-install-from-file-dialog-title = Eiporavo moĩmbaha emohenda hag̃ua
 addon-install-from-file-filter-name = Moĩmbahakuéra
@@ -267,6 +273,19 @@ discopane-notice-recommendations = Heta ko’ã ñe’ẽporã ha’e ñemomba�
 discopane-notice-recommendations2 =
     .message = Heta ko’ã ñe’ẽporã ha’e ñemomba’epyre. Ojehecha ambue jepysokue ñemohendapyre, ne mba’ete erohoryvéva ha ijeporukue.
 discopane-notice-learn-more = Kuaave
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Ne téma sa’y ojueheguáva oñemboguéma.
+    .message =
+        { -brand-product-name } ombohekopyahu isa’y ojueheguáva. Romboguéma
+        umi oĩva’ekue "Téma ñongatupyre" rysýi. Eporandu umi apopy ipyahuvéva rehe
+        tembiporu’i tembiporu’i ñanduti roguépe.
+colorway-removal-notice-learn-more = Eikuaave
+colorway-removal-notice-button = Ereko téma sa’y ojuehegua ag̃agua rehegua
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Windows jehecha ñemboheko ombogue temaita { -brand-short-name } rehegua. Eipe’a ko ñemboheko eiporu hag̃ua temaita { -brand-short-name }-pe.
 privacy-policy = Temiñemi porureko
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -373,6 +392,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Ovetã ñemíme moneĩmbyre
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Ovetã ñemíme moneĩmbyre
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -412,6 +435,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Ko jepysokue ojehechajey oguerekópa tekorosã ha oikoporãpa.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Jepysokue Mozilla ojapopyréva. Orekopaite tekorosã ha ha’eve
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Ko jepysokue ojehechajey jahecha oguerekópa tekorosã ha oikoporãpa.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox omomba’e jepysokue oguerekóva tekorosã ha ñemboguataporã añónte
 
 ##
 
@@ -419,6 +460,10 @@ available-updates-heading = Ñembohekopyahu eiporukuaáva
 recent-updates-heading = Mohekopyahu ramoveguáva
 release-notes-loading = Henyhẽhína…
 release-notes-error = Rombyasy, hákatu oiko jejavy henyhẽnguévo jehaipy rehegua.
+addon-permissions-heading = Ñemoneĩ
+addon-permissions-empty2 = Ko moĩmbaha noikotevẽi ñemoneĩre.
+addon-permissions-required-label = Tekotevẽva:
+addon-permissions-optional-label = Poravokuaáva:
 addon-permissions-empty = Ko jepysokue noikotevẽi ñemoneĩ
 addon-permissions-required = Ñemoneĩ tekotevẽva tembiapoite ha’etévape g̃uarã:
 addon-permissions-optional = Ñemoneĩ potapýva tembiapoite jopoiguápe g̃uarã:
@@ -446,6 +491,9 @@ shortcuts-heading = Eñangareko jepysokue jeike pya’eháre
 default-heading-search-label = Ehekave moĩmbaha
 addons-heading-search-input =
     .placeholder = Eheka addons.mozilla.org
+addons-heading-search-button =
+    .title = Eheka addons.mozilla.org
+    .aria-label = Eheka addons.mozilla.org
 addon-page-options-button =
     .title = Tembiporu opaite moĩmbahápe g̃uarã
 
@@ -468,14 +516,32 @@ details-notification-unsigned-and-disabled-link = Maranduve
 details-notification-unsigned = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
 details-notification-unsigned2 =
     .message = { $name } ndaikatúi ojehechajey ojeporu hag̃ua { -brand-short-name }-pe. Ejesareko porãke hese.
+details-notification-hard-blocked-extension =
+    .message = Ko jepysokue ojejokóma omomarã haguére Mozilla porureko ha upévare ojeipe’áma.
+details-notification-hard-blocked-other =
+    .message = Ko moĩmbaha ojejokóma omomarã haguére Mozilla porureko ha upévare ojeipe’áma.
 details-notification-unsigned-link = Maranduve
 details-notification-blocked = { $name } oñemongéma oguereko rupi apañuái tekorosãrã térã tekopytápe.
-details-notification-blocked2 =
-    .message = { $name } oñemongéma oguereko rupi apañuái tekorosãrã térã tekopytápe.
+details-notification-blocked-link2 = Mba’emimi jehechauka
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Ko jepysokue ojejokóma ha upévare ojeipe’áma. Ikatu emyandy jey, hákatu iñapañuaikuaa.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Ko jepysokue ojejokóma. Eiporúramo imarãkuaa.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Ko moĩmbaha ojejokóma ha upévare ojeipe’áma. Ikatu emyandy jey, hákatu iñapañuaikuaa.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Ko jepysokue ojejokóma. Eiporúramo imarãkuaa.
+details-notification-soft-blocked-extension-disabled =
+    .message = Ko jepysokue ojejokóma omomarãre Mozilla porureko ha upévare ojeipe’áma. Ikatu emyandy jey, hákatu iñapañuaikuaa.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ko jepysokue omomarã Mozilla porureko. Eiporúramo ikatu noĩporãi.
+details-notification-soft-blocked-other-disabled =
+    .message = Ko moĩmbaha ojejokóma omomarãre Mozilla porureko ha upévare ojeipe’áma. Ikatu emyandy jey, hákatu iñapañuaikuaa.
+details-notification-soft-blocked-other-enabled =
+    .message = Ko moĩmbaha omomarã Mozilla porureko. Eiporúramo ikatu noĩporãi.
+details-notification-softblocked-link2 = Mba’emimi jehechauka
 details-notification-blocked-link = Maranduve
 details-notification-softblocked = Ojeikuaa { $name } omoapañuaiha tekorosã térã tekoporã.
-details-notification-softblocked2 =
-    .message = Ojeikuaa { $name } omoapañuaiha tekorosã térã tekoporã.
 details-notification-softblocked-link = Maranduve
 details-notification-gmp-pending = { $name } oñemohendáta sapy’aitépe.
 details-notification-gmp-pending2 =
@@ -489,3 +555,44 @@ plugins-openh264-name = Openh264 Video Codec ome’ẽva Cisco Systems, Inc.
 plugins-openh264-description = Ko mba’ejoajurã Mozilla oñemohendáta ijeheguiete ojapo hag̃ua WebRTC ojeruréva ha omoneĩta WebRTC ohenói mba’e’oka ndive oikotevẽva ta’ãngamýi H.264 codec. Eike http://www.openh264.org/ ehecha codec ayvu reñoiha ha eikuaave hag̃ua ko tembiporu’i rehegua.
 plugins-widevine-name = Widevine Content Decryption Module ome’ẽva Google Inc.
 plugins-widevine-description = Ko mboguejyrã’i omoneĩta ipapapy kañýva ñemboheta Encrypted Media Extensions oipotaháicha. Umi tenda oiporu jepi ipapapy kañýva oñemo’ã hag̃ua tetepy hekoetáva monguatia iporãvévagui. Eike https://www.w3.org/TR/encrypted-media/ eikuaave hag̃ua Encrypted Media Extensions rehegua.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Mba’ekuaarã ñembyaty tekotevẽva:
+addon-permissions-optional-data-collection = Mba’ekuaarã ñembyaty eipotáronte:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Ñemoneĩ ha mba’ekuaarã
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Oiporúva pe jepysokue { $extensionName }
+addon-permissions-data-collection-heading = Mba’ekuaarã ñembyaty
+addon-permissions-data-collection-empty = Pe mboguatahára he’i ko jepysokue noikotevẽiha mba’ekuaarã ñembyaty.
+addon-data-collection-provided = Marandu ome’ẽva jepysokue mboguatahára
+addon-data-collection-learnmore = Eikuaave mba’ekuaarã ñembyaty rehegua
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } oiporu kóva about:inference ndive
+mlmodel-link-preview = { -brand-short-name } oiporu kóva oguereko hag̃ua kyta ohecha ypývo juajuha
+mlmodel-pdfjs = { -brand-short-name } oiporu kóva omoheñói hag̃ua moñe’ẽrã mokõiháva ta’ãngakuéra oñembojuajúva PDF rehe
+mlmodel-smart-tab-topic-engine = { -brand-short-name } oiporu kóva he’i hag̃ua téra tendayke atýpe g̃uarã
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } oiporu kóva he’i hag̃ua tendayke tendayke atýpe g̃uarã
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = IA mba’e’okápe
+addon-category-mlmodel-title =
+    .title = IA mba’e’okápe
+mlmodel-heading = Eñangareko peteĩva IA rehe mba’e’okápe
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Mboguete
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Marandurenda tuichakue
+mlmodel-addon-detail-last-used-label = Ojeporúva ipahápe
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Oiporúva upe
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Peteĩva kuatia’atã
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Ehecha Hugging Face-pe

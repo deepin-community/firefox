@@ -6,16 +6,12 @@
 
 #include "HTMLEditor.h"
 
-#include <algorithm>
-#include <utility>
-
-#include "AutoRangeArray.h"
+#include "AutoClonedRangeArray.h"
 #include "CSSEditUtils.h"
 #include "EditAction.h"
 #include "EditorUtils.h"
 #include "HTMLEditHelpers.h"
 #include "HTMLEditUtils.h"
-#include "WSRunObject.h"
 
 #include "mozilla/Assertions.h"
 #include "mozilla/OwningNonNull.h"
@@ -23,7 +19,6 @@
 #include "mozilla/dom/Selection.h"
 
 #include "nsAString.h"
-#include "nsAlgorithm.h"
 #include "nsAtom.h"
 #include "nsDebug.h"
 #include "nsError.h"
@@ -39,6 +34,8 @@
 //   https://searchfox.org/mozilla-central/rev/c409dd9235c133ab41eba635f906aa16e050c197/editor/libeditor/HTMLEditSubActionHandler.cpp
 
 namespace mozilla {
+
+using namespace dom;
 
 using EditorType = EditorUtils::EditorType;
 using WalkTreeOption = HTMLEditUtils::WalkTreeOption;
@@ -78,16 +75,17 @@ ListElementSelectionState::ListElementSelectionState(HTMLEditor& aHTMLEditor,
 
   AutoTArray<OwningNonNull<nsIContent>, 64> arrayOfContents;
   {
-    AutoRangeArray extendedSelectionRanges(aHTMLEditor.SelectionRef());
+    AutoClonedSelectionRangeArray extendedSelectionRanges(
+        aHTMLEditor.SelectionRef());
     extendedSelectionRanges.ExtendRangesToWrapLines(
         EditSubAction::eCreateOrChangeList,
         BlockInlineCheck::UseHTMLDefaultStyle, *editingHostOrRoot);
     nsresult rv = extendedSelectionRanges.CollectEditTargetNodes(
         aHTMLEditor, arrayOfContents, EditSubAction::eCreateOrChangeList,
-        AutoRangeArray::CollectNonEditableNodes::No);
+        AutoClonedRangeArray::CollectNonEditableNodes::No);
     if (NS_FAILED(rv)) {
       NS_WARNING(
-          "AutoRangeArray::CollectEditTargetNodes(EditSubAction::"
+          "AutoClonedRangeArray::CollectEditTargetNodes(EditSubAction::"
           "eCreateOrChangeList, CollectNonEditableNodes::No) failed");
       aRv = EditorBase::ToGenericNSResult(rv);
       return;
@@ -159,17 +157,18 @@ ListItemElementSelectionState::ListItemElementSelectionState(
 
   AutoTArray<OwningNonNull<nsIContent>, 64> arrayOfContents;
   {
-    AutoRangeArray extendedSelectionRanges(aHTMLEditor.SelectionRef());
+    AutoClonedSelectionRangeArray extendedSelectionRanges(
+        aHTMLEditor.SelectionRef());
     extendedSelectionRanges.ExtendRangesToWrapLines(
         EditSubAction::eCreateOrChangeList,
         BlockInlineCheck::UseHTMLDefaultStyle, *editingHostOrRoot);
     nsresult rv = extendedSelectionRanges.CollectEditTargetNodes(
         aHTMLEditor, arrayOfContents, EditSubAction::eCreateOrChangeList,
-        AutoRangeArray::CollectNonEditableNodes::No);
+        AutoClonedRangeArray::CollectNonEditableNodes::No);
     if (NS_FAILED(rv)) {
       NS_WARNING_ASSERTION(
           NS_SUCCEEDED(rv),
-          "AutoRangeArray::CollectEditTargetNodes(EditSubAction::"
+          "AutoClonedRangeArray::CollectEditTargetNodes(EditSubAction::"
           "eCreateOrChangeList, CollectNonEditableNodes::No) failed");
       aRv = EditorBase::ToGenericNSResult(rv);
       return;
@@ -305,7 +304,8 @@ AlignStateAtSelection::AlignStateAtSelection(HTMLEditor& aHTMLEditor,
         return;
       }
     }
-    AutoRangeArray extendedSelectionRanges(aHTMLEditor.SelectionRef());
+    AutoClonedSelectionRangeArray extendedSelectionRanges(
+        aHTMLEditor.SelectionRef());
     extendedSelectionRanges.ExtendRangesToWrapLines(
         EditSubAction::eSetOrClearAlignment,
         BlockInlineCheck::UseHTMLDefaultStyle, *editingHostOrRoot);
@@ -313,17 +313,17 @@ AlignStateAtSelection::AlignStateAtSelection(HTMLEditor& aHTMLEditor,
     AutoTArray<OwningNonNull<nsIContent>, 64> arrayOfContents;
     nsresult rv = extendedSelectionRanges.CollectEditTargetNodes(
         aHTMLEditor, arrayOfContents, EditSubAction::eSetOrClearAlignment,
-        AutoRangeArray::CollectNonEditableNodes::Yes);
+        AutoClonedRangeArray::CollectNonEditableNodes::Yes);
     if (NS_FAILED(rv)) {
       NS_WARNING(
-          "AutoRangeArray::CollectEditTargetNodes(eSetOrClearAlignment, "
+          "AutoClonedRangeArray::CollectEditTargetNodes(eSetOrClearAlignment, "
           "CollectNonEditableNodes::Yes) failed");
       aRv.Throw(NS_ERROR_FAILURE);
       return;
     }
     if (arrayOfContents.IsEmpty()) {
       NS_WARNING(
-          "AutoRangeArray::CollectEditTargetNodes(eSetOrClearAlignment, "
+          "AutoClonedRangeArray::CollectEditTargetNodes(eSetOrClearAlignment, "
           "CollectNonEditableNodes::Yes) returned no contents");
       aRv.Throw(NS_ERROR_FAILURE);
       return;
@@ -412,7 +412,7 @@ AlignStateAtSelection::AlignStateAtSelection(HTMLEditor& aHTMLEditor,
       }
     }
 
-    if (!HTMLEditUtils::SupportsAlignAttr(*containerElement)) {
+    if (!HTMLEditUtils::IsAlignAttrSupported(*containerElement)) {
       continue;
     }
 
@@ -656,7 +656,8 @@ nsresult ParagraphStateAtSelection::CollectEditableFormatNodesInSelection(
     const Element& aEditingHost,
     nsTArray<OwningNonNull<nsIContent>>& aArrayOfContents) {
   {
-    AutoRangeArray extendedSelectionRanges(aHTMLEditor.SelectionRef());
+    AutoClonedSelectionRangeArray extendedSelectionRanges(
+        aHTMLEditor.SelectionRef());
     extendedSelectionRanges.ExtendRangesToWrapLines(
         aFormatBlockMode == FormatBlockMode::HTMLFormatBlockCommand
             ? EditSubAction::eFormatBlockForHTMLCommand
@@ -667,10 +668,10 @@ nsresult ParagraphStateAtSelection::CollectEditableFormatNodesInSelection(
         aFormatBlockMode == FormatBlockMode::HTMLFormatBlockCommand
             ? EditSubAction::eFormatBlockForHTMLCommand
             : EditSubAction::eCreateOrRemoveBlock,
-        AutoRangeArray::CollectNonEditableNodes::Yes);
+        AutoClonedRangeArray::CollectNonEditableNodes::Yes);
     if (NS_FAILED(rv)) {
       NS_WARNING(
-          "AutoRangeArray::CollectEditTargetNodes("
+          "AutoClonedRangeArray::CollectEditTargetNodes("
           "CollectNonEditableNodes::Yes) failed");
       return rv;
     }
@@ -678,7 +679,7 @@ nsresult ParagraphStateAtSelection::CollectEditableFormatNodesInSelection(
 
   // Pre-process our list of nodes
   for (size_t index : Reversed(IntegerRange(aArrayOfContents.Length()))) {
-    OwningNonNull<nsIContent> content = aArrayOfContents[index];
+    const OwningNonNull<nsIContent> content = aArrayOfContents[index];
 
     // Remove all non-editable nodes.  Leave them be.
     if (!EditorUtils::IsEditableContent(content, EditorType::HTML)) {
@@ -689,9 +690,9 @@ nsresult ParagraphStateAtSelection::CollectEditableFormatNodesInSelection(
     // Scan for table elements.  If we find table elements other than table,
     // replace it with a list of any editable non-table content.  Ditto for
     // list elements.
-    if (HTMLEditUtils::IsAnyTableElement(content) ||
-        HTMLEditUtils::IsAnyListElement(content) ||
-        HTMLEditUtils::IsListItem(content)) {
+    if (HTMLEditUtils::IsAnyTableElementExceptColumnElement(content) ||
+        HTMLEditUtils::IsListElement(*content) ||
+        HTMLEditUtils::IsListItemElement(*content)) {
       aArrayOfContents.RemoveElementAt(index);
       HTMLEditUtils::CollectChildren(
           content, aArrayOfContents, index,

@@ -5,11 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/ImageDecoder.h"
+
 #include <algorithm>
 #include <cstdint>
+
 #include "ImageContainer.h"
 #include "ImageDecoderReadRequest.h"
 #include "MediaResult.h"
+#include "mozilla/Logging.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/ImageTrack.h"
 #include "mozilla/dom/ImageTrackList.h"
 #include "mozilla/dom/Promise.h"
@@ -19,8 +23,6 @@
 #include "mozilla/dom/WebCodecsUtils.h"
 #include "mozilla/image/ImageUtils.h"
 #include "mozilla/image/SourceBuffer.h"
-#include "mozilla/Logging.h"
-#include "mozilla/StaticPrefs_dom.h"
 #include "nsComponentManagerUtils.h"
 #include "nsTHashSet.h"
 
@@ -42,11 +44,14 @@ class ImageDecoder::ControlMessage {
 class ImageDecoder::ConfigureMessage final
     : public ImageDecoder::ControlMessage {
  public:
-  explicit ConfigureMessage(ColorSpaceConversion aColorSpaceConversion)
-      : mColorSpaceConversion(aColorSpaceConversion) {}
+  explicit ConfigureMessage(const Maybe<gfx::IntSize>& aOutputSize,
+                            ColorSpaceConversion aColorSpaceConversion)
+      : mOutputSize(aOutputSize),
+        mColorSpaceConversion(aColorSpaceConversion) {}
 
   ConfigureMessage* AsConfigureMessage() override { return this; }
 
+  const Maybe<gfx::IntSize> mOutputSize;
   const ColorSpaceConversion mColorSpaceConversion;
 };
 
@@ -83,7 +88,6 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(ImageDecoder)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mCompletePromise)
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mOutstandingDecodes)
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
-  NS_IMPL_CYCLE_COLLECTION_UNLINK_WEAK_PTR
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(ImageDecoder)
@@ -127,9 +131,10 @@ JSObject* ImageDecoder::WrapObject(JSContext* aCx,
 
 void ImageDecoder::Destroy() {
   MOZ_LOG(gWebCodecsLog, LogLevel::Debug, ("ImageDecoder %p Destroy", this));
+  MOZ_ASSERT(mOutstandingDecodes.IsEmpty());
 
   if (mReadRequest) {
-    mReadRequest->Destroy();
+    mReadRequest->Destroy(/* aCancel */ false);
     mReadRequest = nullptr;
   }
 
@@ -141,15 +146,21 @@ void ImageDecoder::Destroy() {
     mTracks->Destroy();
   }
 
+  if (mShutdownWatcher) {
+    mShutdownWatcher->Destroy();
+    mShutdownWatcher = nullptr;
+  }
+
   mSourceBuffer = nullptr;
   mDecoder = nullptr;
   mParent = nullptr;
 }
 
 void ImageDecoder::QueueConfigureMessage(
+    const Maybe<gfx::IntSize>& aOutputSize,
     ColorSpaceConversion aColorSpaceConversion) {
   mControlMessageQueue.push(
-      MakeUnique<ConfigureMessage>(aColorSpaceConversion));
+      MakeUnique<ConfigureMessage>(aOutputSize, aColorSpaceConversion));
 }
 
 void ImageDecoder::QueueDecodeMetadataMessage() {
@@ -204,9 +215,14 @@ MessageProcessedResult ImageDecoder::ProcessConfigureMessage(
   //
   // 2. If supported is false, run the Close ImageDecoder algorithm with a
   // NotSupportedError DOMException and return "processed".
+  //
+  // Note that DecoderType::ICON is mostly an internal type that we use for
+  // system icons and shouldn't be exposed for general use on the web. This is
+  // not to be confused with DecoderType::ICO which is for .ico files.
   NS_ConvertUTF16toUTF8 mimeType(mType);
   image::DecoderType type = image::ImageUtils::GetDecoderType(mimeType);
-  if (NS_WARN_IF(type == image::DecoderType::UNKNOWN)) {
+  if (NS_WARN_IF(type == image::DecoderType::UNKNOWN) ||
+      NS_WARN_IF(type == image::DecoderType::ICON)) {
     MOZ_LOG(gWebCodecsLog, LogLevel::Error,
             ("ImageDecoder %p Initialize -- unsupported mime type '%s'", this,
              mimeType.get()));
@@ -234,8 +250,8 @@ MessageProcessedResult ImageDecoder::ProcessConfigureMessage(
 
   // 3. Otherwise, assign the [[codec implementation]] internal slot with an
   // implementation supporting init.type
-  mDecoder =
-      image::ImageUtils::CreateDecoder(mSourceBuffer, type, surfaceFlags);
+  mDecoder = image::ImageUtils::CreateDecoder(mSourceBuffer, type,
+                                              aMsg->mOutputSize, surfaceFlags);
   if (NS_WARN_IF(!mDecoder)) {
     MOZ_LOG(gWebCodecsLog, LogLevel::Error,
             ("ImageDecoder %p Initialize -- failed to create platform decoder",
@@ -275,15 +291,11 @@ MessageProcessedResult ImageDecoder::ProcessDecodeMetadataMessage(
   // 1.1. Run the Establish Tracks algorithm.
   mDecoder->DecodeMetadata()->Then(
       GetCurrentSerialEventTarget(), __func__,
-      [self = WeakPtr{this}](const image::DecodeMetadataResult& aMetadata) {
-        if (self) {
-          self->OnMetadataSuccess(aMetadata);
-        }
+      [self = RefPtr{this}](const image::DecodeMetadataResult& aMetadata) {
+        self->OnMetadataSuccess(aMetadata);
       },
-      [self = WeakPtr{this}](const nsresult& aErr) {
-        if (self) {
-          self->OnMetadataFailed(aErr);
-        }
+      [self = RefPtr{this}](const nsresult& aErr) {
+        self->OnMetadataFailed(aErr);
       });
   return MessageProcessedResult::Processed;
 }
@@ -338,9 +350,11 @@ void ImageDecoder::CheckOutstandingDecodes() {
   const uint32_t decodedFrameCount = track->DecodedFrameCount();
   const uint32_t frameCount = track->FrameCount();
   const bool frameCountComplete = track->FrameCountComplete();
+  const bool decodedFramesComplete = track->DecodedFramesComplete();
 
   AutoTArray<OutstandingDecode, 4> resolved;
-  AutoTArray<OutstandingDecode, 4> rejected;
+  AutoTArray<OutstandingDecode, 4> rejectedRange;
+  AutoTArray<OutstandingDecode, 4> rejectedState;
   uint32_t minFrameIndex = UINT32_MAX;
 
   // 3. Remove promise from [[pending decode promises]].
@@ -354,15 +368,26 @@ void ImageDecoder::CheckOutstandingDecodes() {
       resolved.AppendElement(std::move(decode));
       mOutstandingDecodes.RemoveElementAt(i);
     } else if (frameCountComplete && frameCount <= frameIndex) {
-      // We have gotten the last frame from the decoder, so we must reject any
-      // unfulfilled requests.
+      // We have gotten the frame count from the decoder, so we must reject any
+      // unfulfilled requests that are beyond it with a RangeError.
       MOZ_LOG(gWebCodecsLog, LogLevel::Warning,
               ("ImageDecoder %p CheckOutstandingDecodes -- rejected index %u "
                "out-of-bounds",
                this, frameIndex));
-      rejected.AppendElement(std::move(decode));
+      rejectedRange.AppendElement(std::move(decode));
       mOutstandingDecodes.RemoveElementAt(i);
-    } else {
+    } else if (frameCountComplete && decodedFramesComplete) {
+      // We have decoded all of the frames, but we produced fewer than the frame
+      // count indicated. This means we ran into problems while decoding and
+      // aborted. We must reject any unfulfilled requests with an
+      // InvalidStateError.
+      MOZ_LOG(gWebCodecsLog, LogLevel::Warning,
+              ("ImageDecoder %p CheckOutstandingDecodes -- rejected index %u "
+               "decode error",
+               this, frameIndex));
+      rejectedState.AppendElement(std::move(decode));
+      mOutstandingDecodes.RemoveElementAt(i);
+    } else if (!decodedFramesComplete) {
       // We haven't gotten the last frame yet, so we can advance to the next
       // one.
       MOZ_LOG(gWebCodecsLog, LogLevel::Debug,
@@ -372,6 +397,12 @@ void ImageDecoder::CheckOutstandingDecodes() {
         minFrameIndex = std::min(minFrameIndex, frameIndex);
       }
       ++i;
+    } else {
+      // If none of the above, we have finished decoding all the frames we can,
+      // but we raced against the frame count completion. Once that finishes, we
+      // will run again, and we can appropriately fail frame requests as either
+      // out-of-bounds or decoding failures.
+      MOZ_ASSERT(!frameCountComplete);
     }
   }
 
@@ -388,14 +419,13 @@ void ImageDecoder::CheckOutstandingDecodes() {
     i.mPromise->MaybeResolve(result);
   }
 
-  for (const auto& i : rejected) {
+  for (const auto& i : rejectedRange) {
     i.mPromise->MaybeRejectWithRangeError("No more frames available"_ns);
   }
-}
 
-/* static */ bool ImageDecoder::PrefEnabled(JSContext* aCx, JSObject* aObj) {
-  return StaticPrefs::dom_media_webcodecs_enabled() &&
-         StaticPrefs::dom_media_webcodecs_image_decoder_enabled();
+  for (const auto& i : rejectedState) {
+    i.mPromise->MaybeRejectWithInvalidStateError("Error decoding frame"_ns);
+  }
 }
 
 /* static */ already_AddRefed<ImageDecoder> ImageDecoder::Constructor(
@@ -467,11 +497,11 @@ void ImageDecoder::CheckOutstandingDecodes() {
     return nullptr;
   }
 
-  nsTHashSet<const ArrayBuffer*> transferSet;
+  nsTHashSet<const JSObject*> transferSet;
   for (const auto& buffer : aInit.mTransfer) {
     // 10.2.2.2. If init.transfer contains more than one reference to the same
     // ArrayBuffer, then throw a DataCloneError DOMException.
-    if (transferSet.Contains(&buffer)) {
+    if (transferSet.Contains(buffer.Obj())) {
       MOZ_LOG(
           gWebCodecsLog, LogLevel::Error,
           ("ImageDecoder Constructor -- duplicate transferred ArrayBuffer"));
@@ -479,7 +509,7 @@ void ImageDecoder::CheckOutstandingDecodes() {
           "Transfer contains duplicate ArrayBuffer objects");
       return nullptr;
     }
-    transferSet.Insert(&buffer);
+    transferSet.Insert(buffer.Obj());
     // 10.2.2.3.1. If [[Detached]] internal slot is true, then throw a
     // DataCloneError DOMException.
     bool empty = buffer.ProcessData(
@@ -541,6 +571,15 @@ void ImageDecoder::CheckOutstandingDecodes() {
 
 void ImageDecoder::Initialize(const GlobalObject& aGlobal,
                               const ImageDecoderInit& aInit, ErrorResult& aRv) {
+  mShutdownWatcher = media::ShutdownWatcher::Create(this);
+  if (!mShutdownWatcher) {
+    MOZ_LOG(
+        gWebCodecsLog, LogLevel::Error,
+        ("ImageDecoder %p Initialize -- create shutdown watcher failed", this));
+    aRv.ThrowInvalidStateError("Could not create shutdown watcher");
+    return;
+  }
+
   mCompletePromise = Promise::Create(mParent, aRv);
   if (NS_WARN_IF(aRv.Failed())) {
     MOZ_LOG(gWebCodecsLog, LogLevel::Error,
@@ -561,28 +600,43 @@ void ImageDecoder::Initialize(const GlobalObject& aGlobal,
 
   mSourceBuffer = MakeRefPtr<image::SourceBuffer>();
 
+  bool transferOwnership = false;
   const auto fnSourceBufferFromSpan = [&](const Span<uint8_t>& aData) {
-    nsresult rv = mSourceBuffer->ExpectLength(aData.Length());
-    if (NS_WARN_IF(NS_FAILED(rv))) {
-      MOZ_LOG(
-          gWebCodecsLog, LogLevel::Error,
-          ("ImageDecoder %p Initialize -- failed to pre-allocate source buffer",
-           this));
-      aRv.ThrowRangeError("Could not allocate for encoded source buffer");
-      return;
-    }
+    if (transferOwnership) {
+      // 10.2.2.18.2.1 Let [[encoded data]] reference bytes in data
+      //               representing an encoded image.
+      nsresult rv =
+          mSourceBuffer->AdoptData(reinterpret_cast<char*>(aData.Elements()),
+                                   aData.Length(), js_realloc, js_free);
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        MOZ_LOG(gWebCodecsLog, LogLevel::Error,
+                ("ImageDecoder %p Initialize -- failed to adopt source buffer",
+                 this));
+        aRv.ThrowRangeError("Could not allocate for encoded source buffer");
+        return;
+      }
+    } else {
+      nsresult rv = mSourceBuffer->ExpectLength(aData.Length());
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        MOZ_LOG(gWebCodecsLog, LogLevel::Error,
+                ("ImageDecoder %p Initialize -- failed to pre-allocate source "
+                 "buffer",
+                 this));
+        aRv.ThrowRangeError("Could not allocate for encoded source buffer");
+        return;
+      }
 
-    // 10.2.2.18.3.2. Assign a copy of init.data to [[encoded data]].
-    rv = mSourceBuffer->Append(reinterpret_cast<const char*>(aData.Elements()),
-                               aData.Length());
-    if (NS_WARN_IF(NS_FAILED(rv))) {
-      MOZ_LOG(gWebCodecsLog, LogLevel::Error,
-              ("ImageDecoder %p Initialize -- failed to append source buffer",
-               this));
-      aRv.ThrowRangeError("Could not allocate for encoded source buffer");
-      return;
+      // 10.2.2.18.3.2. Assign a copy of init.data to [[encoded data]].
+      rv = mSourceBuffer->Append(
+          reinterpret_cast<const char*>(aData.Elements()), aData.Length());
+      if (NS_WARN_IF(NS_FAILED(rv))) {
+        MOZ_LOG(gWebCodecsLog, LogLevel::Error,
+                ("ImageDecoder %p Initialize -- failed to append source buffer",
+                 this));
+        aRv.ThrowRangeError("Could not allocate for encoded source buffer");
+        return;
+      }
     }
-
     mSourceBuffer->Complete(NS_OK);
 
     // 10.2.2.18.4. Assign true to [[complete]].
@@ -611,14 +665,52 @@ void ImageDecoder::Initialize(const GlobalObject& aGlobal,
   } else if (aInit.mData.IsArrayBufferView()) {
     // 10.2.2.18.3.1. Assert that init.data is of type BufferSource.
     const auto& view = aInit.mData.GetAsArrayBufferView();
-    view.ProcessFixedData(fnSourceBufferFromSpan);
+    bool isShared;
+    JS::Rooted<JSObject*> viewObj(aGlobal.Context(), view.Obj());
+    JSObject* arrayBuffer =
+        JS_GetArrayBufferViewBuffer(aGlobal.Context(), viewObj, &isShared);
+    bool inTransferList = false;
+    for (const auto& transferBuffer : aInit.mTransfer) {
+      if (arrayBuffer == transferBuffer.Obj()) {
+        inTransferList = true;
+        break;
+      }
+    }
+    size_t length;
+    if (inTransferList) {
+      length = JS_GetArrayBufferViewByteLength(view.Obj());
+      // Only transfer ownership if the view's byte offset is 0
+      // (Otherewise we would have problems with freeing a pointer
+      //  to halfway through the ArrayBuffer data)
+      transferOwnership = JS_GetArrayBufferViewByteOffset(view.Obj()) == 0;
+    }
+    if (transferOwnership) {
+      JS::Rooted<JSObject*> bufferObj(aGlobal.Context(), arrayBuffer);
+      void* data = JS::StealArrayBufferContents(aGlobal.Context(), bufferObj);
+      fnSourceBufferFromSpan(Span(static_cast<uint8_t*>(data), length));
+    } else {
+      view.ProcessFixedData(fnSourceBufferFromSpan);
+    }
     if (aRv.Failed()) {
       return;
     }
   } else if (aInit.mData.IsArrayBuffer()) {
     // 10.2.2.18.3.1. Assert that init.data is of type BufferSource.
     const auto& buffer = aInit.mData.GetAsArrayBuffer();
-    buffer.ProcessFixedData(fnSourceBufferFromSpan);
+    for (const auto& transferBuffer : aInit.mTransfer) {
+      if (buffer.Obj() == transferBuffer.Obj()) {
+        transferOwnership = true;
+        break;
+      }
+    }
+    if (transferOwnership) {
+      JS::Rooted<JSObject*> bufferObj(aGlobal.Context(), buffer.Obj());
+      size_t length = JS::GetArrayBufferByteLength(bufferObj);
+      void* data = JS::StealArrayBufferContents(aGlobal.Context(), bufferObj);
+      fnSourceBufferFromSpan(Span(static_cast<uint8_t*>(data), length));
+    } else {
+      buffer.ProcessFixedData(fnSourceBufferFromSpan);
+    }
     if (aRv.Failed()) {
       return;
     }
@@ -628,9 +720,17 @@ void ImageDecoder::Initialize(const GlobalObject& aGlobal,
     return;
   }
 
+  Maybe<gfx::IntSize> desiredSize;
+  if (aInit.mDesiredWidth.WasPassed() && aInit.mDesiredHeight.WasPassed()) {
+    desiredSize.emplace(
+        std::min(aInit.mDesiredWidth.Value(), static_cast<uint32_t>(INT32_MAX)),
+        std::min(aInit.mDesiredHeight.Value(),
+                 static_cast<uint32_t>(INT32_MAX)));
+  }
+
   // 10.2.2.17.3 / 10.2.2.18.6.
   //   Queue a control message to configure the image decoder with init.
-  QueueConfigureMessage(aInit.mColorSpaceConversion);
+  QueueConfigureMessage(desiredSize, aInit.mColorSpaceConversion);
 
   // 10.2.10.2.2.18.7. Queue a control message to decode track metadata.
   //
@@ -762,15 +862,11 @@ void ImageDecoder::RequestFrameCount(uint32_t aKnownFrameCount) {
   mDecoder->DecodeFrameCount(aKnownFrameCount)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
-          [self = WeakPtr{this}](const image::DecodeFrameCountResult& aResult) {
-            if (self) {
-              self->OnFrameCountSuccess(aResult);
-            }
+          [self = RefPtr{this}](const image::DecodeFrameCountResult& aResult) {
+            self->OnFrameCountSuccess(aResult);
           },
-          [self = WeakPtr{this}](const nsresult& aErr) {
-            if (self) {
-              self->OnFrameCountFailed(aErr);
-            }
+          [self = RefPtr{this}](const nsresult& aErr) {
+            self->OnFrameCountFailed(aErr);
           });
 }
 
@@ -788,15 +884,11 @@ void ImageDecoder::RequestDecodeFrames(uint32_t aFramesToDecode) {
   mDecoder->DecodeFrames(aFramesToDecode)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
-          [self = WeakPtr{this}](const image::DecodeFramesResult& aResult) {
-            if (self) {
-              self->OnDecodeFramesSuccess(aResult);
-            }
+          [self = RefPtr{this}](const image::DecodeFramesResult& aResult) {
+            self->OnDecodeFramesSuccess(aResult);
           },
-          [self = WeakPtr{this}](const nsresult& aErr) {
-            if (self) {
-              self->OnDecodeFramesFailed(aErr);
-            }
+          [self = RefPtr{this}](const nsresult& aErr) {
+            self->OnDecodeFramesFailed(aErr);
           });
 }
 
@@ -972,7 +1064,7 @@ void ImageDecoder::Close(const MediaResult& aResult) {
   }
 
   if (mReadRequest) {
-    mReadRequest->Destroy(/* aCycleCollect */ false);
+    mReadRequest->Destroy(/* aCancel */ true);
     mReadRequest = nullptr;
   }
 
@@ -991,6 +1083,11 @@ void ImageDecoder::Close(const MediaResult& aResult) {
     aResult.RejectTo(mCompletePromise);
     mComplete = true;
   }
+
+  if (mShutdownWatcher) {
+    mShutdownWatcher->Destroy();
+    mShutdownWatcher = nullptr;
+  }
 }
 
 void ImageDecoder::Reset() {
@@ -999,6 +1096,10 @@ void ImageDecoder::Reset() {
 
 void ImageDecoder::Close() {
   Close(MediaResult(NS_ERROR_DOM_ABORT_ERR, "Closed decoder"_ns));
+}
+
+void ImageDecoder::OnShutdown() {
+  Close(MediaResult(NS_ERROR_DOM_ABORT_ERR, "Shutdown"_ns));
 }
 
 }  // namespace mozilla::dom

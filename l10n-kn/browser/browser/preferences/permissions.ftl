@@ -5,49 +5,37 @@
 permissions-window2 =
     .title = ವಿನಾಯಿತಿಗಳು
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = ಜಾಲತಾಣದ ವಿಳಾಸ
     .accesskey = d
-
 permissions-block =
     .label = ನಿರ್ಬಂಧಿಸು
     .accesskey = B
-
 permissions-session =
     .label = ಅಧಿವೇಶನಕ್ಕೆ ಅನುಮತಿಸು
     .accesskey = S
-
 permissions-allow =
     .label = ಅನುಮತಿಸು
     .accesskey = A
-
 permissions-site-name =
     .label = ಜಾಲತಾಣ
-
 permissions-status =
     .label = ಸ್ಥಿತಿ
-
 permissions-remove =
     .label = ಜಾಲತಾಣವನ್ನು ತೆಗೆದು ಹಾಕು
     .accesskey = R
-
 permissions-remove-all =
     .label = ಎಲ್ಲಾ ಜಾಲತಾಣಗಳನ್ನು ತೆಗೆದು ಹಾಕು
     .accesskey = e
-
 permissions-searchbox =
     .placeholder = ಜಾಲತಾಣವನ್ನು ಹುಡುಕು
-
 permissions-capabilities-allow =
     .label = ಅನುಮತಿಸು
 permissions-capabilities-block =
     .label = ನಿರ್ಬಂಧಿಸು
 permissions-capabilities-prompt =
     .label = ಯಾವಾಗಲೂ ಕೇಳು
-
 permissions-capabilities-listitem-allow =
     .value = ಅನುಮತಿಸು
 permissions-capabilities-listitem-block =
@@ -59,15 +47,6 @@ permissions-capabilities-listitem-allow-session =
 
 permissions-invalid-uri-title = ನಮೂದಿಸಲಾದ ಅತಿಥೇಯದ ಹೆಸರು ಅಮಾನ್ಯವಾಗಿದೆ
 permissions-invalid-uri-label = ದಯವಿಟ್ಟು ಒಂದು ಮಾನ್ಯವಾದ ಅತಿಥೇಯದ ಹೆಸರನ್ನು ನಮೂದಿಸಿ
-
-## Exceptions - Tracking Protection
-
-
-## Exceptions - Cookies
-
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -83,18 +62,6 @@ permissions-exceptions-saved-logins-window2 =
 
 permissions-exceptions-addons-desc = ಯಾವ ಜಾಲತಾಣಗಳು ಆಡ್-ಆನ್‌ಗಳನ್ನು ಅನುಸ್ಥಾಪಿಸಲು ಅನುಮತಿ ಇದೆ ಎಂದು ನೀವು ಸೂಚಿಸಬಹುದು. ನೀವು ಅನುಮತಿಸಲು ಬಯಸುವ ತಾಣದ ನಿಖರವಾದ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ ನಂತರ ಅನುಮತಿಸು ಅನ್ನು ಕ್ಲಿಕ್ಕಿಸಿ.
 
-## Site Permissions - Autoplay
-
-
-## Site Permissions - Notifications
-
-
-## Site Permissions - Location
-
-
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -106,8 +73,3 @@ permissions-site-camera-window2 =
 permissions-site-microphone-window2 =
     .title = ಮೈಕ್ರೋಫೋನ್ ಅನುಮತಿ - ಸಿದ್ಧತೆಗಳು
     .style = { permissions-window2.style }
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

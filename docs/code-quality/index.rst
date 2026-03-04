@@ -13,6 +13,7 @@ In this document, we try to list these all tools.
   static-analysis/index.rst
   lint/index.rst
   coding-style/index.rst
+  typescript/index.md
 
 .. list-table:: C/C++
    :header-rows: 1
@@ -63,6 +64,11 @@ In this document, we try to list these all tools.
      - `bug 1762027 <https://bugzilla.mozilla.org/show_bug.cgi?id=1762027>`__
      - :ref:`Stylelint`
      - https://stylelint.io/
+   * - Mozilla Stylelint
+     -
+     -
+     - :ref:`Mozilla Stylelint Plugin`
+     -
 
 .. list-table:: JavaScript
    :widths: 20 20 20 20 20
@@ -124,10 +130,15 @@ In this document, we try to list these all tools.
      - :ref:`Rustfmt`
      - https://github.com/rust-lang/rustfmt
    * - Clippy
-     -
+     - Yes
      - `bug 1361342 <https://bugzilla.mozilla.org/show_bug.cgi?id=1361342>`__
      - :ref:`clippy`
      - https://github.com/rust-lang/rust-clippy
+   * - cargo-audit
+     -
+     - `bug 1747536 <https://bugzilla.mozilla.org/show_bug.cgi?id=1747536>`__
+     - :ref:`cargo-audit`
+     - https://rustsec.org/
 
 .. list-table:: Java/Kotlin
    :widths: 20 20 20 20 20

@@ -22,3 +22,12 @@ confirmation-hint-send-to-device = გაგზავნილია!
 confirmation-hint-firefox-relay-mask-created = შეიქმნა ახალი ნიღაბი!
 confirmation-hint-firefox-relay-mask-reused = არსებული ნიღაბი გამოიყენება კვლავ!
 confirmation-hint-screenshot-copied = ეკრანის ასლი აღებულია!
+# Variables:
+#   $tabCount (Number): The number of duplicate tabs closed, at least 1.
+confirmation-hint-duplicate-tabs-closed =
+    { $tabCount ->
+        [one] დაიხუროს { $tabCount } ჩანართი
+       *[other] დაიხუროს { $tabCount } ჩანართი
+    }
+# Subtle notification shown when Extensions button moves into the application menu.
+confirmation-hint-extensions-button-hidden = გადატანილია მენიუში

@@ -9,18 +9,15 @@
 
 #include "SVGAnimatedEnumeration.h"
 #include "SVGViewportElement.h"
+#include "mozilla/SVGImageContext.h"
 
 nsresult NS_NewSVGSVGElement(
     nsIContent** aResult, already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
     mozilla::dom::FromParser aFromParser);
 
 // {4b83982c-e5e9-4ca1-abd4-14d27e8b3531}
-#define MOZILLA_SVGSVGELEMENT_IID                    \
-  {                                                  \
-    0x4b83982c, 0xe5e9, 0x4ca1, {                    \
-      0xab, 0xd4, 0x14, 0xd2, 0x7e, 0x8b, 0x35, 0x31 \
-    }                                                \
-  }
+#define MOZILLA_SVGSVGELEMENT_IID \
+  {0x4b83982c, 0xe5e9, 0x4ca1, {0xab, 0xd4, 0x14, 0xd2, 0x7e, 0x8b, 0x35, 0x31}}
 
 namespace mozilla {
 class AutoSVGViewHandler;
@@ -75,7 +72,7 @@ class SVGSVGElement final : public SVGSVGElementBase {
   NS_IMPL_FROMNODE_WITH_TAG(SVGSVGElement, kNameSpaceID_SVG, svg)
 
   // interfaces:
-  NS_DECLARE_STATIC_IID_ACCESSOR(MOZILLA_SVGSVGELEMENT_IID)
+  NS_INLINE_DECL_STATIC_IID(MOZILLA_SVGSVGELEMENT_IID)
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(SVGSVGElement, SVGSVGElementBase)
 
@@ -107,11 +104,12 @@ class SVGSVGElement final : public SVGSVGElementBase {
   void UnsuspendRedrawAll();
   void ForceRedraw();
   void PauseAnimations();
+  void PauseAnimationsAt(float seconds);
   void UnpauseAnimations();
   bool AnimationsPaused();
   float GetCurrentTimeAsFloat();
   void SetCurrentTime(float seconds);
-  void DeselectAll();
+  MOZ_CAN_RUN_SCRIPT void DeselectAll();
   already_AddRefed<DOMSVGNumber> CreateSVGNumber();
   already_AddRefed<DOMSVGLength> CreateSVGLength();
   already_AddRefed<DOMSVGAngle> CreateSVGAngle();
@@ -226,8 +224,6 @@ class SVGSVGElement final : public SVGSVGElementBase {
   UniquePtr<nsString> mCurrentViewID;
   UniquePtr<SVGView> mSVGView;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(SVGSVGElement, MOZILLA_SVGSVGELEMENT_IID)
 
 }  // namespace dom
 

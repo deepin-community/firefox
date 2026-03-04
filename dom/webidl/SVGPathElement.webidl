@@ -9,8 +9,30 @@
  * Copyright © 2012 W3C® (MIT, ERCIM, Keio), All Rights Reserved. W3C
  * liability, trademark and document use rules apply.
  */
-[Exposed=Window]
-interface SVGPathElement : SVGGeometryElement {
+[LegacyNoInterfaceObject, Exposed=Window]
+interface SVGPathSegment {
+  attribute DOMString type;
+  [Cached, Pure]
+  attribute sequence<float> values;
 };
 
-// TODO: Implement https://www.w3.org/TR/svg-paths/#InterfaceSVGPathData
+dictionary SVGPathSegmentInit {
+  required DOMString type;
+  required sequence<float> values;
+};
+
+dictionary SVGPathDataSettings {
+   boolean normalize = false;
+};
+
+interface mixin SVGPathData {
+   sequence<SVGPathSegment> getPathData(optional SVGPathDataSettings settings = {});
+   undefined setPathData(sequence<SVGPathSegmentInit> pathData);
+};
+
+[Exposed=Window]
+interface SVGPathElement : SVGGeometryElement {
+  SVGPathSegment? getPathSegmentAtLength(float distance);
+};
+
+SVGPathElement includes SVGPathData;

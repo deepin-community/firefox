@@ -6,12 +6,11 @@
 #define nsTableWrapperFrame_h__
 
 #include "LayoutConstants.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/Maybe.h"
-#include "nscore.h"
-#include "nsContainerFrame.h"
 #include "nsCellMap.h"
+#include "nsContainerFrame.h"
 #include "nsTableFrame.h"
+#include "nscore.h"
 
 namespace mozilla {
 class PresShell;
@@ -39,11 +38,6 @@ class nsTableWrapperFrame : public nsContainerFrame {
 
   void Destroy(DestroyContext&) override;
 
-  const nsFrameList& GetChildList(ChildListID aListID) const override;
-  void GetChildLists(nsTArray<ChildList>* aLists) const override;
-
-  void SetInitialChildList(ChildListID aListID,
-                           nsFrameList&& aChildList) override;
   void AppendFrames(ChildListID aListID, nsFrameList&& aFrameList) override;
   void InsertFrames(ChildListID aListID, nsIFrame* aPrevFrame,
                     const nsLineList::iterator* aPrevFrameLine,
@@ -61,9 +55,6 @@ class nsTableWrapperFrame : public nsContainerFrame {
   void BuildDisplayList(nsDisplayListBuilder* aBuilder,
                         const nsDisplayListSet& aLists) override;
 
-  void BuildDisplayListForInnerTable(nsDisplayListBuilder* aBuilder,
-                                     const nsDisplayListSet& aLists);
-
   nscoord SynthesizeFallbackBaseline(
       mozilla::WritingMode aWM,
       BaselineSharingGroup aBaselineGroup) const override;
@@ -71,11 +62,11 @@ class nsTableWrapperFrame : public nsContainerFrame {
       mozilla::WritingMode aWM, BaselineSharingGroup aBaselineGroup,
       BaselineExportContext aExportContext) const override;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   SizeComputationResult ComputeSize(
-      gfxContext* aRenderingContext, mozilla::WritingMode aWM,
+      const SizeComputationInput& aSizingInput, mozilla::WritingMode aWM,
       const mozilla::LogicalSize& aCBSize, nscoord aAvailableISize,
       const mozilla::LogicalSize& aMargin,
       const mozilla::LogicalSize& aBorderPadding,
@@ -83,7 +74,7 @@ class nsTableWrapperFrame : public nsContainerFrame {
       mozilla::ComputeSizeFlags aFlags) override;
 
   mozilla::LogicalSize ComputeAutoSize(
-      gfxContext* aRenderingContext, mozilla::WritingMode aWM,
+      const SizeComputationInput& aSizingInput, mozilla::WritingMode aWM,
       const mozilla::LogicalSize& aCBSize, nscoord aAvailableISize,
       const mozilla::LogicalSize& aMargin,
       const mozilla::LogicalSize& aBorderPadding,
@@ -124,7 +115,9 @@ class nsTableWrapperFrame : public nsContainerFrame {
    */
   int32_t GetIndexByRowAndColumn(int32_t aRowIdx, int32_t aColIdx) const {
     nsTableCellMap* cellMap = InnerTableFrame()->GetCellMap();
-    if (!cellMap) return -1;
+    if (!cellMap) {
+      return -1;
+    }
 
     return cellMap->GetIndexByRowAndColumn(aRowIdx, aColIdx);
   }
@@ -169,10 +162,19 @@ class nsTableWrapperFrame : public nsContainerFrame {
     return map->GetEffectiveRowSpan(aRowIdx, aColIdx);
   }
 
+  bool HasCaption() const { return !mFrames.OnlyChild(); }
+  nsIFrame* GetCaption() const {
+    return HasCaption() ? mFrames.FirstChild()->GetNextSibling() : nullptr;
+  }
+
+  // Always non-null unless we are mid-destruction.
+  nsTableFrame* InnerTableFrame() const {
+    return static_cast<nsTableFrame*>(mFrames.FirstChild());
+  }
+
  protected:
-  explicit nsTableWrapperFrame(ComputedStyle* aStyle,
-                               nsPresContext* aPresContext,
-                               ClassID aID = kClassID);
+  nsTableWrapperFrame(ComputedStyle* aStyle, nsPresContext* aPresContext,
+                      ClassID aID = kClassID);
   virtual ~nsTableWrapperFrame();
 
   using MaybeCaptionSide = Maybe<mozilla::StyleCaptionSide>;
@@ -182,8 +184,6 @@ class nsTableWrapperFrame : public nsContainerFrame {
   // (Remember that caption-side values are interpreted logically, despite
   // having "physical" names.)
   MaybeCaptionSide GetCaptionSide() const;
-
-  mozilla::StyleVerticalAlignKeyword GetCaptionVerticalAlign() const;
 
   nscoord ComputeFinalBSize(const mozilla::LogicalSize& aInnerSize,
                             const mozilla::LogicalSize& aCaptionSize,
@@ -236,10 +236,6 @@ class nsTableWrapperFrame : public nsContainerFrame {
   // Set the overflow areas in our reflow metrics
   void UpdateOverflowAreas(ReflowOutput& aMet);
 
-  nsTableFrame* InnerTableFrame() const {
-    return static_cast<nsTableFrame*>(mFrames.FirstChild());
-  }
-
   /**
    * Helper for ComputeAutoSize.
    * Compute the margin-box inline size of the frame given the inputs.
@@ -247,13 +243,13 @@ class nsTableWrapperFrame : public nsContainerFrame {
    * Note: CaptionShrinkWrapISize doesn't need StyleSizeOverrides parameter.
    */
   mozilla::LogicalSize InnerTableShrinkWrapSize(
-      gfxContext* aRenderingContext, nsTableFrame* aTableFrame,
+      const SizeComputationInput& aSizingInput, nsTableFrame* aTableFrame,
       mozilla::WritingMode aWM, const mozilla::LogicalSize& aCBSize,
       nscoord aAvailableISize,
       const mozilla::StyleSizeOverrides& aSizeOverrides,
       mozilla::ComputeSizeFlags aFlag) const;
   mozilla::LogicalSize CaptionShrinkWrapSize(
-      gfxContext* aRenderingContext, nsIFrame* aCaptionFrame,
+      const SizeComputationInput& aSizingInput, nsIFrame* aCaptionFrame,
       mozilla::WritingMode aWM, const mozilla::LogicalSize& aCBSize,
       nscoord aAvailableISize, mozilla::ComputeSizeFlags aFlag) const;
 
@@ -274,9 +270,6 @@ class nsTableWrapperFrame : public nsContainerFrame {
       const mozilla::StyleSizeOverrides& aWrapperSizeOverrides,
       const mozilla::LogicalSize& aBorderPadding,
       nscoord aBSizeOccupiedByCaption) const;
-
- private:
-  nsFrameList mCaptionFrames;
 };
 
 #endif

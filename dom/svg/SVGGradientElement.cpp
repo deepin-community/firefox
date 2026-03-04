@@ -6,15 +6,14 @@
 
 #include "mozilla/dom/SVGGradientElement.h"
 
+#include "DOMSVGAnimatedTransformList.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/dom/SVGElement.h"
 #include "mozilla/dom/SVGGradientElementBinding.h"
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/dom/SVGLinearGradientElementBinding.h"
 #include "mozilla/dom/SVGRadialGradientElementBinding.h"
 #include "mozilla/dom/SVGUnitTypesBinding.h"
-#include "DOMSVGAnimatedTransformList.h"
 #include "nsGkAtoms.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(LinearGradient)
@@ -53,12 +52,12 @@ SVGGradientElement::SVGGradientElement(
 // SVGElement methods
 
 SVGElement::EnumAttributesInfo SVGGradientElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::StringAttributesInfo SVGGradientElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 already_AddRefed<DOMSVGAnimatedEnumeration>
@@ -79,7 +78,8 @@ already_AddRefed<DOMSVGAnimatedEnumeration> SVGGradientElement::SpreadMethod() {
 }
 
 already_AddRefed<DOMSVGAnimatedString> SVGGradientElement::Href() {
-  return mStringAttributes[HREF].IsExplicitlySet()
+  return mStringAttributes[HREF].IsExplicitlySet() ||
+                 !mStringAttributes[XLINK_HREF].IsExplicitlySet()
              ? mStringAttributes[HREF].ToDOMAnimatedString(this)
              : mStringAttributes[XLINK_HREF].ToDOMAnimatedString(this);
 }
@@ -145,7 +145,7 @@ SVGAnimatedTransformList* SVGGradientElement::GetAnimatedTransformList(
 
 SVGElement::LengthAttributesInfo SVGLinearGradientElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 //-------------------------- Radial Gradients ----------------------------
@@ -208,12 +208,17 @@ already_AddRefed<DOMSVGAnimatedLength> SVGRadialGradientElement::Fr() {
   return mLengthAttributes[ATTR_FR].ToDOMAnimatedLength(this);
 }
 
+bool SVGGradientElement::IsAttributeMapped(const nsAtom* aAttribute) const {
+  return aAttribute == nsGkAtoms::gradientTransform ||
+         SVGElement::IsAttributeMapped(aAttribute);
+}
+
 //----------------------------------------------------------------------
 // SVGElement methods
 
 SVGElement::LengthAttributesInfo SVGRadialGradientElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 }  // namespace mozilla::dom

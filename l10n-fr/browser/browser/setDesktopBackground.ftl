@@ -4,37 +4,31 @@
 
 set-desktop-background-window =
     .title = Choisir comme fond d’écran
-
 set-desktop-background-accept =
     .label = Choisir comme fond d’écran
-
 open-desktop-prefs =
     .label = Ouvrir les préférences du Bureau
-
+set-desktop-background-downloading =
+    .label = Enregistrement de l’image…
 set-background-preview-unavailable = Aperçu non disponible
-
+# Name of the file that will be used as the desktop background. The
+# extension ".bmp" is added by the system.
+set-desktop-background-filename = Fond d’écran
 # This refers to the wallpaper "spanning" multiple monitors when the
 # user has more than one. Only some of the entire image will be on
 # each monitor. This should ideally match the wording in Windows' own
 # Desktop Background settings page.
 set-background-span =
     .label = Étendre
-
 set-background-color = Couleur :
-
 set-background-position = Position :
-
 set-background-tile =
     .label = Mosaïque
-
 set-background-center =
     .label = Centrer
-
 set-background-stretch =
     .label = Étirer
-
 set-background-fill =
     .label = Remplir
-
 set-background-fit =
     .label = Ajuster

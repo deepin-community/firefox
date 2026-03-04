@@ -88,17 +88,17 @@ detail-show-preferences =
     .label =
         { PLATFORM() ->
             [windows] ตัวเลือก
-           *[other] การกำหนดลักษณะ
+           *[other] ค่าปรับแต่ง
         }
     .accesskey =
         { PLATFORM() ->
             [windows] ต
-           *[other] ก
+           *[other] ค
         }
     .tooltiptext =
         { PLATFORM() ->
             [windows] เปลี่ยนตัวเลือกของส่วนเสริมนี้
-           *[other] เปลี่ยนการกำหนดลักษณะของส่วนเสริมนี้
+           *[other] เปลี่ยนค่าปรับแต่งของส่วนเสริมนี้
         }
 detail-rating =
     .value = การจัดอันดับ
@@ -170,6 +170,8 @@ extensions-warning-update-security-button = เปิดใช้งาน
 extensions-warning-imported-addons2 =
     .message = โปรดติดตั้งส่วนขยายที่นำเข้าไปยัง { -brand-short-name } ให้เสร็จสิ้น
 extensions-warning-imported-addons-button = ติดตั้งส่วนขยาย
+extensions-warning-safe-mode3 =
+    .message = ส่วนเสริมทั้งหมดได้ถูกปิดใช้งานโดยโหมดแก้ไขปัญหา
 
 ## Strings connected to add-on updates
 
@@ -206,6 +208,10 @@ addon-updates-manual-updates-found = ดูการอัปเดตที่�
 
 addon-install-from-file = ติดตั้งส่วนเสริมจากไฟล์…
     .accesskey = ง
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = ติดตั้งหรืออัปเดตส่วนเสริมจากไฟล์…
+    .accesskey = ต
 addon-install-from-file-dialog-title = เลือกส่วนเสริมที่จะติดตั้ง
 addon-install-from-file-filter-name = ส่วนเสริม
 addon-open-about-debugging = ดีบั๊กส่วนเสริม
@@ -276,6 +282,16 @@ discopane-notice-recommendations2 =
         บางคำแนะนำเหล่านี้ถูกปรับเปลี่ยนตามแบบส่วนบุคคล ซึ่งขึ้นอยู่กับส่วนขยายอื่นที่คุณติดตั้ง
         ค่าปรับแต่งโปรไฟล์ และสถิติการใช้งาน
 discopane-notice-learn-more = เรียนรู้เพิ่มเติม
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = ชุดตกแต่งชุดรูปแบบสีของคุณถูกเอาออกแล้ว
+    .message = { -brand-product-name } ได้อัปเดตคอลเลกชันชุดรูปแบบสีใหม่ เราได้เอารุ่นเก่าออกจากรายชื่อ “ชุดตกแต่งที่บันทึกไว้” ของคุณแล้ว ให้รับรุ่นใหม่บนไซต์ส่วนเสริม
+colorway-removal-notice-learn-more = เรียนรู้เพิ่มเติม
+colorway-removal-notice-button = รับชุดตกแต่งชุดรูปแบบสีที่อัปเดตแล้ว
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = การตั้งค่าความเปรียบต่างใน Windows ของคุณกำลังมีผลเหนือกว่าชุดตกแต่งของ { -brand-short-name } ให้ปิดการตั้งค่าเหล่านี้เพื่อใช้ชุดตกแต่งใน { -brand-short-name }
 privacy-policy = นโยบายความเป็นส่วนตัว
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -296,6 +312,11 @@ find-more-themes = ค้นหาชุดตกแต่งเพิ่มเ�
 # used for screen readers.
 addon-options-button =
     .aria-label = ตัวเลือกเพิ่มเติม
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 = ส่วนขยายและชุดตกแต่งให้คุณปรับแต่ง { -brand-product-name } และสามารถเพิ่มประสิทธิภาพด้านความเป็นส่วนตัว การทำงาน สื่อ รวมทั้งเปลี่ยนรูปแบบหน้าตาของ { -brand-product-name } และอีกมากมาย โปรแกรมซอฟต์แวร์ขนาดเล็กเหล่านี้มักจะพัฒนาโดยบุคคลที่สาม และต่อไปนี้คือชุดส่วนขยายที่คัดสรรมาซึ่ง Firefox <a data-l10n-name="learn-more-trigger">แนะนำ</a>เพื่อความปลอดภัย ประสิทธิภาพ และฟังก์ชันการทำงานที่เหนือชั้นยิ่งขึ้น
 
 ## Add-on actions
 
@@ -312,7 +333,7 @@ extension-enable-addon-button-label =
 preferences-addon-button =
     { PLATFORM() ->
         [windows] ตัวเลือก
-       *[other] การกำหนดลักษณะ
+       *[other] ค่าปรับแต่ง
     }
 details-addon-button = รายละเอียด
 release-notes-addon-button = บันทึกประจำรุ่น
@@ -381,6 +402,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = อนุญาตในหน้าต่างส่วนตัวแล้ว
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = อนุญาตในหน้าต่างส่วนตัวแล้ว
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -420,6 +445,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = ส่วนขยายนี้ได้รับการตรวจสอบว่าเป็นไปตามมาตรฐานด้านความปลอดภัยและประสิทธิภาพของเรา
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = ส่วนขยายอย่างเป็นทางการที่สร้างขึ้นโดย Mozilla ซึ่งตรงตามมาตรฐานความปลอดภัยและประสิทธิภาพ
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = ส่วนขยายนี้ได้รับการตรวจสอบว่าเป็นไปตามมาตรฐานด้านความปลอดภัยและประสิทธิภาพ
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox แนะนำเฉพาะส่วนขยายที่ตรงตามมาตรฐานเท่านั้นเพื่อความปลอดภัยและประสิทธิภาพ
 
 ##
 
@@ -427,6 +470,10 @@ available-updates-heading = การอัปเดตที่มี
 recent-updates-heading = การอัปเดตล่าสุด
 release-notes-loading = กำลังโหลด…
 release-notes-error = ขออภัย แต่เกิดข้อผิดพลาดในการโหลดบันทึกประจำรุ่น
+addon-permissions-heading = การอนุญาต
+addon-permissions-empty2 = ส่วนขยายนี้ไม่จำเป็นต้องขอสิทธิ์ใด
+addon-permissions-required-label = ที่จำเป็น:
+addon-permissions-optional-label = ที่เลือกได้:
 addon-permissions-empty = ส่วนขยายนี้ไม่จำเป็นต้องขอสิทธิ์ใด
 addon-permissions-required = สิทธิ์ที่ต้องการสำหรับฟังก์ชันการทำงานหลัก:
 addon-permissions-optional = สิทธิ์เผื่อเลือกสำหรับฟังก์ชันการทำงานเพิ่มเติม:
@@ -454,6 +501,9 @@ shortcuts-heading = จัดการทางลัดส่วนขยาย
 default-heading-search-label = ค้นหาส่วนเสริมเพิ่มเติม
 addons-heading-search-input =
     .placeholder = ค้นหา addons.mozilla.org
+addons-heading-search-button =
+    .title = ค้นหาใน addons.mozilla.org
+    .aria-label = ค้นหาใน addons.mozilla.org
 addon-page-options-button =
     .title = เครื่องมือสำหรับส่วนเสริมทั้งหมด
 
@@ -476,14 +526,32 @@ details-notification-unsigned-and-disabled-link = ข้อมูลเพิ่
 details-notification-unsigned = { $name } ไม่สามารถยืนยันสำหรับใช้ใน { -brand-short-name } ดำเนินการต่อด้วยความระมัดระวัง
 details-notification-unsigned2 =
     .message = { $name } ไม่สามารถยืนยันสำหรับใช้ใน { -brand-short-name } ดำเนินการต่อด้วยความระมัดระวัง
+details-notification-hard-blocked-extension =
+    .message = ส่วนขยายนี้ถูกปิดกั้นเนื่องจากละเมิดนโยบายของ Mozilla และถูกปิดใช้งานแล้ว
+details-notification-hard-blocked-other =
+    .message = ส่วนเสริมนี้ถูกปิดกั้นเนื่องจากละเมิดนโยบายของ Mozilla และถูกปิดใช้งานแล้ว
 details-notification-unsigned-link = ข้อมูลเพิ่มเติม
 details-notification-blocked = { $name } ถูกปิดใช้งานเนื่องจากปัญหาด้านความปลอดภัยหรือเสถียรภาพ
-details-notification-blocked2 =
-    .message = { $name } ถูกปิดใช้งานเนื่องจากปัญหาด้านความปลอดภัยหรือเสถียรภาพ
+details-notification-blocked-link2 = ดูรายละเอียด
+details-notification-soft-blocked-extension-disabled2 =
+    .message = ส่วนขยายนี้ถูกจำกัดและได้ถูกปิดใช้งานแล้ว คุณสามารถเปิดใช้งานได้ แต่อาจมีความเสี่ยง
+details-notification-soft-blocked-extension-enabled2 =
+    .message = ส่วนขยายนี้ถูกจำกัด การใช้ส่วนขยายนี้อาจมีความเสี่ยง
+details-notification-soft-blocked-other-disabled2 =
+    .message = ส่วนเสริมนี้ถูกจำกัดและได้ถูกปิดใช้งานแล้ว คุณสามารถเปิดใช้งานได้ แต่อาจมีความเสี่ยง
+details-notification-soft-blocked-other-enabled2 =
+    .message = ส่วนเสริมนี้ถูกจำกัด การใช้ส่วนเสริมนี้อาจมีความเสี่ยง
+details-notification-soft-blocked-extension-disabled =
+    .message = ส่วนขยายนี้ถูกจำกัดเนื่องจากละเมิดนโยบายของ Mozilla และถูกปิดใช้งานแล้ว คุณสามารถเปิดใช้งานได้ แต่อาจมีความเสี่ยง
+details-notification-soft-blocked-extension-enabled =
+    .message = ส่วนขยายนี้ละเมิดนโยบายของ Mozilla การใช้ส่วนขยายนี้อาจมีความเสี่ยง
+details-notification-soft-blocked-other-disabled =
+    .message = ส่วนเสริมนี้ถูกจำกัดเนื่องจากละเมิดนโยบายของ Mozilla และถูกปิดใช้งานแล้ว คุณสามารถเปิดใช้งานได้ แต่อาจมีความเสี่ยง
+details-notification-soft-blocked-other-enabled =
+    .message = ส่วนเสริมนี้ละเมิดนโยบายของ Mozilla การใช้ส่วนเสริมนี้อาจมีความเสี่ยง
+details-notification-softblocked-link2 = ดูรายละเอียด
 details-notification-blocked-link = ข้อมูลเพิ่มเติม
 details-notification-softblocked = { $name } เป็นที่ทราบว่าก่อให้เกิดปัญหาด้านความปลอดภัยหรือเสถียรภาพ
-details-notification-softblocked2 =
-    .message = { $name } เป็นที่ทราบว่าก่อให้เกิดปัญหาด้านความปลอดภัยหรือเสถียรภาพ
 details-notification-softblocked-link = ข้อมูลเพิ่มเติม
 details-notification-gmp-pending = { $name } จะถูกติดตั้งในไม่ช้า
 details-notification-gmp-pending2 =
@@ -497,3 +565,45 @@ plugins-openh264-name = ตัวแปลงสัญญาณวิดีโ�
 plugins-openh264-description = ปลั๊กอินนี้ติดตั้งโดยอัตโนมัติโดย Mozilla เพื่อให้สอดคล้องกับข้อกำหนด WebRTC และเปิดใช้งานการเรียก WebRTC ด้วยอุปกรณ์ที่ต้องใช้ตัวแปลงสัญญาณวิดีโอ H.264 เยี่ยมชม https://www.openh264.org/ เพื่อดูรหัสต้นฉบับของตัวแปลงสัญญาณและเรียนรู้เพิ่มเติมเกี่ยวกับการใช้งาน
 plugins-widevine-name = โมดูลถอดรหัสเนื้อหา Widevine ให้บริการโดย Google Inc.
 plugins-widevine-description = ปลั๊กอินนี้ช่วยให้สามารถเล่นสื่อที่เข้ารหัสตามข้อกำหนดของ Encrypted Media Extensions ได้ โดยทั่วไปแล้วสื่อที่เข้ารหัสจะถูกใช้โดยไซต์เพื่อป้องกันการคัดลอกเนื้อหาสื่อพรีเมียม เยี่ยมชม https://www.w3.org/TR/encrypted-media/ สำหรับข้อมูลเพิ่มเติมเกี่ยวกับ Encrypted Media Extensions
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = การรวบรวมข้อมูลที่ต้องการ:
+addon-permissions-optional-data-collection = การรวบรวมข้อมูลที่เป็นทางเลือก:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = การกำหนดสิทธิ์และข้อมูล
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = ใช้โดยส่วนขยาย { $extensionName }
+addon-permissions-data-collection-heading = การรวบรวมข้อมูล
+addon-permissions-data-collection-empty = ผู้พัฒนาระบุว่าส่วนขยายนี้ไม่ต้องการการรวบรวมข้อมูล
+addon-data-collection-provided = ข้อมูลที่จัดเตรียมโดยผู้พัฒนาส่วนขยาย
+addon-data-collection-learnmore = เรียนรู้เพิ่มเติมเกี่ยวกับการรวบรวมข้อมูล
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } ใช้โมเดลนี้บน about:inference
+mlmodel-link-preview = { -brand-short-name } ใช้โมเดลนี้เพื่อสร้างประเด็นสำคัญเมื่อคุณดูตัวอย่างลิงก์
+mlmodel-pdfjs = { -brand-short-name } ใช้โมเดลนี้เพื่อสร้างข้อความทดแทนสำหรับภาพที่คุณเพิ่มลงใน PDF
+mlmodel-smart-tab-topic-engine = { -brand-short-name } ใช้โมเดลนี้เพื่อแนะนำชื่อสำหรับกลุ่มแท็บของคุณ
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } ใช้โมเดลนี้เพื่อแนะนำแท็บสำหรับกลุ่มแท็บของคุณ
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI บนอุปกรณ์
+addon-category-mlmodel-title =
+    .title = AI บนอุปกรณ์
+mlmodel-heading = จัดการโมเดล AI บนอุปกรณ์
+mlmodel-description = คุณลักษณะและส่วนขยายบางอย่างใน { -brand-short-name } ขับเคลื่อนโดยโมเดล AI ซึ่งทำงานภายในเครื่องของคุณโดยตรง แนวทางนี้ช่วยปกป้องความเป็นส่วนตัวของคุณ พร้อมทั้งยังช่วยเร่งประสิทธิภาพได้ในหลายกรณี <a data-l10n-name="learn-more">เรียนรู้เพิ่มเติม</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = เอาออก
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = ขนาดไฟล์
+mlmodel-addon-detail-last-used-label = ใช้ครั้งล่าสุด
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = ใช้โดย
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = การ์ดโมเดล
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = ดูบน Hugging Face

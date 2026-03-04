@@ -4,7 +4,8 @@ ChromeUtils.defineESModuleGetters(this, {
     "resource://testing-common/FormHistoryTestUtils.sys.mjs",
 });
 
-const SEARCH_FORM = "http://mochi.test:8888/";
+const SEARCH_FORM =
+  "http://mochi.test:8888/browser/browser/components/search/test/browser/discovery.html";
 
 function expectedURL(aSearchTerms) {
   const ENGINE_HTML_BASE =
@@ -83,6 +84,7 @@ async function prepareTest(searchBarValue = "test") {
   await SimpleTest.promiseFocus();
 
   if (document.activeElement == searchBar) {
+    info("Search bar is already focused.");
     return;
   }
 
@@ -90,20 +92,19 @@ async function prepareTest(searchBarValue = "test") {
   gURLBar.focus();
   searchBar.focus();
   await focusPromise;
+  info("Search bar is now focused.");
 }
 
 add_setup(async function () {
   await Services.search.init();
 
-  await gCUITestUtils.addSearchBar();
+  searchBar = await gCUITestUtils.addSearchBar();
+  searchButton = searchBar.querySelector(".search-go-button");
 
   await SearchTestUtils.installOpenSearchEngine({
     url: "http://mochi.test:8888/browser/browser/components/search/test/browser/426329.xml",
     setAsDefault: true,
   });
-
-  searchBar = BrowserSearch.searchBar;
-  searchButton = searchBar.querySelector(".search-go-button");
 
   registerCleanupFunction(() => {
     searchBar.value = "";
@@ -215,10 +216,9 @@ add_task(async function testAltGrReturnEmpty() {
 add_task(async function testShiftAltReturnEmpty() {
   await prepareTest("");
 
-  let newTabPromise = BrowserTestUtils.waitForNewTab(gBrowser, SEARCH_FORM);
-  EventUtils.synthesizeKey("KEY_Enter", { shiftKey: true, altKey: true });
-  await newTabPromise;
-  await BrowserTestUtils.browserLoaded(gBrowser.selectedBrowser);
+  await BrowserTestUtils.openNewForegroundTab(gBrowser, () => {
+    EventUtils.synthesizeKey("KEY_Enter", { shiftKey: true, altKey: true });
+  });
 
   is(gBrowser.tabs.length, preTabNo + 1, "Shift+Alt+Return key added new tab");
   is(

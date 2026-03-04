@@ -2,20 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:OptIn(ExperimentalFoundationApi::class)
-
 package org.mozilla.fenix.onboarding.view
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -31,17 +28,25 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import mozilla.components.lib.state.ext.observeAsComposableState
 import org.mozilla.fenix.R
+import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.appstate.setup.checklist.ChecklistItem
 import org.mozilla.fenix.components.components
 import org.mozilla.fenix.compose.LinkTextState
 import org.mozilla.fenix.compose.PagerIndicator
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
+import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.onboarding.WidgetPinnedReceiver.WidgetPinnedState
+import org.mozilla.fenix.onboarding.store.OnboardingAction.OnboardingThemeAction
+import org.mozilla.fenix.onboarding.store.OnboardingAction.OnboardingToolbarAction
+import org.mozilla.fenix.onboarding.store.OnboardingStore
 import org.mozilla.fenix.theme.FirefoxTheme
 
 /**
@@ -57,13 +62,22 @@ import org.mozilla.fenix.theme.FirefoxTheme
  * @param onSkipNotificationClick Invoked when negative button on notification page is clicked.
  * @param onAddFirefoxWidgetClick Invoked when positive button on add search widget page is clicked.
  * @param onSkipFirefoxWidgetClick Invoked when negative button on add search widget page is clicked.
+ * @param onboardingStore The store which contains all the state related to the add-ons onboarding screen.
+ * @param termsOfServiceEventHandler Invoked when the primary button on the terms of service page is clicked.
+ * @param onCustomizeToolbarClick Invoked when positive button customize toolbar page is clicked.
+ * @param onCustomizeThemeClick Invoked when the primary button on the theme selection page is clicked.
+ * @param onMarketingDataLearnMoreClick callback for when the user clicks the learn more text link
+ * @param onMarketingOptInToggle callback for when the user toggles the opt-in checkbox
+ * @param onMarketingDataContinueClick callback for when the user clicks the continue button on the
+ * marketing data opt out screen.
  * @param onFinish Invoked when the onboarding is completed.
  * @param onImpression Invoked when a page in the pager is displayed.
+ * @param currentIndex callback for when the current horizontal pager page changes
  */
 @Composable
 @Suppress("LongParameterList", "LongMethod")
 fun OnboardingScreen(
-    pagesToDisplay: List<OnboardingPageUiData>,
+    pagesToDisplay: MutableList<OnboardingPageUiData>,
     onMakeFirefoxDefaultClick: () -> Unit,
     onSkipDefaultClick: () -> Unit,
     onSignInButtonClick: () -> Unit,
@@ -72,8 +86,16 @@ fun OnboardingScreen(
     onSkipNotificationClick: () -> Unit,
     onAddFirefoxWidgetClick: () -> Unit,
     onSkipFirefoxWidgetClick: () -> Unit,
+    onboardingStore: OnboardingStore? = null,
+    termsOfServiceEventHandler: OnboardingTermsOfServiceEventHandler,
+    onCustomizeToolbarClick: () -> Unit,
+    onCustomizeThemeClick: () -> Unit,
+    onMarketingDataLearnMoreClick: () -> Unit,
+    onMarketingOptInToggle: (optIn: Boolean) -> Unit,
+    onMarketingDataContinueClick: (allowMarketingDataCollection: Boolean) -> Unit,
     onFinish: (pageType: OnboardingPageUiData) -> Unit,
     onImpression: (pageType: OnboardingPageUiData) -> Unit,
+    currentIndex: (index: Int) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { pagesToDisplay.size })
@@ -81,6 +103,14 @@ fun OnboardingScreen(
         .observeAsComposableState { it.account != null }
     val widgetPinnedFlow: StateFlow<Boolean> = WidgetPinnedState.isPinned
     val isWidgetPinnedState by widgetPinnedFlow.collectAsState()
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .distinctUntilChanged()
+            .collect { page ->
+                currentIndex(page)
+            }
+    }
 
     BackHandler(enabled = pagerState.currentPage > 0) {
         coroutineScope.launch {
@@ -101,7 +131,23 @@ fun OnboardingScreen(
     val hasScrolledToNextPage = remember { mutableStateOf(false) }
 
     LaunchedEffect(isSignedIn.value, isWidgetPinnedState) {
-        if ((isSignedIn.value == true || isWidgetPinnedState) && !hasScrolledToNextPage.value) {
+        val scrollToNextCardFromSignIn = isSignedIn.value?.let {
+            scrollToNextCardFromSignIn(
+                pagesToDisplay,
+                pagerState.currentPage,
+                it,
+            )
+        } ?: false
+
+        val scrollToNextCardFromAddWidget = scrollToNextCardFromAddWidget(
+            pagesToDisplay,
+            pagerState.currentPage,
+            isWidgetPinnedState,
+        )
+
+        val scrollToNextCard = scrollToNextCardFromSignIn || scrollToNextCardFromAddWidget
+
+        if (scrollToNextCard && !hasScrolledToNextPage.value) {
             scrollToNextPageOrDismiss()
             hasScrolledToNextPage.value = true
         }
@@ -151,7 +197,49 @@ fun OnboardingScreen(
             scrollToNextPageOrDismiss()
             onSkipFirefoxWidgetClick()
         },
+        onCustomizeToolbarButtonClick = {
+            scrollToNextPageOrDismiss()
+            onCustomizeToolbarClick()
+        },
+        onCustomizeThemeButtonClick = {
+            scrollToNextPageOrDismiss()
+            onCustomizeThemeClick()
+        },
+        termsOfServiceEventHandler = termsOfServiceEventHandler,
+        onAgreeAndConfirmTermsOfService = {
+            scrollToNextPageOrDismiss()
+            termsOfServiceEventHandler.onAcceptTermsButtonClicked()
+        },
+        onMarketingDataLearnMoreClick = onMarketingDataLearnMoreClick,
+        onMarketingOptInToggle = onMarketingOptInToggle,
+        onMarketingDataContinueClick = { allowMarketingDataCollection ->
+            onMarketingDataContinueClick(allowMarketingDataCollection)
+            scrollToNextPageOrDismiss()
+        },
+        onboardingStore = onboardingStore,
     )
+}
+
+private fun scrollToNextCardFromAddWidget(
+    pagesToDisplay: List<OnboardingPageUiData>,
+    currentPageIndex: Int,
+    isWidgetPinnedState: Boolean,
+): Boolean {
+    val indexOfWidgetPage =
+        pagesToDisplay.indexOfFirst { it.type == OnboardingPageUiData.Type.ADD_SEARCH_WIDGET }
+    val currentPageIsWidgetPage = currentPageIndex == indexOfWidgetPage
+    return isWidgetPinnedState && currentPageIsWidgetPage
+}
+
+private fun scrollToNextCardFromSignIn(
+    pagesToDisplay: List<OnboardingPageUiData>,
+    currentPageIndex: Int,
+    isSignedIn: Boolean,
+): Boolean {
+    val indexOfSignInPage =
+        pagesToDisplay.indexOfFirst { it.type == OnboardingPageUiData.Type.SYNC_SIGN_IN }
+    val currentPageIsSignInPage = currentPageIndex == indexOfSignInPage
+    return isSignedIn && currentPageIsSignInPage
 }
 
 @Composable
@@ -167,45 +255,135 @@ private fun OnboardingContent(
     onNotificationPermissionSkipClick: () -> Unit,
     onAddFirefoxWidgetClick: () -> Unit,
     onSkipFirefoxWidgetClick: () -> Unit,
+    onboardingStore: OnboardingStore? = null,
+    onCustomizeToolbarButtonClick: () -> Unit,
+    onCustomizeThemeButtonClick: () -> Unit,
+    termsOfServiceEventHandler: OnboardingTermsOfServiceEventHandler,
+    onAgreeAndConfirmTermsOfService: () -> Unit,
+    onMarketingOptInToggle: (optIn: Boolean) -> Unit,
+    onMarketingDataLearnMoreClick: () -> Unit,
+    onMarketingDataContinueClick: (allowMarketingDataCollection: Boolean) -> Unit,
 ) {
     val nestedScrollConnection = remember { DisableForwardSwipeNestedScrollConnection(pagerState) }
 
-    Column(
-        modifier = Modifier
-            .background(FirefoxTheme.colors.layer1)
-            .statusBarsPadding()
-            .navigationBarsPadding(),
-    ) {
-        HorizontalPager(
-            state = pagerState,
-            key = { pagesToDisplay[it].type },
+    Surface {
+        Column(
             modifier = Modifier
-                .weight(1f)
-                .nestedScroll(nestedScrollConnection),
-        ) { pageIndex ->
-            val pageUiState = pagesToDisplay[pageIndex]
-            val onboardingPageState = mapToOnboardingPageState(
-                onboardingPageUiData = pageUiState,
-                onMakeFirefoxDefaultClick = onMakeFirefoxDefaultClick,
-                onMakeFirefoxDefaultSkipClick = onMakeFirefoxDefaultSkipClick,
-                onSignInButtonClick = onSignInButtonClick,
-                onSignInSkipClick = onSignInSkipClick,
-                onNotificationPermissionButtonClick = onNotificationPermissionButtonClick,
-                onNotificationPermissionSkipClick = onNotificationPermissionSkipClick,
-                onAddFirefoxWidgetClick = onAddFirefoxWidgetClick,
-                onAddFirefoxWidgetSkipClick = onSkipFirefoxWidgetClick,
+                .statusBarsPadding(),
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                key = { pagesToDisplay[it].type },
+                modifier = Modifier
+                    .weight(1f)
+                    .nestedScroll(nestedScrollConnection),
+            ) { pageIndex ->
+                // protect against a rare case where the user goes to the marketing screen at the same
+                // moment it gets removed by [MarketingPageRemovalSupport]
+                val pageUiState = pagesToDisplay.getOrElse(pageIndex) { pagesToDisplay[it.dec()] }
+                val onboardingPageState = mapToOnboardingPageState(
+                    onboardingPageUiData = pageUiState,
+                    onMakeFirefoxDefaultClick = onMakeFirefoxDefaultClick,
+                    onMakeFirefoxDefaultSkipClick = onMakeFirefoxDefaultSkipClick,
+                    onSignInButtonClick = onSignInButtonClick,
+                    onSignInSkipClick = onSignInSkipClick,
+                    onNotificationPermissionButtonClick = onNotificationPermissionButtonClick,
+                    onNotificationPermissionSkipClick = onNotificationPermissionSkipClick,
+                    onAddFirefoxWidgetClick = onAddFirefoxWidgetClick,
+                    onAddFirefoxWidgetSkipClick = onSkipFirefoxWidgetClick,
+                    onCustomizeToolbarButtonClick = onCustomizeToolbarButtonClick,
+                    onCustomizeThemeClick = onCustomizeThemeButtonClick,
+                    onTermsOfServiceButtonClick = onAgreeAndConfirmTermsOfService,
+                    shouldShowElevation = false,
+                )
+                OnboardingPageForType(
+                    type = pageUiState.type,
+                    state = onboardingPageState,
+                    onboardingStore = onboardingStore,
+                    termsOfServiceEventHandler = termsOfServiceEventHandler,
+                    onMarketingDataLearnMoreClick = onMarketingDataLearnMoreClick,
+                    onMarketingOptInToggle = onMarketingOptInToggle,
+                    onMarketingDataContinueClick = onMarketingDataContinueClick,
+                )
+            }
+
+            PagerIndicator(
+                pagerState = pagerState,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 16.dp),
+                inactiveColor = MaterialTheme.colorScheme.outlineVariant,
+                leaveTrail = true,
             )
-            OnboardingPage(pageState = onboardingPageState)
+        }
+    }
+}
+
+@Composable
+private fun OnboardingPageForType(
+    type: OnboardingPageUiData.Type,
+    state: OnboardingPageState,
+    onboardingStore: OnboardingStore? = null,
+    termsOfServiceEventHandler: OnboardingTermsOfServiceEventHandler,
+    onMarketingDataLearnMoreClick: () -> Unit,
+    onMarketingOptInToggle: (optIn: Boolean) -> Unit,
+    onMarketingDataContinueClick: (allowMarketingDataCollection: Boolean) -> Unit,
+) {
+    when (type) {
+        OnboardingPageUiData.Type.DEFAULT_BROWSER,
+        OnboardingPageUiData.Type.SYNC_SIGN_IN,
+        OnboardingPageUiData.Type.ADD_SEARCH_WIDGET,
+        OnboardingPageUiData.Type.NOTIFICATION_PERMISSION,
+        -> OnboardingPage(state)
+
+        OnboardingPageUiData.Type.TOOLBAR_PLACEMENT -> {
+            val context = LocalContext.current
+            onboardingStore?.let { store ->
+                ToolbarOnboardingPage(
+                    onboardingStore = store,
+                    pageState = state,
+                    onToolbarSelectionClicked = {
+                        store.dispatch(OnboardingToolbarAction.UpdateSelected(it))
+                        context.components.appStore.dispatch(
+                            AppAction.SetupChecklistAction.TaskPreferenceUpdated(
+                                ChecklistItem.Task.Type.CHANGE_TOOLBAR_PLACEMENT,
+                                true,
+                            ),
+                        )
+                    },
+                )
+            }
         }
 
-        PagerIndicator(
-            pagerState = pagerState,
-            activeColor = FirefoxTheme.colors.actionPrimary,
-            inactiveColor = FirefoxTheme.colors.actionSecondary,
-            leaveTrail = true,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 16.dp),
+        OnboardingPageUiData.Type.THEME_SELECTION -> {
+            val context = LocalContext.current
+            onboardingStore?.let { store ->
+                ThemeOnboardingPage(
+                    onboardingStore = store,
+                    pageState = state,
+                    onThemeSelectionClicked = {
+                        store.dispatch(OnboardingThemeAction.UpdateSelected(it))
+                        context.components.appStore.dispatch(
+                            AppAction.SetupChecklistAction.TaskPreferenceUpdated(
+                                ChecklistItem.Task.Type.SELECT_THEME,
+                                true,
+                            ),
+                        )
+                    },
+                )
+            }
+        }
+
+        OnboardingPageUiData.Type.MARKETING_DATA -> MarketingDataOnboardingPage(
+            state = state,
+            onMarketingDataLearnMoreClick = onMarketingDataLearnMoreClick,
+            onMarketingOptInToggle = onMarketingOptInToggle,
+            onMarketingDataContinueClick = onMarketingDataContinueClick,
+        )
+
+        OnboardingPageUiData.Type.TERMS_OF_SERVICE -> TermsOfServiceOnboardingPage(
+            state,
+            termsOfServiceEventHandler,
         )
     }
 }
@@ -231,7 +409,7 @@ private class DisableForwardSwipeNestedScrollConnection(
         }
 }
 
-@LightDarkPreview
+@PreviewLightDark
 @Composable
 private fun OnboardingScreenPreview() {
     val pageCount = defaultPreviewPages().size
@@ -249,6 +427,13 @@ private fun OnboardingScreenPreview() {
             onNotificationPermissionSkipClick = {},
             onAddFirefoxWidgetClick = {},
             onSkipFirefoxWidgetClick = {},
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeButtonClick = {},
+            onAgreeAndConfirmTermsOfService = {},
+            termsOfServiceEventHandler = object : OnboardingTermsOfServiceEventHandler {},
+            onMarketingDataLearnMoreClick = {},
+            onMarketingOptInToggle = {},
+            onMarketingDataContinueClick = {},
         )
     }
 }

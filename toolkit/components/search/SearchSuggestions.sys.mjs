@@ -2,16 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const lazy = {};
-ChromeUtils.defineESModuleGetters(lazy, {
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+
+const lazy = XPCOMUtils.declareLazy({
+  DEFAULT_FORM_HISTORY_PARAM:
+    "moz-src:///toolkit/components/search/SearchSuggestionController.sys.mjs",
   FormHistory: "resource://gre/modules/FormHistory.sys.mjs",
   SearchSuggestionController:
-    "resource://gre/modules/SearchSuggestionController.sys.mjs",
+    "moz-src:///toolkit/components/search/SearchSuggestionController.sys.mjs",
 });
 
 /**
  * A search history autocomplete result that implements nsIAutoCompleteResult.
  * Based on FormHistoryAutoCompleteResult.
+ *
+ * @implements {nsIAutoCompleteResult}
  */
 class SearchHistoryResult {
   /**
@@ -288,18 +293,17 @@ class SearchHistoryResult {
  * unique XPCOM Service for every search provider, even if the logic for two
  * providers is identical.
  *
- * @class
+ * @implements {nsIAutoCompleteSearch}
  */
 class SuggestAutoComplete {
   constructor() {
     this.#suggestionController = new lazy.SearchSuggestionController();
-    this.#suggestionController.maxLocalResults = this.#historyLimit;
   }
 
   /**
    * Notifies the front end of new results.
    *
-   * @param {FormHistoryAutoCompleteResult} result
+   * @param {nsIAutoCompleteResult} result
    *   Any previous form history result.
    * @private
    */
@@ -325,7 +329,7 @@ class SuggestAutoComplete {
    * @param {object} previousResult
    *   unused, a client-cached store of the previous generated resultset
    *   for faster searching.
-   * @param {object} listener
+   * @param {nsIAutoCompleteObserver} listener
    *   object implementing nsIAutoCompleteObserver which we notify when
    *   results are ready.
    */
@@ -397,7 +401,7 @@ class SuggestAutoComplete {
    * The object implementing nsIAutoCompleteObserver that we notify when
    * we have found results.
    *
-   *  @type {object|null}
+   *  @type {nsIAutoCompleteObserver|null}
    */
   #listener = null;
 
@@ -408,19 +412,20 @@ class SuggestAutoComplete {
    *   The user's query string.
    * @param {string} searchParam
    *   unused
-   * @param {object} listener
+   * @param {nsIAutoCompleteObserver} listener
    *   object implementing nsIAutoCompleteObserver which we notify when
    *   results are ready.
-   * @param {boolean} privacyMode
+   * @param {boolean} inPrivateBrowsing
    *   True if the search was made from a private browsing mode context.
    */
-  async #triggerSearch(searchString, searchParam, listener, privacyMode) {
+  async #triggerSearch(searchString, searchParam, listener, inPrivateBrowsing) {
     this.#listener = listener;
-    let results = await this.#suggestionController.fetch(
+    let results = await this.#suggestionController.fetch({
       searchString,
-      privacyMode,
-      Services.search.defaultEngine
-    );
+      inPrivateBrowsing,
+      engine: Services.search.defaultEngine,
+      maxLocalResults: this.#historyLimit,
+    });
 
     let formHistoryEntries = (results?.formHistoryResults ?? []).map(
       historyEntry => ({
@@ -432,7 +437,7 @@ class SuggestAutoComplete {
       })
     );
     let autoCompleteResult = new SearchHistoryResult(
-      this.#suggestionController.formHistoryParam,
+      lazy.DEFAULT_FORM_HISTORY_PARAM,
       searchString,
       formHistoryEntries
     );
@@ -440,23 +445,20 @@ class SuggestAutoComplete {
     if (results?.remote?.length) {
       // We shouldn't show tail suggestions in their full-text form.
       // Suggestions are shown after form history results.
-      autoCompleteResult.remoteEntries = results.remote.reduce(
-        (results, item) => {
-          if (!item.matchPrefix && !item.tail) {
-            results.push({
-              value: item.value,
-              label: item.value,
-              // We supply the comments field so that autocomplete does not kick
-              // in the unescaping of the results for display which it uses for
-              // urls.
-              comment: item.value,
-            });
-          }
+      autoCompleteResult.remoteEntries = results.remote.reduce((acc, item) => {
+        if (!item.matchPrefix && !item.tail) {
+          acc.push({
+            value: item.value,
+            label: item.value,
+            // We supply the comments field so that autocomplete does not kick
+            // in the unescaping of the results for display which it uses for
+            // urls.
+            comment: item.value,
+          });
+        }
 
-          return results;
-        },
-        []
-      );
+        return acc;
+      }, []);
     }
 
     // Notify the FE of our new results

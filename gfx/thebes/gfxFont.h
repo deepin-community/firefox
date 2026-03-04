@@ -8,7 +8,6 @@
 #define GFX_FONT_H
 
 #include <new>
-#include <utility>
 #include <functional>
 #include "PLDHashTable.h"
 #include "ThebesRLBoxTypes.h"
@@ -20,7 +19,6 @@
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/HashTable.h"
 #include "mozilla/MemoryReporting.h"
-#include "mozilla/MruCache.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/RWLock.h"
@@ -51,6 +49,7 @@
 #include "gfxFontEntry.h"
 #include "gfxFontFeatures.h"
 
+class FontVisibilityProvider;
 class gfxContext;
 class gfxGraphiteShaper;
 class gfxHarfBuzzShaper;
@@ -98,9 +97,13 @@ struct gfxFontStyle {
   gfxFontStyle();
   gfxFontStyle(FontSlantStyle aStyle, FontWeight aWeight, FontStretch aStretch,
                gfxFloat aSize, const FontSizeAdjust& aSizeAdjust,
-               bool aSystemFont, bool aPrinterFont, bool aWeightSynthesis,
-               bool aStyleSynthesis, bool aSmallCapsSynthesis,
-               bool aPositionSynthesis,
+               bool aSystemFont, bool aPrinterFont,
+#ifdef XP_WIN
+               bool aAllowForceGDIClassic,
+#endif
+               bool aWeightSynthesis,
+               mozilla::StyleFontSynthesisStyle aStyleSynthesis,
+               bool aSmallCapsSynthesis, bool aPositionSynthesis,
                mozilla::StyleFontLanguageOverride aLanguageOverride);
   // Features are composed of (1) features from style rules (2) features
   // from feature settings rules and (3) family-specific features.  (1) and
@@ -186,12 +189,16 @@ struct gfxFontStyle {
   // Say that this font is used for print or print preview.
   bool printerFont : 1;
 
+#ifdef XP_WIN
+  bool allowForceGDIClassic : 1;
+#endif
+
   // Used to imitate -webkit-font-smoothing: antialiased
   bool useGrayscaleAntialiasing : 1;
 
   // Whether synthetic styles are allowed (required, in the case of position)
   bool allowSyntheticWeight : 1;
-  bool allowSyntheticStyle : 1;
+  mozilla::StyleFontSynthesisStyle synthesisStyle : 2;
   bool allowSyntheticSmallCaps : 1;
   bool useSyntheticPosition : 1;
 
@@ -236,11 +243,14 @@ struct gfxFontStyle {
            (stretch == other.stretch) && (variantCaps == other.variantCaps) &&
            (variantSubSuper == other.variantSubSuper) &&
            (allowSyntheticWeight == other.allowSyntheticWeight) &&
-           (allowSyntheticStyle == other.allowSyntheticStyle) &&
+           (synthesisStyle == other.synthesisStyle) &&
            (allowSyntheticSmallCaps == other.allowSyntheticSmallCaps) &&
            (useSyntheticPosition == other.useSyntheticPosition) &&
            (systemFont == other.systemFont) &&
            (printerFont == other.printerFont) &&
+#ifdef XP_WIN
+           (allowForceGDIClassic == other.allowForceGDIClassic) &&
+#endif
            (useGrayscaleAntialiasing == other.useGrayscaleAntialiasing) &&
            (baselineOffset == other.baselineOffset) &&
            mozilla::NumbersAreBitwiseIdentical(sizeAdjust, other.sizeAdjust) &&
@@ -351,7 +361,7 @@ class gfxFontCache final
         mWordCacheExpirationTimer->InitWithNamedFuncCallback(
             WordCacheExpirationTimerCallback, this,
             SHAPED_WORD_TIMEOUT_SECONDS * 1000, nsITimer::TYPE_REPEATING_SLACK,
-            "gfxFontCache::WordCacheExpiration");
+            "gfxFontCache::WordCacheExpiration"_ns);
         mTimerRunning = true;
       }
     }
@@ -1640,13 +1650,11 @@ class gfxFont {
    * We let layout specify spacing on either side of any
    * character. We need to specify both before and after
    * spacing so that substring measurement can do the right things.
-   * These values are in appunits. They're always an integral number of
-   * appunits, but we specify them in floats in case very large spacing
-   * values are required.
+   * These values are in appunits.
    */
   struct Spacing {
-    gfxFloat mBefore;
-    gfxFloat mAfter;
+    nscoord mBefore;
+    nscoord mAfter;
   };
   /**
    * Metrics for a particular string
@@ -1806,7 +1814,7 @@ class gfxFont {
   }
 
   template <typename T>
-  bool InitFakeSmallCapsRun(nsPresContext* aPresContext,
+  bool InitFakeSmallCapsRun(FontVisibilityProvider* aFontVisibilityProvider,
                             DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
                             const T* aText, uint32_t aOffset, uint32_t aLength,
                             FontMatchType aMatchType,

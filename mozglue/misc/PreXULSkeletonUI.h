@@ -8,13 +8,13 @@
 #define PreXULSkeletonUI_h_
 
 #include <windows.h>
-#include "mozilla/EnumSet.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/Result.h"
 #include "mozilla/Types.h"
 #include "mozilla/Vector.h"
 
 namespace mozilla {
+
+#define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 19
 
 // These unfortunately need to be kept in sync with the window style and
 // extended window style computations in nsWindow. Luckily those styles seem
@@ -50,6 +50,7 @@ struct SkeletonUISettings {
   bool menubarShown;
   bool bookmarksToolbarShown;
   bool rtlEnabled;
+  bool verticalTabs;
   SkeletonUIDensity uiDensity;
 };
 
@@ -61,12 +62,13 @@ enum class SkeletonUIFlag : uint8_t {
   RtlEnabled,
   TouchDensity,
   CompactDensity,
+  VerticalTabs
 };
 
 struct ThemeColors {
   uint32_t backgroundColor;
   uint32_t toolbarForegroundColor;
-  uint32_t tabBarColor;
+  uint32_t titlebarColor;
   uint32_t tabColor;
   uint32_t tabOutlineColor;
   uint32_t chromeContentDividerColor;

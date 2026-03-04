@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Намоиш додан
 download-cert-view-text = Тафтиш кардани гувоҳномаи маркази иҷозатномадиҳӣ
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Дода шуд аз: «{ $issuedBy }»
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Захирагоҳ: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Ин қарор дар хотир нигоҳ дошта шавад
+client-auth-cert-remember-label = Ин қарор дар хотир нигоҳ дошта шавад:
+client-auth-cert-remember-never =
+    .label = Як маротиба
+client-auth-cert-remember-always =
+    .label = Ба таври доимӣ
+client-auth-cert-remember-temporarily =
+    .label = Барои ин ҷаласа
 
 ## Set password (p12) dialog
 

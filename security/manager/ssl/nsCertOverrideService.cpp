@@ -7,14 +7,12 @@
 #include "nsCertOverrideService.h"
 
 #include "NSSCertDBTrustDomain.h"
-#include "ScopedNSSTypes.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/TaskQueue.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/SecurityManagerSslMetrics.h"
 #include "mozilla/TextUtils.h"
 #include "mozilla/Tokenizer.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/ToJSValue.h"
 #include "nsAppDirectoryServiceDefs.h"
 #include "nsCRT.h"
@@ -395,11 +393,6 @@ nsCertOverrideService::RememberValidityOverride(
     return NS_ERROR_NOT_SAME_THREAD;
   }
 
-  UniqueCERTCertificate nsscert(aCert->GetCert());
-  if (!nsscert) {
-    return NS_ERROR_FAILURE;
-  }
-
   nsAutoCString fpStr;
   nsresult rv = GetCertSha256Fingerprint(aCert, fpStr);
   if (NS_FAILED(rv)) {
@@ -439,7 +432,14 @@ nsCertOverrideService::HasMatchingOverride(
   bool disableAllSecurityCheck = false;
   {
     MutexAutoLock lock(mMutex);
-    disableAllSecurityCheck = mDisableAllSecurityCheck;
+    if (mUserContextIdsWithSecurityChecksOverride.has(
+            aOriginAttributes.mUserContextId)) {
+      auto p = mUserContextIdsWithSecurityChecksOverride.lookup(
+          aOriginAttributes.mUserContextId);
+      disableAllSecurityCheck = p->value();
+    } else {
+      disableAllSecurityCheck = mDisableAllSecurityCheck;
+    }
   }
   if (disableAllSecurityCheck) {
     *aIsTemporary = false;
@@ -621,8 +621,8 @@ void nsCertOverrideService::CountPermanentOverrideTelemetry(
       overrideCount++;
     }
   }
-  Telemetry::Accumulate(Telemetry::SSL_PERMANENT_CERT_ERROR_OVERRIDES,
-                        overrideCount);
+  glean::ssl::permanent_cert_error_overrides.AccumulateSingleSample(
+      overrideCount);
 }
 
 static bool IsDebugger() {
@@ -666,6 +666,39 @@ nsCertOverrideService::
     nss->ClearSSLExternalAndInternalSessionCache();
   } else {
     return NS_ERROR_NOT_AVAILABLE;
+  }
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsCertOverrideService::
+    SetDisableAllSecurityChecksAndLetAttackersInterceptMyDataForUserContext(
+        uint32_t aUserContextId, bool aDisable) {
+  if (!(PR_GetEnv("XPCSHELL_TEST_PROFILE_DIR") || IsDebugger())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
+  {
+    MutexAutoLock lock(mMutex);
+    (void)mUserContextIdsWithSecurityChecksOverride.put(aUserContextId,
+                                                        aDisable);
+  }
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsCertOverrideService::
+    ResetDisableAllSecurityChecksAndLetAttackersInterceptMyDataForUserContext(
+        uint32_t aUserContextId) {
+  if (!(PR_GetEnv("XPCSHELL_TEST_PROFILE_DIR") || IsDebugger())) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
+  {
+    MutexAutoLock lock(mMutex);
+    mUserContextIdsWithSecurityChecksOverride.remove(aUserContextId);
   }
 
   return NS_OK;

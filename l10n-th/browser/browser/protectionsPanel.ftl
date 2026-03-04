@@ -23,6 +23,11 @@ protections-panel-etp-more-info =
     .aria-label = รายละเอียดเพิ่มเติมเกี่ยวกับการป้องกันการติดตามแบบพิเศษ
 protections-panel-etp-on-header = การป้องกันการติดตามแบบพิเศษเปิดอยู่สำหรับไซต์นี้
 protections-panel-etp-off-header = การป้องกันการติดตามแบบพิเศษปิดอยู่สำหรับไซต์นี้
+# The link to be clicked to open the sub-panel view
+protections-panel-site-not-working = ไซต์ไม่ทำงาน?
+# The heading/title of the sub-panel view
+protections-panel-site-not-working-view =
+    .title = ไซต์ไม่ทำงาน?
 
 ## Text for the toggles shown when ETP is enabled/disabled for a given site.
 ## .description is transferred into a separate paragraph by the moz-toggle
@@ -37,20 +42,15 @@ protections-panel-etp-toggle-off =
     .label = การป้องกันการติดตามแบบพิเศษ
     .description = ปิดสำหรับไซต์นี้
     .aria-label = การป้องกันการติดตามแบบพิเศษ: ปิดสำหรับ { $host }
-# The link to be clicked to open the sub-panel view
-protections-panel-site-not-working = ไซต์ไม่ทำงาน?
-# The heading/title of the sub-panel view
-protections-panel-site-not-working-view =
-    .title = ไซต์ไม่ทำงาน?
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
 
 protections-panel-not-blocking-why-label = ทำไม?
-protections-panel-not-blocking-why-etp-on-tooltip = การปิดกั้นคุณลักษณะเหล่านี้อาจทำให้องค์ประกอบของบางเว็บไซต์เสียหายได้ ถ้าไม่มีตัวติดตาม ปุ่ม แบบฟอร์ม และฟิลด์การเข้าสู่ระบบบางส่วนอาจไม่ทำงาน
+protections-panel-not-blocking-why-etp-on-tooltip = การปิดกั้นรายการเหล่านี้อาจทำให้องค์ประกอบของบางเว็บไซต์เสียหายได้ ถ้าไม่มีตัวติดตาม ปุ่ม แบบฟอร์ม และช่องข้อมูลเข้าสู่ระบบบางส่วนอาจไม่ทำงาน
 protections-panel-not-blocking-why-etp-off-tooltip = ตัวติดตามทั้งหมดในไซต์นี้ถูกโหลดเนื่องจากการป้องกันถูกปิด
 protections-panel-not-blocking-why-etp-on-tooltip-label =
-    .label = การปิดกั้นคุณลักษณะเหล่านี้อาจทำให้องค์ประกอบของบางเว็บไซต์เสียหายได้ ถ้าไม่มีตัวติดตาม ปุ่ม แบบฟอร์ม และฟิลด์การเข้าสู่ระบบบางส่วนอาจไม่ทำงาน
+    .label = การปิดกั้นรายการเหล่านี้อาจทำให้องค์ประกอบของบางเว็บไซต์เสียหายได้ ถ้าไม่มีตัวติดตาม ปุ่ม แบบฟอร์ม และช่องข้อมูลเข้าสู่ระบบบางส่วนอาจไม่ทำงาน
 protections-panel-not-blocking-why-etp-off-tooltip-label =
     .label = ตัวติดตามทั้งหมดในไซต์นี้ถูกโหลดเนื่องจากการป้องกันถูกปิด
 
@@ -58,7 +58,7 @@ protections-panel-not-blocking-why-etp-off-tooltip-label =
 
 protections-panel-no-trackers-found = ไม่มีตัวติดตามที่ { -brand-short-name } รู้จักถูกตรวจพบที่หน้านี้
 protections-panel-content-blocking-tracking-protection = ตัวติดตามเนื้อหา
-protections-panel-content-blocking-socialblock = ตัวติดตามสังคมออนไลน์
+protections-panel-content-blocking-socialblock = ตัวติดตามสื่อสังคมออนไลน์
 protections-panel-content-blocking-cryptominers-label = ตัวขุดเหรียญดิจิทัล
 protections-panel-content-blocking-fingerprinters-label = ลายนิ้วมือดิจิทัล
 
@@ -72,6 +72,19 @@ protections-panel-blocking-label = ปิดกั้นแล้ว
 protections-panel-not-blocking-label = อนุญาตแล้ว
 protections-panel-not-found-label = ตรวจไม่พบ
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } จะปิดกั้นเนื้อหาติดตามขณะที่คุณอยู่ที่ไซต์นี้นอกจากว่าคุณจะอนุญาต
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = อนุญาต { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = ตัวติดตามและเนื้อหารวมทั้งสิ้น { $trackername } รายการถูกปิดกั้น
+smartblock-placeholder-desc = การตั้งค่า { -brand-short-name } ของคุณปิดกั้นเนื้อหานี้ไม่ให้ติดตามคุณในไซต์ต่างๆ หรือนำไปใช้สำหรับโฆษณา
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = อนุญาตบน { $websitehost }
+
 ##
 
 protections-panel-settings-label = การตั้งค่าการป้องกัน
@@ -83,7 +96,7 @@ protections-panel-protectionsdashboard-label = แดชบอร์ดการ
 # The header of the list
 protections-panel-site-not-working-view-header = ปิดการป้องกันถ้าคุณมีปัญหากับ:
 # The list items, shown in a <ul>
-protections-panel-site-not-working-view-issue-list-login-fields = ช่องเข้าสู่ระบบ
+protections-panel-site-not-working-view-issue-list-login-fields = ช่องข้อมูลเข้าสู่ระบบ
 protections-panel-site-not-working-view-issue-list-forms = แบบฟอร์ม
 protections-panel-site-not-working-view-issue-list-payments = การชำระเงิน
 protections-panel-site-not-working-view-issue-list-comments = ความคิดเห็น
@@ -96,8 +109,8 @@ protections-panel-site-not-working-view-send-report = ส่งรายงา�
 protections-panel-cross-site-tracking-cookies = คุกกี้เหล่านี้ติดตามคุณจากไซต์หนึ่งไปยังอีกไซต์หนึ่งเพื่อรวบรวมข้อมูลเกี่ยวกับสิ่งที่คุณทำทางออนไลน์ พวกมันถูกตั้งค่าโดยบุคคลที่สามเช่น นักโฆษณาและบริษัทวิเคราะห์
 protections-panel-cryptominers = ตัวขุดเหรียญคริปโตดิจิตอลใช้พลังการคำนวณของระบบของคุณเพื่อสร้างเงินคริปโตดิจิทัล สคริปต์ขุดเหรียญดิจิทัลจะทำให้พลังงานแบตเตอรี่ของคุณลดลง คอมพิวเตอร์ของคุณช้าลง และเพิ่มค่าไฟฟ้าของคุณได้
 protections-panel-fingerprinters = ลายนิ้วมือดิจิทัลรวบรวมการตั้งค่าจากเบราว์เซอร์และคอมพิวเตอร์ของคุณเพื่อสร้างโปรไฟล์ของคุณ การใช้ลายนิ้วมือดิจิทัลจะทำให้สามารถติดตามคุณผ่านเว็บไซต์ต่าง ๆ ได้
-protections-panel-tracking-content = เว็บไซต์อาจโหลดโฆษณา วิดีโอ และเนื้อหาอื่น ๆ นอกเว็บที่มีโค้ดติดตาม การปิดกั้นเนื้อหาการติดตามจะทำให้เว็บไซต์โหลดเร็วขึ้น แต่ปุ่มบางปุ่ม ฟอร์ม และเขตข้อมูลการเข้าสู่ระบบอาจไม่ทำงาน
-protections-panel-social-media-trackers = เครือข่ายสังคมออนไลน์จะวางตัวติดตามบนเว็บไซต์อื่น ๆ เพื่อติดตามสิ่งที่คุณทำ และดูทางออนไลน์ ซึ่งทำให้บริษัทสังคมออนไลน์สามารถเรียนรู้เพิ่มเติมเกี่ยวกับคุณนอกเหนือจากที่คุณแบ่งปันในโปรไฟล์สังคมออนไลน์ของคุณ
+protections-panel-tracking-content = เว็บไซต์อาจโหลดโฆษณา วิดีโอ และเนื้อหาอื่น ๆ นอกเว็บที่มีโค้ดติดตาม การปิดกั้นเนื้อหาการติดตามจะทำให้เว็บไซต์โหลดเร็วขึ้น แต่ปุ่ม แบบฟอร์ม และช่องข้อมูลเข้าสู่ระบบบางส่วนอาจไม่ทำงาน
+protections-panel-social-media-trackers = เครือข่ายสื่อสังคมออนไลน์จะวางตัวติดตามบนเว็บไซต์อื่น ๆ เพื่อติดตามสิ่งที่คุณทำ และดูทางออนไลน์ ซึ่งทำให้บริษัทสื่อสังคมออนไลน์สามารถเรียนรู้เพิ่มเติมเกี่ยวกับคุณนอกเหนือจากที่คุณแบ่งปันในโปรไฟล์สื่อสังคมออนไลน์ของคุณ
 protections-panel-description-shim-allowed = ตัวติดตามบางตัวที่ถูกทำเครื่องหมายไว้ด้านล่างนี้ได้ถูกเลิกปิดกั้นบนหน้านี้เนื่องจากคุณมีการโต้ตอบกับตัวติดตามเหล่านั้น
 protections-panel-description-shim-allowed-learn-more = เรียนรู้เพิ่มเติม
 protections-panel-shim-allowed-indicator =
@@ -108,7 +121,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = รายงานไซต์ที่ใช้งานไม่ได้
 protections-panel-content-blocking-breakage-report-view-description = การปิดกั้นตัวติดตามบางตัวอาจทำให้เกิดปัญหากับบางเว็บไซต์ได้ การรายงานปัญหา ก็เท่ากับคุณช่วยทำให้ { -brand-short-name } ดีขึ้นสำหรับทุก ๆ คน การรายงานนี้จะส่ง URL พร้อมทั้งข้อมูลเกี่ยวกับการตั้งค่าเบราว์เซอร์ของคุณไปให้กับ Mozilla <label data-l10n-name="learn-more">เรียนรู้เพิ่มเติม</label>
-protections-panel-content-blocking-breakage-report-view-description2 = การปิดกั้นตัวติดตามบางตัวอาจทำให้เกิดปัญหากับบางเว็บไซต์ได้ การรายงานปัญหา ก็เท่ากับคุณช่วยทำให้ { -brand-short-name } ดีขึ้นสำหรับทุก ๆ คน การรายงานนี้จะส่ง URL พร้อมทั้งข้อมูลเกี่ยวกับการตั้งค่าเบราว์เซอร์ของคุณไปให้กับ { -vendor-short-name }
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

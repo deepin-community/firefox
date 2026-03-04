@@ -30,17 +30,26 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Ertele
     .secondarybuttonaccesskey = E
 appmenu-update-restart-message2 = { -brand-shorter-name } tarayıcısının son sürümünü indirin. Açık sekmeler ve pencereler geri yüklenecektir.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Geri al
+    .secondarybuttonaccesskey = G
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } otomatik olarak en son sürüme güncellenemedi.
     .buttonlabel = Yine de { -brand-shorter-name }’u güncelle
     .buttonaccesskey = Y
-    .secondarybuttonlabel = Daha sonra
-    .secondarybuttonaccesskey = D
+    .secondarybuttonlabel = Şimdi değil
+    .secondarybuttonaccesskey = m
 appmenu-update-other-instance-message = Yeni bir { -brand-shorter-name } güncellemesi mevcut ama şu anda başka bir { -brand-shorter-name } kopyası çalıştığı için yüklenemiyor. Güncellemeye devam etmek için çalışan kopyayı kapatın veya “yine de güncelle”yi seçin. (Diğer kopya yeniden başlatılana kadar düzgün çalışmayabilir.)
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Tamam
     .buttonaccesskey = T
 appmenu-addon-post-install-message3 = Eklentilerinizi ve temalarınızı uygulama menüsünden yönetebilirsiniz.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = İzinleri ve veri tercihlerini istediğiniz zaman <a data-l10n-name="settings-link">uzantı ayarlarından</a> güncelleyebilirsiniz.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Uzantıyı araç çubuğuna sabitle
+    .accesskey = U
 appmenu-addon-post-install-incognito-checkbox =
     .label = Bu uzantının gizli pencerelerde çalışmasına izin ver
     .accesskey = B

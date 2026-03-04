@@ -362,7 +362,7 @@ add_task(async function test_applyIncoming_both_deleted() {
     await engine.sync();
 
     ok(
-      !(await await profileStorage.addresses.get(guid)),
+      !(await profileStorage.addresses.get(guid)),
       "Should not return record for locally deleted item"
     );
 
@@ -396,7 +396,7 @@ add_task(async function test_applyIncoming_nonexistent_tombstone() {
 
     ok(
       !(await profileStorage.addresses.get(guid)),
-      "Should not return record for uknown deleted item"
+      "Should not return record for unknown deleted item"
     );
     let localTombstone = (
       await profileStorage.addresses.getAll({
@@ -644,6 +644,52 @@ add_task(async function test_incoming_dupes() {
       // However, we didn't upload `guid2` before downloading `guid2_dupe`, so
       // we *should* dedupe `guid2` to `guid2_dupe`.
       Object.assign({}, TEST_PROFILE_2, { guid: guid2_dupe }),
+    ]);
+  } finally {
+    await cleanup(server);
+  }
+});
+
+add_task(async function test_dedupe_identical_unsynced_singlelineaddress() {
+  let { profileStorage, server, engine } = await setup();
+  try {
+    let profile = structuredClone(TEST_PROFILE_1);
+    // Change the street address so that it will parse correctly.
+    profile["street-address"] = "36 Main Street";
+
+    // create a record locally.
+    let localGuid = await profileStorage.addresses.add(profile);
+
+    // and an identical record on the server but different GUID.
+    let remoteGuid = Utils.makeGUID();
+    notEqual(localGuid, remoteGuid);
+    server.insertWBO(
+      "foo",
+      "addresses",
+      new ServerWBO(
+        remoteGuid,
+        encryptPayload({
+          id: remoteGuid,
+          entry: Object.assign(
+            {
+              version: 1,
+            },
+            profile
+          ),
+        }),
+        getDateForSync()
+      )
+    );
+
+    await engine.setLastSync(0);
+    await engine.sync();
+
+    // Should have 1 item locally with GUID changed to the remote one.
+    // There's no tombstone as the original was unsynced.
+    await expectLocalProfiles(profileStorage, [
+      {
+        guid: remoteGuid,
+      },
     ]);
   } finally {
     await cleanup(server);

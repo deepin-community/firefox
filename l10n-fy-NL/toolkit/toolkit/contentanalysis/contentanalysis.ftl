@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Scan wurdt útfierd
 contentanalysis-slow-agent-dialog-body-file = { $agent } toetst ‘{ $filename }’ oan it gegevensbelied fan jo organisaasje. Dit kin efkes duorje.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } toetst ‘{ $filename }’ en { $count } ekstra item oan it gegevensbelied fan jo organisaasje. Dit kin efkes duorje.
+       *[other] { $agent } toetst ‘{ $filename }’ en { $count } ekstra items oan it gegevensbelied fan jo organisaasje. Dit kin efkes duorje.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } toetst wat jo plakt hawwe oan it gegevensbelied fan jo organisaasje. Dit kin efkes duorje.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = klamboerd
 contentanalysis-operationtype-dropped-text = plakte tekst
 contentanalysis-operationtype-print = ôfdrukke
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = oplaad fan ‘{ $filename }’
+contentanalysis-upload-description = oplaad fan ‘{ $filename }’
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = download fan ‘{ $filename }’
 contentanalysis-warndialogtitle = Dizze ynhâld is mooglik ûnfeilich
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +51,6 @@ contentanalysis-genericresponse-message = Ynhâldanalyse antwurde mei { $respons
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Jo organisaasje brûkt software foar foarkommen fan gegevensferlies dy’t dizze ynhâld blokkearre hat: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Der is in flater bard by de kommunikaasje mei de software foar foarkommen fan gegevensferlies. Oerdracht wegere foar boarne: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Der is in flater bard by de kommunikaasje mei { $agent }. Oerdracht wegere foar boarne: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Kin gjin ferbining meitsje mei { $agent }. Oerdracht wegere foar boarne: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Undertekeningsferifikaaasje foar { $agent } mislearre.  Oerdracht wegere foar boarne: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Oplaad fan ‘{ $filename }’ weger
 contentanalysis-error-message-dropped-text = Slepe en delsette wegere.
 contentanalysis-error-message-clipboard = Plakke wegere.
 contentanalysis-error-message-print = Ofdrukken wegere.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = De ferbining mei { $agent } is ferrûn. { $contentName } is blokkearre.
 contentanalysis-block-dialog-title-upload-file = Jo meie dit bestân net oplade
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Neffens it gegevensbeskermingsbelied fan jo organisaasje meie jo it bestân ‘{ $filename }’ net oplade. Nim kontakt op mei jo behearder foar mear ynfo.
+contentanalysis-block-dialog-title-download-file = Jo meie dit bestân net downloade
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Neffens it gegevensbeskermingsbelied fan jo organisaasje meie jo it bestân ‘{ $filename }’ net downloade. Nim kontakt op mei jo behearder foar mear ynfo.
 contentanalysis-block-dialog-title-clipboard = Jo meie dizze ynhâld net plakke
 contentanalysis-block-dialog-body-clipboard = Neffens it gegevensbeskermingsbelied fan jo organisaasje meie jo dizze ynhâld net plakke. Nim kontakt op mei jo behearder foar mear ynfo.
 contentanalysis-block-dialog-title-dropped-text = Jo meie dizze ynhâld net ferslepe

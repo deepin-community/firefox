@@ -23,12 +23,6 @@ protections-panel-etp-more-info =
     .aria-label = Wiyncyj informacyji ô polepszōnyj ôchrōnie ôd śledzynio
 protections-panel-etp-on-header = Polepszōno ôchrōna ôd śledzynio je załōnczōno na tyj strōnie
 protections-panel-etp-off-header = Polepszōno ôchrōna ôd śledzynio je wyłōnczōno na tyj strōnie
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Strōna niy funguje?
 # The heading/title of the sub-panel view

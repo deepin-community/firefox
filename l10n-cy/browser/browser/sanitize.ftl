@@ -59,10 +59,7 @@ history-section-label = Hanes
 item-history-and-downloads =
     .label = Hanes Pori a Llwytho i Lawr
     .accesskey = H
-item-history-form-data-downloads =
-    .label = Hanes
-    .accesskey = H
-item-history-form-data-downloads-description = Yn clirio gwefan a hanes llwytho, gwybodaeth ffurflen wedi'i chadw a chwiliadau
+item-history-and-downloads-description2 = Yn clirio hanes gwefan a llwytho i lawr
 item-cookies =
     .label = Cwcis
     .accesskey = w
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Gosodiadau gwefan
     .accesskey = G
+item-formdata-prefs =
+    .label = Manylion ffurflen wedi'i chadw
+    .accesskey = M
+item-formdata-description = Yn clirio pethau fel enwau, e-byst, ac eitemau eraill rydych chi'n eu nodi ar ffurflenni
 item-site-prefs-description = Yn ailosod eich caniatâd a'ch dewisiadau gwefan i'r gosodiadau gwreiddiol
 data-section-label = Data
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Bydd yr holl hanes yn cael ei glirio.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Bydd yr holl eitemau a ddewiswyd yn cael eu clirio.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Yn cyfrifo…

@@ -41,7 +41,7 @@ about-logins-menu-menuitem-help = Օգնություն
 ## Login List
 
 login-list =
-    .aria-label = Մուտքագրումների համապատասխանության որոնման հարցում
+    .aria-label = Մուտքագրումների համընկնման որոնման հարցում
 # Variables
 #   $count (number) - Number of logins
 login-list-count =
@@ -74,15 +74,15 @@ login-list-filtered-count2 =
     }
 login-list-sort-label-text = Տեսակավարել ըստ՝
 login-list-name-option = Անվան (Ա-Ֆ)
-login-list-name-reverse-option = Անվան (Ա-Ֆ)
-login-list-username-option = Մականուն (Ա-Ֆ)
-login-list-username-reverse-option = Մականուն (Ֆ-Ա)
+login-list-name-reverse-option = Անվան (Ֆ-Ա)
+login-list-username-option = Մականվան (Ա-Ֆ)
+login-list-username-reverse-option = Մականվան (Ֆ-Ա)
 about-logins-login-list-alerts-option = Զգուշացումներ
 login-list-last-changed-option = Վերջին փոփոխության
 login-list-last-used-option = Վերջին օգտագործման
 login-list-intro-title = Մուտքագրումներ չկան
-login-list-intro-title2 = Գաղտնաբառեր չեն պահպանվել
-login-list-intro-description = Երբ պահպանում եք գաղտնաբառը { -brand-product-name }-ում, այն կցուցադրվի այստեղ:
+login-list-intro-title2 = Գաղտնաբառերը չեն պահվել
+login-list-intro-description = Երբ պահում եք գաղտնաբառը { -brand-product-name }-ում, այն կցուցադրվի այստեղ:
 about-logins-login-list-empty-search-title = Մուտքեր չեն գտնվել
 about-logins-login-list-empty-search-title2 = Գաղտնաբառեր չեն գտնվել
 about-logins-login-list-empty-search-description = Որոնման հետ համընկնում չկա։
@@ -103,14 +103,16 @@ about-logins-list-section-week = Վերջին 7 օրում
 
 ## Introduction screen
 
-about-logins-login-intro-heading-logged-out2 = Փնտրու՞մ եք Ձեր պահպանած մուտքերը: Միացրեք համաժամեցումը կամ ներմուծեք դրանք:
+about-logins-login-intro-heading-logged-out2 = Փնտրու՞մ եք Ձեր պահած մուտքերը: Միացրեք համաժամեցումը կամ ներմուծեք դրանք:
 about-logins-login-intro-heading-logged-in = Համաժամեցված մուտք չի գտնվել:
-login-intro-description = Եթե պահպանել եք ձեր մուտքագրումները { -brand-product-name }-ում այլ սարքում, ահա թե ինչպես կարող եք ստանալ դրանք.
+login-intro-description = Եթե պահել եք ձեր մուտքագրումները { -brand-product-name }-ում այլ սարքում, ահա թե ինչպես կարող եք ստանալ դրանք.
 login-intro-instructions-fxa = Գրանցվեք կամ մուտք գործեք Ձեր { -fxaccount-brand-name } հաշիվ այն սարքով, որով պահվել են Ձեր մուտքերը:
-about-logins-login-intro-heading-message = Պահպանեք Ձեր գաղտնաբառերը ապահով տեղում
+about-logins-login-intro-heading-message = Պահեք Ձեր գաղտնաբառերը ապահով տեղում
 login-intro-description2 = { -brand-product-name }-ում Ձեր պահած գաղտնաբառերը գաղտնագրված են:  Բացի այդ մենք հսկում ենք արտահոսքերը և կզգուշացնենեք՝ եթե այն վերաբերվի Ձեզ: <a data-l10n-name="breach-alert-link">Իմանալ ավելին</a>
+login-intro-instructions-fxa2 = Ստեղծեք կամ մուտք գործեք ձեր հաշիվ այն սարքում, որտեղ ձեր մուտքագրումները պահված են:
 login-intro-instructions-fxa-settings = Գնացեք Կարգավորումներ > Համաժամացում > Միացնել համաժամացումը…: Ընտրեք «Մուտքանուններ և գաղտնաբառեր» վանդակը:
 login-intro-instructions-fxa-passwords-help = Լրացուցիչ օգնության համար այցելեք <a data-l10n-name="passwords-help-link">գաղտնաբառերի աջակցություն</a>:
+about-logins-intro-browser-only-import = Եթե Ձեր մուտքերը պահված են այլ դիտարկիչում՝ կարող եք <a data-l10n-name="import-link">ներմուծել դրանք { -brand-product-name }</a>
 
 ## Login
 
@@ -120,8 +122,9 @@ about-logins-login-item-new-login-title = Ավելացնել գաղտնաբառ
 login-item-edit-button = Խմբագրել
 about-logins-login-item-remove-button = Հեռացնել
 login-item-origin-label = Կայքի հասցեն
+login-item-tooltip-message = Համոզվեք, որ սա համընկնում է այն կայքի ճշգրիտ հասցեի հետ, որտեղ մուտք եք գործում։
 about-logins-origin-tooltip2 = Մուտքագրեք ամբողջական հասցեն և համոզվեք, որ այն ճշգրիտ համընկնում է ձեր մուտքի վայրի հետ:
-about-logins-add-password-tooltip = Համոզվեք, որ պահպանում եք ձեր ընթացիկ գաղտնաբառը այս կայքի համար:
+about-logins-add-password-tooltip = Համոզվեք, որ պահում եք ձեր ընթացիկ գաղտնաբառը այս կայքի համար:
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = Օգտվողի անուն
@@ -132,11 +135,13 @@ login-item-copied-username-button-text = Պատճենվե՛ց
 login-item-password-label = Գաղտնաբառ
 login-item-password-reveal-checkbox =
     .aria-label = Ցուցադրել գաղտնաբառը
+login-item-password-conceal-checkbox =
+    .aria-label = Թաքցնել գաղտնաբառը
 login-item-copy-password-button-text = Պատճենել
 login-item-copied-password-button-text = Պատճենված
-login-item-save-changes-button = Պահպանել փոփոխությունները
-about-logins-login-item-save-changes-button = Պահպանել
-login-item-save-new-button = Պահպանել
+login-item-save-changes-button = Պահել փոփոխությունները
+about-logins-login-item-save-changes-button = Պահել
+login-item-save-new-button = Պահել
 login-item-cancel-button = Չեղարկել
 
 ## The date is displayed in a timeline showing the password evolution.
@@ -146,7 +151,7 @@ login-item-cancel-button = Չեղարկել
 # Variables
 #   $datetime (date) - Event date
 login-item-timeline-point-date = { DATETIME($datetime, day: "numeric", month: "short", year: "numeric") }
-login-item-timeline-action-created = Ստեղծված
+login-item-timeline-action-created = Ստեղծվեց
 login-item-timeline-action-updated = Արդիացված
 login-item-timeline-action-used = Օգտագործված
 
@@ -162,7 +167,7 @@ about-logins-os-auth-dialog-caption = { -brand-full-name }
 about-logins-edit-login-os-auth-dialog-message-win = Ձեր մուտքագրումը խմբագրելու համար մուտքագրեք ձեր Windows մուտքի հավատարմագրերը: Սա օգնում է պաշտպանել ձեր հաշիվների անվտանգությունը:
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-edit-login-os-auth-dialog-message-macosx = խմբագրել պահպանված մուտքանունը
+about-logins-edit-login-os-auth-dialog-message-macosx = խմբագրել պահված մուտքանունը
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message2-macosx = խմբագրել պահված գաղտնաբառը
@@ -170,22 +175,22 @@ about-logins-edit-login-os-auth-dialog-message2-macosx = խմբագրել պահ
 about-logins-reveal-password-os-auth-dialog-message-win = Ձեր մուտքագրումը խմբագրելու համար մուտքագրեք ձեր Windows մուտքի հավատարմագրերը: Սա օգնում է պաշտպանել ձեր հաշիվների անվտանգությունը:
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-reveal-password-os-auth-dialog-message-macosx = բացահայտել պահպանված գաղտնաբառը
+about-logins-reveal-password-os-auth-dialog-message-macosx = բացահայտել պահված գաղտնաբառը
 # This message can be seen when attempting to copy a password in about:logins on Windows.
 about-logins-copy-password-os-auth-dialog-message-win = Ձեր մուտքագրումը պատճենելու համար մուտքագրեք ձեր Windows մուտքի հավատարմագրերը: Սա օգնում է պաշտպանել ձեր հաշիվների անվտանգությունը:
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-copy-password-os-auth-dialog-message-macosx = պատճենեք պահպանված գաղտնաբառը
+about-logins-copy-password-os-auth-dialog-message-macosx = պատճենեք պահված գաղտնաբառը
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Ձեր մուտքագրումը արտահանելու համար մուտքագրեք ձեր Windows մուտքի հավատարմագրերը: Սա օգնում է պաշտպանել ձեր հաշիվների անվտանգությունը:
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-export-password-os-auth-dialog-message-macosx = արտահանել պահպանված մուտքանունները և գաղտնաբառերը
+about-logins-export-password-os-auth-dialog-message-macosx = արտահանել պահված մուտքանունները և գաղտնաբառերը
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message2-win = Ձեր մուտքագրումը պատճենելու համար մուտքագրեք ձեր Windows մուտքի հավատարմագրերը: Սա օգնում է պաշտպանել ձեր հաշիվների անվտանգությունը:
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
-about-logins-export-password-os-auth-dialog-message2-macosx = արտահանել պահպանված գաղտնաբառերը
+about-logins-export-password-os-auth-dialog-message2-macosx = արտահանել պահված գաղտնաբառերը
 
 ## Primary Password notification
 
@@ -255,7 +260,7 @@ about-logins-confirm-remove-all-sync-dialog-title2 =
 ##
 
 about-logins-confirm-export-dialog-title = Արտահանել մուտքանունները և գաղտնաբառերը
-about-logins-confirm-export-dialog-message = Ձեր գաղտնաբառերը կպահպանվեն որպես ընթեռնելի տեքստ (օր. ՝ BadP@ssw0rd), այնպես որ յուրաքանչյուրը, ով կարող է բացել արտահանվող ֆայլը, կարող է դիտել դրանք:
+about-logins-confirm-export-dialog-message = Ձեր գաղտնաբառերը կպահվեն որպես ընթեռնելի տեքստ (օր. ՝ BadP@ssw0rd), այնպես որ յուրաքանչյուրը, ով կարող է բացել արտահանվող ֆայլը, կարող է դիտել դրանք:
 about-logins-confirm-export-dialog-confirm-button = Արտահանել...
 about-logins-confirm-export-dialog-title2 = Ծանոթագրություն գաղտնաբառերի արտահանման մասին
 about-logins-confirm-export-dialog-message2 =
@@ -265,7 +270,7 @@ about-logins-confirm-export-dialog-confirm-button2 = Շարունակել արտ
 about-logins-alert-import-title = Ներմուծումն ավարտվեց
 about-logins-alert-import-message = Դիտեք ներմուծման մանրամասն ամփոփագիրը
 confirm-discard-changes-dialog-title = Վերանայե՞լ չփրկված փոփոխությունները:
-confirm-discard-changes-dialog-message = Բոլոր չպահպանված փոփոխությունները կկորչեն:
+confirm-discard-changes-dialog-message = Բոլոր չպահված փոփոխությունները կկորչեն:
 confirm-discard-changes-dialog-confirm-button = Մերժել
 
 ## Breach Alert notification
@@ -299,7 +304,7 @@ about-logins-error-message-default = Գաղտնաբառի պահման ժամա�
 ## Login Export Dialog
 
 # Title of the file picker dialog
-about-logins-export-file-picker-title = Մուտքագրումների նիշքի արտահանում
+about-logins-export-file-picker-title = Արտահանել մուտքագրումների ֆայլը
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
@@ -314,13 +319,13 @@ about-logins-export-file-picker-export-button = Արտահանել
 about-logins-export-file-picker-csv-filter-title =
     { PLATFORM() ->
         [macos] CSV փաստաթուղթ
-       *[other] CSV նիշք
+       *[other] CSV ֆայլ
     }
 
 ## Login Import Dialog
 
 # Title of the file picker dialog
-about-logins-import-file-picker-title = Ներածեք մուտքագրման նիշքը
+about-logins-import-file-picker-title = Ներածեք մուտքագրման ֆայլը
 # Title of the file picker dialog
 about-logins-import-file-picker-title2 = Ներմուծեք գաղտնաբառերը { -brand-short-name }-ից
 about-logins-import-file-picker-import-button = Ներածել
@@ -329,14 +334,14 @@ about-logins-import-file-picker-import-button = Ներածել
 about-logins-import-file-picker-csv-filter-title =
     { PLATFORM() ->
         [macos] CSV փաստաթուղթ
-       *[other] CSV նիշք
+       *[other] CSV ֆայլ
     }
 # A description for the .tsv file format that may be shown as the file type
 # filter by the operating system. TSV is short for 'tab separated values'.
 about-logins-import-file-picker-tsv-filter-title =
     { PLATFORM() ->
         [macos] TSV փաստաթուղթ
-       *[other] TSV նիշք
+       *[other] TSV ֆայլ
     }
 
 ##
@@ -381,8 +386,10 @@ about-logins-import-dialog-items-error =
 about-logins-import-dialog-done = Պատրաստ է
 about-logins-import-dialog-error-title = Ներմուծման սխալ
 about-logins-import-dialog-error-conflicting-values-title = Մի քանի հակասող արժեքներ մեկ մուտքի համար
+about-logins-import-dialog-error-conflicting-values-description = Օրինակ՝ բազմաթիվ օգտանուններ, գաղտնաբառեր, URL-ներ, և այլն մեկ մուտքանվան համար։
 about-logins-import-dialog-error-file-format-title = Ֆայլի ձևաչափի խնդիր
-about-logins-import-dialog-error-file-permission-title = Հնարավոր չէ կարդալ նիշքը
+about-logins-import-dialog-error-file-permission-title = Հնարավոր չէ կարդալ ֆայլը
+about-logins-import-dialog-error-file-permission-description = { -brand-short-name }-ը ֆայլը կարդալու թույլտվություն չունի։ Փորձեք փոխել ֆայլի թույլտվությունները։
 about-logins-import-dialog-error-unable-to-read-title = Հնարավոր չէ կարդալ ֆայլը
 about-logins-import-dialog-error-unable-to-read-description = Համոզվեք, որ ընտրել եք CSV կամ TSV ֆայլ:
 about-logins-import-dialog-error-no-logins-imported = Ոչ մի մուտքագրում չի ներմուծվել
@@ -425,10 +432,19 @@ about-logins-import-report-modified =
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Առկա մուտքերը թարմացվեցին</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Առկա մուտքերը թարմացվեցին</div>
     }
+about-logins-import-report-no-change =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">կրկնվող մուտքանուն</div> <div data-l10n-name="not-imported">(ներմուծված չէ)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">կրկնվող մուտքանուններ</div> <div data-l10n-name="not-imported">(ներմուծված չեն)</div>
+    }
 about-logins-import-report-added2 =
     { $count ->
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Նոր գաղտնաբառերն ավելացվեցին</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Նոր գաղտնաբառերն ավելացվեցին</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">Կրկնօրինակել գրառումները</div> <div data-l10n-name="not-imported">(ներմուծված չէ)</div>
     }
 about-logins-import-report-error =
     { $count ->

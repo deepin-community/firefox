@@ -3,14 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/FloatingPoint.h"
+#include "txXPathResultComparator.h"
+
 #include "mozilla/intl/Collator.h"
 #include "mozilla/intl/LocaleService.h"
-
-#include "txXPathResultComparator.h"
-#include "txExpr.h"
 #include "nsComponentManagerUtils.h"
 #include "txCore.h"
+#include "txExpr.h"
 
 using namespace mozilla;
 using Collator = mozilla::intl::Collator;
@@ -19,13 +18,10 @@ using Collator = mozilla::intl::Collator;
 #define kUpperFirst (1 << 1)
 
 txResultStringComparator::txResultStringComparator(bool aAscending,
-                                                   bool aUpperFirst,
-                                                   const nsString& aLanguage) {
+                                                   bool aUpperFirst) {
   mSorting = 0;
   if (aAscending) mSorting |= kAscending;
   if (aUpperFirst) mSorting |= kUpperFirst;
-  nsresult rv = init(aLanguage);
-  if (NS_FAILED(rv)) NS_ERROR("Failed to initialize txResultStringComparator");
 }
 
 nsresult txResultStringComparator::init(const nsString& aLanguage) {
@@ -49,61 +45,35 @@ nsresult txResultStringComparator::init(const nsString& aLanguage) {
   return NS_OK;
 }
 
-nsresult txResultStringComparator::createSortableValue(Expr* aExpr,
-                                                       txIEvalContext* aContext,
-                                                       txObject*& aResult) {
-  UniquePtr<StringValue> val(new StringValue);
-
-  if (!mCollator) {
-    return NS_ERROR_FAILURE;
-  }
-
-  val->mString = MakeUnique<nsString>();
-  nsString& string = *val->mString;
-  nsresult rv = aExpr->evaluateToString(aContext, string);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  aResult = val.release();
-
-  return NS_OK;
+std::pair<UniquePtr<txObject>, nsresult>
+txResultStringComparator::createSortableValue(Expr* aExpr,
+                                              txIEvalContext* aContext) {
+  UniquePtr<nsString> string = MakeUnique<nsString>();
+  nsresult rv = aExpr->evaluateToString(aContext, *string);
+  return std::make_pair(MakeUnique<StringValue>(std::move(string)), rv);
 }
 
 int txResultStringComparator::compareValues(txObject* aVal1, txObject* aVal2) {
   nsString& dval1 = *((StringValue*)aVal1)->mString;
   nsString& dval2 = *((StringValue*)aVal2)->mString;
 
-  if (!mCollator) {
-    MOZ_ASSERT_UNREACHABLE("No mCollator");
-    return -1;
-  }
-
   int32_t result = mCollator->CompareStrings(dval1, dval2);
 
   return (mSorting & kAscending) ? result : -result;
 }
 
-txResultStringComparator::StringValue::StringValue() = default;
-
-txResultStringComparator::StringValue::~StringValue() = default;
-
 txResultNumberComparator::txResultNumberComparator(bool aAscending) {
   mAscending = aAscending ? 1 : -1;
 }
 
-nsresult txResultNumberComparator::createSortableValue(Expr* aExpr,
-                                                       txIEvalContext* aContext,
-                                                       txObject*& aResult) {
-  UniquePtr<NumberValue> numval(new NumberValue);
-
+std::pair<UniquePtr<txObject>, nsresult>
+txResultNumberComparator::createSortableValue(Expr* aExpr,
+                                              txIEvalContext* aContext) {
   RefPtr<txAExprResult> exprRes;
   nsresult rv = aExpr->evaluate(aContext, getter_AddRefs(exprRes));
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  numval->mVal = exprRes->numberValue();
-
-  aResult = numval.release();
-
-  return NS_OK;
+  return std::make_pair(
+      MakeUnique<NumberValue>(NS_SUCCEEDED(rv) ? exprRes->numberValue() : 0),
+      rv);
 }
 
 int txResultNumberComparator::compareValues(txObject* aVal1, txObject* aVal2) {

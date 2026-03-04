@@ -5,14 +5,17 @@
 package org.mozilla.fenix.tabstray
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import mozilla.components.support.test.libstate.ext.waitUntilIdle
-import mozilla.components.support.test.robolectric.testContext
-import org.junit.Assert
+import mozilla.components.browser.state.state.createTab
+import mozilla.components.compose.base.menu.MenuItem
+import mozilla.components.compose.base.text.Text
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.MenuItem
+import org.mozilla.fenix.tabstray.ext.generateMultiSelectBannerMenuItems
 import org.mozilla.fenix.tabstray.ext.getMenuItems
 import org.mozilla.fenix.tabstray.ext.isSelect
 
@@ -29,17 +32,15 @@ class TabsTrayStateTest {
     @Test
     fun `WHEN entering select mode THEN isSelected extension method returns true`() {
         store.dispatch(TabsTrayAction.EnterSelectMode)
-        store.waitUntilIdle()
 
-        Assert.assertTrue(store.state.mode.isSelect())
+        assertTrue(store.state.mode.isSelect())
     }
 
     @Test
     fun `WHEN entering normal mode THEN isSelected extension method returns false`() {
         store.dispatch(TabsTrayAction.ExitSelectMode)
-        store.waitUntilIdle()
 
-        Assert.assertFalse(store.state.mode.isSelect())
+        assertFalse(store.state.mode.isSelect())
     }
 
     @Test
@@ -48,18 +49,14 @@ class TabsTrayStateTest {
             mode = TabsTrayState.Mode.Select(emptySet()),
             shouldShowInactiveButton = true,
         )
-        Assert.assertEquals(menuItems.size, 3)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tab_tray_multiselect_menu_item_bookmark),
-        )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_multiselect_menu_item_close),
-        )
-        Assert.assertEquals(
-            menuItems[2].title,
-            testContext.getString(R.string.inactive_tabs_menu_item),
+        assertEquals(menuItems.size, 3)
+        assertEquals(
+            listOf(
+                Text.Resource(R.string.tab_tray_multiselect_menu_item_bookmark),
+                Text.Resource(R.string.tab_tray_multiselect_menu_item_close),
+                Text.Resource(R.string.inactive_tabs_menu_item),
+            ),
+            menuItems.map { (it as MenuItem.TextItem).text },
         )
     }
 
@@ -68,14 +65,14 @@ class TabsTrayStateTest {
         val menuItems = initMenuItems(
             mode = TabsTrayState.Mode.Select(emptySet()),
         )
-        Assert.assertEquals(menuItems.size, 2)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tab_tray_multiselect_menu_item_bookmark),
+        assertEquals(menuItems.size, 2)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_multiselect_menu_item_bookmark),
         )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_multiselect_menu_item_close),
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_multiselect_menu_item_close),
         )
     }
 
@@ -84,14 +81,14 @@ class TabsTrayStateTest {
         val menuItems = initMenuItems(
             mode = TabsTrayState.Mode.Normal,
         )
-        Assert.assertEquals(menuItems.size, 2)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tab_tray_menu_tab_settings),
+        assertEquals(menuItems.size, 2)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_tab_settings),
         )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_menu_recently_closed),
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_recently_closed),
         )
     }
 
@@ -101,26 +98,26 @@ class TabsTrayStateTest {
             mode = TabsTrayState.Mode.Normal,
             normalTabCount = 3,
         )
-        Assert.assertEquals(menuItems.size, 5)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tabs_tray_select_tabs),
+        assertEquals(menuItems.size, 5)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tabs_tray_select_tabs),
         )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_menu_item_share),
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_item_share),
         )
-        Assert.assertEquals(
-            menuItems[2].title,
-            testContext.getString(R.string.tab_tray_menu_tab_settings),
+        assertEquals(
+            (menuItems[2] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_tab_settings),
         )
-        Assert.assertEquals(
-            menuItems[3].title,
-            testContext.getString(R.string.tab_tray_menu_recently_closed),
+        assertEquals(
+            (menuItems[3] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_recently_closed),
         )
-        Assert.assertEquals(
-            menuItems[4].title,
-            testContext.getString(R.string.tab_tray_menu_item_close),
+        assertEquals(
+            (menuItems[4] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_item_close),
         )
     }
 
@@ -130,14 +127,14 @@ class TabsTrayStateTest {
             mode = TabsTrayState.Mode.Normal,
             selectedPage = Page.PrivateTabs,
         )
-        Assert.assertEquals(menuItems.size, 2)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tab_tray_menu_tab_settings),
+        assertEquals(menuItems.size, 2)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_tab_settings),
         )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_menu_recently_closed),
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_recently_closed),
         )
     }
 
@@ -148,18 +145,18 @@ class TabsTrayStateTest {
             selectedPage = Page.PrivateTabs,
             privateTabCount = 6,
         )
-        Assert.assertEquals(menuItems.size, 3)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tab_tray_menu_tab_settings),
+        assertEquals(menuItems.size, 3)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_tab_settings),
         )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_menu_recently_closed),
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_recently_closed),
         )
-        Assert.assertEquals(
-            menuItems[2].title,
-            testContext.getString(R.string.tab_tray_menu_item_close),
+        assertEquals(
+            (menuItems[2] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_item_close),
         )
     }
 
@@ -169,15 +166,132 @@ class TabsTrayStateTest {
             mode = TabsTrayState.Mode.Normal,
             selectedPage = Page.SyncedTabs,
         )
-        Assert.assertEquals(menuItems.size, 2)
-        Assert.assertEquals(
-            menuItems[0].title,
-            testContext.getString(R.string.tab_tray_menu_account_settings),
+        assertEquals(menuItems.size, 2)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_account_settings),
         )
-        Assert.assertEquals(
-            menuItems[1].title,
-            testContext.getString(R.string.tab_tray_menu_recently_closed),
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_menu_recently_closed),
         )
+    }
+
+    @Test
+    fun `GIVEN the Tabs Tray is in multiselection mode AND on the normal tabs page AND the inactive menu item needs to be shown AND on the normal tabs page WHEN the user clicks on the three-dot button THEN the bookmark, close, and make inactive menu items are returned`() {
+        val menuItems = generateMultiSelectBannerMenuItems(
+            shouldShowInactiveButton = true,
+            onBookmarkSelectedTabsClick = {},
+            onCloseSelectedTabsClick = {},
+            onMakeSelectedTabsInactive = {},
+        )
+        assertEquals(3, menuItems.size)
+        assertEquals(
+            listOf(
+                Text.Resource(R.string.tab_tray_multiselect_menu_item_bookmark),
+                Text.Resource(R.string.tab_tray_multiselect_menu_item_close),
+                Text.Resource(R.string.inactive_tabs_menu_item),
+            ),
+            menuItems.map { (it as MenuItem.TextItem).text },
+        )
+    }
+
+    @Test
+    fun `GIVEN the Tabs Tray is in multiselection mode AND on the normal tabs page AND the inactive menu item should not be shown WHEN the user clicks on the three-dot button THEN the bookmark and close menu items are returned`() {
+        val menuItems = generateMultiSelectBannerMenuItems(
+            shouldShowInactiveButton = false,
+            onBookmarkSelectedTabsClick = {},
+            onCloseSelectedTabsClick = {},
+            onMakeSelectedTabsInactive = {},
+        )
+        assertEquals(2, menuItems.size)
+        assertEquals(
+            (menuItems[0] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_multiselect_menu_item_bookmark),
+        )
+        assertEquals(
+            (menuItems[1] as MenuItem.TextItem).text,
+            Text.Resource(R.string.tab_tray_multiselect_menu_item_close),
+        )
+    }
+
+    /**
+    *  [TabsTrayState.searchIconVisible] coverage
+    */
+
+    @Test
+    fun `WHEN the user is on the normal tabs page THEN the search icon is visible`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.NormalTabs,
+            tabSearchEnabled = true,
+        )
+        assertTrue(testState.searchIconVisible)
+    }
+
+    @Test
+    fun `GIVEN Tab Search is not enabled WHEN the user is on the normal tabs page THEN the search icon is not visible`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.NormalTabs,
+            tabSearchEnabled = false,
+        )
+        assertFalse(testState.searchIconVisible)
+    }
+
+    @Test
+    fun `WHEN the user is on the private tabs page THEN the search icon is visible`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.PrivateTabs,
+            tabSearchEnabled = true,
+        )
+        assertTrue(testState.searchIconVisible)
+    }
+
+    @Test
+    fun `WHEN the user is on the synced tabs page THEN the search icon is not visible`() {
+        val testState = TabsTrayState(selectedPage = Page.SyncedTabs)
+        assertFalse(testState.searchIconVisible)
+    }
+
+    /**
+     *  [TabsTrayState.searchIconEnabled] coverage
+     */
+
+    @Test
+    fun `GIVEN the user has no normal tabs open WHEN the user is on the normal tabs page THEN the search icon is disabled`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.NormalTabs,
+            normalTabs = emptyList(),
+        )
+        assertFalse(testState.searchIconEnabled)
+    }
+
+    @Test
+    fun `GIVEN the user has at least one normal tab open WHEN the user is on the normal tabs page THEN the search icon is disabled`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.NormalTabs,
+            normalTabs = listOf(createTab(url = "url")),
+            tabSearchEnabled = true,
+        )
+        assertTrue(testState.searchIconEnabled)
+    }
+
+    @Test
+    fun `GIVEN the user has no private tabs open WHEN the user is on the private tabs page THEN the search icon is disabled`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.PrivateTabs,
+            privateTabs = emptyList(),
+        )
+        assertFalse(testState.searchIconEnabled)
+    }
+
+    @Test
+    fun `GIVEN the user has at least one private tab open WHEN the user is on the private tabs page THEN the search icon is disabled`() {
+        val testState = TabsTrayState(
+            selectedPage = Page.PrivateTabs,
+            privateTabs = listOf(createTab(url = "url")),
+            tabSearchEnabled = true,
+        )
+        assertTrue(testState.searchIconEnabled)
     }
 
     private fun initMenuItems(
@@ -188,7 +302,6 @@ class TabsTrayStateTest {
         privateTabCount: Int = 0,
     ): List<MenuItem> =
         mode.getMenuItems(
-            resources = testContext.resources,
             shouldShowInactiveButton = shouldShowInactiveButton,
             selectedPage = selectedPage,
             normalTabCount = normalTabCount,

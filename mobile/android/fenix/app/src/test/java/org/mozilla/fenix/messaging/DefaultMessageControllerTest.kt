@@ -12,7 +12,6 @@ import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.service.nimbus.messaging.MessageData
 import mozilla.components.service.nimbus.messaging.NimbusMessagingControllerInterface
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -21,13 +20,15 @@ import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.MessageClicked
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.helpers.FenixGleanTestRule
+import org.robolectric.RobolectricTestRunner
+import java.lang.ref.WeakReference
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class DefaultMessageControllerTest {
 
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     private val homeActivity: HomeActivity = mockk(relaxed = true)
     private val messagingController: NimbusMessagingControllerInterface = mockk(relaxed = true)
@@ -39,7 +40,7 @@ class DefaultMessageControllerTest {
         defaultMessageController = DefaultMessageController(
             messagingController = messagingController,
             appStore = appStore,
-            homeActivity = homeActivity,
+            homeActivityRef = WeakReference(homeActivity),
         )
     }
 

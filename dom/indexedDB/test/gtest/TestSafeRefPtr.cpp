@@ -5,9 +5,8 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "gtest/gtest.h"
-
-#include "mozilla/dom/SafeRefPtr.h"
 #include "mozilla/RefCounted.h"
+#include "mozilla/dom/SafeRefPtr.h"
 
 using namespace mozilla;
 
@@ -267,6 +266,18 @@ TEST(DOM_IndexedDB_SafeRefPtr, SafeRefPtrFromThis_DiscardInCtor)
   {
     SafeRefPtr<SafeTest> ptr = MakeSafeRefPtr<SafeTest>(
         [](SafeRefPtr<SafeBase> ptr) { EXPECT_EQ(2u, ptr->refCount()); });
+    ASSERT_EQ(1u, ptr->refCount());
+    ASSERT_EQ(0, SafeBase::sNumDestroyed);
+  }
+  ASSERT_EQ(1, SafeBase::sNumDestroyed);
+}
+
+TEST(DOM_IndexedDB_SafeRefPtr, Construct_FromSelf)
+{
+  SafeBase::sNumDestroyed = 0;
+  {
+    SafeRefPtr<SafeBase> ptr = MakeSafeRefPtr<SafeBase>();
+    ptr = std::move(static_cast<SafeRefPtr<SafeBase>&>(ptr));
     ASSERT_EQ(1u, ptr->refCount());
     ASSERT_EQ(0, SafeBase::sNumDestroyed);
   }

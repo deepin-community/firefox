@@ -5,10 +5,6 @@
 
 ## Generative AI (GenAI) Settings section
 
-genai-settings-chat-choose = چیٹ بوٹ چݨو
-genai-settings-chat-choose-one-menuitem =
-    .label = ہک چݨو
-genai-settings-chat-links = جہڑے ویلے تساں چیٹ بوٹ چݨدے ہو، تساں فراہم کنندہ دی ورتݨ شرطاں تے رازداری پالسی نال متفق ہوندے ہو۔
 genai-settings-chat-chatgpt-links = چیٹ جی پی ٹی چُݨݨ نال تساں اوپن اے آئی دیاں <a data-l10n-name="link1">ورتݨ شرطاں</a> تے <a data-l10n-name="link2">رازداری پالیسی</a> نال متفق ہوسو۔
 genai-settings-chat-copilot-links = کوپائلٹ چُݨݨ نال تساں <a data-l10n-name="link1">کوپائلٹ اے آئی تجربے دیاں شرطاں</a> تے <a data-l10n-name="link2">مائیکروسافٹ رازداری پالیسی</a> نال متفق ہوسو۔
 genai-settings-chat-huggingchat-links = ہگنگ چیٹ چُݨݨ نال تساں  <a data-l10n-name="link1">ہگنگ چیٹ رازداری نوٹس</a> تے <a data-l10n-name="link2">ہگنگ فیس رازداری پالیسی</a> نال متفق ہوسو۔
@@ -45,3 +41,53 @@ genai-input-ask-generic =
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = { $provider } کنوں پچھو ۔۔۔
+genai-shortcuts-hide =
+    .label = چیٹ بوٹ شارٹ کٹ لکاؤ
+
+## Chatbot header
+
+genai-chatbot-title = اے آئی چیٹ بوٹ
+genai-header-provider-menu =
+    .title = چیٹ بوٹ چݨو
+genai-header-options-button =
+    .title = مینیو کھولو
+genai-header-close-button =
+    .title = بند کرو
+genai-provider-view-details =
+    .label = چیٹ بوٹ تفصیلاں ݙیکھو
+genai-options-reload-generic =
+    .label = اے آئی چیٹ بوٹ ولدا لوڈ کرو
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = { $provider } ولدا لوڈ کرو
+genai-options-about-chatbot =
+    .label = { -brand-short-name } وچ اے آئی چیٹ بوٹاں بارے
+
+## Chatbot onboarding
+
+genai-onboarding-primary = جاری
+genai-onboarding-secondary = بند کرو
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Claude بارے ٻیا سِکھو
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = ChatGPT بارے ٻیا سِکھو۔
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Gemini بارے ٻیا سکھو
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = HuggingChat بارے ٻیا سِکھو۔
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Le Chat بارے ٻیا سِکھو۔
+genai-onboarding-select-primary = چیٹنگ شروع کرو
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = عبارت تے کوڈ جنریٹ کرو
+genai-onboarding-huggingchat-generate = عبارت تے کوڈ جنریٹ کرو
+genai-onboarding-lechat-generate = عبارت تے کوڈ جنریٹ کرو
+genai-onboarding-lechat-price = مفت: کھاتہ ضروری ہے

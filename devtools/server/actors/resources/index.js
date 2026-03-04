@@ -25,6 +25,7 @@ const TYPES = {
   JSTRACER_TRACE: "jstracer-trace",
   JSTRACER_STATE: "jstracer-state",
   WEBSOCKET: "websocket",
+  WEBTRANSPORT: "webtransport",
 
   // storage types
   CACHE_STORAGE: "Cache",
@@ -116,6 +117,9 @@ const FrameTargetResources = augmentResourceDictionary({
   [TYPES.WEBSOCKET]: {
     path: "devtools/server/actors/resources/websockets",
   },
+  [TYPES.WEBTRANSPORT]: {
+    path: "devtools/server/actors/resources/webtransport",
+  },
 });
 
 // Process target resources are spawned via a Process Target Actor.
@@ -156,6 +160,29 @@ const ProcessTargetResources = augmentResourceDictionary({
 // to Ci, which isn't available in worker context.
 // Errors are emitted from the content process main thread so the user would still get them.
 const WorkerTargetResources = augmentResourceDictionary({
+  [TYPES.CONSOLE_MESSAGE]: {
+    path: "devtools/server/actors/resources/console-messages",
+  },
+  [TYPES.JSTRACER_TRACE]: {
+    path: "devtools/server/actors/resources/jstracer-trace",
+  },
+  [TYPES.JSTRACER_STATE]: {
+    path: "devtools/server/actors/resources/jstracer-state",
+  },
+  [TYPES.SOURCE]: {
+    path: "devtools/server/actors/resources/sources",
+  },
+  [TYPES.THREAD_STATE]: {
+    path: "devtools/server/actors/resources/thread-states",
+  },
+});
+
+// Web Extension Content Script resources are spawn for each content script,
+// from the web page's main thread it relates to.
+//
+// Similarly to workers, it doesn't relate to any DOM Document,
+// but only a JavaScript context. So it only expose a subset of resources.
+const WebExtensionContentScriptTargetResources = augmentResourceDictionary({
   [TYPES.CONSOLE_MESSAGE]: {
     path: "devtools/server/actors/resources/console-messages",
   },
@@ -258,6 +285,8 @@ function getResourceTypeDictionaryForTargetType(targetType) {
       return WorkerTargetResources;
     case Targets.TYPES.SHARED_WORKER:
       return WorkerTargetResources;
+    case Targets.TYPES.CONTENT_SCRIPT:
+      return WebExtensionContentScriptTargetResources;
     default:
       throw new Error(`Unsupported target actor typeName '${targetType}'`);
   }

@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = Historikk
 menu-view-synced-tabs-sidebar =
     .label = Synkroniserte faner
-menu-view-megalist-sidebar =
-    .label = Passord
 menu-view-full-zoom =
     .label = Skalering
     .accesskey = r
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobile bokmerker
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profiler
+menu-profiles-manage-profiles =
+    .label = Behandle profiler
+menu-profiles-new-profile =
+    .label = Ny profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (gjeldende)
+menu-profiles-menu =
+    .label = Profiler
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Nedlastinger
     .accesskey = N
+menu-tools-extensions-and-themes =
+    .label = Utvidelser og temaer
+    .accesskey = U
 menu-tools-addons-and-themes =
     .label = Tillegg og temaer
     .accesskey = T

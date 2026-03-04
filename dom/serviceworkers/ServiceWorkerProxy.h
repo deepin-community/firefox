@@ -7,13 +7,12 @@
 #ifndef moz_dom_ServiceWorkerProxy_h
 #define moz_dom_ServiceWorkerProxy_h
 
-#include "nsProxyRelease.h"
 #include "ServiceWorkerDescriptor.h"
+#include "nsProxyRelease.h"
 
 namespace mozilla::dom {
 
-class ClientInfo;
-class ClientState;
+class PostMessageSource;
 class ServiceWorkerCloneData;
 class ServiceWorkerInfo;
 class ServiceWorkerParent;
@@ -51,7 +50,7 @@ class ServiceWorkerProxy final {
   void RevokeActor(ServiceWorkerParent* aActor);
 
   void PostMessage(RefPtr<ServiceWorkerCloneData>&& aData,
-                   const ClientInfo& aClientInfo, const ClientState& aState);
+                   const PostMessageSource& aSource);
 
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ServiceWorkerProxy);
 };

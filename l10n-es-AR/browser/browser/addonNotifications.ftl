@@ -81,6 +81,8 @@ addon-removal-title = ¿Eliminar { $name }?
 addon-removal-message = ¿Eliminar { $name } de { -brand-shorter-name }?
 addon-removal-button = Eliminar
 addon-removal-abuse-report-checkbox = Informar de este complemento a { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Si se usan las funciones o extensiones que usan este modelo, se volverán a agregar.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = El complemento descargdo de este sitio no pud
 addon-install-error-file-access = { $addonName } no pudo instalarse porque { -brand-short-name } no pudo modificar el archivo necesario.
 addon-install-error-not-signed = { -brand-short-name } ha evitado que este sitio instale un complemento no verificado.
 addon-install-error-invalid-domain = El complemento { $addonName } no se puede instalar desde esta ubicación.
+addon-install-error-no-addon-name-file-access = El complemento no pudo instalarse porque { -brand-short-name } no pudo modificar el archivo necesario.
 addon-local-install-error-network-failure = Este complemento no pudo instalarse por un error en el sistema de archivos.
 addon-local-install-error-incorrect-hash = Este complemento no pudo instalarse porque no coincide con el complemento que esperaba { -brand-short-name }.
 addon-local-install-error-corrupt-file = Este complemento no pudo instalarse porque parece estar corrupto.
 addon-local-install-error-file-access = { $addonName } no pudo instalarse porque { -brand-short-name } no pudo modificar el archivo necesario.
 addon-local-install-error-not-signed = Este complemento no pudo ser instalado porque no fue verificado.
+addon-local-install-no-addon-name-error-file-access = El complemento no pudo instalarse porque { -brand-short-name } no pudo modificar el archivo necesario.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } no pudo instalarse porque no es compatible con { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } viola las políticas de Mozilla y no se puede instalar en { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } está restringido y no se puede instalar en { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } no se pudo instalar porque tiene un alto riesgo de causar problemas de estabilidad o de seguridad.
+addon-install-error-soft-blocked = { $addonName } viola las políticas de Mozilla y no se puede instalar en { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = No se puede instalar { $addonName } como usuario final, solo puede instalarlo una organización que use políticas empresariales.

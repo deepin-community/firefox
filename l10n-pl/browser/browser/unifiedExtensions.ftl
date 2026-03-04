@@ -11,6 +11,15 @@
 unified-extensions-header-title = Rozszerzenia
 unified-extensions-manage-extensions =
     .label = Zarządzaj rozszerzeniami
+unified-extensions-discover-extensions =
+    .label = Odkrywaj rozszerzenia
+unified-extensions-empty-reason-private-browsing-not-allowed = Masz zainstalowane rozszerzenia, ale nie są włączone w prywatnych oknach
+unified-extensions-empty-reason-extension-not-enabled = Masz zainstalowane rozszerzenia, ale nie są włączone
+# In this headline, “Level up” means to enhance your browsing experience.
+unified-extensions-empty-reason-zero-extensions-onboarding = Podnieś poziom przeglądarki za pomocą rozszerzeń
+unified-extensions-empty-content-explain-enable2 = Wybierz „{ unified-extensions-manage-extensions.label }”, aby włączyć je w ustawieniach.
+unified-extensions-empty-content-explain-manage2 = Wybierz „{ unified-extensions-manage-extensions.label }”, aby zarządzać nimi w ustawieniach.
+unified-extensions-empty-content-explain-extensions-onboarding = Spersonalizuj { -brand-short-name(case: "acc") }, zmieniając jego wygląd i działanie lub wzmacniając prywatność i bezpieczeństwo.
 
 ## An extension in the main list
 
@@ -21,6 +30,12 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = Otwórz menu rozszerzenia { $extensionName }
 unified-extensions-item-message-manage = Zarządzaj rozszerzeniem
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked2 = Rozszerzenie { $extensionName } jest objęte ograniczeniami. Korzystanie z niego może być ryzykowne.
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = Rozszerzenie { $extensionName } narusza zasady Mozilli. Korzystanie z niego może być ryzykowne.
 
 ## Extension's context menu
 
@@ -41,10 +56,65 @@ unified-extensions-context-menu-move-widget-down =
 
 unified-extensions-mb-quarantined-domain-title = Część rozszerzeń jest niedozwolona
 unified-extensions-mb-quarantined-domain-message = Tylko określone rozszerzenia monitorowane przez { -vendor-short-name(case: "acc") } są dozwolone na tej witrynie, aby chronić dane użytkownika.
-unified-extensions-mb-quarantined-domain-message-2 = Aby chronić dane użytkownika, część rozszerzeń nie może odczytywać ani zmieniać danych na tej witrynie. Można zezwolić rozszerzeniu działać na witrynach z ograniczeniami nałożonymi przez { -vendor-short-name(case: "acc") } w jego ustawieniach.
 # .heading is processed by moz-message-bar to be used as a heading attribute
 unified-extensions-mb-quarantined-domain-message-3 =
     .heading = Część rozszerzeń jest niedozwolona
     .message = Aby chronić dane użytkownika, część rozszerzeń nie może odczytywać ani zmieniać danych na tej witrynie. Można zezwolić rozszerzeniu działać na witrynach z ograniczeniami nałożonymi przez { -vendor-short-name(case: "acc") } w jego ustawieniach.
 unified-extensions-mb-quarantined-domain-learn-more = Więcej informacji
     .aria-label = Więcej informacji: część rozszerzeń jest niedozwolona
+unified-extensions-mb-about-addons-link = Otwórz ustawienia rozszerzeń
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single2 =
+    .heading = Wyłączono rozszerzenie { $extensionName }
+    .message =
+        To rozszerzenie jest objęte ograniczeniami i zostało wyłączone.
+        Można je włączyć w ustawieniach, ale może to być ryzykowne.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = Wyłączono rozszerzenie { $extensionName }
+    .message =
+        To rozszerzenie narusza zasady Mozilli i zostało wyłączone.
+        Można je włączyć w ustawieniach, ale może to być ryzykowne.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = Wyłączono rozszerzenie { $extensionName }
+    .message = To rozszerzenie narusza zasady Mozilli i zostało wyłączone.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple2 =
+    .heading =
+        { $extensionsCount ->
+            [one] Wyłączono rozszerzenie
+            [few] Wyłączono { $extensionsCount } rozszerzenia
+           *[many] Wyłączono { $extensionsCount } rozszerzeń
+        }
+    .message =
+        Część zainstalowanych rozszerzeń jest objętych ograniczeniami i zostały wyłączone.
+        Można je włączyć w ustawieniach, ale może to być ryzykowne.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading =
+        { $extensionsCount ->
+            [one] Wyłączono rozszerzenie
+            [few] Wyłączono { $extensionsCount } rozszerzenia
+           *[many] Wyłączono { $extensionsCount } rozszerzeń
+        }
+    .message =
+        Część zainstalowanych rozszerzeń zostało wyłączonych z powodu naruszania zasad Mozilli.
+        Można je włączyć w ustawieniach, ale może to być ryzykowne.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading =
+        { $extensionsCount ->
+            [one] Wyłączono rozszerzenie
+            [few] Wyłączono { $extensionsCount } rozszerzenia
+           *[many] Wyłączono { $extensionsCount } rozszerzeń
+        }
+    .message = Część zainstalowanych rozszerzeń zostało wyłączonych z powodu naruszania zasad Mozilli.
+unified-extensions-notice-safe-mode =
+    .message = Wszystkie rozszerzenia zostały wyłączone z powodu działania w trybie rozwiązywania problemów.

@@ -4,6 +4,7 @@
 
 about-networking-title = Um net
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Hreinsa HTTP-skyndiminni
 about-networking-sockets = Tengill
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Hreinsa DNS-skyndiminni
@@ -63,6 +64,3 @@ about-networking-moved-about-logging = Þessi síða hefur verið færð á <a d
 
 about-networking-networkid-is-up = Tenging er virk
 about-networking-networkid-status-known = Staða tengingar er þekkt
-
-##
-

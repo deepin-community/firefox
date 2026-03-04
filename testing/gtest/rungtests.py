@@ -5,19 +5,25 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import argparse
+import json
 import os
+import pathlib
+import re
 import sys
 
 import mozcrash
 import mozinfo
 import mozlog
 import mozprocess
+from mozfile import load_source
 from mozrunner.utils import get_stack_fixer_function
+
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 log = mozlog.unstructured.getLogger("gtest")
 
 
-class GTests(object):
+class GTests:
     # Time (seconds) in which process will be killed if it produces no output.
     TEST_PROC_NO_OUTPUT_TIMEOUT = 300
 
@@ -28,6 +34,28 @@ class GTests(object):
         else:
             return 2400
 
+    def merge_perfherder_data(self, perfherder_data):
+        grouped = {}
+
+        for data in perfherder_data:
+            framework_name = data.get("framework", {}).get("name")
+            suites_by_name = grouped.setdefault(framework_name, {})
+            for suite in data.get("suites", []):
+                suite_name = suite.get("name")
+                suite_data = suites_by_name.setdefault(
+                    suite_name, {"name": suite_name, "subtests": []}
+                )
+                suite_data["subtests"].extend(suite.get("subtests", []))
+
+        results = {}
+        for framework_name, suites in grouped.items():
+            results[framework_name] = {
+                "framework": {"name": framework_name},
+                "suites": list(suites.values()),
+            }
+
+        return results
+
     def run_gtest(
         self,
         prog,
@@ -35,6 +63,8 @@ class GTests(object):
         cwd,
         symbols_path=None,
         utility_path=None,
+        enable_inc_origin_init=False,
+        filter_set=None,
     ):
         """
         Run a single C++ unit test program.
@@ -53,7 +83,9 @@ class GTests(object):
         Return True if the program exits with a zero status, False otherwise.
         """
         self.xre_path = xre_path
-        env = self.build_environment()
+        env = self.build_environment(enable_inc_origin_init, filter_set)
+        perfherder_data = []
+        PERFHERDER_MATCHER = re.compile(r"PERFHERDER_DATA:\s*(\{.*\})\s*$")
         log.info("Running gtest")
 
         if cwd and not os.path.isdir(cwd):
@@ -70,6 +102,11 @@ class GTests(object):
                 print(stack_fixer(line))
             else:
                 print(line)
+
+            match = PERFHERDER_MATCHER.search(line)
+            if match:
+                data = json.loads(match.group(1))
+                perfherder_data.append(data)
 
         def proc_timeout_handler(proc):
             GTests.run_gtest.timed_out = True
@@ -96,6 +133,20 @@ class GTests(object):
             output_timeout=GTests.TEST_PROC_NO_OUTPUT_TIMEOUT,
             output_timeout_handler=output_timeout_handler,
         )
+
+        if perfherder_data and "MOZ_AUTOMATION" in os.environ:
+            upload_dir = pathlib.Path(os.getenv("MOZ_UPLOAD_DIR"))
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            merged_perfherder_data = self.merge_perfherder_data(perfherder_data)
+            for framework_name, data in merged_perfherder_data.items():
+                file_name = (
+                    "perfherder-data-gtest.json"
+                    if len(merged_perfherder_data) == 1
+                    else f"perfherder-data-gtest-{framework_name}.json"
+                )
+                out_path = upload_dir / file_name
+                with out_path.open("w", encoding="utf-8") as f:
+                    json.dump(data, f)
 
         log.info("gtest | process wait complete, returncode=%s" % proc.returncode)
         if mozcrash.check_for_crashes(cwd, symbols_path, test_name="gtest"):
@@ -134,7 +185,7 @@ class GTests(object):
 
         return env
 
-    def build_environment(self):
+    def build_environment(self, enable_inc_origin_init, filter_set):
         """
         Create and return a dictionary of all the appropriate env variables
         and values. On a remote system, we overload this to set different
@@ -185,24 +236,42 @@ class GTests(object):
         env["MOZ_WEBRENDER"] = "1"
         env["MOZ_ACCELERATED"] = "1"
 
+        if enable_inc_origin_init:
+            env["MOZ_ENABLE_INC_ORIGIN_INIT"] = "1"
+        else:
+            env["MOZ_ENABLE_INC_ORIGIN_INIT"] = "0"
+
+        if filter_set is not None:
+            filter_sets_mod_path = os.path.join(HERE, "gtest_filter_sets.py")
+            load_source("gtest_filter_sets", filter_sets_mod_path)
+
+            import gtest_filter_sets
+
+            gtest_filter_for_filter_set = gtest_filter_sets.get(filter_set)
+            if gtest_filter_for_filter_set:
+                env["GTEST_FILTER"] = gtest_filter_for_filter_set
+                log.info("Using gtest filter for %s", filter_set)
+            else:
+                log.info("Failed to get gtest filter for %s", filter_set)
+
         return env
 
 
 class gtestOptions(argparse.ArgumentParser):
     def __init__(self):
-        super(gtestOptions, self).__init__()
+        super().__init__()
 
         self.add_argument(
             "--cwd",
             dest="cwd",
             default=os.getcwd(),
-            help="absolute path to directory from which " "to run the binary",
+            help="absolute path to directory from which to run the binary",
         )
         self.add_argument(
             "--xre-path",
             dest="xre_path",
             default=None,
-            help="absolute path to directory containing XRE " "(probably xulrunner)",
+            help="absolute path to directory containing XRE (probably xulrunner)",
         )
         self.add_argument(
             "--symbols-path",
@@ -217,6 +286,19 @@ class gtestOptions(argparse.ArgumentParser):
             dest="utility_path",
             default=None,
             help="path to a directory containing utility program binaries",
+        )
+        self.add_argument(
+            "--enable-inc-origin-init",
+            action="store_true",
+            dest="enable_inc_origin_init",
+            default=False,
+            help="enabling of incremental origin initialization in Gecko",
+        )
+        self.add_argument(
+            "--filter-set",
+            dest="filter_set",
+            default=None,
+            help="predefined gtest filter",
         )
         self.add_argument("args", nargs=argparse.REMAINDER)
 
@@ -257,6 +339,8 @@ def main():
             options.cwd,
             symbols_path=options.symbols_path,
             utility_path=options.utility_path,
+            enable_inc_origin_init=options.enable_inc_origin_init,
+            filter_set=options.filter_set,
         )
     except Exception as e:
         log.error(str(e))

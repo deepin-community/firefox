@@ -4,7 +4,6 @@
 
 package org.mozilla.fenix.ui.robots
 
-import android.os.Build
 import android.util.Log
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.ComposeTestRule
@@ -18,30 +17,29 @@ import org.mozilla.fenix.helpers.Constants.TAG
 import org.mozilla.fenix.helpers.MatcherHelper.assertUIObjectExists
 import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
-import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdAndText
+import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdContainingText
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.packageName
-import java.util.regex.Pattern
 
 /**
  * Implementation of Robot Pattern for the Add to homescreen feature.
  */
-class AddToHomeScreenRobot {
+class AddToHomeScreenRobot(private val composeTestRule: ComposeTestRule) {
 
-    fun verifyAddPrivateBrowsingShortcutButton(composeTestRule: ComposeTestRule) {
+    fun verifyAddPrivateBrowsingShortcutButton() {
         Log.i(TAG, "verifyAddPrivateBrowsingShortcutButton: Trying to verify \"Add to Home screen\" private browsing shortcut dialog button is displayed")
         composeTestRule.onNodeWithTag("private.add").assertIsDisplayed()
         Log.i(TAG, "verifyAddPrivateBrowsingShortcutButton: Verified \"Add to Home screen\" private browsing shortcut dialog button is displayed")
     }
 
-    fun verifyNoThanksPrivateBrowsingShortcutButton(composeTestRule: ComposeTestRule) {
+    fun verifyNoThanksPrivateBrowsingShortcutButton() {
         Log.i(TAG, "verifyNoThanksPrivateBrowsingShortcutButton: Trying to verify \"No thanks\" private browsing shortcut dialog button is displayed")
         composeTestRule.onNodeWithTag("private.cancel").assertIsDisplayed()
         Log.i(TAG, "verifyNoThanksPrivateBrowsingShortcutButton: Verified \"No thanks\" private browsing shortcut dialog button is displayed")
     }
 
-    fun clickAddPrivateBrowsingShortcutButton(composeTestRule: ComposeTestRule) {
+    fun clickAddPrivateBrowsingShortcutButton() {
         Log.i(TAG, "clickAddPrivateBrowsingShortcutButton: Trying to click \"Add to Home screen\" private browsing shortcut dialog button")
         composeTestRule.onNodeWithTag("private.add").performClick()
         Log.i(TAG, "clickAddPrivateBrowsingShortcutButton: Clicked \"Add to Home screen\" private browsing shortcut dialog button")
@@ -67,28 +65,10 @@ class AddToHomeScreenRobot {
         Log.i(TAG, "clickCancelShortcutButton: Clicked \"Cancel\" button from \"Add to home screen\" dialog")
     }
 
-    fun clickAddAutomaticallyButton() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.i(TAG, "clickAddAutomaticallyButton: Waiting for $waitingTime ms until finding \"Add automatically\" system dialog button")
-            mDevice.wait(
-                Until.findObject(
-                    By.text(
-                        Pattern.compile("Add Automatically", Pattern.CASE_INSENSITIVE),
-                    ),
-                ),
-                waitingTime,
-            )
-            Log.i(TAG, "clickAddAutomaticallyButton: Waited for $waitingTime ms until \"Add automatically\" system dialog button was found")
-            Log.i(TAG, "clickAddAutomaticallyButton: Trying to click \"Add automatically\" system dialog button")
-            addAutomaticallyButton().click()
-            Log.i(TAG, "clickAddAutomaticallyButton: Clicked \"Add automatically\" system dialog button")
-        }
-    }
-
     fun verifyShortcutAdded(shortcutTitle: String) =
         assertUIObjectExists(itemContainingText(shortcutTitle))
 
-    class Transition {
+    class Transition(private val composeTestRule: ComposeTestRule) {
         fun openHomeScreenShortcut(title: String, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
             Log.i(TAG, "openHomeScreenShortcut: Waiting for $waitingTime ms until finding $title home screen shortcut")
             mDevice.wait(
@@ -100,8 +80,8 @@ class AddToHomeScreenRobot {
             mDevice.findObject((UiSelector().text(title))).clickAndWaitForNewWindow(waitingTime)
             Log.i(TAG, "openHomeScreenShortcut: Clicked $title home screen shortcut and waited for $waitingTime ms for a new window")
 
-            BrowserRobot().interact()
-            return BrowserRobot.Transition()
+            BrowserRobot(composeTestRule).interact()
+            return BrowserRobot.Transition(composeTestRule)
         }
 
         fun searchAndOpenHomeScreenShortcut(title: String, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
@@ -122,19 +102,16 @@ class AddToHomeScreenRobot {
             shortcut().clickAndWaitForNewWindow()
             Log.i(TAG, "searchAndOpenHomeScreenShortcut: Clicked home screen shortcut: $title and waited for a new window")
 
-            BrowserRobot().interact()
-            return BrowserRobot.Transition()
+            BrowserRobot(composeTestRule).interact()
+            return BrowserRobot.Transition(composeTestRule)
         }
     }
 }
 
-fun addToHomeScreen(interact: AddToHomeScreenRobot.() -> Unit): AddToHomeScreenRobot.Transition {
-    AddToHomeScreenRobot().interact()
-    return AddToHomeScreenRobot.Transition()
+fun addToHomeScreen(composeTestRule: ComposeTestRule, interact: AddToHomeScreenRobot.() -> Unit): AddToHomeScreenRobot.Transition {
+    AddToHomeScreenRobot(composeTestRule).interact()
+    return AddToHomeScreenRobot.Transition(composeTestRule)
 }
-
-private fun addAutomaticallyButton() =
-    mDevice.findObject(UiSelector().textContains("add automatically"))
 
 private fun cancelAddToHomeScreenButton() =
     itemWithResId("$packageName:id/cancel_button")
@@ -143,4 +120,4 @@ private fun confirmAddToHomeScreenButton() =
 private fun shortcutTextField() =
     itemWithResId("$packageName:id/shortcut_text")
 private fun shortcutTitle(title: String) =
-    itemWithResIdAndText("$packageName:id/shortcut_text", title)
+    itemWithResIdContainingText("$packageName:id/shortcut_text", title)

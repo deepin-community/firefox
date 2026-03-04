@@ -16,19 +16,19 @@ update-checkingForUpdates = Проверка наличия обновлений
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
-settings-update-downloading = <img data-l10n-name="icon"/>Загрузка обновления — <label data-l10n-name="download-status">{ $transfer }</label>
-aboutdialog-update-downloading = Загрузка обновления — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading = <img data-l10n-name="icon"/>Скачивание обновления — <label data-l10n-name="download-status">{ $transfer }</label>
+aboutdialog-update-downloading = Скачивание обновления — <label data-l10n-name="download-status">{ $transfer }</label>
 
 ##
 
 update-applying = Применение обновления…
-update-failed = Обновление не удалось. <label data-l10n-name="failed-link">Загрузите последнюю версию</label>
-update-failed-main = Обновление не удалось. <a data-l10n-name="failed-link-main">Загрузите последнюю версию</a>
+update-failed = Обновление не удалось. <label data-l10n-name="failed-link">Скачайте последнюю версию</label>
+update-failed-main = Обновление не удалось. <a data-l10n-name="failed-link-main">Скачайте последнюю версию</a>
 update-adminDisabled = Обновления отключены вашим системным администратором
 update-policy-disabled = Обновления отключены вашей организацией
 update-noUpdatesFound = Установлена последняя версия { -brand-short-name }
 aboutdialog-update-checking-failed = Не удалось проверить наличие обновлений.
-update-otherInstanceHandlingUpdates = Обновление производится другим процессом { -brand-short-name }
+update-otherInstanceHandlingUpdates = { -brand-short-name } обновляется другим процессом
 
 ## Variables:
 ##   $displayUrl (String): URL to page with download instructions. Example: www.mozilla.org/firefox/nightly/
@@ -51,6 +51,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } создан <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label> — <label data-l10n-name="community-creditsLink">глобальным сообществом</label>, работающим над тем, чтобы Интернет оставался открытым и общедоступным для всех и каждого.
 helpus = Хотите помочь? <label data-l10n-name="helpus-donateLink">Сделайте пожертвование</label> или <label data-l10n-name="helpus-getInvolvedLink">присоединяйтесь!</label>
 bottomLinks-license = Сведения о лицензии
+bottom-links-terms = Условия использования
+bottom-links-privacy = Уведомление о конфиденциальности
 bottomLinks-rights = Права конечного пользователя
 bottomLinks-privacy = Политика приватности
 # Example of resulting string: 66.0.1 (64-bit)

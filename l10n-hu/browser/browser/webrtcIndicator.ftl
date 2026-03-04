@@ -33,7 +33,7 @@ webrtc-sharing-menu =
     .label = Eszközöket megosztó lapok
     .accesskey = E
 webrtc-sharing-window = Egy másik alkalmazásablakot oszt meg.
-webrtc-sharing-browser-window = Megosztja a { -brand-short-name(case: "accusative") }.
+webrtc-sharing-browser-window = Megosztja a { -brand-short-name }ot.
 webrtc-sharing-screen = A teljes képernyőt megosztja.
 webrtc-stop-sharing-button = Megosztás leállítása
 webrtc-microphone-unmuted =
@@ -78,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =

@@ -69,6 +69,14 @@ perftools-button-add-directory = Zonte une cartele
 perftools-button-remove-directory = Gjave selezionadis
 perftools-button-edit-settings = Modifiche lis impostazions…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Plui azions
+perftools-menu-more-actions-restart-with-profiling = Torne invie { -brand-shorter-name } cu la profilazion al inviament ativade
+perftools-menu-more-actions-copy-for-startup = Copie lis variabilis di ambient pe profilazion al inviament
+perftools-menu-more-actions-copy-for-perf-tests = Copie i parametris pes provis des prestazions
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -141,6 +149,8 @@ perftools-presets-graphics-label = Grafiche
 perftools-presets-graphics-description = Preconfigurazion par investigâ sui erôrs grafics in { -brand-shorter-name }.
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Preconfigurazion par investigâ su erôrs audio e video in { -brand-shorter-name }.
+perftools-presets-ml-label = Machine Learning
+perftools-presets-ml-description2 = Preconfigurazion pe diagnosi di problemis relatîfs al machine learning in { -brand-shorter-name }.
 perftools-presets-networking-label = Rêt
 perftools-presets-networking-description = Preconfigurazion par investigâ su erôrs di rêt in { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +158,6 @@ perftools-presets-power-label = Energjie
 perftools-presets-power-description = Pre-configurazion par investigâ sui erôrs di consum di energjie in { -brand-shorter-name }, cun basse sorecjame.
 perftools-presets-debug-label = Debug
 perftools-presets-debug-description = Impostazion prestabilide pal debug in { -brand-shorter-name }. Overhead elevât, no sta doprâlu pes analisis des prestazions, ma dome par capî il compuartament dal navigadôr.
+perftools-presets-web-compat-label = Compatibilitât web
+perftools-presets-web-compat-description = Preconfigurazion conseade pal debug dai problemis di compatibilitât tai sîts web, no par monitorâ lis prestazions.
 perftools-presets-custom-label = Personalizât
-
-##
-

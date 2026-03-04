@@ -27,14 +27,12 @@ about-webrtc-aec-logging-toggled-on-state-msg = AEC-Protokollierung aktiv (sprec
 about-webrtc-aec-logging-unavailable-sandbox = Die Umgebungsvariable MOZ_DISABLE_CONTENT_SANDBOX=1 ist für den Export von AEC-Protokollen erforderlich. Setzen Sie diese Variable nur, wenn Sie die möglichen Risiken verstehen.
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
-about-webrtc-aec-logging-toggled-off-state-msg = Gespeicherte protokolldateien befinden sich in: { $path }
+about-webrtc-aec-logging-toggled-off-state-msg = Gespeicherte Protokolldateien befinden sich in: { $path }
 
 ##
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Automatisch aktualisieren
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Standardmäßig automatisch aktualisieren
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Aktualisieren
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = Seite speichern
 about-webrtc-debug-mode-msg-label = Debug-Modus
 about-webrtc-debug-mode-off-state-label = Debug-Modus starten
 about-webrtc-debug-mode-on-state-label = Debug-Modus beenden
-about-webrtc-enable-logging-label = WebRTC-Protokollvoreinstellung aktivieren
 about-webrtc-stats-heading = Sitzungsstatistiken
+about-webrtc-enable-logging-label = WebRTC-Protokollvoreinstellung aktivieren
 about-webrtc-peerconnections-section-heading = RTCPeerConnection-Statistiken
 about-webrtc-peerconnections-section-show-msg = RTCPeerConnection-Statistiken anzeigen
 about-webrtc-peerconnections-section-hide-msg = RTCPeerConnection-Statistiken ausblenden
@@ -146,10 +144,10 @@ about-webrtc-raw-cand-show-msg = Unformatierte Kandidaten anzeigen
     .title = Zum Erweitern des Abschnitts anklicken
 about-webrtc-raw-cand-hide-msg = Unformatierte Kandidaten ausblenden
     .title = Zum Minimieren des Abschnitts anklicken
-about-webrtc-raw-cand-section-show-msg = Unformatierte kandidaten anzeigen
-    .title = Zum erweitern des abschnitts anklicken
-about-webrtc-raw-cand-section-hide-msg = Unformatierte kandidaten ausblenden
-    .title = Zum minimieren des abschnitts anklicken
+about-webrtc-raw-cand-section-show-msg = Unformatierte Kandidaten anzeigen
+    .title = Zum Erweitern des Abschnitts anklicken
+about-webrtc-raw-cand-section-hide-msg = Unformatierte Kandidaten ausblenden
+    .title = Zum Minimieren des Abschnitts anklicken
 about-webrtc-priority = Priorität
 about-webrtc-fold-show-msg = Details anzeigen
     .title = Zum Erweitern des Abschnitts anklicken
@@ -229,10 +227,7 @@ about-webrtc-round-trip-time-ms = Paketumlaufzeit (RTT) [ms]
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Videoframe-Statistiken - MediaStreamTrack-ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = Seite gespeichert als: { $path }
 about-webrtc-debug-mode-off-state-msg = Das Ablaufprotokoll befindet sich in: { $path }
@@ -322,6 +317,3 @@ about-webrtc-hide-msg-sdp = SDP ausblenden
 about-webrtc-media-context-show-msg = Medienkontext anzeigen
 about-webrtc-media-context-hide-msg = Medienkontext verbergen
 about-webrtc-media-context-heading = Medienkontext
-
-##
-

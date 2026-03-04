@@ -5,62 +5,47 @@
 permissions-window2 =
     .title = Sa huā gi'iát
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Si direksion sitio na
     .accesskey = d
-
 permissions-block =
     .label = Si ga'ni'
     .accesskey = S
-
 permissions-session =
     .label = Ga'ni' gi'iaj sun sesion
     .accesskey = S
-
 permissions-allow =
     .label = Ga'nin'
     .accesskey = A
-
 permissions-site-name =
     .label = Sitio web
-
 permissions-status =
     .label = Daj hua riñaj
-
 permissions-remove =
     .label = Guxun' sitio web
     .accesskey = G
-
 permissions-remove-all =
     .label = Guyun daran sitio web
     .accesskey = G
-
 permission-dialog =
     .buttonlabelaccept = Na’nïnj sà’ sa nadunat
     .buttonaccesskeyaccept = s
-
 permissions-autoplay-menu = Sa ngà hua niña guendâ nej sîtio:
-
 permissions-searchbox =
     .placeholder = Nana'ui' sitio web
-
 permissions-capabilities-autoplay-allow =
     .label = Ga'nïn sa gunïn' ngà sa ni'io'
 permissions-capabilities-autoplay-block =
     .label = Narán riña sa unïn'
 permissions-capabilities-autoplay-blockall =
     .label = Narán riña sa unïn' ngà sa ni'io'
-
 permissions-capabilities-allow =
     .label = Ga'nïn'
 permissions-capabilities-block =
     .label = Si ga'nïn'
 permissions-capabilities-prompt =
     .label = Gachinj na'anj yitïnj
-
 permissions-capabilities-listitem-allow =
     .value = Ga'nïn'
 permissions-capabilities-listitem-block =
@@ -85,9 +70,6 @@ permissions-exceptions-cookie-window2 =
     .title = Së sa yakaj guano' - Cookies ni nej sa 'na' 'nga sitio
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Ga'ue gatajt ahuin sitio web ga'ue garasun yitïnj kookies ni si dato sitio na. Gachun si direksion sitio ruhuat gini'iaj ni ga'uit 'ngo klik riñ taj garun'. Ga'nïn riña sesión na àsi ma ga'nïn.
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -137,9 +119,6 @@ permissions-site-location-disable-label =
     .label = Garun' riña nej solisitû achín ni'iaj gatu riña aché nut
 permissions-site-location-disable-desc = Na gi'iaj da' nī daran' sitio nitaj si taj si yugui nī da'ui gachinj ni'ià da' gatu riña achré nunt. Nga rajsunt na nī ga'ue si hua 'ngo sa si ga'ue gi'iaj sun hue'é riña sitio na.
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -159,8 +138,3 @@ permissions-site-microphone-desc = Nej sitio na achín ni'iaj da' gatu ma riña 
 permissions-site-microphone-disable-label =
     .label = Garun' riña nej sa achín ni'iaj gatu riña si microfonot
 permissions-site-microphone-disable-desc = Na gi'iaj da' nī daran' sitio nitaj si tāj si yugui nī da'ui gachinj ni'ià da' gatu riña si mikrofonot. 'Ngà garánt riña si mikrofonot nī hua da'aj sitio nī si gi'iaj sun hue'ej.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

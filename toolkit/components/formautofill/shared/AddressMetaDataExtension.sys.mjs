@@ -254,6 +254,7 @@ export const AddressMetaDataExtension = {
   },
   "data/DE": {
     alpha_3_code: "DEU",
+    address_reversed: true,
   },
   "data/GH": {
     alpha_3_code: "GHA",
@@ -341,6 +342,8 @@ export const AddressMetaDataExtension = {
   },
   "data/JP": {
     alpha_3_code: "JPN",
+    fmt: "〒%Z%n%S%C%n%A%n%O%n%N",
+    require: "ACSZ",
   },
   "data/JE": {
     alpha_3_code: "JEY",

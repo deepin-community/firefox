@@ -7,6 +7,12 @@ let getActor = browser => {
   return browser.browsingContext.currentWindowGlobal.getActor(ACTOR);
 };
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function runTests() {
   if (!SpecialPowers.Services.appinfo.sessionHistoryInParent) {
     await setupAsync();
@@ -21,7 +27,7 @@ add_task(async function runTests() {
       BrowserTestUtils.startLoadingURIString(browser, "http://www.example.com/")
     );
     await checkListenersAsync("newentry", "shistory has a new entry");
-    ok(browser.canGoBack, "we can go back");
+    ok(browser.canGoBackIgnoringUserInteraction, "we can go back");
 
     await whenPageShown(browser, () => browser.goBack());
     await checkListenersAsync("gotoindex", "back to the first shentry");
@@ -124,7 +130,7 @@ add_task(async function runTests() {
     BrowserTestUtils.startLoadingURIString(browser, "http://www.example.com/")
   );
   checkListeners("newentry", "shistory has a new entry");
-  ok(browser.canGoBack, "we can go back");
+  ok(browser.canGoBackIgnoringUserInteraction, "we can go back");
 
   await whenPageShown(browser, () => browser.goBack());
   checkListeners("gotoindex", "back to the first shentry");

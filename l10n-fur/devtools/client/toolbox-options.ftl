@@ -30,6 +30,10 @@ options-context-inspector = Ispetôr
 options-show-user-agent-styles-label = Mostre i stîi dal navigadôr
 options-show-user-agent-styles-tooltip =
     .title = Ativant cheste opzion a vignaran visualizâts i stîi predefinîts cjariâts dal navigadôr.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Mostre Browser Shadow DOM
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Ativant cheste opzion a vignaran mostrâts i elements Shadow DOM gjestîts dal navigadôr.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Cjonce i atribûts DOM
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Disative la cache HTTP (cuant che la cassele 
 options-disable-http-cache-tooltip =
     .title = Ativant cheste opzion la cache HTTP e vignarà disativade par dutis lis schedis che a àn la cassele dai imprescj vierte. I service workers no vegnin tocjadis di cheste opzion.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Disative JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Disative JavaScript *
 options-disable-javascript-tooltip =
     .title = Ativant cheste opzion JavaScript al vignarà disativât pe schede curint. Se la schede o la cassele dai imprescj a vegnin sieradis alore cheste impostazion e vignarà dismenteade.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Ative mapis des origjins
 options-source-maps-tooltip =
     .title = Se tu ativis cheste opzion i sorzints a vignaran mapâts intai struments.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (dome cheste session, torne cjame la pagjine)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * dome session atuâl, al torne a cjariâ la pagjine
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (torne cjame la pagjine)

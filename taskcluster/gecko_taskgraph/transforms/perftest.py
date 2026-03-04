@@ -5,12 +5,11 @@
 This transform passes options from `mach perftest` to the corresponding task.
 """
 
-
-import json
-from copy import deepcopy
 from datetime import date, timedelta
 
 from taskgraph.transforms.base import TransformSequence
+from taskgraph.util import json
+from taskgraph.util.copy import deepcopy
 from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
 from taskgraph.util.treeherder import join_symbol, split_symbol
 from voluptuous import Any, Extra, Optional
@@ -18,39 +17,37 @@ from voluptuous import Any, Extra, Optional
 transforms = TransformSequence()
 
 
-perftest_description_schema = Schema(
-    {
-        # The test names and the symbols to use for them: [test-symbol, test-path]
-        Optional("perftest"): [[str]],
-        # Metrics to gather for the test. These will be merged
-        # with options specified through perftest-perfherder-global
-        Optional("perftest-metrics"): optionally_keyed_by(
-            "perftest",
-            Any(
-                [str],
-                {str: Any(None, {str: Any(None, str, [str])})},
-            ),
+perftest_description_schema = Schema({
+    # The test names and the symbols to use for them: [test-symbol, test-path]
+    Optional("perftest"): [[str]],
+    # Metrics to gather for the test. These will be merged
+    # with options specified through perftest-perfherder-global
+    Optional("perftest-metrics"): optionally_keyed_by(
+        "perftest",
+        Any(
+            [str],
+            {str: Any(None, {str: Any(None, str, [str])})},
         ),
-        # Perfherder data options that will be applied to
-        # all metrics gathered.
-        Optional("perftest-perfherder-global"): optionally_keyed_by(
-            "perftest", {str: Any(None, str, [str])}
-        ),
-        # Extra options to add to the test's command
-        Optional("perftest-extra-options"): optionally_keyed_by("perftest", [str]),
-        # Variants of the test to make based on extra browsertime
-        # arguments. Expecting:
-        #    [variant-suffix, options-to-use]
-        # If variant-suffix is `null` then the options will be added
-        # to the existing task. Otherwise, a new variant is created
-        # with the given suffix and with its options replaced.
-        Optional("perftest-btime-variants"): optionally_keyed_by(
-            "perftest", [[Any(None, str)]]
-        ),
-        # These options will be parsed in the next schemas
-        Extra: object,
-    }
-)
+    ),
+    # Perfherder data options that will be applied to
+    # all metrics gathered.
+    Optional("perftest-perfherder-global"): optionally_keyed_by(
+        "perftest", {str: Any(None, str, [str])}
+    ),
+    # Extra options to add to the test's command
+    Optional("perftest-extra-options"): optionally_keyed_by("perftest", [str]),
+    # Variants of the test to make based on extra browsertime
+    # arguments. Expecting:
+    #    [variant-suffix, options-to-use]
+    # If variant-suffix is `null` then the options will be added
+    # to the existing task. Otherwise, a new variant is created
+    # with the given suffix and with its options replaced.
+    Optional("perftest-btime-variants"): optionally_keyed_by(
+        "perftest", [[Any(None, str)]]
+    ),
+    # These options will be parsed in the next schemas
+    Extra: object,
+})
 
 
 transforms.add_validate(perftest_description_schema)
@@ -217,24 +214,16 @@ def setup_perftest_metrics(config, jobs):
 
         job["run"]["command"] = job["run"]["command"].replace(
             "{perftest_metrics}",
-            " ".join(
-                [
-                    ",".join(
-                        [
-                            ":".join(
-                                [
-                                    option,
-                                    str(value)
-                                    .replace(" ", "")
-                                    .replace("'", quote_escape),
-                                ]
-                            )
-                            for option, value in metric_info.items()
-                        ]
-                    )
-                    for metric_info in perftest_metrics
-                ]
-            ),
+            " ".join([
+                ",".join([
+                    ":".join([
+                        option,
+                        str(value).replace(" ", "").replace("'", quote_escape),
+                    ])
+                    for option, value in metric_info.items()
+                ])
+                for metric_info in perftest_metrics
+            ]),
         )
 
         yield job
@@ -247,9 +236,9 @@ def setup_perftest_browsertime_variants(config, jobs):
             yield job
             continue
 
-        job["run"]["command"] += " --browsertime-extra-options %s" % ",".join(
-            [opt.strip() for opt in job.pop("perftest-btime-variants")]
-        )
+        job["run"]["command"] += " --browsertime-extra-options %s" % ",".join([
+            opt.strip() for opt in job.pop("perftest-btime-variants")
+        ])
 
         yield job
 
@@ -261,6 +250,45 @@ def setup_perftest_extra_options(config, jobs):
             yield job
             continue
         job["run"]["command"] += " " + " ".join(job.pop("perftest-extra-options"))
+        yield job
+
+
+@transforms.add
+def create_duplicate_simpleperf_jobs(config, jobs):
+    for job in jobs:
+        if (
+            "startup" in job["name"]
+            and "cold" not in job["name"]
+            and "chrome-m" not in job["name"]
+        ):
+            new_job = deepcopy(job)
+            new_job["run-on-projects"] = []
+            new_job["attributes"] = {"cron": False}
+            new_job["dependencies"] = {
+                "android-aarch64-shippable": "build-android-aarch64-shippable/opt"
+            }
+            new_job["name"] += "-profiling"
+            new_job["run"]["command"] += (
+                " --simpleperf --simpleperf-path $MOZ_FETCHES_DIR/android-simpleperf --geckoprofiler"
+            )
+            new_job["description"] = str(new_job["description"]).replace(
+                "Run", "Profile"
+            )
+            new_job["treeherder"]["symbol"] = str(
+                new_job["treeherder"]["symbol"]
+            ).replace(")", "-profile)")
+            new_job["fetches"]["toolchain"].extend([
+                "linux64-android-simpleperf-linux-repack",
+                "linux64-samply",
+                "symbolicator-cli",
+            ])
+            new_job["fetches"]["android-aarch64-shippable"] = [
+                {
+                    "artifact": "target.crashreporter-symbols.zip",
+                    "extract": False,
+                }
+            ]
+            yield new_job
         yield job
 
 
@@ -356,4 +384,12 @@ def apply_perftest_tier_optimization(config, jobs):
     for job in jobs:
         job["optimization"] = {"skip-unless-backstop": None}
         job["treeherder"]["tier"] = max(job["treeherder"]["tier"], 2)
+        yield job
+
+
+@transforms.add
+def set_perftest_attributes(config, jobs):
+    for job in jobs:
+        attributes = job.setdefault("attributes", {})
+        attributes["perftest_name"] = job["name"]
         yield job

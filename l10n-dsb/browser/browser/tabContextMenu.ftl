@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nowy rejtarik
     .accesskey = N
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Rejtariki nalěwo zacyniś
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = Rejtariki górjejce zacyniś
+    .accesskey = z
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Rejtariki napšawo zacyniś
     .accesskey = n
+close-tabs-to-the-end-vertical =
+    .label = Rejtariki dołojce zacyniś
+    .accesskey = d
 close-other-tabs =
     .label = Druge rejtariki zacyniś
     .accesskey = D
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Do nowego wokna pśesunuś
     .accesskey = n
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Do { $profileName } pśesunuś
 tab-context-close-multiple-tabs =
     .label = Někotare rejtariki zacyniś
     .accesskey = N
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Źěliś
     .accesskey = i
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nowy rejtarik napšawo
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = Nowy rejtarik dołojce
+    .accesskey = w
+tab-context-new-group =
+    .label = Nowa kupka
+    .accesskey = o
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -112,6 +136,17 @@ tab-context-move-tabs =
            *[other] { $tabCount } rejtarikow pśesunuś
         }
     .accesskey = s
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Na rěd pósłaś
+            [one] { $tabCount } rejtarik na rěd pósłaś
+            [two] { $tabCount } rejtarika na rěd pósłaś
+            [few] { $tabCount } rejtariki na rěd pósłaś
+           *[other] { $tabCount } rejtarikow na rěd pósłaś
+        }
+    .accesskey = r
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -119,5 +154,15 @@ tab-context-send-tabs-to-device =
             [two] { $tabCount } rejtarika na rěd pósłaś
             [few] { $tabCount } rejtariki na rěd pósłaś
            *[other] { $tabCount } rejtarikow na rěd pósłaś
+        }
+    .accesskey = r
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Rejtarik pušćiś
+            [one] { $tabCount } rejtarik pušćiś
+            [two] { $tabCount } rejtarika pušćiś
+            [few] { $tabCount } rejtariki pušćiś
+           *[other] { $tabCount } rejtarikow pušćiś
         }
     .accesskey = r

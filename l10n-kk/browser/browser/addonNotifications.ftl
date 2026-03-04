@@ -81,6 +81,8 @@ addon-removal-title = { $name } өшіру керек пе?
 addon-removal-message = { -brand-shorter-name } ішінен { $name } өшіру керек пе?
 addon-removal-button = Өшіру
 addon-removal-abuse-report-checkbox = Бұл кеңейту туралы { -vendor-short-name } адресіне шағым жасау
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Осы үлгіні пайдаланатын мүмкіндіктерді немесе кеңейтулерді пайдалансаңыз, ол қайта қосылады.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = Бұл сайттан алынған қосы
 addon-install-error-file-access = { $addonName } орнату мүмкін емес, өйткені { -brand-short-name } керек файлды түзете алмады.
 addon-install-error-not-signed = { -brand-short-name } бұл сайттың расталмаған кеңейтуді орнату талабын болдырмады.
 addon-install-error-invalid-domain = { $addonName } қосымшасын осы жерден орнату мүмкін емес.
+addon-install-error-no-addon-name-file-access = Бұл қосымшаны орнату мүмкін емес, өйткені { -brand-short-name } керек файлды түзете алмады.
 addon-local-install-error-network-failure = Бұл кеңейтуді файлдық жүйе қатесі салдарынан орнату мүмкін емес.
 addon-local-install-error-incorrect-hash = Бұл кеңейтуді орнату мүмкін емес, өйткені ол { -brand-short-name } күткен кеңейту емес.
 addon-local-install-error-corrupt-file = Бұл кеңейту зақымдалған сияқты, сол үшін оны орнату мүмкін емес.
 addon-local-install-error-file-access = { $addonName } орнату мүмкін емес, өйткені { -brand-short-name } керек файлды түзете алмады.
 addon-local-install-error-not-signed = Бұл кеңейту расталмаған, сол үшін оны орнату мүмкін емес.
+addon-local-install-no-addon-name-error-file-access = Бұл қосымшаны орнату мүмкін емес, өйткені { -brand-short-name } керек файлды түзете алмады.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } орнату мүмкін емес, өйткені ол{ -brand-short-name } { $appVersion } нұсқасымен үйлеспейді.
+addon-install-error-hard-blocked = { $addonName } Mozilla саясаттарын бұзады және оны { -brand-short-name } жүйесіне орнату мүмкін емес.
+addon-install-error-soft-blocked2 = { $addonName } шектелген және оны { -brand-short-name } ішіне орнату мүмкін емес.
 addon-install-error-blocklisted = { $addonName } орнату мүмкін емес, өйткені ол тұрақтылық не қауіпсіздік мәселелерін туғызуы мүмкін.
+addon-install-error-soft-blocked = { $addonName } Mozilla саясаттарын бұзады және оны { -brand-short-name } жүйесіне орнату мүмкін емес.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = { $addonName } қосымшасын қалыпты пайдаланушы ретінде орнату мүмкін емес, оны кәсіпорын саясаттарын пайдаланатын ұйым ғана орната алады.

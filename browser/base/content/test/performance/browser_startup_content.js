@@ -65,7 +65,7 @@ const intermittently_loaded_scripts = {
 
     // Translations code which may be preffed on.
     "resource://gre/actors/TranslationsChild.sys.mjs",
-    "resource://gre/modules/translation/LanguageDetector.sys.mjs",
+    "resource://gre/modules/translations/LanguageDetector.sys.mjs",
     "resource://gre/modules/ConsoleAPIStorage.sys.mjs", // Logging related.
 
     // Session store.
@@ -74,6 +74,10 @@ const intermittently_loaded_scripts = {
     // Cookie banner handling.
     "resource://gre/actors/CookieBannerChild.sys.mjs",
     "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
+
+    // Canonical URL detection behind pref `browser.tabs.notes.enabled`
+    "resource:///actors/CanonicalURLChild.sys.mjs",
+    "moz-src:///browser/components/tabnotes/CanonicalURL.sys.mjs",
 
     // Test related
     "chrome://remote/content/marionette/actors/MarionetteEventsChild.sys.mjs",
@@ -125,12 +129,6 @@ add_task(async function () {
         );
         let collectStacks = AppConstants.NIGHTLY_BUILD || AppConstants.DEBUG;
         let modules = new Map();
-        for (let module of Cu.loadedJSModules) {
-          modules.set(
-            module,
-            collectStacks ? Cu.getModuleImportStack(module) : ""
-          );
-        }
         for (let module of Cu.loadedESModules) {
           modules.set(
             module,

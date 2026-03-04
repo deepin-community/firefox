@@ -3,13 +3,14 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/MIDIOutputMap.h"
+
+#include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/MIDIOutputMapBinding.h"
 #include "nsPIDOMWindow.h"
-#include "mozilla/dom/BindingUtils.h"
 
 namespace mozilla::dom {
 
-NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(MIDIOutputMap, mParent)
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE(MIDIOutputMap, mPorts, mParent)
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(MIDIOutputMap)
 NS_IMPL_CYCLE_COLLECTING_RELEASE(MIDIOutputMap)

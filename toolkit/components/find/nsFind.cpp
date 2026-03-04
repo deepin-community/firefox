@@ -12,7 +12,6 @@
 #include "nsINode.h"
 #include "nsIFrame.h"
 #include "nsIFormControl.h"
-#include "nsTextFragment.h"
 #include "nsString.h"
 #include "nsAtom.h"
 #include "nsServiceManagerUtils.h"
@@ -22,8 +21,8 @@
 #include "nsRange.h"
 #include "nsReadableUtils.h"
 #include "nsContentUtils.h"
-#include "mozilla/DebugOnly.h"
 #include "mozilla/TextEditor.h"
+#include "mozilla/dom/CharacterDataBuffer.h"
 #include "mozilla/dom/ChildIterator.h"
 #include "mozilla/dom/TreeIterator.h"
 #include "mozilla/dom/Element.h"
@@ -148,15 +147,22 @@ static bool IsFindableNode(const nsINode* aNode) {
     // display: contents
     return true;
   }
-
-  if (frame->StyleUI()->IsInert() ||
-      frame->HidesContent(nsIFrame::IncludeContentVisibility::Hidden) ||
-      frame->IsHiddenByContentVisibilityOnAnyAncestor(
-          nsIFrame::IncludeContentVisibility::Hidden)) {
+  if (frame->StyleUI()->IsInert()) {
+    return false;
+  }
+  if (!frame->StyleVisibility()->IsVisible()) {
     return false;
   }
 
-  return frame->StyleVisibility()->IsVisible();
+  const bool isContentVisibilityHidden =
+      frame->HidesContent(nsIFrame::IncludeContentVisibility::Hidden) ||
+      frame->IsHiddenByContentVisibilityOnAnyAncestor(
+          nsIFrame::IncludeContentVisibility::Hidden);
+  if (isContentVisibilityHidden) {
+    return frame->IsHiddenUntilFoundOrClosedDetails();
+  }
+
+  return true;
 }
 
 static bool ShouldFindAnonymousContent(const nsIContent& aContent) {
@@ -198,7 +204,7 @@ static bool SkipNode(const nsIContent* aContent) {
     // Skip option nodes if their select is a combo box, or if they
     // have no select (somehow).
     if (const auto* option = HTMLOptionElement::FromNode(content)) {
-      auto* select = HTMLSelectElement::FromNodeOrNull(option->GetParent());
+      const auto* select = option->GetSelect();
       if (!select || select->IsCombobox()) {
         DEBUG_FIND_PRINTF("Skipping node: ");
         DumpNode(content);
@@ -254,7 +260,7 @@ static bool ForceBreakBetweenText(const Text& aPrevious, const Text& aNext) {
 }
 
 struct nsFind::State final {
-  State(bool aFindBackward, nsIContent& aRoot, const nsRange& aStartPoint)
+  State(bool aFindBackward, nsIContent& aRoot, const RangeBoundary& aStartPoint)
       : mFindBackward(aFindBackward),
         mInitialized(false),
         mFoundBreak(false),
@@ -347,7 +353,7 @@ struct nsFind::State final {
   TreeIterator<StyleChildrenIterator> mIterator;
 
   // These are only needed for the first GetNextNode() call.
-  const nsRange& mStartPoint;
+  const RangeBoundary& mStartPoint;
 };
 
 void nsFind::State::Advance(Initializing aInitializing, bool aAlreadyMatching) {
@@ -377,12 +383,10 @@ void nsFind::State::Initialize() {
   mInitialized = true;
   mIterOffset = mFindBackward ? -1 : 0;
 
-  nsINode* container = mFindBackward ? mStartPoint.GetStartContainer()
-                                     : mStartPoint.GetEndContainer();
+  nsINode* container = mStartPoint.GetContainer();
 
   // Set up ourselves at the first node we want to start searching at.
-  nsIContent* beginning = mFindBackward ? mStartPoint.GetChildAtStartOffset()
-                                        : mStartPoint.GetChildAtEndOffset();
+  nsIContent* beginning = mStartPoint.GetChildAtOffset();
   if (beginning) {
     mIterator.Seek(*beginning);
     // If the start point is pointing to a node, when looking backwards we'd
@@ -414,8 +418,8 @@ void nsFind::State::Initialize() {
     return;
   }
 
-  mIterOffset =
-      mFindBackward ? mStartPoint.StartOffset() : mStartPoint.EndOffset();
+  mIterOffset = int(
+      *mStartPoint.Offset(RangeBoundary::OffsetFilter::kValidOrInvalidOffsets));
 }
 
 class MOZ_STACK_CLASS nsFind::StateRestorer final {
@@ -512,7 +516,7 @@ nsFind::SetMatchDiacritics(bool aMatchDiacritics) {
 // iterator to go back to a previously visited node, so we always save the
 // "match anchor" node and offset.
 //
-// Text nodes store their text in an nsTextFragment, which is effectively a
+// Text nodes store their text in an CharacterDataBuffer, which is effectively a
 // union of a one-byte string or a two-byte string. Single and double strings
 // are intermixed in the dom. We don't have string classes which can deal with
 // intermixed strings, so all the handling is done explicitly here.
@@ -533,14 +537,14 @@ char32_t nsFind::DecodeChar(const char16_t* t2b, int32_t* index) const {
   return c;
 }
 
-bool nsFind::BreakInBetween(char32_t x, char32_t y) const {
+bool nsFind::BreakInBetween(char32_t x, char32_t y) {
   nsAutoStringN<4> text;
   AppendUCS4ToUTF16(x, text);
   const uint32_t x16Len = text.Length();
   AppendUCS4ToUTF16(y, text);
+  mWordBreakIter.Reset(text);
 
-  intl::WordBreakIteratorUtf16 iter(text);
-  return *iter.Seek(x16Len - 1) == x16Len;
+  return *mWordBreakIter.Seek(x16Len - 1) == x16Len;
 }
 
 char32_t nsFind::PeekNextChar(State& aState, bool aAlreadyMatching) const {
@@ -553,8 +557,8 @@ char32_t nsFind::PeekNextChar(State& aState, bool aAlreadyMatching) const {
       return L'\0';
     }
 
-    const nsTextFragment& frag = text->TextFragment();
-    uint32_t len = frag.GetLength();
+    const CharacterDataBuffer& characterDataBuffer = text->DataBuffer();
+    uint32_t len = characterDataBuffer.GetLength();
     if (!len) {
       continue;
     }
@@ -562,10 +566,10 @@ char32_t nsFind::PeekNextChar(State& aState, bool aAlreadyMatching) const {
     const char16_t* t2b = nullptr;
     const char* t1b = nullptr;
 
-    if (frag.Is2b()) {
-      t2b = frag.Get2b();
+    if (characterDataBuffer.Is2b()) {
+      t2b = characterDataBuffer.Get2b();
     } else {
-      t1b = frag.Get1b();
+      t1b = characterDataBuffer.Get1b();
     }
 
     int32_t index = mFindBackward ? len - 1 : 0;
@@ -574,7 +578,16 @@ char32_t nsFind::PeekNextChar(State& aState, bool aAlreadyMatching) const {
 }
 
 #define NBSP_CHARCODE (CHAR_TO_UNICHAR(160))
-#define IsSpace(c) (nsCRT::IsAsciiSpace(c) || (c) == NBSP_CHARCODE)
+// Bug 1943846: The char16_t version of nsCRT::IsAsciiSpace is not working as
+// expected for characters with UTF32 > 0xFFFF. Add a check for UTF32 characters
+
+static bool IsSpace(char16_t aChar) {
+  return nsCRT::IsAsciiSpace(aChar) || aChar == NBSP_CHARCODE;
+}
+static bool IsSpace(char32_t aChar) {
+  return aChar <= 0xffff && IsSpace(char16_t(aChar));
+}
+
 #define OVERFLOW_PINDEX (mFindBackward ? pindex < 0 : pindex > patLen)
 #define DONE_WITH_PINDEX (mFindBackward ? pindex <= 0 : pindex >= patLen)
 
@@ -593,14 +606,49 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
   NS_ENSURE_ARG(aEndPoint);
   NS_ENSURE_ARG_POINTER(aRangeRet);
 
-  Document* document =
-      aStartPoint->GetRoot() ? aStartPoint->GetRoot()->OwnerDoc() : nullptr;
-  NS_ENSURE_ARG(document);
+  *aRangeRet = nullptr;
+
+  if (RefPtr findResult = FindFromRangeBoundaries(
+          aPatText, aStartPoint->StartRef(), aEndPoint->EndRef())) {
+    findResult.forget(aRangeRet);
+  }
+  return NS_OK;
+}
+already_AddRefed<nsRange> nsFind::FindFromRangeBoundaries(
+    const nsAString& aPatText, const mozilla::RangeBoundary& aStartPoint,
+    const mozilla::RangeBoundary& aEndPoint) {
+  if (!aStartPoint.IsSetAndInComposedDoc() ||
+      !aEndPoint.IsSetAndInComposedDoc()) {
+    return nullptr;
+  }
+  MOZ_ASSERT(aStartPoint.IsSetAndValid());
+  MOZ_ASSERT(aEndPoint.IsSetAndValid());
+  // set up node index cache. If there is no cache given from the outside
+  // (for repeated calls to `Find()`), set up a local one.
+  nsContentUtils::NodeIndexCache localCache;
+  AutoRestore<nsContentUtils::NodeIndexCache*> restoreCache(mNodeIndexCache);
+  if (!mNodeIndexCache) {
+    mNodeIndexCache = &localCache;
+  }
+#if MOZ_DIAGNOSTIC_ASSERT_ENABLED
+  auto cmp =
+      nsContentUtils::ComparePoints(aStartPoint, aEndPoint, mNodeIndexCache);
+  MOZ_DIAGNOSTIC_ASSERT(cmp, "Start and end points in different trees?");
+  MOZ_DIAGNOSTIC_ASSERT(*cmp != 1, "Start point must not be after end point");
+#endif
+  if (MOZ_UNLIKELY(aStartPoint == aEndPoint)) {
+    return nullptr;
+  }
+
+  const Document* document = aStartPoint.GetContainer()->GetComposedDoc();
+  if (!document) {
+    return nullptr;
+  }
 
   Element* root = document->GetRootElement();
-  NS_ENSURE_ARG(root);
-
-  *aRangeRet = 0;
+  if (!root) {
+    return nullptr;
+  }
 
   nsAutoString patAutoStr(aPatText);
   if (!mCaseSensitive) {
@@ -615,11 +663,11 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
   patAutoStr.StripChars(kShy);
 
   const char16_t* patStr = patAutoStr.get();
-  int32_t patLen = patAutoStr.Length() - 1;
+  const int32_t patLen = int(patAutoStr.Length()) - 1;
 
   // If this function is called with an empty string, we should early exit.
   if (patLen < 0) {
-    return NS_OK;
+    return nullptr;
   }
 
   const int32_t patternStart = mFindBackward ? patLen : 0;
@@ -631,9 +679,9 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
   int32_t findex = 0;
 
   // Direction to move pindex and ptr*
-  int incr = mFindBackward ? -1 : 1;
+  const int incr = mFindBackward ? -1 : 1;
 
-  const nsTextFragment* frag = nullptr;
+  const CharacterDataBuffer* characterDataBuffer = nullptr;
   int32_t fragLen = 0;
 
   // Pointers into the current fragment:
@@ -650,14 +698,13 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
   char32_t matchAnchorChar = 0;
 
   // Get the end point, so we know when to end searches:
-  nsINode* endNode = aEndPoint->GetEndContainer();
-  uint32_t endOffset = aEndPoint->EndOffset();
+  const RangeBoundary& endPoint = mFindBackward ? aStartPoint : aEndPoint;
 
   char32_t c = 0;
   char32_t patc = 0;
   char32_t prevCharInMatch = 0;
 
-  State state(mFindBackward, *root, *aStartPoint);
+  State state(mFindBackward, *root, mFindBackward ? aEndPoint : aStartPoint);
   Text* current = nullptr;
 
   auto EndPartialMatch = [&]() -> bool {
@@ -676,7 +723,7 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
 
       // Are we going back to a previous node?
       if (matchAnchorNode != state.GetCurrentNode()) {
-        frag = nullptr;
+        characterDataBuffer = nullptr;
         state.PositionAt(*matchAnchorNode);
         DEBUG_FIND_PRINTF("Repositioned anchor node\n");
       }
@@ -699,14 +746,14 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
     DEBUG_FIND_PRINTF("Loop (pindex = %d)...\n", pindex);
 
     // If this is our first time on a new node, reset the pointers:
-    if (!frag) {
+    if (!characterDataBuffer) {
       current = state.GetNextNode(!!matchAnchorNode);
       if (!current) {
         DEBUG_FIND_PRINTF("Reached the end, matching: %d\n", !!matchAnchorNode);
         if (EndPartialMatch()) {
           continue;
         }
-        return NS_OK;
+        return nullptr;
       }
 
       // We have a new text content. See if we need to force a break due to
@@ -721,8 +768,8 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
         c = 0;
       }
 
-      frag = &current->TextFragment();
-      fragLen = frag->GetLength();
+      characterDataBuffer = &current->DataBuffer();
+      fragLen = int32_t(characterDataBuffer->GetLength());
 
       // Set our starting point in this node. If we're going back to the anchor
       // node, which means that we just ended a partial match, use the saved
@@ -747,12 +794,12 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
       if (findex < 0 || findex > fragLen - 1) {
         DEBUG_FIND_PRINTF(
             "At the end of a text node -- skipping to the next\n");
-        frag = nullptr;
+        characterDataBuffer = nullptr;
         continue;
       }
 
-      if (frag->Is2b()) {
-        t2b = frag->Get2b();
+      if (characterDataBuffer->Is2b()) {
+        t2b = characterDataBuffer->Get2b();
         t1b = nullptr;
 #ifdef DEBUG_FIND
         nsAutoString str2(t2b, fragLen);
@@ -760,7 +807,7 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
                           NS_LossyConvertUTF16toASCII(str2).get());
 #endif
       } else {
-        t1b = frag->Get1b();
+        t1b = characterDataBuffer->Get1b();
         t2b = nullptr;
 #ifdef DEBUG_FIND
         nsAutoCString str1(t1b, fragLen);
@@ -777,18 +824,20 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
             "Will need to pull a new node: mAO = %d, frag len=%d\n",
             matchAnchorOffset, fragLen);
         // Done with this node.  Pull a new one.
-        frag = nullptr;
+        characterDataBuffer = nullptr;
         continue;
       }
     }
 
     // Have we gone past the endpoint yet? If we have, and we're not in the
     // middle of a match, return.
-    if (state.GetCurrentNode() == endNode &&
-        ((mFindBackward && findex < static_cast<int32_t>(endOffset)) ||
-         (!mFindBackward && findex > static_cast<int32_t>(endOffset)))) {
-      DEBUG_FIND_PRINTF("Reached the end and not in the middle of a match\n");
-      return NS_OK;
+    if (auto cmp = nsContentUtils::ComparePoints(
+            RawRangeBoundary(state.GetCurrentNode(), findex), endPoint,
+            mNodeIndexCache)) {
+      if ((mFindBackward && *cmp < 0) || (!mFindBackward && *cmp > 0)) {
+        DEBUG_FIND_PRINTF("Reached the end and not in the middle of a match\n");
+        return nullptr;
+      }
     }
 
     // Save the previous character for word boundary detection
@@ -961,8 +1010,7 @@ nsFind::Find(const nsAString& aPatText, nsRange* aSearchRange,
             range->SetEnd(*endParent, matchEndOffset, rv);
           }
           if (!rv.Failed()) {
-            range.forget(aRangeRet);
-            return NS_OK;
+            return range.forget();
           }
         }
 

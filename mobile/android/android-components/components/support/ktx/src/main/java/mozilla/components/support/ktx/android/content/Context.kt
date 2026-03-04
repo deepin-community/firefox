@@ -4,6 +4,7 @@
 
 package mozilla.components.support.ktx.android.content
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
@@ -20,28 +21,33 @@ import android.content.Intent.EXTRA_TEXT
 import android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
+import android.os.Build.VERSION_CODES
 import android.os.Process
 import android.provider.ContactsContract
+import android.util.TypedValue
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
+import androidx.core.net.toUri
 import mozilla.components.support.base.log.Log
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.ktx.R
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
-import mozilla.components.support.utils.ext.getPackageInfoCompat
+import mozilla.components.support.utils.ext.packageManagerCompatHelper
 import java.io.File
 
 /**
@@ -49,7 +55,7 @@ import java.io.File
  * attribute. E.g. "2.0". Returns an empty string if versionName is null.
  */
 val Context.appVersionName: String
-    get() = packageManager.getPackageInfoCompat(packageName, 0).versionName ?: ""
+    get() = packageManagerCompatHelper.getPackageInfoCompat(packageName, 0).versionName ?: ""
 
 /**
  * Returns the name (label) of the application or the package name as a fallback.
@@ -138,9 +144,42 @@ fun Context.shareMedia(
     contentType: String?,
     subject: String? = null,
     message: String? = null,
-): Boolean {
-    val contentUri = getContentUriForFile(filePath)
+): Boolean = shareMedia(getContentUriForFile(filePath), contentType, subject, message)
 
+/**
+ * Shares a local PDF via [ACTION_SEND] intent.
+ *
+ * @param filePath Path of the PDF file.
+ * @param contentType Content type (MIME type) to indicate the media type of the resource.
+ * @param subject of the intent [EXTRA_SUBJECT]
+ * @param message of the intent [EXTRA_TEXT]
+ *
+ * @return true it is able to share false otherwise.
+ */
+fun Context.shareLocalPdf(
+    filePath: String,
+    contentType: String?,
+    subject: String? = null,
+    message: String? = null,
+): Boolean = shareMedia(filePath.toUri(), contentType, subject, message)
+
+/**
+ * Shares content via [ACTION_SEND] intent.
+ *
+ * @param contentUri URI of the file to share.
+ * @param contentType Content type (MIME type) to indicate the media type of the resource.
+ * @param subject of the intent [EXTRA_SUBJECT]
+ * @param message of the intent [EXTRA_TEXT]
+ *
+ * @return true it is able to share false otherwise.
+ */
+@VisibleForTesting
+internal fun Context.shareMedia(
+    contentUri: Uri,
+    contentType: String?,
+    subject: String? = null,
+    message: String? = null,
+): Boolean {
     val intent = Intent().apply {
         action = ACTION_SEND
         type = contentType ?: contentResolver.getType(contentUri)
@@ -212,7 +251,7 @@ fun Context.email(
     subject: String = getString(R.string.mozac_support_ktx_share_dialog_title),
 ): Boolean {
     return try {
-        val intent = Intent(ACTION_SENDTO, Uri.parse("mailto:$address"))
+        val intent = Intent(ACTION_SENDTO, "mailto:$address".toUri())
         intent.putExtra(EXTRA_SUBJECT, subject)
 
         val emailIntent = Intent.createChooser(
@@ -243,7 +282,7 @@ fun Context.call(
     subject: String = getString(R.string.mozac_support_ktx_share_dialog_title),
 ): Boolean {
     return try {
-        val intent = Intent(ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
+        val intent = Intent(ACTION_DIAL, "tel:$phoneNumber".toUri())
         intent.putExtra(EXTRA_SUBJECT, subject)
 
         val callIntent = Intent.createChooser(
@@ -303,15 +342,19 @@ internal var isMainProcess: Boolean? = null
 /**
  *  Returns true if we are running in the main process false otherwise.
  */
+@SuppressLint("NewApi")
 fun Context.isMainProcess(): Boolean {
     if (isMainProcess != null) return isMainProcess as Boolean
 
     val pid = Process.myPid()
     val activityManager: ActivityManager? = getSystemService()
 
-    isMainProcess = activityManager?.runningAppProcesses.orEmpty().any { processInfo ->
-        processInfo.pid == pid && processInfo.processName == packageName
-    }
+    // SDK document says isIsolated is available since API 28, but it is actually available on older versions.
+    isMainProcess =
+        !android.os.Process.isIsolated() &&
+        activityManager?.runningAppProcesses.orEmpty().any { processInfo ->
+            processInfo.pid == pid && processInfo.processName == packageName
+        }
 
     return isMainProcess as Boolean
 }
@@ -330,7 +373,9 @@ inline fun Context.runOnlyInMainProcess(block: () -> Unit) {
  * Returns the color int corresponding to the attribute.
  */
 @ColorInt
-fun Context.getColorFromAttr(@AttrRes attr: Int) =
+fun Context.getColorFromAttr(
+    @AttrRes attr: Int,
+) =
     ContextCompat.getColor(this, theme.resolveAttribute(attr))
 
 /**
@@ -338,7 +383,7 @@ fun Context.getColorFromAttr(@AttrRes attr: Int) =
  */
 @ColorInt
 fun Context.getStatusBarColor() =
-    if (SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+    if (isEdgeToEdgeDisabled()) {
         @Suppress("DEPRECATION")
         ContextCompat.getColor(this, theme.resolveAttribute(android.R.attr.statusBarColor))
     } else {
@@ -350,8 +395,45 @@ fun Context.getStatusBarColor() =
  * @param resId ID of the drawable to load.
  * @param tint Tint color int to apply to the drawable.
  */
-fun Context.getDrawableWithTint(@DrawableRes resId: Int, @ColorInt tint: Int) =
+fun Context.getDrawableWithTint(
+    @DrawableRes resId: Int,
+    @ColorInt tint: Int,
+) =
     AppCompatResources.getDrawable(this, resId)?.apply {
         mutate()
         setTint(tint)
     }
+
+/**
+ * Checks if the current theme has the `windowOptOutEdgeToEdgeEnforcement` attribute enabled.
+ *
+ * @return `true` if the `windowOptOutEdgeToEdgeEnforcement` attribute is set tu true, `false` otherwise.
+ */
+@RequiresApi(VERSION_CODES.VANILLA_ICE_CREAM)
+private fun Context.isEdgeToEdgeOptOutEnabled(): Boolean {
+    val typedValue = TypedValue()
+    val attribute = android.R.attr.windowOptOutEdgeToEdgeEnforcement
+
+    return if (theme.resolveAttribute(attribute, typedValue, true)) {
+        typedValue.data != 0
+    } else {
+        false
+    }
+}
+
+/**
+ * Checks if the edge-to-edge behaviour is disabled.
+ *
+ * @return `true` if the edge-to-edge behaviour is disabled.
+ */
+fun Context.isEdgeToEdgeDisabled(): Boolean =
+    SDK_INT < VERSION_CODES.VANILLA_ICE_CREAM ||
+        applicationInfo.targetSdkVersion < VERSION_CODES.VANILLA_ICE_CREAM ||
+        isEdgeToEdgeOptOutEnabled()
+
+/**
+ * Check if the device has a hinge sensor.
+ */
+fun Context.doesDeviceHaveHinge(): Boolean =
+    SDK_INT >= VERSION_CODES.R &&
+        packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE)

@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SupportedLimits.h"
+
 #include "Adapter.h"
 #include "mozilla/dom/WebGPUBinding.h"
 
@@ -66,8 +67,6 @@ uint64_t GetLimit(const ffi::WGPULimits& limits, const Limit limit) {
       return limits.max_vertex_attributes;
     case Limit::MaxVertexBufferArrayStride:
       return limits.max_vertex_buffer_array_stride;
-    case Limit::MaxInterStageShaderComponents:
-      return limits.max_inter_stage_shader_components;
     case Limit::MaxInterStageShaderVariables:
       return 16;  // From the spec. (not in ffi::WGPULimits)
     case Limit::MaxColorAttachments:
@@ -160,9 +159,6 @@ void SetLimit(ffi::WGPULimits* const limits, const Limit limit,
       return;
     case Limit::MaxVertexBufferArrayStride:
       limits->max_vertex_buffer_array_stride = autoVal;
-      return;
-    case Limit::MaxInterStageShaderComponents:
-      limits->max_inter_stage_shader_components = autoVal;
       return;
     case Limit::MaxInterStageShaderVariables:
       // Not in ffi::WGPULimits, and we're allowed to give back better

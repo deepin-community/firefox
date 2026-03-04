@@ -3,19 +3,11 @@
 
 "use strict";
 
-async function expectSavedAddresses(expectedCount) {
-  const addresses = await getAddresses();
-  is(
-    addresses.length,
-    expectedCount,
-    `${addresses.length} address in the storage`
-  );
-  return addresses;
-}
-
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [
+      ["browser.urlbar.trustPanel.featureGate", false],
+      ["test.wait300msAfterTabSwitch", true],
       ["extensions.formautofill.addresses.capture.enabled", true],
       ["extensions.formautofill.addresses.supported", "on"],
       ["extensions.formautofill.addresses.capture.requiredFields", ""],
@@ -24,7 +16,7 @@ add_setup(async function () {
 });
 
 add_task(async function test_save_doorhanger_show_confirmation() {
-  await expectSavedAddresses(0);
+  await expectSavedAddressesCount(0);
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: ADDRESS_FORM_URL },
@@ -52,13 +44,13 @@ add_task(async function test_save_doorhanger_show_confirmation() {
     }
   );
 
-  await expectSavedAddresses(1);
+  await expectSavedAddressesCount(1);
   await removeAllRecords();
 });
 
 add_task(async function test_update_doorhanger_show_confirmation() {
   await setStorage(TEST_ADDRESS_3);
-  await expectSavedAddresses(1);
+  await expectSavedAddressesCount(1);
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: ADDRESS_FORM_URL },
@@ -84,12 +76,12 @@ add_task(async function test_update_doorhanger_show_confirmation() {
     }
   );
 
-  await expectSavedAddresses(1);
+  await expectSavedAddressesCount(1);
   await removeAllRecords();
 });
 
 add_task(async function test_edit_doorhanger_show_confirmation() {
-  await expectSavedAddresses(0);
+  await expectSavedAddressesCount(0);
 
   await BrowserTestUtils.withNewTab(
     { gBrowser, url: ADDRESS_FORM_URL },
@@ -121,6 +113,6 @@ add_task(async function test_edit_doorhanger_show_confirmation() {
     }
   );
 
-  await expectSavedAddresses(1);
+  await expectSavedAddressesCount(1);
   await removeAllRecords();
 });

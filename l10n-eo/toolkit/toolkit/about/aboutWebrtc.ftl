@@ -24,7 +24,7 @@ about-webrtc-aec-logging-off-state-label = Komenci registradon de AEC
 about-webrtc-aec-logging-on-state-label = Haltigi registradon de AEC
 about-webrtc-aec-logging-on-state-msg = Registrado de AEC aktiva (parolu kun la vokinto dum kelkaj minutoj kaj poste haltigu la kaptadon)
 about-webrtc-aec-logging-toggled-on-state-msg = Registrado de AEC aktiva (parolu kun la vokinto dum kelkaj minutoj kaj poste haltigu la kaptadon)
-about-webrtc-aec-logging-unavailable-sandbox = La ĉirkaŭaĵa varianto MOZ_DISABLE_CONTENT_SANDBOX=1 estas postulata por krei registrojn AEC. Difinu tiun varianton nur se vi komprenas la eblajn riskojn.
+about-webrtc-aec-logging-unavailable-sandbox = La ĉirkaŭaĵa varianto MOZ_DISABLE_CONTENT_SANDBOX=1 estas postulata por eksporti registrojn AEC. Difinu tiun varianton nur se vi komprenas la eblajn riskojn.
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
 about-webrtc-aec-logging-toggled-off-state-msg = Kaptitaj dosieroj de registrado troveblas en: { $path }
@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = Kaptitaj dosieroj de registrado
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Aŭtomata aktualiĝo
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Norma aŭtomata refreŝigo
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Refreŝigi
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = Konservi paĝon
 about-webrtc-debug-mode-msg-label = Senerariga reĝimo
 about-webrtc-debug-mode-off-state-label = Komenci senerarigan reĝimon
 about-webrtc-debug-mode-on-state-label = Haltigi senerarigan reĝimon
-about-webrtc-enable-logging-label = Aktivigi norma registro de WebRTC
 about-webrtc-stats-heading = Statistikoj pri seanco
+about-webrtc-enable-logging-label = Aktivigi norma registro de WebRTC
 about-webrtc-peerconnections-section-heading = Statisktikoj de RTCPeerConnection
 about-webrtc-peerconnections-section-show-msg = Montri statistikojn de RTCPeerConnection
 about-webrtc-peerconnections-section-hide-msg = Kaŝi statistikojn de RTCPeerConnection
@@ -229,10 +227,7 @@ about-webrtc-round-trip-time-ms = Tienreena tempo (RTT) (ms)
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Statistikoj pri kadroj videaj - Identigilo de MediaStreamTrack: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = paĝo konservita kiel: { $path }
 about-webrtc-debug-mode-off-state-msg = spurregistrado troveblas en: { $path }
@@ -322,6 +317,3 @@ about-webrtc-hide-msg-sdp = Kaŝi SDP
 about-webrtc-media-context-show-msg = Montri aŭdvidan kuntekston
 about-webrtc-media-context-hide-msg = Kaŝi aŭdvidan kuntekston
 about-webrtc-media-context-heading = Aŭdvidan kuntekston
-
-##
-

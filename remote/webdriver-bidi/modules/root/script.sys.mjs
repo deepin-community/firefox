@@ -8,10 +8,13 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   assert: "chrome://remote/content/shared/webdriver/Assert.sys.mjs",
+  BrowsingContextListener:
+    "chrome://remote/content/shared/listeners/BrowsingContextListener.sys.mjs",
   ContextDescriptorType:
     "chrome://remote/content/shared/messagehandler/MessageHandler.sys.mjs",
   error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
   generateUUID: "chrome://remote/content/shared/UUID.sys.mjs",
+  NavigableManager: "chrome://remote/content/shared/NavigableManager.sys.mjs",
   OwnershipModel: "chrome://remote/content/webdriver-bidi/RemoteValue.sys.mjs",
   pprint: "chrome://remote/content/shared/Format.sys.mjs",
   processExtraData:
@@ -21,7 +24,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "chrome://remote/content/shared/messagehandler/sessiondata/SessionData.sys.mjs",
   setDefaultAndAssertSerializationOptions:
     "chrome://remote/content/webdriver-bidi/RemoteValue.sys.mjs",
-  TabManager: "chrome://remote/content/shared/TabManager.sys.mjs",
+  UserContextManager:
+    "chrome://remote/content/shared/UserContextManager.sys.mjs",
   WindowGlobalMessageHandler:
     "chrome://remote/content/shared/messagehandler/WindowGlobalMessageHandler.sys.mjs",
 });
@@ -41,24 +45,55 @@ const ScriptEvaluateResultType = {
   Success: "success",
 };
 
+/**
+ * An object that holds information about the preload script.
+ *
+ * @typedef PreloadScript
+ *
+ * @property {Array<ChannelValue>=} arguments
+ *    The arguments to pass to the function call.
+ * @property {Array<string>=} navigables
+ *    The list of navigable browser ids where
+ *    the preload script should be executed.
+ * @property {string} functionDeclaration
+ *    The expression to evaluate.
+ * @property {string=} sandbox
+ *    The name of the sandbox.
+ * @property {Array<string>=} userContexts
+ *    The list of internal user context ids where
+ *    the preload script should be executed.
+ */
+
 class ScriptModule extends RootBiDiModule {
+  #contextListener;
   #preloadScriptMap;
+  #realmInfoMap;
   #subscribedEvents;
 
   constructor(messageHandler) {
     super(messageHandler);
 
+    this.#contextListener = new lazy.BrowsingContextListener();
+    this.#contextListener.on("attached", this.#onContextAttached);
+
     // Map in which the keys are UUIDs, and the values are structs
-    // with an item named expression, which is a string,
-    // and an item named sandbox which is a string or null.
+    // of the type PreloadScript.
     this.#preloadScriptMap = new Map();
+
+    // Map with browsing contexts as keys and realm info object
+    // as values.
+    this.#realmInfoMap = new WeakMap();
 
     // Set of event names which have active subscriptions.
     this.#subscribedEvents = new Set();
   }
 
   destroy() {
+    this.#contextListener.off("attached", this.#onContextAttached);
+    this.#contextListener.destroy();
+
     this.#preloadScriptMap = null;
+    this.#realmInfoMap = null;
     this.#subscribedEvents = null;
   }
 
@@ -108,6 +143,8 @@ class ScriptModule extends RootBiDiModule {
    * @param {string=} options.sandbox
    *     The name of the sandbox. If the value is null or empty
    *     string, the default realm will be used.
+   * @param {Array<string>=} options.userContexts
+   *     The list of the user context ids.
    *
    * @returns {AddPreloadScriptResult}
    *
@@ -120,34 +157,34 @@ class ScriptModule extends RootBiDiModule {
       contexts: contextIds = null,
       functionDeclaration,
       sandbox = null,
+      userContexts: userContextIds = null,
     } = options;
-    let contexts = null;
+    let userContexts = null;
+    let navigables = null;
 
-    if (contextIds != null) {
-      lazy.assert.array(
+    if (contextIds !== null) {
+      lazy.assert.isNonEmptyArray(
         contextIds,
-        lazy.pprint`Expected "contexts" to be an array, got ${contextIds}`
+        lazy.pprint`Expected "contexts" to be a non-empty array, got ${contextIds}`
       );
-      lazy.assert.that(
-        contexts => !!contexts.length,
-        lazy.pprint`Expected "contexts" array to have at least one item, got ${contextIds}`
-      )(contextIds);
 
-      contexts = new Set();
       for (const contextId of contextIds) {
         lazy.assert.string(
           contextId,
           lazy.pprint`Expected elements of "contexts" to be a string, got ${contextId}`
         );
-        const context = this.#getBrowsingContext(contextId);
+      }
+    } else if (userContextIds !== null) {
+      lazy.assert.isNonEmptyArray(
+        userContextIds,
+        lazy.pprint`Expected "userContextIds" to be a non-empty array, got ${userContextIds}`
+      );
 
-        if (context.parent) {
-          throw new lazy.error.InvalidArgumentError(
-            `Context with id ${contextId} is not a top-level browsing context`
-          );
-        }
-
-        contexts.add(context.browserId);
+      for (const userContextId of userContextIds) {
+        lazy.assert.string(
+          userContextId,
+          lazy.pprint`Expected elements of "userContexts" to be a string, got ${userContextId}`
+        );
       }
     }
 
@@ -167,6 +204,7 @@ class ScriptModule extends RootBiDiModule {
       commandArguments,
       lazy.pprint`Expected "arguments" to be an array, got ${commandArguments}`
     );
+
     commandArguments.forEach(({ type, value }) => {
       lazy.assert.that(
         t => t === "channel",
@@ -175,19 +213,56 @@ class ScriptModule extends RootBiDiModule {
       this.#assertChannelArgument(value);
     });
 
+    if (contextIds !== null && userContextIds !== null) {
+      throw new lazy.error.InvalidArgumentError(
+        `Providing both "contexts" and "userContexts" arguments is not supported`
+      );
+    }
+
+    if (contextIds !== null) {
+      navigables = new Set();
+
+      for (const contextId of contextIds) {
+        const context = this._getNavigable(contextId);
+
+        lazy.assert.topLevel(
+          context,
+          lazy.pprint`Browsing context with id ${contextId} is not top-level`
+        );
+
+        navigables.add(context.browserId);
+      }
+    } else if (userContextIds !== null) {
+      userContexts = new Set();
+
+      for (const userContextId of userContextIds) {
+        const internalId =
+          lazy.UserContextManager.getInternalIdById(userContextId);
+
+        if (internalId === null) {
+          throw new lazy.error.NoSuchUserContextError(
+            `User context with id: ${userContextId} doesn't exist`
+          );
+        }
+
+        userContexts.add(internalId);
+      }
+    }
+
     const script = lazy.generateUUID();
     const preloadScript = {
       arguments: commandArguments,
-      contexts,
+      contexts: navigables,
       functionDeclaration,
       sandbox,
+      userContexts,
     };
 
     this.#preloadScriptMap.set(script, preloadScript);
 
     const preloadScriptDataItem = {
       category: "preload-script",
-      moduleName: "script",
+      moduleName: "_configuration",
       values: [
         {
           ...preloadScript,
@@ -196,7 +271,7 @@ class ScriptModule extends RootBiDiModule {
       ],
     };
 
-    if (contexts === null) {
+    if (navigables === null && userContexts === null) {
       await this.messageHandler.addSessionDataItem({
         ...preloadScriptDataItem,
         contextDescriptor: {
@@ -205,15 +280,29 @@ class ScriptModule extends RootBiDiModule {
       });
     } else {
       const preloadScriptDataItems = [];
-      for (const id of contexts) {
-        preloadScriptDataItems.push({
-          ...preloadScriptDataItem,
-          contextDescriptor: {
-            type: lazy.ContextDescriptorType.TopBrowsingContext,
-            id,
-          },
-          method: lazy.SessionDataMethod.Add,
-        });
+
+      if (navigables === null) {
+        for (const id of userContexts) {
+          preloadScriptDataItems.push({
+            ...preloadScriptDataItem,
+            contextDescriptor: {
+              type: lazy.ContextDescriptorType.UserContext,
+              id,
+            },
+            method: lazy.SessionDataMethod.Add,
+          });
+        }
+      } else {
+        for (const id of navigables) {
+          preloadScriptDataItems.push({
+            ...preloadScriptDataItem,
+            contextDescriptor: {
+              type: lazy.ContextDescriptorType.TopBrowsingContext,
+              id,
+            },
+            method: lazy.SessionDataMethod.Add,
+          });
+        }
       }
 
       await this.messageHandler.updateSessionData(preloadScriptDataItems);
@@ -358,17 +447,19 @@ class ScriptModule extends RootBiDiModule {
     }
 
     const { contextId, realmId, sandbox } = this.#assertTarget(target);
-    const context = await this.#getContextFromTarget({ contextId, realmId });
+    const context = await this.#getContextFromTarget({
+      contextId,
+      realmId,
+      supportsChromeScope: true,
+    });
+
     const serializationOptionsWithDefaults =
       lazy.setDefaultAndAssertSerializationOptions(serializationOptions);
-    const evaluationResult = await this.messageHandler.forwardCommand({
-      moduleName: "script",
-      commandName: "callFunctionDeclaration",
-      destination: {
-        type: lazy.WindowGlobalMessageHandler.type,
-        id: context.id,
-      },
-      params: {
+
+    const evaluationResult = await this._forwardToWindowGlobal(
+      "callFunctionDeclaration",
+      context.id,
+      {
         awaitPromise,
         commandArguments,
         functionDeclaration,
@@ -378,8 +469,8 @@ class ScriptModule extends RootBiDiModule {
         serializationOptions: serializationOptionsWithDefaults,
         thisParameter,
         userActivation,
-      },
-    });
+      }
+    );
 
     return this.#buildReturnValue(evaluationResult);
   }
@@ -412,18 +503,10 @@ class ScriptModule extends RootBiDiModule {
 
     const { contextId, realmId, sandbox } = this.#assertTarget(target);
     const context = await this.#getContextFromTarget({ contextId, realmId });
-    await this.messageHandler.forwardCommand({
-      moduleName: "script",
-      commandName: "disownHandles",
-      destination: {
-        type: lazy.WindowGlobalMessageHandler.type,
-        id: context.id,
-      },
-      params: {
-        handles,
-        realmId,
-        sandbox,
-      },
+    await this._forwardToWindowGlobal("disownHandles", context.id, {
+      handles,
+      realmId,
+      sandbox,
     });
   }
 
@@ -485,17 +568,19 @@ class ScriptModule extends RootBiDiModule {
     this.#assertResultOwnership(resultOwnership);
 
     const { contextId, realmId, sandbox } = this.#assertTarget(target);
-    const context = await this.#getContextFromTarget({ contextId, realmId });
+    const context = await this.#getContextFromTarget({
+      contextId,
+      realmId,
+      supportsChromeScope: true,
+    });
+
     const serializationOptionsWithDefaults =
       lazy.setDefaultAndAssertSerializationOptions(serializationOptions);
-    const evaluationResult = await this.messageHandler.forwardCommand({
-      moduleName: "script",
-      commandName: "evaluateExpression",
-      destination: {
-        type: lazy.WindowGlobalMessageHandler.type,
-        id: context.id,
-      },
-      params: {
+
+    const evaluationResult = await this._forwardToWindowGlobal(
+      "evaluateExpression",
+      context.id,
+      {
         awaitPromise,
         expression: source,
         realmId,
@@ -503,8 +588,8 @@ class ScriptModule extends RootBiDiModule {
         sandbox,
         serializationOptions: serializationOptionsWithDefaults,
         userActivation,
-      },
-    });
+      }
+    );
 
     return this.#buildReturnValue(evaluationResult);
   }
@@ -586,7 +671,7 @@ class ScriptModule extends RootBiDiModule {
         contextId,
         lazy.pprint`Expected "context" to be a string, got ${contextId}`
       );
-      destination.id = this.#getBrowsingContext(contextId).id;
+      destination.id = this._getNavigable(contextId).id;
     } else {
       destination.contextDescriptor = {
         type: lazy.ContextDescriptorType.All,
@@ -641,7 +726,7 @@ class ScriptModule extends RootBiDiModule {
     const preloadScript = this.#preloadScriptMap.get(script);
     const sessionDataItem = {
       category: "preload-script",
-      moduleName: "script",
+      moduleName: "_configuration",
       values: [
         {
           ...preloadScript,
@@ -650,7 +735,10 @@ class ScriptModule extends RootBiDiModule {
       ],
     };
 
-    if (preloadScript.contexts === null) {
+    if (
+      preloadScript.contexts === null &&
+      preloadScript.userContexts === null
+    ) {
       await this.messageHandler.removeSessionDataItem({
         ...sessionDataItem,
         contextDescriptor: {
@@ -659,15 +747,29 @@ class ScriptModule extends RootBiDiModule {
       });
     } else {
       const sessionDataItemToUpdate = [];
-      for (const id of preloadScript.contexts) {
-        sessionDataItemToUpdate.push({
-          ...sessionDataItem,
-          contextDescriptor: {
-            type: lazy.ContextDescriptorType.TopBrowsingContext,
-            id,
-          },
-          method: lazy.SessionDataMethod.Remove,
-        });
+
+      if (preloadScript.contexts === null) {
+        for (const id of preloadScript.userContexts) {
+          sessionDataItemToUpdate.push({
+            ...sessionDataItem,
+            contextDescriptor: {
+              type: lazy.ContextDescriptorType.UserContext,
+              id,
+            },
+            method: lazy.SessionDataMethod.Remove,
+          });
+        }
+      } else {
+        for (const id of preloadScript.contexts) {
+          sessionDataItemToUpdate.push({
+            ...sessionDataItem,
+            contextDescriptor: {
+              type: lazy.ContextDescriptorType.TopBrowsingContext,
+              id,
+            },
+            method: lazy.SessionDataMethod.Remove,
+          });
+        }
       }
 
       await this.messageHandler.updateSessionData(sessionDataItemToUpdate);
@@ -692,9 +794,9 @@ class ScriptModule extends RootBiDiModule {
     );
     lazy.setDefaultAndAssertSerializationOptions(serializationOptions);
     lazy.assert.that(
-      ownership =>
+      ownershipValue =>
         [lazy.OwnershipModel.None, lazy.OwnershipModel.Root].includes(
-          ownership
+          ownershipValue
         ),
       `Expected channel argument "ownership" to be one of ${Object.values(
         lazy.OwnershipModel
@@ -780,26 +882,13 @@ class ScriptModule extends RootBiDiModule {
     return rv;
   }
 
-  #getBrowsingContext(contextId) {
-    const context = lazy.TabManager.getBrowsingContextById(contextId);
-    if (context === null) {
-      throw new lazy.error.NoSuchFrameError(
-        `Browsing Context with id ${contextId} not found`
-      );
-    }
-
-    if (!context.currentWindowGlobal) {
-      throw new lazy.error.NoSuchFrameError(
-        `No window found for BrowsingContext with id ${contextId}`
-      );
-    }
-
-    return context;
-  }
-
-  async #getContextFromTarget({ contextId, realmId }) {
+  async #getContextFromTarget({
+    contextId,
+    realmId,
+    supportsChromeScope = false,
+  }) {
     if (contextId !== null) {
-      return this.#getBrowsingContext(contextId);
+      return this._getNavigable(contextId, { supportsChromeScope });
     }
 
     const destination = {
@@ -807,11 +896,11 @@ class ScriptModule extends RootBiDiModule {
         type: lazy.ContextDescriptorType.All,
       },
     };
-    const realms = await this.#getRealmInfos(destination);
-    const realm = realms.find(realm => realm.realm == realmId);
+    const realmInfos = await this.#getRealmInfos(destination);
+    const realm = realmInfos.find(info => info.realm == realmId);
 
     if (realm && realm.context !== null) {
-      return this.#getBrowsingContext(realm.context);
+      return this._getNavigable(realm.context, { supportsChromeScope });
     }
 
     throw new lazy.error.NoSuchFrameError(`Realm with id ${realmId} not found`);
@@ -825,6 +914,7 @@ class ScriptModule extends RootBiDiModule {
         type: lazy.WindowGlobalMessageHandler.type,
         ...destination,
       },
+      retryOnAbort: true,
     });
 
     const isBroadcast = !!destination.contextDescriptor;
@@ -836,28 +926,59 @@ class ScriptModule extends RootBiDiModule {
       .flat()
       .map(realm => {
         // Resolve browsing context to a TabManager id.
-        realm.context = lazy.TabManager.getIdForBrowsingContext(realm.context);
+        realm.context = lazy.NavigableManager.getIdForBrowsingContext(
+          realm.context
+        );
         return realm;
       })
       .filter(realm => realm.context !== null);
   }
 
+  #hasEventSubscriptionToContextCreated(browsingContext) {
+    const sessionData =
+      this.messageHandler.sessionData.getSessionDataForContext(
+        "browsingContext",
+        "event",
+        browsingContext
+      );
+
+    return sessionData.some(
+      item => item.value === "browsingContext.contextCreated"
+    );
+  }
+
+  #onContextAttached = (eventName, data) => {
+    const { browsingContext } = data;
+    // If there is a subscription for "browsingContext.contextCreated" event,
+    // do not send "script.realmCreated" event yet and
+    // wait until the "browsingContext.contextCreated" event is submitted
+    if (
+      this.#realmInfoMap.has(browsingContext) &&
+      !this.#hasEventSubscriptionToContextCreated(browsingContext)
+    ) {
+      this.#sendDelayedRealmCreatedEvent(browsingContext);
+    }
+  };
+
+  #onContextCreatedSubmitted = (eventName, { browsingContext }) => {
+    if (this.#realmInfoMap.has(browsingContext)) {
+      this.#sendDelayedRealmCreatedEvent(browsingContext);
+    }
+  };
+
   #onRealmCreated = (eventName, { realmInfo }) => {
     // Resolve browsing context to a TabManager id.
-    const context = lazy.TabManager.getIdForBrowsingContext(realmInfo.context);
-    const browsingContextId = realmInfo.context.id;
+    const context = lazy.NavigableManager.getIdForBrowsingContext(
+      realmInfo.context
+    );
 
-    // Do not emit the event, if the browsing context is gone.
+    // Do not emit the event, if the browsing context is gone or not created yet.
     if (context === null) {
+      // Save the realm info to send it when the browsing context is ready.
+      this.#realmInfoMap.set(realmInfo.context, realmInfo);
       return;
     }
-
-    realmInfo.context = context;
-    this._emitEventForBrowsingContext(
-      browsingContextId,
-      "script.realmCreated",
-      realmInfo
-    );
+    this.#sendRealmCreatedEvent(realmInfo, realmInfo.context, context);
   };
 
   #onRealmDestroyed = (eventName, { realm, context }) => {
@@ -866,25 +987,55 @@ class ScriptModule extends RootBiDiModule {
     });
   };
 
-  #startListingOnRealmCreated() {
+  #sendDelayedRealmCreatedEvent(browsingContext) {
+    const realmInfo = this.#realmInfoMap.get(browsingContext);
+    // Resolve browsing context to a TabManager id.
+    const browsingContextId = lazy.NavigableManager.getIdForBrowsingContext(
+      realmInfo.context
+    );
+    this.#sendRealmCreatedEvent(realmInfo, browsingContext, browsingContextId);
+    this.#realmInfoMap.delete(browsingContext);
+  }
+
+  #sendRealmCreatedEvent(realmInfo, context, browsingContextId) {
+    realmInfo.context = browsingContextId;
+
+    this._emitEventForBrowsingContext(
+      context.id,
+      "script.realmCreated",
+      realmInfo
+    );
+  }
+
+  #startListeningOnRealmCreated() {
     if (!this.#subscribedEvents.has("script.realmCreated")) {
       this.messageHandler.on("realm-created", this.#onRealmCreated);
+      this.messageHandler.on(
+        "browsingContext._contextCreatedEmitted",
+        this.#onContextCreatedSubmitted
+      );
+      this.#contextListener.startListening();
     }
   }
 
-  #stopListingOnRealmCreated() {
+  #stopListeningOnRealmCreated() {
     if (this.#subscribedEvents.has("script.realmCreated")) {
       this.messageHandler.off("realm-created", this.#onRealmCreated);
+      this.messageHandler.off(
+        "browsingContext._contextCreatedEmitted",
+        this.#onContextCreatedSubmitted
+      );
+      this.#contextListener.stopListening();
     }
   }
 
-  #startListingOnRealmDestroyed() {
+  #startListeningOnRealmDestroyed() {
     if (!this.#subscribedEvents.has("script.realmDestroyed")) {
       this.messageHandler.on("realm-destroyed", this.#onRealmDestroyed);
     }
   }
 
-  #stopListingOnRealmDestroyed() {
+  #stopListeningOnRealmDestroyed() {
     if (this.#subscribedEvents.has("script.realmDestroyed")) {
       this.messageHandler.off("realm-destroyed", this.#onRealmDestroyed);
     }
@@ -893,12 +1044,12 @@ class ScriptModule extends RootBiDiModule {
   #subscribeEvent(event) {
     switch (event) {
       case "script.realmCreated": {
-        this.#startListingOnRealmCreated();
+        this.#startListeningOnRealmCreated();
         this.#subscribedEvents.add(event);
         break;
       }
       case "script.realmDestroyed": {
-        this.#startListingOnRealmDestroyed();
+        this.#startListeningOnRealmDestroyed();
         this.#subscribedEvents.add(event);
         break;
       }
@@ -908,12 +1059,12 @@ class ScriptModule extends RootBiDiModule {
   #unsubscribeEvent(event) {
     switch (event) {
       case "script.realmCreated": {
-        this.#stopListingOnRealmCreated();
+        this.#stopListeningOnRealmCreated();
         this.#subscribedEvents.delete(event);
         break;
       }
       case "script.realmDestroyed": {
-        this.#stopListingOnRealmDestroyed();
+        this.#stopListeningOnRealmDestroyed();
         this.#subscribedEvents.delete(event);
         break;
       }

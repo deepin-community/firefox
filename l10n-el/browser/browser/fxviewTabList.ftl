@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Μετακίνηση στο τέλος
     .accesskey = α
 fxviewtabrow-move-tab-window = Μετακίνηση σε νέο παράθυρο
     .accesskey = π
+fxviewtabrow-send-to-device = Αποστολή σε συσκευή
+    .accesskey = π
 fxviewtabrow-send-tab = Αποστολή καρτέλας σε συσκευή
     .accesskey = λ
 fxviewtabrow-pin-tab = Καρφίτσωμα καρτέλας
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Άρση σίγασης καρτέλας
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Επιλογές για «{ $tabTitle }»
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Σίγαση του { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Άρση σίγασης του { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

@@ -4,25 +4,33 @@
 "use strict";
 
 let { AboutHomeStartupCache } = ChromeUtils.importESModule(
-  "resource:///modules/BrowserGlue.sys.mjs"
+  "resource:///modules/AboutHomeStartupCache.sys.mjs"
 );
 const { sinon } = ChromeUtils.importESModule(
   "resource://testing-common/Sinon.sys.mjs"
 );
 const { DiscoveryStreamFeed } = ChromeUtils.importESModule(
-  "resource://activity-stream/lib/DiscoveryStreamFeed.sys.mjs"
+  "resource://newtab/lib/DiscoveryStreamFeed.sys.mjs"
+);
+const { PREFS_CONFIG } = ChromeUtils.importESModule(
+  "resource://newtab/lib/ActivityStream.sys.mjs"
 );
 
-// Some Activity Stream preferences are JSON encoded, and quite complex.
-// Hard-coding them here or in browser.ini makes them brittle to change.
-// Instead, we pull the default prefs structures and set the values that
-// we need and write them to preferences here dynamically. We do this in
-// its own scope to avoid polluting the global scope.
-{
-  const { PREFS_CONFIG } = ChromeUtils.importESModule(
-    "resource://activity-stream/lib/ActivityStream.sys.mjs"
-  );
-
+/**
+ * Utility function that loads about:home in the current window in a new tab, and waits
+ * for the Discovery Stream cards to finish loading before running the taskFn function.
+ * Once taskFn exits, the about:home tab will be closed.
+ *
+ * @param {Function} taskFn
+ *   A function that will be run after about:home has finished loading. This can be
+ *   an async function.
+ * @returns {Promise<undefined>}
+ */
+async function withFullyLoadedAboutHome(taskFn) {
+  // Some Activity Stream preferences are JSON encoded, and quite complex.
+  // Hard-coding them here or in browser.toml makes them brittle to change.
+  // Instead, we pull the default prefs structures and set the values that
+  // we need and write them to preferences here dynamically.
   let defaultDSConfig = JSON.parse(
     PREFS_CONFIG.get("discoverystream.config").getValue({
       geo: "US",
@@ -30,37 +38,25 @@ const { DiscoveryStreamFeed } = ChromeUtils.importESModule(
     })
   );
 
-  // Configure Activity Stream to query for the layout JSON file that points
-  // at the local top stories feed.
-  Services.prefs.setCharPref(
-    "browser.newtabpage.activity-stream.discoverystream.config",
-    JSON.stringify(defaultDSConfig)
-  );
-}
-
-/**
- * Utility function that loads about:home in the current window in a new tab, and waits
- * for the Discovery Stream cards to finish loading before running the taskFn function.
- * Once taskFn exits, the about:home tab will be closed.
- *
- * @param {function} taskFn
- *   A function that will be run after about:home has finished loading. This can be
- *   an async function.
- * @return {Promise}
- * @resolves {undefined}
- */
-async function withFullyLoadedAboutHome(taskFn) {
   const sandbox = sinon.createSandbox();
   sandbox
     .stub(DiscoveryStreamFeed.prototype, "generateFeedUrl")
     .returns(
-      "https://example.com/browser/browser/components/newtab/test/browser/topstories.json"
+      "https://example.com/browser/browser/extensions/newtab/test/browser/topstories.json"
     );
 
   // Set "prefers-reduced-motion" media to "reduce"
   // to avoid the loading animation from triggering bug 1742842
   await SpecialPowers.pushPrefEnv({
-    set: [["ui.prefersReducedMotion", 1]],
+    set: [
+      ["ui.prefersReducedMotion", 1],
+      // Configure Activity Stream to query for the layout JSON file that points
+      // at the local top stories feed.
+      [
+        "browser.newtabpage.activity-stream.discoverystream.config",
+        JSON.stringify(defaultDSConfig),
+      ],
+    ],
   });
 
   return BrowserTestUtils.withNewTab("about:home", async browser => {
@@ -89,33 +85,26 @@ async function withFullyLoadedAboutHome(taskFn) {
  *   after the restart simultion is complete, and that reload will attempt
  *   to read any about:home cache contents.
  * @param options (object, optional)
- *
  *   An object with the following properties:
- *
- *     withAutoShutdownWrite (boolean, optional):
- *       Whether or not the shutdown part of the simulation should cause the
- *       shutdown handler to run, which normally causes the cache to be
- *       written. Setting this to false is handy if the cache has been
- *       specially prepared for the subsequent startup, and we don't want to
- *       overwrite it. This defaults to true.
- *
- *     ensureCacheWinsRace (boolean, optional):
- *       Ensures that the privileged about content process will be able to
- *       read the bytes from the streams sent down from the HTTP cache. Use
- *       this to avoid the HTTP cache "losing the race" against reading the
- *       about:home document from the omni.ja. This defaults to true.
- *
- *     expectTimeout (boolean, optional):
- *       If true, indicates that it's expected that AboutHomeStartupCache will
- *       timeout when shutting down. If false, such timeouts will result in
- *       test failures. Defaults to false.
- *
- *     skipAboutHomeLoad (boolean, optional):
- *       If true, doesn't automatically load about:home after the simulated
- *       restart. Defaults to false.
- *
- * @returns Promise
- * @resolves undefined
+ * @param options.withAutoShutdownWrite (boolean, optional)
+ *   Whether or not the shutdown part of the simulation should cause the
+ *   shutdown handler to run, which normally causes the cache to be
+ *   written. Setting this to false is handy if the cache has been
+ *   specially prepared for the subsequent startup, and we don't want to
+ *   overwrite it. This defaults to true.
+ * @param options.ensureCacheWinsRace (boolean, optional)
+ *   Ensures that the privileged about content process will be able to
+ *   read the bytes from the streams sent down from the HTTP cache. Use
+ *   this to avoid the HTTP cache "losing the race" against reading the
+ *   about:home document from the omni.ja. This defaults to true.
+ * @param options.expectTimeout (boolean, optional)
+ *   If true, indicates that it's expected that AboutHomeStartupCache will
+ *   timeout when shutting down. If false, such timeouts will result in
+ *   test failures. Defaults to false.
+ * @param options.skipAboutHomeLoad (boolean, optional)
+ *   If true, doesn't automatically load about:home after the simulated
+ *   restart. Defaults to false.
+ * @returns {Promise<undefined>}
  *   Resolves once the restart simulation is complete, and the <xul:browser>
  *   pointed at about:home finishes reloading.
  */
@@ -157,7 +146,7 @@ async function simulateRestart(
   info("Waiting for AboutHomeStartupCacheChild to uninit");
   await SpecialPowers.spawn(browser, [], async () => {
     let { AboutHomeStartupCacheChild } = ChromeUtils.importESModule(
-      "resource:///modules/AboutNewTabService.sys.mjs"
+      "resource:///modules/AboutNewTabRedirector.sys.mjs"
     );
     AboutHomeStartupCacheChild.uninit();
   });
@@ -179,7 +168,7 @@ async function simulateRestart(
       info("Ensuring cache bytes are available");
       await SpecialPowers.spawn(browser, [], async () => {
         let { AboutHomeStartupCacheChild } = ChromeUtils.importESModule(
-          "resource:///modules/AboutNewTabService.sys.mjs"
+          "resource:///modules/AboutNewTabRedirector.sys.mjs"
         );
         let pageStream = AboutHomeStartupCacheChild._pageInputStream;
         let scriptStream = AboutHomeStartupCacheChild._scriptInputStream;
@@ -212,8 +201,7 @@ async function simulateRestart(
  * @param script (String)
  *   The JS content to write into the cache that can be loaded via
  *   about:home?jscache. This cannot be the empty string.
- * @returns Promise
- * @resolves undefined
+ * @returns {Promise<undefined>}
  *   When the page and script content has been successfully written.
  */
 async function injectIntoCache(page, script) {
@@ -244,8 +232,8 @@ async function injectIntoCache(page, script) {
 
 /**
  * Clears out any pre-existing about:home cache.
- * @returns Promise
- * @resolves undefined
+ *
+ * @returns {Promise<undefined>}
  *   Resolves when the cache is cleared.
  */
 async function clearCache() {
@@ -286,8 +274,7 @@ function assertCacheResultScalar(cacheResultScalar) {
  *
  * @param browser (<xul:browser>)
  *   A <xul:browser> with about:home running in it.
- * @returns Promise
- * @resolves undefined
+ * @returns {Promise<undefined>}
  *   Resolves once the cache entry has been destroyed.
  */
 async function ensureCachedAboutHome(browser) {
@@ -340,8 +327,7 @@ async function ensureCachedAboutHome(browser) {
  *   One of the AboutHomeStartupCache.CACHE_RESULT_SCALARS values. It is
  *   asserted that the cache result Telemetry scalar will have been set
  *   to this value to explain why the dynamic about:home was used.
- * @returns Promise
- * @resolves undefined
+ * @returns {Promise<undefined>}
  *   Resolves once the cache entry has been destroyed.
  */
 async function ensureDynamicAboutHome(browser, expectedResultScalar) {

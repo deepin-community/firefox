@@ -5,8 +5,8 @@
 package mozilla.components.browser.toolbar.display
 
 import android.graphics.Color
-import android.os.Build
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -18,7 +18,7 @@ import mozilla.components.browser.toolbar.BrowserToolbar
 import mozilla.components.browser.toolbar.R
 import mozilla.components.concept.menu.MenuButton
 import mozilla.components.concept.toolbar.Toolbar
-import mozilla.components.concept.toolbar.Toolbar.SiteSecurity
+import mozilla.components.concept.toolbar.Toolbar.SiteInfo
 import mozilla.components.concept.toolbar.Toolbar.SiteTrackingProtection
 import mozilla.components.support.base.Component
 import mozilla.components.support.base.facts.Action
@@ -42,7 +42,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
-import org.robolectric.util.ReflectionHelpers
 import mozilla.components.ui.icons.R as iconsR
 
 @RunWith(AndroidJUnit4::class)
@@ -571,6 +570,22 @@ class DisplayToolbarTest {
     }
 
     @Test
+    fun `setUrlBackgroundMargins sets the correct margins`() {
+        val (_, displayToolbar) = createDisplayToolbar()
+
+        val margins = DisplayToolbar.DisplayMargins(
+            goneStartMargin = 16,
+            goneEndMargin = 8,
+        )
+        displayToolbar.setUrlBackgroundMargins(margins)
+
+        val layoutParams = displayToolbar.views.background.layoutParams as? ConstraintLayout.LayoutParams
+        assertNotNull(layoutParams)
+        assertEquals(margins.goneStartMargin, layoutParams?.goneStartMargin)
+        assertEquals(margins.goneEndMargin, layoutParams?.goneEndMargin)
+    }
+
+    @Test
     fun `titleView does not display when there is no title text`() {
         val (_, displayToolbar) = createDisplayToolbar()
 
@@ -641,60 +656,43 @@ class DisplayToolbarTest {
     @Test
     fun `iconView changes site secure state when site security changes`() {
         val (_, displayToolbar) = createDisplayToolbar()
-        assertEquals(SiteSecurity.INSECURE, displayToolbar.views.securityIndicator.siteSecurity)
+        assertEquals(SiteInfo.INSECURE, displayToolbar.views.siteInfoIndicator.siteInfo)
 
-        displayToolbar.siteSecurity = SiteSecurity.SECURE
+        displayToolbar.siteInfo = SiteInfo.SECURE
 
-        assertEquals(SiteSecurity.SECURE, displayToolbar.views.securityIndicator.siteSecurity)
+        assertEquals(SiteInfo.SECURE, displayToolbar.views.siteInfoIndicator.siteInfo)
 
-        displayToolbar.siteSecurity = SiteSecurity.INSECURE
+        displayToolbar.siteInfo = SiteInfo.INSECURE
 
-        assertEquals(SiteSecurity.INSECURE, displayToolbar.views.securityIndicator.siteSecurity)
+        assertEquals(SiteInfo.INSECURE, displayToolbar.views.siteInfoIndicator.siteInfo)
     }
 
     @Test
     fun `securityIconColor is set when securityIconColor changes`() {
         val (_, displayToolbar) = createDisplayToolbar()
 
-        assertNull(displayToolbar.views.securityIndicator.colorFilter)
+        assertNull(displayToolbar.views.siteInfoIndicator.colorFilter)
 
         displayToolbar.colors = displayToolbar.colors.copy(
-            securityIconSecure = Color.BLUE,
-            securityIconInsecure = Color.BLUE,
+            siteInfoIconSecure = Color.BLUE,
+            siteInfoIconInsecure = Color.BLUE,
         )
 
-        assertNotNull(displayToolbar.views.securityIndicator.colorFilter)
+        assertNotNull(displayToolbar.views.siteInfoIndicator.colorFilter)
     }
 
     @Test
-    fun `color filter is set with transparent when securityIconColor changes to transparent and api version is lower than 23`() {
-        ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 22)
+    fun `color filter is cleared when securityIconColor changes to transparent`() {
         val (_, displayToolbar) = createDisplayToolbar()
 
-        assertNull(displayToolbar.views.securityIndicator.colorFilter)
+        assertNull(displayToolbar.views.siteInfoIndicator.colorFilter)
 
         displayToolbar.colors = displayToolbar.colors.copy(
-            securityIconSecure = Color.TRANSPARENT,
-            securityIconInsecure = Color.TRANSPARENT,
+            siteInfoIconSecure = Color.TRANSPARENT,
+            siteInfoIconInsecure = Color.TRANSPARENT,
         )
 
-        assertNotNull(displayToolbar.views.securityIndicator.colorFilter)
-    }
-
-    @Test
-    fun `color filter is cleared when securityIconColor changes to transparent and api version is bigger than 22`() {
-        ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 23)
-
-        val (_, displayToolbar) = createDisplayToolbar()
-
-        assertNull(displayToolbar.views.securityIndicator.colorFilter)
-
-        displayToolbar.colors = displayToolbar.colors.copy(
-            securityIconSecure = Color.TRANSPARENT,
-            securityIconInsecure = Color.TRANSPARENT,
-        )
-
-        assertNull(displayToolbar.views.securityIndicator.colorFilter)
+        assertNull(displayToolbar.views.siteInfoIndicator.colorFilter)
     }
 
     @Test
@@ -742,42 +740,42 @@ class DisplayToolbarTest {
 
         val (_, displayToolbar) = createDisplayToolbar()
 
-        assertNull(displayToolbar.views.securityIndicator.background)
+        assertNull(displayToolbar.views.siteInfoIndicator.background)
 
-        displayToolbar.setOnSiteSecurityClickedListener {
+        displayToolbar.setOnSiteInfoClickedListener {
             listenerInvoked = true
         }
 
-        assertNotNull(displayToolbar.views.securityIndicator.background)
+        assertNotNull(displayToolbar.views.siteInfoIndicator.background)
 
-        displayToolbar.views.securityIndicator.performClick()
+        displayToolbar.views.siteInfoIndicator.performClick()
 
         assertTrue(listenerInvoked)
 
         listenerInvoked = false
 
-        displayToolbar.setOnSiteSecurityClickedListener { }
+        displayToolbar.setOnSiteInfoClickedListener { }
 
-        assertNotNull(displayToolbar.views.securityIndicator.background)
+        assertNotNull(displayToolbar.views.siteInfoIndicator.background)
 
-        displayToolbar.views.securityIndicator.performClick()
+        displayToolbar.views.siteInfoIndicator.performClick()
 
         assertFalse(listenerInvoked)
 
-        displayToolbar.setOnSiteSecurityClickedListener(null)
+        displayToolbar.setOnSiteInfoClickedListener(null)
 
-        assertNull(displayToolbar.views.securityIndicator.background)
+        assertNull(displayToolbar.views.siteInfoIndicator.background)
     }
 
     @Test
-    fun `Security icon has proper content description`() {
+    fun `Site info icon has proper content description`() {
         val (_, displayToolbar) = createDisplayToolbar()
-        val siteSecurityIconView = displayToolbar.views.securityIndicator
+        val siteInfoIconView = displayToolbar.views.siteInfoIndicator
 
-        assertNotNull(siteSecurityIconView.contentDescription)
+        assertNotNull(siteInfoIconView.contentDescription)
         assertEquals(
             testContext.getString(R.string.mozac_browser_toolbar_content_description_site_info),
-            siteSecurityIconView.contentDescription,
+            siteInfoIconView.contentDescription,
         )
     }
 

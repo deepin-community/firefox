@@ -130,7 +130,8 @@ class ExtensionStorageActor extends BaseStorageActor {
   /**
    * This method asynchronously reads the storage data for the target extension
    * and caches this data into this.hostVsStores.
-   * @param {String} host - the hostname for the extension
+   *
+   * @param {string} host - the hostname for the extension
    */
   async populateStoresForHost(host) {
     if (host !== this.extensionHostURL) {
@@ -161,15 +162,6 @@ class ExtensionStorageActor extends BaseStorageActor {
 
     for (const [key, value] of Object.entries(data)) {
       storeMap.set(key, value);
-    }
-
-    if (this.storageActor.parentActor.fallbackWindow) {
-      // Show the storage actor in the add-on storage inspector even when there
-      // is no extension page currently open
-      // This strategy may need to change depending on the outcome of Bug 1597900
-      const storageData = {};
-      storageData[host] = this.getNamesForHost(host);
-      this.storageActor.update("added", this.typeName, storageData);
     }
   }
   /**
@@ -253,8 +245,9 @@ class ExtensionStorageActor extends BaseStorageActor {
    * devtools/shared/specs/storage.js. Behavior largely mirrors the "indexedDB" storage actor,
    * except where it would throw an unhandled error (i.e. for a `BigInt` or `undefined`
    * `item.value`).
-   * @param {Object} item - The storage item to convert
-   * @param {String} item.name - The storage item key
+   *
+   * @param {object} item - The storage item to convert
+   * @param {string} item.name - The storage item key
    * @param {*} item.value - The storage item value
    * @return {extensionobject}
    */

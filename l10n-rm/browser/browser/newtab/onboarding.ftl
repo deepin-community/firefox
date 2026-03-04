@@ -25,6 +25,8 @@ return-to-amo-subtitle = Stupent, ussa has ti { -brand-short-name }
 return-to-amo-addon-title = Pertge n'emprovas ti ussa betg <img data-l10n-name="icon"/> <b>{ $addon-name }</b>?
 return-to-amo-add-extension-label = Agiuntar l'extensiun
 return-to-amo-add-theme-label = Agiuntar il design
+return-to-amo-theme-install-complete-label = Installà il design
+return-to-amo-extension-install-complete-label = Installà l’extensiun
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importar da { $previous
 mr1-onboarding-theme-header = L'adatta a tes basegns
 mr1-onboarding-theme-subtitle = Persunalisescha { -brand-short-name } cun in design.
 mr1-onboarding-theme-secondary-button-label = Betg ussa
-newtab-wallpaper-onboarding-title = Emprova cun in zic colur
-newtab-wallpaper-onboarding-subtitle = Tscherna in maletg dal fund davos per dar in nov look a la pagina da novs tabs.
-newtab-wallpaper-onboarding-primary-button-label = Definir in fund davos
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Design dal sistem
 mr1-onboarding-theme-label-light = Cler
@@ -226,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Utilisescha in navigatur dad ina organi
 mr2022-onboarding-get-started-primary-subtitle = Nossa actualisaziun la pli nova è adattada a tes basegns e renda pli simpel che mai da navigar en il web. Ella porta numerusas funcziuns che ti vegns ad adurar.
 mr2022-onboarding-get-started-primary-button-label = Configurà en in pèr secundas
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuraziun sveltischma
 mr2022-onboarding-import-subtitle = Configurescha { -brand-short-name } tenor tes basegns. Agiuntescha segnapaginas, pleds-clav e dapli da tes navigatur vegl.
@@ -357,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Sche ti la sincronisa
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ta sustegna adina
 onboarding-gratitude-security-and-privacy-subtitle = Grazia per utilisar { -brand-short-name } da la Mozilla Foundation. Cun tes agid lavurain nus per crear in internet pli segir ed accessibel per ina e mintgin.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronisescha tias datas sin differents apparats
+onboarding-sign-up-description = Creescha in conto e tut tias infurmaziuns impurtantas – pleds-clav, segnapaginas e dapli – vegnan memorisadas a moda segira ed èn disponiblas cura che ti t’annunzias sin x in apparat.
+onboarding-sign-up-button = Crear in conto u s’annunziar
+onboarding-sign-up-secondary-button = Cumenzar a navigar
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +382,191 @@ onboarding-new-user-survey-familiarity-based-option-1 = Jau n’al enconusch ins
 onboarding-new-user-survey-familiarity-based-option-2 = Jau al hai utilisà in pèr giadas
 onboarding-new-user-survey-familiarity-based-option-3 = Jau al enconusch fitg bain
 onboarding-new-user-survey-familiarity-based-option-4 = Jau al hai utilisà en il passà, ma quai è gia daditg
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Tscherna nua che ti vuls avair tes tabs
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Ti pos mintga mument midar idea ed adattar ils parameters da la trav laterala.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Tes tabs, en tia moda e maniera
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Has ti adina avert blers tabs? Emprova da plazzar ils tabs da la vart per avair ina vista pli survesaivla. U che ti restas tar la vista classica cun ils tabs survart. Mida da tut temp.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Tscherna la disposiziun per tes tabs
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Per ina vista survesaivla che gida da sa concentrar, emprova da spustar ils tabs da la vart. U resta tar la vista classica cun ils tabs survart. Mida da tut temp.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tabs da la vart
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tabs sisum
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Ils tabs verticals èn qua
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Nus ta preschentain ils tabs verticals
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Emprova da plazzar tes tabs da la vart. Ti pos midar idea da tut temp ed adattar ils parameters da la trav laterala.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Empruvar ils tabs verticals
+onboarding-flair-text = Nov!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantegnair ils tabs orizontals
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Ina fanestra dal navigatur che visualisescha ils tabs lung la vart dal visur en la trav laterala da { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Ina fanestra dal navigatur che visualisescha ils tabs lung la vart dal visur en la trav laterala da { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Ina fanestra dal navigatur che visualisescha ils tabs da la vart sura.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Ina fanestra dal navigatur che visualisescha ils tabs da la vart sura.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Emprova in chatbot IA en la trav laterala
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Lascha resumar cuntegn dal web, generar ideas, far sbozs da messadis – tut durant la navigaziun. Tscherna tranter differents purschiders ed als mida cura che ti vuls. <a data-l10n-name="learn-more">Ulteriuras infurmaziuns</a>
+onboarding-genai-sidebar-primary-button = Tscherna in chatbot
+onboarding-genai-sidebar-secondary-button = Cumenza a navigar
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Terminar la configuraziun da { -brand-short-name }
+onboarding-checklist-subtitle = Suonda questas instrucziuns per profitar dad ina experientscha da navigaziun optimala.
+onboarding-checklist-set-default = Definir { -brand-short-name } sco navigatur da standard
+onboarding-checklist-pin = Fixar { -brand-short-name } en la taskbar
+onboarding-checklist-import = Importar dad in navigatur precedent
+onboarding-checklist-extension = Agiuntar ina extensiun
+onboarding-checklist-sign-up = Crear in conto u s’annunziar en tes conto
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Emprova las gruppas da tabs per dapli urden e concentraziun
+tab-groups-onboarding-feature-callout-subtitle = Optimescha l’organisaziun cun trair in tab sin in auter per crear tia emprima gruppa.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Ti chattas tias gruppas da tabs adina en il menu «Glista da tut ils tabs».
+tab-groups-onboarding-create-group-title-2 = Ti chattas qua da tut temp tias gruppas da tabs.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Chatta tias gruppas cun las tschertgar en la trav d’adressas.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Cura che ti serras ina gruppa da tabs, la pos ti reavrir da tut temp en il menu «Glista da tut ils tabs».
+tab-groups-onboarding-saved-groups-title-2 = Sche ti serras ina gruppa da tabs, pos ti la reavrir qua da tut temp.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Chatta tias gruppas serradas cun las tschertgar en la trav d’adressas.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Reavra da tut temp tias gruppas da tabs en il menu «Glista da tut ils tabs».
+tab-groups-onboarding-session-restore-title = Reavra qua tias gruppas da tabs da tut temp.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Voilà: ils profils da { -brand-product-name }
+multi-profile-spotlight-body = Mida simplamain tranter la navigaziun per la lavur e quella dal temp liber. Ils profils preservan tias datas da navigaziun, inclusivamain la cronologia da tschertga ed ils pleds-clav, cumplettamain separà – per che ti possias t’organisar optimalmain.
+multi-profile-spotlight-cta = Crear in profil
+multi-profile-callout-title = Crear differents profils per la lavur ed il temp liber
+multi-profile-callout-subtitle = Profils ta permettan da separar cumplettamain tias datas da navigaziun, sco la cronologia da tschertga ed ils pleds-clav.
+multi-profile-callout-cta = Crear in profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Telechargiar, sincronisar e dai!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scannescha il code QR per telechargiar { -brand-product-name } per apparats mobils. Suenter l’installaziun, tscherna «Sincronisaziun cun apparats mobils» per acceder a tes pleds-clav, segnapaginas e dapli – tuttina nua che ti ta chattas.
+dismiss-button-label = Serrar
+sync-to-mobile-button-label = Sincronisaziun cun apparats mobils
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Code QR per telechargiar { -brand-product-name } per apparats mobils
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Actualiseschas ti a Windows 11?
+    Faschain in backup da tias datas da { -brand-product-name }.
+create-backup-screen-1-subtitle = Protegia automaticamain tes pleds-clav, segnapaginas e dapli en 1-2 minutas.
+create-backup-screen-1-flair = Recumandà
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Ulteriuras infurmaziuns</a>
+create-backup-screen-1-sync-label = Sincronisar cun { -brand-product-name }
+create-backup-screen-1-sync-body = Segirescha tut ils apparats annunziads
+create-backup-screen-1-backup-label = Segirar sin il computer
+create-backup-screen-1-backup-body = Memorisescha sin l’apparat u en OneDrive
+create-backup-select-tile-button-label = Tscherner
+create-backup-back-button-label = Enavos
+create-backup-show-fewer =
+    .label = Mussar damain da quai
+create-backup-screen-2-title = Tscherna las datas { -brand-product-name } per segirar
+create-backup-screen-2-subtitle = Quai cuzza be ina minuta. Tias datas vegnan segiradas ina giada per di.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Configuraziun simpla
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Segnapaginas, cronologia, parameters e dapli
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = N’includa nagins pleds-clav e pajaments
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Betg criptà
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Tut las datas
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Includa pleds-clav e pajaments
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Criptà cun in pled-clav
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Nua vuls ti memorisar tia copia da segirezza?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Crear in pled-clav per la datoteca da backup
+create-backup-screen-3-subtitle = Necessari per criptar tias datas. La tegna en salv en in lieu dal qual ti ta regordas.
+fx-backup-opt-in-header = Tscherner nua memorisar la datoteca
+fx-backup-opt-in-filepath-label = Tscherna in lieu che ti planiseschas da spustar sin il nov apparat, p.ex. OneDrive.
+fx-backup-opt-in-create-password-label = Endatescha il pled-clav
+fx-backup-opt-in-confirm-btn-label = Cuntinuar
+fx-backup-opt-in-cancel-btn-label = Enavos
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Tes backup è planisà
+fx-backup-confirmation-screen-close-button = Serrar
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Tut las datas da navigaziun èn inclusas
+fx-backup-confirmation-screen-all-data-item-text-2 = Memorisà sin tes apparat
+fx-backup-confirmation-screen-all-data-item-text-3 = Criptà e protegì cun in pled-clav
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Segnapaginas, cronologia, parameters ed autras datas inclusas
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Memorisà sin tes apparat
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Pleds-clav e pajaments betg inclus
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Acceda als <a data-l10n-name="settings">Parameters</a> per includer las datas sensiblas.
+fx-backup-confirmation-screen-item-subtext-1 = Tes backup vegn ad aviar en in pèr minutas e vegn exequì ina giada per di. Ti pos controllar il progress en ils <a data-l10n-name="settings">Parameters</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } vegn a tschertgar tes backup sche ti al stos reinstallar.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Restaurar dad ina copia da segirezza
+restore-from-backup-title = Reconstruin il { -brand-short-name } che ta plascha
+restore-from-backup-subtitle = Recuperescha tut tes segnapaginas, la cronologia ed autras datas per reprender tia navigaziun.
+restore-from-backup-secondary-button = Betg restaurar
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Nus essan puspè qua! Las datas da { -brand-short-name } èn vegnidas restauradas.
+restored-from-backup-success-with-checklist-subtitle = Vuls ti che tes navigatur preferì che dat la prioritad a la sfera privata saja accessibel cun in clic?
+restored-from-backup-success-no-checklist-subtitle = Ti pos activar backups per quest apparat en ils <a data-l10n-name="settings">parameters</a>.
+restored-from-backup-success-with-checklist-primary-button = Memorisar e cuntinuar
+restored-from-backup-success-with-checklist-secondary-button = Sursiglir quest pass
+restored-from-backup-success-no-checklist-primary-button = Cuntinuar
+restored-from-backup-error-title = Hmm, igl ha dà in problem cun tia datoteca da backup.
+restored-from-backup-error-subtitle = Sche ti has in’autra datoteca da backup da { -brand-short-name }, emprova da restaurar cun agid da lezza. <a data-l10n-name="restore-problems">Na funcziuni anc adina betg?</a>
+restored-from-backup-error-primary-button = Serrar
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Persunalisescha tia experientscha cun { -brand-short-name }
+onboarding-personalization-subtitle = Respunda in pèr dumondas e nus vegnin a proponer funcziuns ed extensiuns per meglierar tia experientscha cun { -brand-short-name }.
+onboarding-personalization-use-case-title = Per tge intent vegns ti ad utilisar { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Privat
+onboarding-personalization-use-case-school-option = Scola
+onboarding-personalization-use-case-work-option = Lavur
+onboarding-personalization-motivation-title = Tge funcziuns da { -brand-short-name } èn las pli impurtantas per tai?
+onboarding-personalization-motivation-privacy-option = Protecziun da datas e segirezza
+onboarding-personalization-motivation-productivity-option = Productivitad
+onboarding-personalization-motivation-other-option = Auter

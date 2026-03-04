@@ -35,28 +35,22 @@ appmenuitem-fullscreen =
 
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = No i hai garra pestanya ubierta
-
 # This is shown when Sync is configured but syncing tabs is disabled.
 appmenu-remote-tabs-tabsnotsyncing = Activar la sincronización de pestanyas pa veyer una lista de pestanyas dende os atros dispositivos.
-
 # This is shown when Sync is configured but this appears to be the only device attached to
 # the account. We also show links to download Firefox for android/ios.
 appmenu-remote-tabs-noclients = Quiere veyer aquí las pestanyas d'os atros dispositivos?
-
 appmenu-remote-tabs-connectdevice =
     .label = Connectar belatro dispositivo
 appmenu-remote-tabs-welcome = Veyer una lista d'as pestanyas d'os atros dispositivos.
 appmenu-remote-tabs-unverified = Fa falta verificar lo tuyo conto.
-
 appmenuitem-fxa-sign-in = Iniciar la sesión en { -brand-product-name }
-
 appmenuitem-save-page =
     .label = Alzar a pachina como…
 
 ## What's New panel in App menu.
 
 whatsnew-panel-header = Novedatz
-
 # Checkbox displayed at the bottom of the What's New panel, allowing users to
 # enable/disable What's New notifications.
 whatsnew-panel-footer-checkbox =
@@ -70,19 +64,6 @@ whatsnew-panel-footer-checkbox =
 profiler-popup-button-idle =
     .label = Perfilador
     .tooltiptext = Gravar un perfil de prestacions
-
-## Profiler presets
-## They are shown in the popup's select box.
-
-
-# Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
-# Please take care that the same values are also defined in devtools' perftools.ftl.
-
-
-# Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/shared/background.jsm.js
-# Please take care that the same values are also defined in devtools' perftools.ftl.
 
 ## History panel
 
@@ -104,10 +85,6 @@ appmenu-about =
 appmenu-help-report-site-issue =
     .label = Reportar un problema con o puesto…
 
-## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
-## are mutually exclusive, so it's possible to use the same accesskey for both.
-
-
 ## appmenu-help-report-deceptive-site and appmenu-help-not-deceptive
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
@@ -117,6 +94,3 @@ appmenu-help-report-deceptive-site =
 appmenu-help-not-deceptive =
     .label = Iste no ye un puesto malicioso…
     .accesskey = m
-
-## More Tools
-

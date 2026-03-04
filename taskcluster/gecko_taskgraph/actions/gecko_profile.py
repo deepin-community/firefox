@@ -6,14 +6,11 @@
 import logging
 
 import requests
-from requests.exceptions import HTTPError
-from taskgraph.taskgraph import TaskGraph
+from taskcluster.exceptions import TaskclusterRestFailure
 from taskgraph.util.taskcluster import get_artifact_from_index, get_task_definition
 
-from gecko_taskgraph.util.taskgraph import find_decision_task
-
 from .registry import register_callback_action
-from .util import combine_task_graph_files, create_tasks
+from .util import combine_task_graph_files, create_tasks, fetch_graph_and_labels
 
 PUSHLOG_TMPL = "{}/json-pushes?version=2&startID={}&endID={}"
 INDEX_TMPL = "gecko.v2.{}.pushlog-id.{}.decision"
@@ -29,18 +26,56 @@ logger = logging.getLogger(__name__)
         "Take the label of the current task, "
         "and trigger the task with that label "
         "on previous pushes in the same project "
-        "while adding the --gecko-profile cmd arg."
+        "while adding the --gecko-profile cmd arg. "
+        "Plus optional overrides for threads, "
+        "features, and sampling interval."
     ),
     order=200,
-    context=[{"test-type": "talos"}, {"test-type": "raptor"}],
-    schema={},
+    context=[
+        {"test-type": "talos"},
+        {"test-type": "raptor"},
+        {"test-type": "mozperftest"},
+    ],
+    schema={
+        "type": "object",
+        "properties": {
+            "depth": {
+                "type": "integer",
+                "default": 1,
+                "minimum": 1,
+                "maximum": 10,
+                "title": "Depth",
+                "description": "How many pushes to backfill the profiling task on.",
+            },
+            "gecko_profile_interval": {
+                "type": "integer",
+                "default": None,
+                "title": "Sampling interval (ms)",
+                "description": "How often to sample the profiler (in ms).",
+            },
+            "gecko_profile_features": {
+                "type": "string",
+                "default": "",
+                "title": "Features",
+                "description": "Comma-separated Gecko profiler features. "
+                "Example: js,stackwalk,cpu,screenshots,memory",
+            },
+            "gecko_profile_threads": {
+                "type": "string",
+                "default": "",
+                "title": "Threads",
+                "description": "Comma-separated thread names to profile. "
+                "Example: GeckoMain,Compositor,Renderer",
+            },
+        },
+    },
     available=lambda parameters: True,
 )
 def geckoprofile_action(parameters, graph_config, input, task_group_id, task_id):
     task = get_task_definition(task_id)
     label = task["metadata"]["name"]
     pushes = []
-    depth = 2
+    depth = input.get("depth", 1)
     end_id = int(parameters["pushlog_id"])
 
     while True:
@@ -64,20 +99,13 @@ def geckoprofile_action(parameters, graph_config, input, task_group_id, task_id)
 
     for push in pushes:
         try:
-            full_task_graph = get_artifact_from_index(
-                INDEX_TMPL.format(parameters["project"], push),
-                "public/full-task-graph.json",
-            )
-            _, full_task_graph = TaskGraph.from_json(full_task_graph)
-            label_to_taskid = get_artifact_from_index(
-                INDEX_TMPL.format(parameters["project"], push),
-                "public/label-to-taskid.json",
-            )
             push_params = get_artifact_from_index(
                 INDEX_TMPL.format(parameters["project"], push), "public/parameters.yml"
             )
-            push_decision_task_id = find_decision_task(push_params, graph_config)
-        except HTTPError as e:
+            push_decision_task_id, full_task_graph, label_to_taskid, _ = (
+                fetch_graph_and_labels(push_params, graph_config)
+            )
+        except TaskclusterRestFailure as e:
             logger.info(f"Skipping {push} due to missing index artifacts! Error: {e}")
             continue
 
@@ -87,10 +115,65 @@ def geckoprofile_action(parameters, graph_config, input, task_group_id, task_id)
                 if task.label != label:
                     return task
 
-                cmd = task.task["payload"]["command"]
-                task.task["payload"]["command"] = add_args_to_perf_command(
-                    cmd, ["--gecko-profile"]
-                )
+                interval = input.get("gecko_profile_interval")
+                features = input.get("gecko_profile_features")
+                threads = input.get("gecko_profile_threads")
+
+                task_kind = task.kind
+                env = task.task["payload"]["env"]
+                perf_flags = env.get("PERF_FLAGS", "")
+                test_suite = task.attributes.get("unittest_suite")
+                profiling_command_flags = ["--gecko-profile"]
+
+                if task_kind == "perftest":
+                    # Add "gecko-profile" to PERF_FLAGS if missing and then add remaining
+                    # Gecko Profiler customizations via MOZ_PROFILER_STARTUP_* env overrides.
+                    if "gecko-profile" not in perf_flags:
+                        env["PERF_FLAGS"] = (perf_flags + " gecko-profile").strip()
+
+                    if interval is not None:
+                        env["MOZ_PROFILER_STARTUP_INTERVAL"] = str(interval)
+                    if features is not None:
+                        env["MOZ_PROFILER_STARTUP_FEATURES"] = features
+                    if threads is not None:
+                        env["MOZ_PROFILER_STARTUP_FILTERS"] = threads
+
+                elif test_suite == "raptor":
+                    # Use PERF_FLAGS env to cusomize profiler settings.
+                    raptor_flags = []
+                    if interval is not None:
+                        raptor_flags.append(f"gecko-profile-interval={interval}")
+                    if features is not None:
+                        raptor_flags.append(f"gecko-profile-features={features}")
+                    if threads is not None:
+                        raptor_flags.append(f"gecko-profile-threads={threads}")
+
+                    env["PERF_FLAGS"] = (
+                        perf_flags + " " + " ".join(raptor_flags)
+                    ).strip()
+
+                elif test_suite == "talos":
+                    # Pass everything through the command directly
+                    # Bug 1979192 will modify Talos to make use of PERF_FLAGS.
+                    if interval is not None:
+                        profiling_command_flags.append(
+                            f"--gecko-profile-interval={interval}"
+                        )
+                    if features is not None:
+                        profiling_command_flags.append(
+                            f"--gecko-profile-features={features}"
+                        )
+                    if threads is not None:
+                        profiling_command_flags.append(
+                            f"--gecko-profile-threads={threads}"
+                        )
+
+                if "command" in task.task["payload"]:
+                    cmd = task.task["payload"]["command"]
+                    task.task["payload"]["command"] = add_args_to_perf_command(
+                        cmd, profiling_command_flags
+                    )
+
                 task.task["extra"]["treeherder"]["symbol"] += "-p"
                 task.task["extra"]["treeherder"]["groupName"] += " (profiling)"
                 return task
@@ -107,11 +190,11 @@ def geckoprofile_action(parameters, graph_config, input, task_group_id, task_id)
             )
             backfill_pushes.append(push)
         else:
-            logging.info(f"Could not find {label} on {push}. Skipping.")
+            logger.info(f"Could not find {label} on {push}. Skipping.")
     combine_task_graph_files(backfill_pushes)
 
 
-def add_args_to_perf_command(payload_commands, extra_args=[]):
+def add_args_to_perf_command(payload_commands, extra_args=()):
     """
     Add custom command line args to a given command.
     args:
@@ -135,4 +218,5 @@ def add_args_to_perf_command(payload_commands, extra_args=[]):
         perf_command = " ".join(perf_command)
 
     payload_commands[perf_command_idx] = perf_command
+
     return payload_commands

@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Pàgina blocada
 neterror-captive-portal-page-title = Atzede a sa rete
 neterror-dns-not-found-title = Impossìbile agatare su serbidore
 neterror-malformed-uri-page-title = URL non vàlidu
+problem-with-this-site-title = Paret chi nch’est unu problema cun custu situ
 
 ## Error page actions
 
@@ -49,6 +50,10 @@ neterror-dns-not-found-hint-header = <strong>Si as insertadu s'indiritzu giustu,
 neterror-dns-not-found-hint-try-again = Torra·nche a proare prus tardu
 neterror-dns-not-found-hint-check-network = Controllare sa connessione a sa rete
 neterror-dns-not-found-hint-firewall = Controllare chi { -brand-short-name } tèngiat su permissu de atzèdere a sa rete (mancari su dispositivu siat connessu, però a palas de unu firewall)
+neterror-dns-not-found-offline-hint-header = <strong>Ite nche podes fàghere?</strong>
+neterror-dns-not-found-offline-hint-different-device = Proa a ti connètere dae un’àteru dispositivu.
+neterror-dns-not-found-offline-hint-modem = Controlla su modem o su router tuos.
+neterror-dns-not-found-offline-hint-reconnect = Disconnete e torra a connètere su Wi-Fi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -120,7 +125,7 @@ neterror-network-protocol-error-intro = Sa pàgina chi ses intentende de abèrre
 neterror-network-protocol-error-contact-website = Pro praghere, cuntata is meres de su situ pro ddos informare de custu problema.
 certerror-expired-cert-second-para = Est probàbile chi su tzertificadu de su situ siat iscadidu, e custu impedit a { -brand-short-name } de si connètere cun seguresa. Si bìsitas su situ, is atacadores ti diant pòdere furare informatzione comente craes, messàgios de posta eletrònica o informatziones de cartas de crèditu.
 certerror-expired-cert-sts-second-para = Est probàbile chi su tzertificadu de su situ web siat iscadidu, e custu impedit a { -brand-short-name } de si connètere cun seguresa.
-certerror-what-can-you-do-about-it-title = Ite bi podes fàghere?
+certerror-what-can-you-do-about-it-title = Ite nche podes fàghere?
 certerror-unknown-issuer-what-can-you-do-about-it-website = Est probàbile meda chi sa faddina siat de su situ, e chi non potzas fàghere nudda pro dd'acontzare.
 certerror-unknown-issuer-what-can-you-do-about-it-contact-admin = Si ses in una rete corporativa o ses impreende programmas de antivirus, podes cuntatare is iscuadras de suportu pro chi t’agiudent. Podes fintzas notificare su problema a s’amministratzione de su situ.
 # Variables:

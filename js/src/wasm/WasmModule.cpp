@@ -28,8 +28,10 @@
 #include "js/StreamConsumer.h"
 #include "threading/LockGuard.h"
 #include "threading/Thread.h"
+#include "util/DifferentialTesting.h"
 #include "vm/HelperThreadState.h"  // Tier2GeneratorTask
 #include "vm/PlainObject.h"        // js::PlainObject
+#include "vm/Warnings.h"           // WarnNumberASCII
 #include "wasm/WasmBaselineCompile.h"
 #include "wasm/WasmCompile.h"
 #include "wasm/WasmDebug.h"
@@ -57,21 +59,20 @@ static UniqueChars Tier2ResultsContext(const ScriptedCaller& scriptedCaller) {
              : UniqueChars();
 }
 
-void js::wasm::ReportTier2ResultsOffThread(bool success,
+void js::wasm::ReportTier2ResultsOffThread(bool cancelled, bool success,
                                            Maybe<uint32_t> maybeFuncIndex,
                                            const ScriptedCaller& scriptedCaller,
                                            const UniqueChars& error,
                                            const UniqueCharsVector& warnings) {
-  // Due to behaviour of PartialTier2CompileTaskImpl::runHelperThreadTask.
-  MOZ_ASSERT_IF(maybeFuncIndex.isSome(), warnings.length() == 0);
-
   // Get context to describe this tier-2 task.
   UniqueChars context = Tier2ResultsContext(scriptedCaller);
   const char* contextString = context ? context.get() : "unknown";
 
   // Display the main error, if any.
-  if (!success) {
-    const char* errorString = error ? error.get() : "out of memory";
+  if (!success || cancelled) {
+    const char* errorString = error       ? error.get()
+                              : cancelled ? "compilation cancelled"
+                                          : "out of memory";
     if (maybeFuncIndex.isSome()) {
       LogOffThread(
           "'%s': wasm partial tier-2 (func index %u) failed with '%s'.\n",
@@ -97,13 +98,14 @@ void js::wasm::ReportTier2ResultsOffThread(bool success,
 
 class Module::CompleteTier2GeneratorTaskImpl
     : public CompleteTier2GeneratorTask {
-  SharedBytes bytecode_;
+  SharedBytes codeSection_;
   SharedModule module_;
   mozilla::Atomic<bool> cancelled_;
 
  public:
-  CompleteTier2GeneratorTaskImpl(const ShareableBytes& bytecode, Module& module)
-      : bytecode_(&bytecode), module_(&module), cancelled_(false) {}
+  CompleteTier2GeneratorTaskImpl(const ShareableBytes* codeSection,
+                                 Module& module)
+      : codeSection_(codeSection), module_(&module), cancelled_(false) {}
 
   ~CompleteTier2GeneratorTaskImpl() override {
     module_->completeTier2Listener_ = nullptr;
@@ -123,13 +125,13 @@ class Module::CompleteTier2GeneratorTaskImpl
       // that's okay.
       UniqueChars error;
       UniqueCharsVector warnings;
-      bool success = CompileCompleteTier2(bytecode_->bytes, *module_, &error,
+      bool success = CompileCompleteTier2(codeSection_, *module_, &error,
                                           &warnings, &cancelled_);
       if (!cancelled_) {
         // We could try to dispatch a runnable to the thread that started this
         // compilation, so as to report the warning/error using a JSContext*.
         // For now we just report to stderr.
-        ReportTier2ResultsOffThread(success, mozilla::Nothing(),
+        ReportTier2ResultsOffThread(cancelled_, success, mozilla::Nothing(),
                                     module_->codeMeta().scriptedCaller(), error,
                                     warnings);
       }
@@ -156,11 +158,12 @@ Module::~Module() {
   MOZ_ASSERT(!testingTier2Active_);
 }
 
-void Module::startTier2(const ShareableBytes& bytecode,
+void Module::startTier2(const ShareableBytes* codeSection,
                         JS::OptimizedEncodingListener* listener) {
   MOZ_ASSERT(!testingTier2Active_);
+  MOZ_ASSERT_IF(codeMeta().codeSectionRange.isSome(), codeSection);
 
-  auto task = MakeUnique<CompleteTier2GeneratorTaskImpl>(bytecode, *this);
+  auto task = MakeUnique<CompleteTier2GeneratorTaskImpl>(codeSection, *this);
   if (!task) {
     return;
   }
@@ -174,9 +177,10 @@ void Module::startTier2(const ShareableBytes& bytecode,
 }
 
 bool Module::finishTier2(UniqueCodeBlock tier2CodeBlock,
-                         UniqueLinkData tier2LinkData) const {
-  if (!code_->finishTier2(std::move(tier2CodeBlock),
-                          std::move(tier2LinkData))) {
+                         UniqueLinkData tier2LinkData,
+                         const CompileAndLinkStats& tier2Stats) const {
+  if (!code_->finishTier2(std::move(tier2CodeBlock), std::move(tier2LinkData),
+                          tier2Stats)) {
     return false;
   }
 
@@ -184,8 +188,7 @@ bool Module::finishTier2(UniqueCodeBlock tier2CodeBlock,
   // purposes so that wasmHasTier2CompilationCompleted() only returns true
   // after tier-2 has been fully cached.
 
-  if (completeTier2Listener_ &&
-      code_->codeMeta().features().builtinModules.hasNone()) {
+  if (completeTier2Listener_ && canSerialize()) {
     Bytes bytes;
     if (serialize(&bytes)) {
       completeTier2Listener_->storeOptimizedEncoding(bytes.begin(),
@@ -210,7 +213,16 @@ JSObject* Module::createObject(JSContext* cx) const {
     return nullptr;
   }
 
-  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr)) {
+  JS::RootedVector<JSString*> parameterStrings(cx);
+  JS::RootedVector<Value> parameterArgs(cx);
+  bool canCompileStrings = false;
+  if (!cx->isRuntimeCodeGenEnabled(JS::RuntimeCode::WASM, nullptr,
+                                   JS::CompilationType::Undefined,
+                                   parameterStrings, nullptr, parameterArgs,
+                                   NullHandleValue, &canCompileStrings)) {
+    return nullptr;
+  }
+  if (!canCompileStrings) {
     JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
                               JSMSG_CSP_BLOCKED_WASM, "WebAssembly.Module");
     return nullptr;
@@ -251,10 +263,20 @@ bool wasm::GetOptimizedEncodingBuildId(JS::BuildIdCharVector* buildId) {
   buildId->infallibleAppend(')');
 
   buildId->infallibleAppend('m');
-  buildId->infallibleAppend(wasm::IsHugeMemoryEnabled(IndexType::I32) ? '+'
+  buildId->infallibleAppend(
+      wasm::IsHugeMemoryEnabled(AddressType::I32, PageSize::Standard) ? '+'
                                                                       : '-');
-  buildId->infallibleAppend(wasm::IsHugeMemoryEnabled(IndexType::I64) ? '+'
+  buildId->infallibleAppend(
+      wasm::IsHugeMemoryEnabled(AddressType::I64, PageSize::Standard) ? '+'
                                                                       : '-');
+
+  // We don't expect huge memory to be supported if custom page sizes are used.
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+  MOZ_RELEASE_ASSERT(
+      !wasm::IsHugeMemoryEnabled(AddressType::I32, PageSize::Tiny));
+  MOZ_RELEASE_ASSERT(
+      !wasm::IsHugeMemoryEnabled(AddressType::I64, PageSize::Tiny));
+#endif
 
   return true;
 }
@@ -395,15 +417,11 @@ bool Module::instantiateFunctions(JSContext* cx,
     }
 
     JSFunction* f = &funcImports[i]->as<JSFunction>();
-    if (!IsWasmExportedFunction(f)) {
+    if (!f->isWasm() || codeMeta().funcImportsAreJS) {
       continue;
     }
 
-    uint32_t funcIndex = ExportedFunctionToFuncIndex(f);
-    Instance& instance = ExportedFunctionToInstance(f);
-
-    const TypeDef& exportFuncType =
-        instance.code().codeMeta().getFuncTypeDef(funcIndex);
+    const TypeDef& exportFuncType = *f->wasmTypeDef();
     const TypeDef& importFuncType = code().codeMeta().getFuncTypeDef(i);
 
     if (!TypeDef::isSubTypeOf(&exportFuncType, &importFuncType)) {
@@ -476,6 +494,19 @@ static bool CheckSharing(JSContext* cx, bool declaredShared, bool isShared) {
   return true;
 }
 
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+static bool CheckPageSize(JSContext* cx, PageSize declaredPageSize,
+                          PageSize actualPageSize) {
+  if (declaredPageSize != actualPageSize) {
+    JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
+                             JSMSG_WASM_BAD_IMP_PAGE_SIZE);
+    return false;
+  }
+
+  return true;
+}
+#endif
+
 // asm.js module instantiation supplies its own buffer, but for wasm, create and
 // initialize the buffer if one is requested. Either way, the buffer is wrapped
 // in a WebAssembly.Memory object which is what the Instance stores.
@@ -493,15 +524,24 @@ bool Module::instantiateMemories(
                     memory->buffer().isPreparedForAsmJS());
       MOZ_ASSERT_IF(!codeMeta().isAsmJS(), memory->buffer().isWasm());
 
-      if (memory->indexType() != desc.indexType()) {
+      if (memory->addressType() != desc.addressType()) {
         JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                                 JSMSG_WASM_BAD_IMP_INDEX,
-                                 ToString(memory->indexType()));
+                                 JSMSG_WASM_BAD_IMP_ADDRESS, "memory",
+                                 ToString(memory->addressType()));
         return false;
       }
 
+#ifdef ENABLE_WASM_CUSTOM_PAGE_SIZES
+      // Page size needs to be checked first because comparisons between
+      // incompatible page sizes are invalid in CheckLimits.
+      if (!CheckPageSize(cx, desc.pageSize(), memory->pageSize())) {
+        return false;
+      }
+#endif
+
       if (!CheckLimits(cx, desc.initialPages(), desc.maximumPages(),
-                       /* defaultMax */ MaxMemoryPages(desc.indexType()),
+                       /* defaultMax */
+                       MaxMemoryPages(desc.addressType(), desc.pageSize()),
                        /* actualLength */
                        memory->volatilePages(), memory->sourceMaxPages(),
                        codeMeta().isAsmJS(), "Memory")) {
@@ -514,7 +554,8 @@ bool Module::instantiateMemories(
     } else {
       MOZ_ASSERT(!codeMeta().isAsmJS());
 
-      if (desc.initialPages() > MaxMemoryPages(desc.indexType())) {
+      if (desc.initialPages() >
+          MaxMemoryPages(desc.addressType(), desc.pageSize())) {
         JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
                                  JSMSG_WASM_MEM_IMP_LIMIT);
         return false;
@@ -528,17 +569,20 @@ bool Module::instantiateMemories(
 
       RootedObject proto(cx, &cx->global()->getPrototype(JSProto_WasmMemory));
       memory = WasmMemoryObject::create(
-          cx, buffer, IsHugeMemoryEnabled(desc.indexType()), proto);
+          cx, buffer, IsHugeMemoryEnabled(desc.addressType(), desc.pageSize()),
+          proto);
       if (!memory) {
         return false;
       }
     }
 
-    MOZ_RELEASE_ASSERT(codeMeta().isAsmJS() ||
-                       memory->isHuge() ==
-                           IsHugeMemoryEnabled(desc.indexType()));
+    MOZ_RELEASE_ASSERT(
+        codeMeta().isAsmJS() ||
+        memory->isHuge() ==
+            IsHugeMemoryEnabled(desc.addressType(), desc.pageSize()));
 
     if (!memoryObjs.get().append(memory)) {
+      ReportOutOfMemory(cx);
       return false;
     }
   }
@@ -581,15 +625,15 @@ bool Module::instantiateImportedTable(JSContext* cx, const TableDesc& td,
   MOZ_ASSERT(!codeMeta().isAsmJS());
 
   Table& table = tableObj->table();
-  if (table.indexType() != td.indexType()) {
+  if (table.addressType() != td.addressType()) {
     JS_ReportErrorNumberUTF8(cx, GetErrorMessage, nullptr,
-                             JSMSG_WASM_BAD_IMP_INDEX,
-                             ToString(tableObj->table().indexType()));
+                             JSMSG_WASM_BAD_IMP_ADDRESS, "table",
+                             ToString(tableObj->table().addressType()));
     return false;
   }
   if (!CheckLimits(cx, /*declaredMin=*/td.initialLength(),
                    /*declaredMax=*/td.maximumLength(),
-                   /*defaultMax=*/MaxTableElemsValidation(td.indexType()),
+                   /*defaultMax=*/MaxTableElemsValidation(td.addressType()),
                    /*actualLength=*/uint64_t(table.length()),
                    /*actualMax=*/table.maximum(), codeMeta().isAsmJS(),
                    "Table")) {
@@ -757,22 +801,6 @@ bool Module::instantiateGlobals(JSContext* cx,
   return true;
 }
 
-static bool GetFunctionExport(JSContext* cx,
-                              Handle<WasmInstanceObject*> instanceObj,
-                              const JSObjectVector& funcImports,
-                              uint32_t funcIndex, MutableHandleFunction func) {
-  if (funcIndex < funcImports.length() &&
-      funcImports[funcIndex]->is<JSFunction>()) {
-    JSFunction* f = &funcImports[funcIndex]->as<JSFunction>();
-    if (IsWasmExportedFunction(f)) {
-      func.set(f);
-      return true;
-    }
-  }
-
-  return instanceObj->getExportedFunction(cx, instanceObj, funcIndex, func);
-}
-
 static bool GetGlobalExport(JSContext* cx,
                             Handle<WasmInstanceObject*> instanceObj,
                             const JSObjectVector& funcImports,
@@ -813,15 +841,14 @@ static bool CreateExportObject(
     const WasmMemoryObjectVector& memoryObjs,
     const WasmTagObjectVector& tagObjs, const ValVector& globalImportValues,
     const WasmGlobalObjectVector& globalObjs, const ExportVector& exports) {
-  const Instance& instance = instanceObj->instance();
+  Instance& instance = instanceObj->instance();
   const CodeMetadata& codeMeta = instance.codeMeta();
   const GlobalDescVector& globals = codeMeta.globals;
 
   if (codeMeta.isAsmJS() && exports.length() == 1 &&
       exports[0].fieldName().isEmpty()) {
     RootedFunction func(cx);
-    if (!GetFunctionExport(cx, instanceObj, funcImports, exports[0].funcIndex(),
-                           &func)) {
+    if (!instance.getExportedFunction(cx, exports[0].funcIndex(), &func)) {
       return false;
     }
     instanceObj->initExportsObj(*func.get());
@@ -852,8 +879,7 @@ static bool CreateExportObject(
     switch (exp.kind()) {
       case DefinitionKind::Function: {
         RootedFunction func(cx);
-        if (!GetFunctionExport(cx, instanceObj, funcImports, exp.funcIndex(),
-                               &func)) {
+        if (!instance.getExportedFunction(cx, exp.funcIndex(), &func)) {
           return false;
         }
         val = ObjectValue(*func);
@@ -936,7 +962,7 @@ bool Module::instantiate(JSContext* cx, ImportValues& imports,
   }
 
   UniqueDebugState maybeDebug;
-  if (codeMeta().debugEnabled) {
+  if (code().debugEnabled()) {
     maybeDebug = cx->make_unique<DebugState>(*code_, *this);
     if (!maybeDebug) {
       ReportOutOfMemory(cx);
@@ -994,6 +1020,19 @@ bool Module::instantiate(JSContext* cx, ImportValues& imports,
       codeMeta().isAsmJS() ? JSUseCounter::ASMJS : JSUseCounter::WASM;
   cx->runtime()->setUseCounter(instance, useCounter);
   SetUseCountersForFeatureUsage(cx, instance, moduleMeta().featureUsage);
+
+  // Warn for deprecated features. Don't do this with differential testing as
+  // that will think these warnings are significant.
+  if (!js::SupportDifferentialTesting()) {
+    // Warn if the user is using the legacy exceptions proposal.
+    if (moduleMeta().featureUsage & FeatureUsage::LegacyExceptions) {
+      if (!js::WarnNumberASCII(cx, JSMSG_WASM_LEGACY_EXCEPTIONS_DEPRECATED)) {
+        if (cx->isExceptionPending()) {
+          cx->clearPendingException();
+        }
+      }
+    }
+  }
 
   if (cx->options().testWasmAwaitTier2() &&
       code().mode() != CompileMode::LazyTiering) {

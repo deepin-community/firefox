@@ -9,8 +9,8 @@
 #ifndef nsTransitionManager_h_
 #define nsTransitionManager_h_
 
-#include "mozilla/dom/CSSTransition.h"
 #include "AnimationCommon.h"
+#include "mozilla/dom/CSSTransition.h"
 #include "nsISupportsImpl.h"
 
 class nsPresContext;
@@ -20,7 +20,7 @@ struct nsStyleUIReset;
 namespace mozilla {
 class AnimatedPropertyIDSet;
 class ComputedStyle;
-enum class PseudoStyleType : uint8_t;
+struct PseudoStyleRequest;
 }  // namespace mozilla
 
 class nsTransitionManager final
@@ -39,7 +39,7 @@ class nsTransitionManager final
    * Update transitions for stylo.
    */
   bool UpdateTransitions(mozilla::dom::Element* aElement,
-                         mozilla::PseudoStyleType aPseudoType,
+                         const mozilla::PseudoStyleRequest& aPseudoRequest,
                          const mozilla::ComputedStyle& aOldStyle,
                          const mozilla::ComputedStyle& aNewStyle);
 
@@ -54,25 +54,26 @@ class nsTransitionManager final
   // could be a nullptr if we don't have any transitions.
   bool DoUpdateTransitions(const nsStyleUIReset& aStyle,
                            mozilla::dom::Element* aElement,
-                           mozilla::PseudoStyleType aPseudoType,
+                           const mozilla::PseudoStyleRequest& aPseudoRequest,
                            CSSTransitionCollection*& aElementTransitions,
                            const mozilla::ComputedStyle& aOldStyle,
                            const mozilla::ComputedStyle& aNewStyle);
 
   // Returns whether the transition actually started.
   bool ConsiderInitiatingTransition(
-      const mozilla::AnimatedPropertyID&, const nsStyleUIReset& aStyle,
+      const mozilla::CSSPropertyId&, const nsStyleUIReset& aStyle,
       uint32_t aTransitionIndex, float aDelay, float aDuration,
       mozilla::StyleTransitionBehavior aBehavior,
-      mozilla::dom::Element* aElement, mozilla::PseudoStyleType aPseudoType,
+      mozilla::dom::Element* aElement,
+      const mozilla::PseudoStyleRequest& aPseudoRequest,
       CSSTransitionCollection*& aElementTransitions,
       const mozilla::ComputedStyle& aOldStyle,
       const mozilla::ComputedStyle& aNewStyle,
       mozilla::AnimatedPropertyIDSet& aPropertiesChecked);
 
   already_AddRefed<mozilla::dom::CSSTransition> DoCreateTransition(
-      const mozilla::AnimatedPropertyID& aProperty,
-      mozilla::dom::Element* aElement, mozilla::PseudoStyleType aPseudoType,
+      const mozilla::CSSPropertyId& aProperty, mozilla::dom::Element* aElement,
+      const mozilla::PseudoStyleRequest& aPseudoRequest,
       const mozilla::ComputedStyle& aNewStyle,
       CSSTransitionCollection*& aElementTransitions,
       mozilla::TimingParams&& aTiming, mozilla::AnimationValue&& aStartValue,
@@ -80,7 +81,7 @@ class nsTransitionManager final
       mozilla::AnimationValue&& aStartForReversingTest, double aReversePortion);
 
   void DoCancelTransition(mozilla::dom::Element* aElement,
-                          mozilla::PseudoStyleType aPseudoType,
+                          const mozilla::PseudoStyleRequest& aPseudoRequest,
                           CSSTransitionCollection*& aElementTransitions,
                           size_t aIndex);
 };

@@ -10,10 +10,8 @@
 #include "FileSystemHashSource.h"
 #include "FileSystemParentTypes.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/NotNull.h"
 #include "mozilla/Result.h"
 #include "mozilla/ResultVariant.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
 #include "nsCOMPtr.h"
@@ -170,13 +168,9 @@ nsresult EnsureFileSystemDirectory(
   quota::QuotaManager* quotaManager = quota::QuotaManager::Get();
   MOZ_ASSERT(quotaManager);
 
-  QM_TRY(MOZ_TO_RESULT(
-      quotaManager->EnsureTemporaryStorageIsInitializedInternal()));
-
   QM_TRY_INSPECT(
       const auto& fileSystemDirectory,
-      quotaManager->EnsureTemporaryOriginIsInitializedInternal(aOriginMetadata)
-          .map([](const auto& aPair) { return aPair.first; }));
+      quotaManager->GetOrCreateTemporaryOriginDirectory(aOriginMetadata));
 
   QM_TRY(QM_TO_RESULT(fileSystemDirectory->AppendRelativePath(
       NS_LITERAL_STRING_FROM_CSTRING(FILESYSTEM_DIRECTORY_NAME))));

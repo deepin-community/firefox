@@ -9,7 +9,6 @@
 
 #include "IUnknownImpl.h"
 #include "MsaaAccessible.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/RefPtr.h"
 #include "nsDirection.h"
 #include "objbase.h"
@@ -24,7 +23,7 @@ class TextLeafPoint;
  */
 class UiaTextRange : public ITextRangeProvider {
  public:
-  explicit UiaTextRange(TextLeafRange& aRange);
+  explicit UiaTextRange(const TextLeafRange& aRange);
   virtual ~UiaTextRange() = default;
 
   // IUnknown

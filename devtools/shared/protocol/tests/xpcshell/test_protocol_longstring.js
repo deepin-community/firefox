@@ -9,7 +9,6 @@
  */
 var protocol = require("resource://devtools/shared/protocol.js");
 var { RetVal, Arg } = protocol;
-var EventEmitter = require("resource://devtools/shared/event-emitter.js");
 var {
   LongStringActor,
 } = require("resource://devtools/server/actors/string.js");
@@ -79,19 +78,11 @@ class RootActor extends protocol.Actor {
   }
 
   emitShortString() {
-    EventEmitter.emit(
-      this,
-      "string-event",
-      new LongStringActor(this.conn, SHORT_STR)
-    );
+    this.emit("string-event", new LongStringActor(this.conn, SHORT_STR));
   }
 
   emitLongString() {
-    EventEmitter.emit(
-      this,
-      "string-event",
-      new LongStringActor(this.conn, LONG_STR)
-    );
+    this.emit("string-event", new LongStringActor(this.conn, LONG_STR));
   }
 }
 
@@ -103,6 +94,8 @@ class RootFront extends protocol.FrontClassWithSpec(rootSpec) {
     // Root owns itself.
     this.manage(this);
   }
+
+  connect() {}
 }
 protocol.registerFront(RootFront);
 

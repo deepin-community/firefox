@@ -737,7 +737,9 @@ bool ParserAtomsTable::isExtendedUnclonedSelfHostedFunctionName(
       case WellKnownAtomId::dollar_ArraySpecies_:
       case WellKnownAtomId::dollar_ArrayValues_:
       case WellKnownAtomId::dollar_RegExpFlagsGetter_:
-      case WellKnownAtomId::dollar_RegExpToString_: {
+      case WellKnownAtomId::dollar_RegExpToString_:
+      case WellKnownAtomId::dollar_SharedArrayBufferSpecies_:
+      case WellKnownAtomId::dollar_TypedArraySpecies_: {
 #ifdef DEBUG
         const auto& info = GetWellKnownAtomInfo(index.toWellKnownAtomId());
         MOZ_ASSERT(info.content[0] ==
@@ -1214,7 +1216,7 @@ bool InstantiateMarkedAtomsAsPermanent(JSContext* cx, FrontendContext* fc,
 }
 
 /* static */
-WellKnownParserAtoms WellKnownParserAtoms::singleton_;
+MOZ_RUNINIT WellKnownParserAtoms WellKnownParserAtoms::singleton_;
 
 template <typename CharT>
 TaggedParserAtomIndex WellKnownParserAtoms::lookupChar16Seq(

@@ -44,17 +44,6 @@ should-restart-ok = { -brand-short-name }ni hozir qayta ishga tushirish
 cancel-no-restart-button = Bekor qilish
 restart-later = Keyinroq qayta ishga tushirish
 
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
-
 ## Preferences UI Search Results
 
 search-results-header = Qidiruv natijalari
@@ -66,6 +55,10 @@ startup-header = Ishga tushirish
 always-check-default =
     .label = Agar { -brand-short-name } standart brauzeringiz bo‘lsa, doimo tekshirilsin
     .accesskey = t
+is-default-browser =
+    .message = { -brand-short-name } - hozircha standart brauzeringiz
+is-not-default-browser =
+    .message = { -brand-short-name } - standart brauzeringiz emas
 is-default = { -brand-short-name } - hozircha standart brauzeringiz
 is-not-default = { -brand-short-name } - standart brauzeringiz emas
 set-as-my-default-browser =
@@ -78,6 +71,8 @@ startup-restore-warn-on-quit =
     .label = Brauzerdan chiqishda sizni ogohlantiradi
 disable-extension =
     .label = Kengaytmani oʻchirib qoʻyish
+tabs-group-header2 =
+    .label = Varaqlar
 tabs-group-header = Varaqlar
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab yordamida varaqlarga soʻnggi foydalanish tartibida oʻtish mumkin
@@ -105,6 +100,8 @@ browser-containers-settings =
     .label = Sozlamalar
     .accesskey = s
 containers-disable-alert-title = Barcha Container oynalari yopilsinmi?
+startup-group =
+    .label = Ishga tushirish
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -125,7 +122,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Yoniq qoldirish
 containers-remove-alert-title = Bu konteyner olib tashlansinmi?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Bu konteynerni olib tashlasangiz, { $count } ta konteyner oynasi yopiladi. Bu konteynerni olib tashlashni xohlaysizmi?
@@ -137,6 +134,12 @@ containers-remove-cancel-button = Bu konteyner olib tahlanmasin
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Til va interfeys
+default-font-2 =
+    .label = Standart shrift
+    .accesskey = S
+default-font-size-2 =
+    .label = Hajmi
+    .accesskey = H
 default-font = Standart shrift
     .accesskey = S
 default-font-size = Hajmi
@@ -145,9 +148,17 @@ advanced-fonts =
     .label = Qo‘shimcha…
     .accesskey = Q
 # Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Masshtab
+preferences-default-zoom-label =
+    .label = Standart masshtab
+    .accesskey = S
+# Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Masshtab
 preferences-default-zoom = Standart masshtab
     .accesskey = S
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -178,6 +189,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Fayl va ilovalar
+downloads-header-2 =
+    .label = Yuklab olishlar
+download-save-where-2 =
+    .label = Fayllarni saqlash manzili:
+    .accesskey = s
 download-header = Yuklab olishlar
 download-save-where = Fayllarni saqlash manzili:
     .accesskey = s
@@ -225,15 +241,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Doimo soʻralsin
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name }`dan foydalanish ({ -brand-short-name }da)
 
@@ -256,6 +272,8 @@ applications-use-other-label =
 
 ##
 
+drm-group =
+    .label = Raqamli huquqlar boshqaruvi (DRM) kontenti
 drm-content-header = Raqamli huquqlar boshqaruvi (DRM) kontenti
 play-drm-content =
     .label = DRM boshqaruvdagi kontentni ishga tushirish
@@ -263,6 +281,8 @@ play-drm-content =
 play-drm-content-learn-more = Batafsil ma’lumot
 update-application-title = { -brand-short-name } yangilanishlari
 update-application-description = { -brand-short-name } tez, barqaror va xavfsiz bo‘lishi uchun muntazam yangilab turing.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Versiyasi{ $version } <a data-l10n-name="learn-more">Yangi xususiyatlar</a>
 update-history =
     .label = Yangilash tarixini koʻrsatish…
@@ -302,9 +322,11 @@ performance-limit-content-process-option = Kontent jarayoni cheklovi
 performance-limit-content-process-enabled-desc = Bir nechta varaqlardan foydalanilganda qoʻshimcha kontent jarayoni samaradorlikni oshiradi, ammo koʻproq xotiradan foydalanadi.
 performance-limit-content-process-blocked-desc = Kontent jarayoni miqdorini o‘zgartirish faqatgina { -brand-short-name } multijarayonlari bilan mavjud.  <a data-l10n-name="learn-more">Multijarayonlar yoqilganda tekshirish usuli</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (standart)
+performance-group =
+    .label = Samaradorlik
 
 ## General Section - Browsing
 
@@ -329,6 +351,8 @@ browsing-cfr-recommendations =
     .label = Koʻrish vaqtida kengaytmalarni tavsiya qilish
     .accesskey = t
 browsing-cfr-recommendations-learn-more = Batafsil
+browsing-group =
+    .label = Koʻrish
 
 ## General Section - Proxy
 
@@ -338,16 +362,27 @@ network-proxy-connection-learn-more = Batafsil ma’lumot
 network-proxy-connection-settings =
     .label = Sozlamalar…
     .accesskey = e
+network-proxy-group =
+    .label = Tarmoq sozlamalari
+    .description = { -brand-short-name } brauzerni internetga ulanishini sozlash.
 
 ## Home Section
 
 home-new-windows-tabs-header = Yangi oyna va varaqlar
 home-new-windows-tabs-description2 = Bosh sahifa, yangi oyna va varaqlarni ochganda nima koʻrinishi kerakligini tanlang.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Asosiy sifatida o‘rnatish
+    .accesskey = A
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Bosh sahifa va yangi oynalar
 home-newtabs-mode-label = Yangi varaqlar
+home-homepage-new-tabs =
+    .label = Yangi varaqlar
 home-restore-defaults =
     .label = Asliga tiklash
     .accesskey = t
@@ -377,8 +412,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Internetdan qidirish
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } tomonidan tavsiya qilingan
@@ -402,6 +436,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Parchalar
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -430,6 +466,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Manzil panelida qidiruv tavsiyalari ko‘rsatilsin
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = Qidiruv tavsiyalari manzil qatorida ko‘rsatilmaydi, chunki { -brand-short-name } brauzerini tarixni eslab qolmaydigan qilib sozlagansiz.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -456,18 +494,29 @@ search-find-more-link = Yana qidiruv tizimlarini topish
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Kalit so‘z nusxasini yaratish
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = "{ $name }" foydalanadigan kalit so‘zni tanlagansiz. Boshqasini tanlang.
 search-keyword-warning-bookmark = Xatcho‘pda foydalaniladigan kalit so‘zni tanlagansiz. Boshqasini tanlang.
+search-engine-group =
+    .label = Standart qidiruv tizimi
+search-default-engine =
+    .aria-label = Standart qidiruv tizimi
 
 ## Containers Section
 
 containers-header = Konteynerdagi varaqlar
+containers-section-header =
+    .heading = Konteynerdagi varaqlar
 containers-add-button =
     .label = Yangi konteyner qo‘shish
     .accesskey = q
 containers-remove-button =
     .label = Olib tashlash
+
+## Account and sync
+
+sync-group-label =
+    .label = Sinxronizatsiya
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -497,11 +546,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Chiqish…
     .accesskey = C
+sync-sign-out2 =
+    .label = Chiqish
+    .accesskey = C
 sync-manage-account = Hisobni boshqarish
+    .accesskey = o
+sync-manage-account2 =
+    .label = Hisobni boshqarish
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } tasdiqlanmagan.
 sync-signedin-login-failure = Qayta ulanish uchun kiring { $email }
@@ -525,6 +581,9 @@ prefs-syncing-off = Sinxronizatsiya: OʻCHIQ
 prefs-sync-turn-on-syncing =
     .label = Sinxronizatsiyani yoqish
     .accesskey = S
+prefs-sync-turn-on-syncing-2 =
+    .label = Sinxronizatsiyani yoqish
+    .accesskey = S
 prefs-sync-offer-setup-label2 = Xatchoʻplar, tarix, varaqlar, parollar, qoʻshimcha dasturlar va boshqa sozlamalarni barcha qurilmalaringizga sinxronlang.
 prefs-sync-now =
     .labelnotsyncing = Sinxronlash
@@ -533,8 +592,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sinxronlash
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Sinxronlash
+    .accesskey = N
 prefs-syncing-button =
     .label = Sinxronlanmoqda…
+prefs-syncing-button-2 =
+    .label = Sinxronlanmoqda…
+    .title = Sinxronlash
 
 ## The list of things currently syncing.
 
@@ -593,6 +658,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Qurilma nomi
+sync-device-name-header-2 =
+    .label = Qurilma nomi
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Qurilma nomi
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Qurilma nomini o‘zgartirish
+    .accesskey = h
 sync-device-name-change =
     .label = Qurilma nomini o‘zgartirish…
     .accesskey = h
@@ -603,6 +678,8 @@ sync-device-name-save =
     .label = Saqlash
     .accesskey = S
 sync-connect-another-device = Boshqa qurilmani ulash
+sync-connect-another-device-2 =
+    .label = Boshqa qurilmani ulash
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -641,15 +718,19 @@ forms-master-pw-change =
     .accesskey = u
 forms-master-pw-fips-desc = Maxfiy soʻzni oʻzgartirib boʻlmadi
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Tarix
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name }
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -667,6 +748,18 @@ history-remember-option-never =
     .label = Tarix hech qachon eslab qolinmasin
 history-remember-option-custom =
     .label = Tarix uchun boshqa sozlamalardan foydalanish
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } kirilgan saytlar, yuklanmalar, anketalar va qidiruv tarixini eslab qoladi.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } xuddi shu moslamalardan shaxsiy ko‘rish sifatida foydalanadi va tarixni saqlab qolmaydi.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } kirilgan saytlar, yuklanmalar, anketalar va qidiruv tarixini eslab qoladi.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } xuddi shu moslamalardan shaxsiy ko‘rish sifatida foydalanadi va tarixni saqlab qolmaydi.
 history-remember-description = { -brand-short-name } kirilgan saytlar, yuklanmalar, anketalar va qidiruv tarixini eslab qoladi.
 history-dontremember-description = { -brand-short-name } xuddi shu moslamalardan shaxsiy ko‘rish sifatida foydalanadi va tarixni saqlab qolmaydi.
 history-private-browsing-permanent =
@@ -684,6 +777,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Tarixni tozalash
     .accesskey = t
+history-group =
+    .label = Tarix
 
 ## Privacy Section - Site Data
 
@@ -695,14 +790,10 @@ sitedata-clear =
 sitedata-settings =
     .label = Ma’lumotlarni boshqarish
     .accesskey = M
+cookies-site-data-group =
+    .label = Kuki va sayt ma’lumotlari
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Manzil paneli
 addressbar-suggest = Manzil panelidan foydalanilganda, taklif qilinsin
@@ -716,22 +807,6 @@ addressbar-locbar-openpage-option =
     .label = Varaqlarni ochish
     .accesskey = o
 addressbar-suggestions-settings = Qidiruv tizimi tavsiyalari uchun sozlamalarni o‘zgartirish
-
-## Privacy Section - Content Blocking
-
-
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
-##
-
-
-# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
-
-
-## Privacy Section - Tracking
-
 
 ## Privacy Section - Permissions
 
@@ -765,6 +840,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Istisnolar
     .accesskey = I
+permissions-location2 =
+    .label = Manzili
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofon
+permissions-notification2 =
+    .label = Eslatmalar
 
 ## Privacy Section - Data Collection
 
@@ -780,9 +863,6 @@ addon-recommendations-link = Batafsil
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Ma’lumotlar hisoboti moslama uchun o‘chirib qo‘yilgan
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -813,12 +893,7 @@ certs-view =
 certs-devices =
     .label = Xavfsizlik qurilmalari
     .accesskey = X
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS’ni yoqib qo‘yish
 
 ## The following strings are used in the Download section of settings
 

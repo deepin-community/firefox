@@ -17,8 +17,8 @@ class MInstruction;
 class MDefinition;
 class TempAllocator;
 
-extern MDefinition* AlwaysBoxAt(TempAllocator& alloc, MInstruction* at,
-                                MDefinition* operand);
+extern MDefinition* BoxAt(TempAllocator& alloc, MInstruction* at,
+                          MDefinition* operand);
 
 // A type policy directs the type analysis phases, which insert conversion,
 // boxing, unboxing, and type changes as necessary.
@@ -250,6 +250,20 @@ template <unsigned Op>
 class Int32OrIntPtrPolicy final : private TypePolicy {
  public:
   constexpr Int32OrIntPtrPolicy() = default;
+  EMPTY_DATA_;
+  [[nodiscard]] static bool staticAdjustInputs(TempAllocator& alloc,
+                                               MInstruction* def);
+  [[nodiscard]] bool adjustInputs(TempAllocator& alloc,
+                                  MInstruction* def) const override {
+    return staticAdjustInputs(alloc, def);
+  }
+};
+
+// Expect an IntPtr for operand Op.
+template <unsigned Op>
+class IntPtrPolicy final : private TypePolicy {
+ public:
+  constexpr IntPtrPolicy() = default;
   EMPTY_DATA_;
   [[nodiscard]] static bool staticAdjustInputs(TempAllocator& alloc,
                                                MInstruction* def);
@@ -515,6 +529,7 @@ class StoreUnboxedScalarPolicy : public TypePolicy {
 
   friend class StoreDataViewElementPolicy;
   friend class StoreTypedArrayHolePolicy;
+  friend class TypedArrayFillPolicy;
 
  public:
   EMPTY_DATA_;
@@ -533,6 +548,14 @@ class StoreDataViewElementPolicy final : public StoreUnboxedScalarPolicy {
 class StoreTypedArrayHolePolicy final : public StoreUnboxedScalarPolicy {
  public:
   constexpr StoreTypedArrayHolePolicy() = default;
+  EMPTY_DATA_;
+  [[nodiscard]] bool adjustInputs(TempAllocator& alloc,
+                                  MInstruction* ins) const override;
+};
+
+class TypedArrayFillPolicy final : public StoreUnboxedScalarPolicy {
+ public:
+  constexpr TypedArrayFillPolicy() = default;
   EMPTY_DATA_;
   [[nodiscard]] bool adjustInputs(TempAllocator& alloc,
                                   MInstruction* ins) const override;

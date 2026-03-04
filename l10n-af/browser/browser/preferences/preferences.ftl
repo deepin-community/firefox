@@ -33,17 +33,6 @@ should-restart-ok = Herbegin { -brand-short-name } nou
 cancel-no-restart-button = Kanselleer
 restart-later = Herbegin later
 
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
-
 ## Preferences UI Search Results
 
 search-results-header = Soekresultate
@@ -54,11 +43,17 @@ startup-header = Begin
 always-check-default =
     .label = Kontroleer altyd of { -brand-short-name } die verstekblaaier is
     .accesskey = K
+is-default-browser =
+    .message = { -brand-short-name } is tans die verstekblaaier
+is-not-default-browser =
+    .message = { -brand-short-name } is nie die verstekblaaier nie
 is-default = { -brand-short-name } is tans die verstekblaaier
 is-not-default = { -brand-short-name } is nie die verstekblaaier nie
 set-as-my-default-browser =
     .label = Maak verstek...
     .accesskey = D
+tabs-group-header2 =
+    .label = Oortjies
 tabs-group-header = Oortjies
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab besoek oortjies in die volgorde wat hulle onlangs gebruik is
@@ -80,6 +75,8 @@ browser-containers-settings =
     .label = Opstelling…
     .accesskey = t
 containers-disable-alert-title = Sluit alle konteksoortjies?
+startup-group =
+    .label = Begin
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -100,7 +97,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Hou geaktiveer
 containers-remove-alert-title = Verwyder dié konteks?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] As dié konteks nou verwyder word, sal { $count } konteksoortjie gesluit word. Wil u definitief dié konteks verwyder?
@@ -112,6 +109,12 @@ containers-remove-cancel-button = Moenie dié konteks verwyder nie
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Taal en Voorkoms
+default-font-2 =
+    .label = Verstekfont
+    .accesskey = V
+default-font-size-2 =
+    .label = Grootte
+    .accesskey = G
 default-font = Verstekfont
     .accesskey = V
 default-font-size = Grootte
@@ -120,9 +123,17 @@ advanced-fonts =
     .label = Gevorderd…
     .accesskey = G
 # Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Zoem
+preferences-default-zoom-label =
+    .label = Verstek zoem
+    .accesskey = z
+# Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoem
 preferences-default-zoom = Verstek zoem
     .accesskey = z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 language-header = Taal
@@ -149,6 +160,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Lêers en Toepassings
+downloads-header-2 =
+    .label = Aflaaie
+download-save-where-2 =
+    .label = Stoor lêers na
+    .accesskey = o
 download-header = Aflaaie
 download-save-where = Stoor lêers na
     .accesskey = o
@@ -196,11 +212,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Vra altyd
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Gebruik { $plugin-name } (in { -brand-short-name })
 
@@ -225,6 +241,8 @@ applications-use-other-label =
 
 play-drm-content-learn-more = Meer inligting
 update-application-title = { -brand-short-name }-bywerkings
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Weergawe { $version } <a data-l10n-name="learn-more">Wat’s nuut?</a>
 update-application-use-service =
     .label = Gebruik 'n agtergronddiens om bywerkings te installeer
@@ -245,9 +263,11 @@ performance-limit-content-process-option = Perk op inhoudprosesse
     .accesskey = P
 performance-limit-content-process-enabled-desc = Meer inhoudprosesse kan werkverrigting verbeter met klomp oortjies, maar sal ook meer geheue gebruik.
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (verstek)
+performance-group =
+    .label = Werkverrigting
 
 ## General Section - Browsing
 
@@ -272,6 +292,8 @@ browsing-picture-in-picture-toggle-enabled =
     .accesskey = E
 browsing-picture-in-picture-learn-more = Meer inligting
 browsing-cfr-recommendations-learn-more = Meer inligting
+browsing-group =
+    .label = Blaai
 
 ## General Section - Proxy
 
@@ -283,10 +305,18 @@ network-proxy-connection-settings =
 
 home-new-windows-tabs-header = Nuwe Vensters en Oortjies
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Maak verstek
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Tuisblad en nuwe vensters
 home-newtabs-mode-label = Nuwe oortjies
+home-homepage-new-tabs =
+    .label = Nuwe oortjies
 home-mode-choice-blank =
     .label = Leë bladsy
 # This string has a special case for '1' and [other] (default). If necessary for
@@ -309,11 +339,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Web soektog
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = Aanbeveel deur { $provider }
 
@@ -334,6 +361,8 @@ search-suggestions-header = Soekvoorstelle
 search-suggestions-option =
     .label = Verskaf soekvoorstelle
     .accesskey = s
+search-suggestions-cant-show-2 =
+    .message = Soekvoorstelle sal nie in die liggingbalk gewys word nie omdat { -brand-short-name } opgestel is om nooit geskiedenis te onthou nie.
 search-suggestions-cant-show = Soekvoorstelle sal nie in die liggingbalk gewys word nie omdat { -brand-short-name } opgestel is om nooit geskiedenis te onthou nie.
 search-choose-engine-column =
     .label = Soekenjin
@@ -350,13 +379,19 @@ search-find-more-link = Vind meer soekenjins
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Dupliseer sleutelwoord
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = U het 'n sleutelwoord gekies wat tans deur "{ $name }" gebruik word. Kies 'n ander een.
 search-keyword-warning-bookmark = U het 'n sleutelwoord gekies wat tans deur 'n boekmerk gebruik word. Kies 'n ander een.
+search-engine-group =
+    .label = Versteksoekenjin
+search-default-engine =
+    .aria-label = Versteksoekenjin
 
 ## Containers Section
 
 containers-header = Konteksoortjies
+containers-section-header =
+    .heading = Konteksoortjies
 containers-add-button =
     .label = Voeg nuwe konteks by
     .accesskey = V
@@ -386,9 +421,13 @@ sync-profile-picture-with-alt =
     .alt = Verander profielprent
 sync-manage-account = Bestuur rekening
     .accesskey = o
+sync-manage-account2 =
+    .label = Bestuur rekening
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } is nie geverifieer nie.
 sync-signedin-login-failure = Meld aan om { $email } te herkoppel.
@@ -401,9 +440,6 @@ sync-remove-account =
 sync-sign-in =
     .label = Meld aan
     .accesskey = M
-
-## Sync section - enabling or disabling sync.
-
 
 ## The list of things currently syncing.
 
@@ -430,6 +466,16 @@ sync-engine-history =
 ## The device name controls.
 
 sync-device-name-header = Toestelnaam
+sync-device-name-header-2 =
+    .label = Toestelnaam
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Toestelnaam
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Verander toestelnaam
+    .accesskey = V
 sync-device-name-change =
     .label = Verander toestelnaam…
     .accesskey = V
@@ -476,20 +522,27 @@ forms-breach-alerts-learn-more-link = Meer inligting
 forms-saved-logins =
     .label = Gestoorde aanmeldings…
     .accesskey = l
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Wysig meesterwagwoord…
     .accesskey = m
 forms-master-pw-fips-desc = Kon nie wagwoord verander nie
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Geskiedenis
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } sal
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -507,6 +560,12 @@ history-remember-option-never =
     .label = nooit geskiedenis onthou nie
 history-remember-option-custom =
     .label = eie instellings vir geskiedenis gebruik
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } gebruik dieselfde instellings as private blaaiery en sal nie enige geskiedenis onthou wanneer u die web besoek nie.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } gebruik dieselfde instellings as private blaaiery en sal nie enige geskiedenis onthou wanneer u die web besoek nie.
 history-dontremember-description = { -brand-short-name } gebruik dieselfde instellings as private blaaiery en sal nie enige geskiedenis onthou wanneer u die web besoek nie.
 history-private-browsing-permanent =
     .label = Gebruik altyd privaatblaai-modus
@@ -520,19 +579,17 @@ history-clear-on-close-option =
 history-clear-on-close-settings =
     .label = Opstelling…
     .accesskey = t
+history-group =
+    .label = Geskiedenis
 
 ## Privacy Section - Site Data
 
 sitedata-header = Koekies en webwerf-data
 sitedata-learn-more = Meer inligting
+cookies-site-data-group =
+    .label = Koekies en webwerf-data
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-locbar-history-option =
     .label = Blaaigeskiedenis
@@ -549,10 +606,6 @@ addressbar-suggestions-settings = &Verander voorkeure vir voorstelle vanaf soeke
 
 content-blocking-enhanced-tracking-protection = Gevorderde beskerming van spoorsnyers
 content-blocking-learn-more = Meer inligting
-
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
 
 ##
 
@@ -603,13 +656,18 @@ permissions-block-popups =
 permissions-addon-exceptions =
     .label = Uitsonderings…
     .accesskey = U
+permissions-location2 =
+    .label = Ligging
+permissions-xr2 =
+    .label = Virtuele Realiteit
+permissions-microphone2 =
+    .label = Mikrofoon
+permissions-notification2 =
+    .label = Kennisgewings
 
 ## Privacy Section - Data Collection
 
 collection-health-report-link = Meer inligting
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -633,12 +691,7 @@ certs-header = Sertifikate
 certs-enable-ocsp =
     .label = Bevestig huidige geldigheid van sertifikate deur OCSP-bedieners te vra
     .accesskey = B
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = Aktiveer FIPS
 
 ## The following strings are used in the Download section of settings
 

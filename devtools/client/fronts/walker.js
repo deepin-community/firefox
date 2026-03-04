@@ -61,6 +61,9 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
     // calling watchRootNode, so we keep this assignment as a fallback.
     this.rootNode = types.getType("domnode").read(json.root, this);
 
+    // Bug 1861328: boolean set to true when color scheme can't be changed (happens when `privacy.resistFingerprinting` is set to true)
+    this.rfpCSSColorScheme = json.rfpCSSColorScheme;
+
     this.traits = json.traits;
   }
 
@@ -433,7 +436,8 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
 
   /**
    * Start the element picker on the debuggee target.
-   * @param {Boolean} doFocus - Optionally focus the content area once the picker is
+   *
+   * @param {boolean} doFocus - Optionally focus the content area once the picker is
    *                            activated.
    */
   pick(doFocus) {
@@ -462,5 +466,4 @@ class WalkerFront extends FrontClassWithSpec(walkerSpec) {
   }
 }
 
-exports.WalkerFront = WalkerFront;
 registerFront(WalkerFront);

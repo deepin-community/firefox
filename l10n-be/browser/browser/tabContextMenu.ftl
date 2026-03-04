@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Новая картка
     .accesskey = к
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Закрыць карткі злева
     .accesskey = л
+close-tabs-to-the-start-vertical =
+    .label = Закрыць карткі вышэй
+    .accesskey = ш
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Закрыць карткі справа
     .accesskey = с
+close-tabs-to-the-end-vertical =
+    .label = Закрыць карткі ніжэй
+    .accesskey = ж
 close-other-tabs =
     .label = Закрыць іншыя карткі
     .accesskey = і
@@ -40,14 +50,14 @@ reload-tabs =
     .label = Абнавіць карткі
     .accesskey = К
 pin-tab =
-    .label = Прышпіліць картку
-    .accesskey = П
+    .label = Замацаваць картку
+    .accesskey = З
 unpin-tab =
     .label = Адшпіліць картку
     .accesskey = А
 pin-selected-tabs =
-    .label = Прышпіліць карткі
-    .accesskey = ш
+    .label = Замацаваць карткі
+    .accesskey = З
 unpin-selected-tabs =
     .label = Адшпіліць карткі
     .accesskey = і
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Перанесці ў новае акно
     .accesskey = а
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Перанесці ў { $profileName }
 tab-context-close-multiple-tabs =
     .label = Закрыць некалькі картак
     .accesskey = ь
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Падзяліцца
     .accesskey = П
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Новая картка справа
+    .accesskey = в
+tab-context-new-tab-open-vertical =
+    .label = Новая картка ніжэй
+    .accesskey = в
+tab-context-new-group =
+    .label = Новая група
+    .accesskey = п
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -109,6 +133,16 @@ tab-context-move-tabs =
            *[many] Перамясціць карткі
         }
     .accesskey = м
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Даслаць на прыладу
+            [one] Даслаць { $tabCount } картку на прыладу
+            [few] Даслаць { $tabCount } карткі на прыладу
+           *[many] Даслаць { $tabCount } картак на прыладу
+        }
+    .accesskey = р
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -117,3 +151,12 @@ tab-context-send-tabs-to-device =
            *[many] Даслаць { $tabCount } картак на прыладу
         }
     .accesskey = т
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Выгрузіць картку
+            [one] Выгрузіць { $tabCount } картку
+            [few] Выгрузіць { $tabCount } карткі
+           *[many] Выгрузіць { $tabCount } картак
+        }
+    .accesskey = г

@@ -19,14 +19,14 @@ rtc_library("incoming_video_stream") {
   deps = [
     ":video_render_frames",
     "../../api:sequence_checker",
-    "../../api/task_queue:task_queue",
+    "../../api/environment",
+    "../../api/task_queue",
     "../../api/units:time_delta",
     "../../api/video:video_frame",
     "../../rtc_base:checks",
     "../../rtc_base:event_tracer",
     "../../rtc_base:macromagic",
     "../../rtc_base:race_checker",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
@@ -39,11 +39,10 @@ rtc_library("video_render_frames") {
   ]
 
   deps = [
+    "../../api/environment",
     "../../api/video:video_frame",
     "../../rtc_base:checks",
     "../../rtc_base:logging",
-    "../../rtc_base:timeutils",
     "../../system_wrappers:metrics",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
 }

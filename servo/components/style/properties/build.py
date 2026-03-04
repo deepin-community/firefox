@@ -66,7 +66,12 @@ def main():
                 os.path.join(BASE, "properties.html.mako"), properties=properties_dict
             )
             as_json = json.dumps(properties_dict, indent=4, sort_keys=True)
-            doc_servo = os.path.join(BASE, "..", "..", "..", "target", "doc", "servo")
+
+            # Four dotdots: /path/to/target(4)/debug(3)/build(2)/style-*(1)/out
+            # Do not ascend above the target dir, because it may not be called target
+            # or even have a parent (see CARGO_TARGET_DIR).
+            doc_servo = os.path.join(OUT_DIR, "..", "..", "..", "..", "doc", "stylo")
+
             write(doc_servo, "css-properties.html", as_html)
             write(doc_servo, "css-properties.json", as_json)
             write(OUT_DIR, "css-properties.json", as_json)
@@ -108,7 +113,7 @@ def write(directory, filename, content):
     if not os.path.exists(directory):
         os.makedirs(directory)
     full_path = os.path.join(directory, filename)
-    open(full_path, "w", encoding="utf-8").write(content)
+    open(full_path, "w", encoding="utf-8", newline="").write(content)
 
     python_addr = RE_PYTHON_ADDR.search(content)
     if python_addr:

@@ -5,16 +5,11 @@
 label-disable = Անջատել
 label-enable = Միացված
 label-interventions = Միջամտություններ
+# Variables:
+#   $bug (string) - Bug number
 label-more-information = Հավելյալ տեղեկություն․ Վրիպակ { $bug }
 label-overrides = User Agent-ը գերակայում է
 text-disabled-in-about-config = Այս հատկությունը անջատված է about:config
 text-no-interventions = Ոչ մի միջամտություն չի օգտագործվում
 text-no-overrides = UA֊ի ոչ մի գերակայում չի օգտագործվում
 text-title = about:compat
-
-## Do not translate "SmartBlock". For reference, SmartBlock is a feature
-## of Firefox anti-tracking which fixes website breakage caused when
-## trackers are blocked, by acting just enough like those trackers to fix the
-## breakage. SmartBlock also contains special fixes for sites broken by
-## Firefox's Total Cookie Protection feature.
-

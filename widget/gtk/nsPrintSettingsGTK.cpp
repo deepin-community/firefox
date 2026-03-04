@@ -6,8 +6,6 @@
 #include "nsPrintSettingsGTK.h"
 #include "nsIFile.h"
 #include "nsNetUtil.h"
-#include <stdlib.h>
-#include <algorithm>
 
 // These constants are the the strings that GTK expects as key-value pairs for
 // setting CUPS duplex modes. These are not universal to all CUPS systems, which
@@ -310,7 +308,7 @@ nsPrintSettingsGTK::SetToFileName(const nsAString& aToFileName) {
                          "pdf");
 
   nsCOMPtr<nsIFile> file;
-  nsresult rv = NS_NewLocalFile(aToFileName, true, getter_AddRefs(file));
+  nsresult rv = NS_NewLocalFile(aToFileName, getter_AddRefs(file));
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Convert the nsIFile to a URL

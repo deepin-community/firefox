@@ -59,10 +59,7 @@ history-section-label = Historial
 item-history-and-downloads =
     .label = Historial de descargas y navegación
     .accesskey = H
-item-history-form-data-downloads =
-    .label = Historial
-    .accesskey = H
-item-history-form-data-downloads-description = Borra el historial de sitios y descargas, información guardada de formularios y búsquedas.
+item-history-and-downloads-description2 = Limpia el historial del sitio y de descargas
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Configuración del sitio
     .accesskey = i
+item-formdata-prefs =
+    .label = Información guardada del formulario
+    .accesskey = o
+item-formdata-description = Borra cosas como nombres, correos electrónicos y otros elementos ingresados en formularios
 item-site-prefs-description = Restablece los permisos y preferencias del sitio a la configuración original
 data-section-label = Datos
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Todo el historial será borrado.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Todos los ítems seleccionados serán borrados.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Calculando…

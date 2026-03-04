@@ -10,15 +10,14 @@
 
 #include "logging/rtc_event_log/encoder/rtc_event_log_encoder_legacy.h"
 
-#include <string.h>
-
 #include <cstdint>
+#include <cstring>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "api/array_view.h"
 #include "api/candidate.h"
 #include "api/rtc_event_log/rtc_event.h"
@@ -227,8 +226,9 @@ ConvertIceCandidatePairEventType(IceCandidatePairEventType type) {
 
 }  // namespace
 
-std::string RtcEventLogEncoderLegacy::EncodeLogStart(int64_t timestamp_us,
-                                                     int64_t utc_time_us) {
+std::string RtcEventLogEncoderLegacy::EncodeLogStart(
+    int64_t timestamp_us,
+    int64_t /* utc_time_us */) {
   rtclog::Event rtclog_event;
   rtclog_event.set_timestamp_us(timestamp_us);
   rtclog_event.set_type(rtclog::Event::LOG_START);
@@ -378,7 +378,6 @@ std::string RtcEventLogEncoderLegacy::Encode(const RtcEvent& event) {
     case RtcEvent::Type::RouteChangeEvent:
     case RtcEvent::Type::GenericPacketReceived:
     case RtcEvent::Type::GenericPacketSent:
-    case RtcEvent::Type::GenericAckReceived:
     case RtcEvent::Type::FrameDecoded:
     case RtcEvent::Type::NetEqSetMinimumDelay:
       // These are unsupported in the old format, but shouldn't crash.
@@ -714,10 +713,9 @@ std::string RtcEventLogEncoderLegacy::EncodeVideoSendStreamConfig(
   return Serialize(&rtclog_event);
 }
 
-std::string RtcEventLogEncoderLegacy::EncodeRtcpPacket(
-    int64_t timestamp_us,
-    const rtc::Buffer& packet,
-    bool is_incoming) {
+std::string RtcEventLogEncoderLegacy::EncodeRtcpPacket(int64_t timestamp_us,
+                                                       const Buffer& packet,
+                                                       bool is_incoming) {
   rtclog::Event rtclog_event;
   rtclog_event.set_timestamp_us(timestamp_us);
   rtclog_event.set_type(rtclog::Event::RTCP_EVENT);
@@ -764,7 +762,7 @@ std::string RtcEventLogEncoderLegacy::EncodeRtcpPacket(
 
 std::string RtcEventLogEncoderLegacy::EncodeRtpPacket(
     int64_t timestamp_us,
-    rtc::ArrayView<const uint8_t> header,
+    ArrayView<const uint8_t> header,
     size_t packet_length,
     int probe_cluster_id,
     bool is_incoming) {

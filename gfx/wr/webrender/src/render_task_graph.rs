@@ -9,24 +9,29 @@
 
 use api::units::*;
 use api::ImageFormat;
-use crate::gpu_cache::{GpuCache, GpuCacheAddress};
+use crate::gpu_types::ImageSource;
 use crate::internal_types::{TextureSource, CacheTextureId, FastHashMap, FastHashSet, FrameId};
+use crate::internal_types::size_of_frame_vec;
 use crate::render_task::{StaticRenderTaskSurface, RenderTaskLocation, RenderTask};
 use crate::render_target::RenderTargetKind;
 use crate::render_task::{RenderTaskData, RenderTaskKind};
+use crate::renderer::GpuBufferAddress;
+use crate::renderer::GpuBufferBuilder;
 use crate::resource_cache::ResourceCache;
 use crate::texture_pack::GuillotineAllocator;
 use crate::prim_store::DeferredResolve;
 use crate::image_source::{resolve_image, resolve_cached_render_task};
-use crate::util::VecHelper;
 use smallvec::SmallVec;
-use std::mem;
 use topological_sort::TopologicalSort;
 
-use crate::render_target::{RenderTargetList, ColorRenderTarget};
-use crate::render_target::{PictureCacheTarget, TextureCacheRenderTarget, AlphaRenderTarget};
-use crate::util::Allocation;
+use crate::render_target::{RenderTargetList, PictureCacheTarget, RenderTarget};
+use crate::util::{Allocation, VecHelper};
 use std::{usize, f32};
+
+use crate::internal_types::{FrameVec, FrameMemory};
+
+#[cfg(test)]
+use crate::frame_allocator::FrameAllocator;
 
 /// If we ever need a larger texture than the ideal, we better round it up to a
 /// reasonable number in order to have a bit of leeway in case the size of this
@@ -142,7 +147,7 @@ pub struct SubPass {
     /// The surface this subpass draws to
     pub surface: SubPassSurface,
     /// The tasks assigned to this subpass.
-    pub task_ids: Vec<RenderTaskId>,
+    pub task_ids: FrameVec<RenderTaskId>,
 }
 
 /// A pass expresses dependencies between tasks. Each pass consists of a number
@@ -151,12 +156,12 @@ pub struct SubPass {
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct Pass {
     /// The tasks assigned to this render pass
-    pub task_ids: Vec<RenderTaskId>,
+    pub task_ids: FrameVec<RenderTaskId>,
     /// The subpasses that make up this dependency pass
-    pub sub_passes: Vec<SubPass>,
+    pub sub_passes: FrameVec<SubPass>,
     /// A list of intermediate surfaces that can be invalidated after
     /// this pass completes.
-    pub textures_to_invalidate: Vec<CacheTextureId>,
+    pub textures_to_invalidate: FrameVec<CacheTextureId>,
 }
 
 /// The RenderTaskGraph is the immutable representation of the render task graph. It is
@@ -165,16 +170,16 @@ pub struct Pass {
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderTaskGraph {
     /// List of tasks added to the graph
-    pub tasks: Vec<RenderTask>,
+    pub tasks: FrameVec<RenderTask>,
 
     /// The passes that were created, based on dependencies between tasks
-    pub passes: Vec<Pass>,
+    pub passes: FrameVec<Pass>,
 
     /// Current frame id, used for debug validation
     frame_id: FrameId,
 
     /// GPU specific data for each task that is made available to shaders
-    pub task_data: Vec<RenderTaskData>,
+    pub task_data: FrameVec<RenderTaskData>,
 
     /// Total number of intermediate surfaces that will be drawn to, used for test validation.
     #[cfg(test)]
@@ -277,21 +282,27 @@ impl RenderTaskGraphBuilder {
     pub fn end_frame(
         &mut self,
         resource_cache: &mut ResourceCache,
-        gpu_cache: &mut GpuCache,
-        deferred_resolves: &mut Vec<DeferredResolve>,
+        gpu_buffers: &mut GpuBufferBuilder,
+        deferred_resolves: &mut FrameVec<DeferredResolve>,
         max_shared_surface_size: i32,
+        memory: &FrameMemory,
     ) -> RenderTaskGraph {
         // Copy the render tasks over to the immutable graph output
         let task_count = self.tasks.len();
-        let tasks = mem::replace(
-            &mut self.tasks,
-            Vec::with_capacity(task_count),
-        );
+
+        // Copy from the frame_builder's task vector to the frame's instead of stealing it
+        // because they use different memory allocators. TODO: The builder should use the
+        // frame allocator, however since the builder lives longer than the frame, it's a
+        // bit more risky to do so.
+        let mut tasks = memory.new_vec_with_capacity(task_count);
+        for task in self.tasks.drain(..) {
+            tasks.push(task)
+        }
 
         let mut graph = RenderTaskGraph {
             tasks,
-            passes: Vec::new(),
-            task_data: Vec::with_capacity(task_count),
+            passes: memory.new_vec(),
+            task_data: memory.new_vec_with_capacity(task_count),
             frame_id: self.frame_id,
             #[cfg(test)]
             surface_count: 0,
@@ -308,7 +319,7 @@ impl RenderTaskGraphBuilder {
         // or reused during subsequent passes).
 
         let mut pass_count = 0;
-        let mut passes = Vec::new();
+        let mut passes = memory.new_vec();
         let mut task_sorter = TopologicalSort::<RenderTaskId>::new();
 
         // Iterate the task list, and add all the dependencies to the topo sort
@@ -365,9 +376,9 @@ impl RenderTaskGraphBuilder {
         // Construct passes array for tasks to be assigned to below
         for _ in 0 .. pass_count {
             graph.passes.push(Pass {
-                task_ids: Vec::new(),
-                sub_passes: Vec::new(),
-                textures_to_invalidate: Vec::new(),
+                task_ids: memory.new_vec(),
+                sub_passes: memory.new_vec(),
+                textures_to_invalidate: memory.new_vec(),
             });
         }
 
@@ -493,6 +504,9 @@ impl RenderTaskGraphBuilder {
                                 graph.unique_surfaces.insert(texture_id);
                             }
 
+                            let mut task_ids = memory.new_vec();
+                            task_ids.push(*task_id);
+
                             // Add the target as a new subpass for this render pass.
                             pass.sub_passes.push(SubPass {
                                 surface: SubPassSurface::Dynamic {
@@ -500,7 +514,7 @@ impl RenderTaskGraphBuilder {
                                     target_kind: kind,
                                     used_rect: DeviceIntRect::from_origin_and_size(p, size),
                                 },
-                                task_ids: vec![*task_id],
+                                task_ids,
                             });
                         }
 
@@ -524,7 +538,8 @@ impl RenderTaskGraphBuilder {
                                 assert_eq!(existing_size, rect.size());
 
                                 let kind = graph.tasks[parent_task_id.index as usize].kind.target_kind();
-
+                                let mut task_ids = memory.new_vec();
+                                task_ids.push(*task_id);
                                 // A sub-pass is always created in this case, as existing tasks by definition can't be shared.
                                 pass.sub_passes.push(SubPass {
                                     surface: SubPassSurface::Dynamic {
@@ -532,7 +547,7 @@ impl RenderTaskGraphBuilder {
                                         target_kind: kind,
                                         used_rect: rect,        // clear will be skipped due to no-op check anyway
                                     },
-                                    task_ids: vec![*task_id],
+                                    task_ids,
                                 });
 
                                 let task = &mut graph.tasks[task_id.index as usize];
@@ -546,11 +561,13 @@ impl RenderTaskGraphBuilder {
                     RenderTaskLocation::Static { ref surface, .. } => {
                         // No need to allocate for this surface, since it's a persistent
                         // target. Instead, just create a new sub-pass for it.
+                        let mut task_ids = memory.new_vec();
+                        task_ids.push(*task_id);
                         pass.sub_passes.push(SubPass {
                             surface: SubPassSurface::Persistent {
                                 surface: surface.clone(),
                             },
-                            task_ids: vec![*task_id],
+                            task_ids,
                         });
                     }
                     RenderTaskLocation::CacheRequest { .. } => {
@@ -603,46 +620,62 @@ impl RenderTaskGraphBuilder {
         // considered to be immutable for the rest of the frame building process.
 
         for task in &mut graph.tasks {
-            // First check whether the render task texture and uv rects are managed
-            // externally. This is the case for image tasks and cached tasks. In both
-            // cases it results in a finding the information in the texture cache.
+            // Check whether the render task texture and uv rects are managed externally.
+            // This is the case for image tasks and cached tasks. In both cases it
+            // results in a finding the information in the texture cache.
             let cache_item = if let Some(ref cache_handle) = task.cache_handle {
                 Some(resolve_cached_render_task(
                     cache_handle,
                     resource_cache,
                 ))
-            } else if let RenderTaskKind::Image(request) = &task.kind {
+            } else if let RenderTaskKind::Image(info) = &task.kind {
                 Some(resolve_image(
-                    *request,
+                    info.request,
                     resource_cache,
-                    gpu_cache,
+                    &mut gpu_buffers.f32,
                     deferred_resolves,
+                    info.is_composited,
                 ))
             } else {
                 // General case (non-cached non-image tasks).
                 None
             };
 
-            if let Some(cache_item) = cache_item {
+            if let Some(cache_item) = &cache_item {
+                task.uv_rect_handle = gpu_buffers.f32.resolve_handle(cache_item.uv_rect_handle);
+
                 // Update the render task even if the item is invalid.
                 // We'll handle it later and it's easier to not have to
                 // deal with unexpected location variants like
                 // RenderTaskLocation::CacheRequest when we do.
-                let source = cache_item.texture_id;
-                task.uv_rect_handle = cache_item.uv_rect_handle;
-                task.location = RenderTaskLocation::Static {
-                    surface: StaticRenderTaskSurface::ReadOnly { source },
-                    rect: cache_item.uv_rect,
-                };
+                if let RenderTaskLocation::CacheRequest { .. } = &task.location {
+                    let source = cache_item.texture_id;
+                    task.location = RenderTaskLocation::Static {
+                        surface: StaticRenderTaskSurface::ReadOnly { source },
+                        rect: cache_item.uv_rect,
+                    };
+                }
             }
-            // Give the render task an opportunity to add any
-            // information to the GPU cache, if appropriate.
+
+            // This has to be done after we do the task location fixup above.
             let target_rect = task.get_target_rect();
 
-            task.write_gpu_blocks(
-                target_rect,
-                gpu_cache,
-            );
+            // If the uv rect is not managed externally, generate it now.
+            if cache_item.is_none() {
+                let image_source = ImageSource {
+                    p0: target_rect.min.to_f32(),
+                    p1: target_rect.max.to_f32(),
+                    user_data: [0.0; 4],
+                    uv_rect_kind: task.uv_rect_kind,
+                };
+
+                let uv_rect_handle = image_source.write_gpu_blocks(&mut gpu_buffers.f32);
+                task.uv_rect_handle = gpu_buffers.f32.resolve_handle(uv_rect_handle);
+            }
+
+            // Give the render task an opportunity to add any
+            // information to the GPU cache, if appropriate.
+            task.kind.write_gpu_blocks(gpu_buffers);
 
             graph.task_data.push(
                 task.kind.write_task_data(target_rect)
@@ -704,16 +737,14 @@ impl RenderTaskGraph {
     pub fn resolve_location(
         &self,
         task_id: impl Into<Option<RenderTaskId>>,
-        gpu_cache: &GpuCache,
-    ) -> Option<(GpuCacheAddress, TextureSource)> {
-        self.resolve_impl(task_id.into()?, gpu_cache)
+    ) -> Option<(GpuBufferAddress, TextureSource)> {
+        self.resolve_impl(task_id.into()?)
     }
 
     fn resolve_impl(
         &self,
         task_id: RenderTaskId,
-        gpu_cache: &GpuCache,
-    ) -> Option<(GpuCacheAddress, TextureSource)> {
+    ) -> Option<(GpuBufferAddress, TextureSource)> {
         let task = &self[task_id];
         let texture_source = task.get_texture_source();
 
@@ -721,19 +752,41 @@ impl RenderTaskGraph {
             return None;
         }
 
-        let uv_address = task.get_texture_address(gpu_cache);
+        let uv_address = task.get_texture_address();
+        assert!(uv_address.is_valid());
 
         Some((uv_address, texture_source))
     }
 
+    pub fn report_memory(&self) -> usize {
+        // We can't use wr_malloc_sizeof here because the render task
+        // graph's memory is mainly backed by frame's custom allocator.
+        // So we calulate the memory footprint manually.
+
+        let mut mem = size_of_frame_vec(&self.tasks)
+            +  size_of_frame_vec(&self.task_data)
+            +  size_of_frame_vec(&self.passes);
+
+        for pass in &self.passes {
+            mem += size_of_frame_vec(&pass.task_ids)
+                + size_of_frame_vec(&pass.sub_passes)
+                + size_of_frame_vec(&pass.textures_to_invalidate);
+            for sub_pass in &pass.sub_passes {
+                mem += size_of_frame_vec(&sub_pass.task_ids);
+            }
+        }
+
+        mem
+    }
 
     #[cfg(test)]
     pub fn new_for_testing() -> Self {
+        let allocator = FrameAllocator::fallback();
         RenderTaskGraph {
-            tasks: Vec::new(),
-            passes: Vec::new(),
+            tasks: allocator.clone().new_vec(),
+            passes: allocator.clone().new_vec(),
             frame_id: FrameId::INVALID,
-            task_data: Vec::new(),
+            task_data: allocator.clone().new_vec(),
             surface_count: 0,
             unique_surfaces: FastHashSet::default(),
         }
@@ -816,21 +869,21 @@ fn assign_free_pass(
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct RenderPass {
     /// The subpasses that describe targets being rendered to in this pass
-    pub alpha: RenderTargetList<AlphaRenderTarget>,
-    pub color: RenderTargetList<ColorRenderTarget>,
-    pub texture_cache: FastHashMap<CacheTextureId, TextureCacheRenderTarget>,
-    pub picture_cache: Vec<PictureCacheTarget>,
-    pub textures_to_invalidate: Vec<CacheTextureId>,
+    pub alpha: RenderTargetList,
+    pub color: RenderTargetList,
+    pub texture_cache: FastHashMap<CacheTextureId, RenderTarget>,
+    pub picture_cache: FrameVec<PictureCacheTarget>,
+    pub textures_to_invalidate: FrameVec<CacheTextureId>,
 }
 
 impl RenderPass {
     /// Creates an intermediate off-screen pass.
-    pub fn new(src: &Pass) -> Self {
+    pub fn new(src: &Pass, memory: &mut FrameMemory) -> Self {
         RenderPass {
-            color: RenderTargetList::new(),
-            alpha: RenderTargetList::new(),
+            color: RenderTargetList::new(memory.allocator()),
+            alpha: RenderTargetList::new(memory.allocator()),
             texture_cache: FastHashMap::default(),
-            picture_cache: Vec::new(),
+            picture_cache: memory.allocator().new_vec(),
             textures_to_invalidate: src.textures_to_invalidate.clone(),
         }
     }
@@ -1055,18 +1108,20 @@ impl RenderTaskGraphBuilder {
         total_surface_count: usize,
         unique_surfaces: &[(i32, i32, ImageFormat)],
     ) {
-        use crate::internal_types::FrameStamp;
+        use crate::{internal_types::FrameStamp, renderer::{GpuBufferBuilderF, GpuBufferBuilderI}};
         use api::{DocumentId, IdNamespace};
 
         let mut rc = ResourceCache::new_for_testing();
-        let mut gc =  GpuCache::new();
 
         let mut frame_stamp = FrameStamp::first(DocumentId::new(IdNamespace(1), 1));
         frame_stamp.advance();
-        gc.prepare_for_frames();
-        gc.begin_frame(frame_stamp);
 
-        let g = self.end_frame(&mut rc, &mut gc, &mut Vec::new(), 2048);
+        let frame_memory = FrameMemory::fallback();
+        let mut gpu_buffers = GpuBufferBuilder {
+            f32: GpuBufferBuilderF::new(&frame_memory, 0, FrameId::first()),
+            i32: GpuBufferBuilderI::new(&frame_memory, 0, FrameId::first()),
+        };
+        let g = self.end_frame(&mut rc, &mut gpu_buffers, &mut frame_memory.new_vec(), 2048, &frame_memory);
         g.print();
 
         assert_eq!(g.passes.len(), pass_count);

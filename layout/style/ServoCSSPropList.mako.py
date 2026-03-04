@@ -55,9 +55,6 @@ def method(prop):
 
 # TODO(emilio): Get this to zero.
 LONGHANDS_NOT_SERIALIZED_WITH_SERVO = [
-    # Servo serializes one value when both are the same, a few tests expect two.
-    "border-spacing",
-
     # These resolve auto to zero in a few cases, but not all.
     "max-height",
     "max-width",
@@ -75,14 +72,11 @@ LONGHANDS_NOT_SERIALIZED_WITH_SERVO = [
     "perspective-origin",
     "transform-origin",
     "transform",
+    "-webkit-transform",
     "top",
     "right",
     "bottom",
     "left",
-    "border-top-width",
-    "border-right-width",
-    "border-bottom-width",
-    "border-left-width",
     "margin-top",
     "margin-right",
     "margin-bottom",
@@ -94,12 +88,8 @@ LONGHANDS_NOT_SERIALIZED_WITH_SERVO = [
 ]
 
 def serialized_by_servo(prop):
-    if prop.type() == "shorthand" or prop.type() == "alias":
-        return True
-    # Keywords are all fine, except -moz-osx-font-smoothing, which does
-    # resistfingerprinting stuff.
-    if prop.keyword and prop.name != "-moz-osx-font-smoothing":
-        return True
+    if prop.type() == "alias":
+        return True # Doesn't matter, we resolve the alias early
     return prop.name not in LONGHANDS_NOT_SERIALIZED_WITH_SERVO
 
 def exposed_on_getcs(prop):

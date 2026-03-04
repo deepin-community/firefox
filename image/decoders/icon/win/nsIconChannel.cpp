@@ -4,12 +4,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/UniquePtr.h"
-#include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/WindowsProcessMitigations.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/ipc/ByteBuf.h"
@@ -190,7 +188,7 @@ static bool GetSpecialFolderIcon(nsIFile* aFile, int aFolder, UINT aInfoFlags,
   nsAutoString fileNativePathStr;
   aFile->GetPath(fileNativePathStr);
   ::GetShortPathNameW(fileNativePathStr.get(), fileNativePath,
-                      ArrayLength(fileNativePath));
+                      std::size(fileNativePath));
 
   struct IdListDeleter {
     void operator()(ITEMIDLIST* ptr) { ::CoTaskMemFree(ptr); }
@@ -206,7 +204,7 @@ static bool GetSpecialFolderIcon(nsIFile* aFile, int aFolder, UINT aInfoFlags,
   wchar_t specialNativePath[MAX_PATH];
   ::SHGetPathFromIDListW(idList.get(), specialNativePath);
   ::GetShortPathNameW(specialNativePath, specialNativePath,
-                      ArrayLength(specialNativePath));
+                      std::size(specialNativePath));
 
   if (wcsicmp(fileNativePath, specialNativePath) != 0) {
     return false;
@@ -568,10 +566,11 @@ nsIconChannel::~nsIconChannel() {
   }
 }
 
-nsresult nsIconChannel::Init(nsIURI* uri) {
+nsresult nsIconChannel::Init(nsIURI* uri, nsILoadInfo* aLoadInfo) {
   NS_ASSERTION(uri, "no uri");
   mUrl = uri;
   mOriginalURI = uri;
+  mLoadInfo = aLoadInfo;
   nsresult rv;
   mPump = do_CreateInstance(NS_INPUTSTREAMPUMP_CONTRACTID, &rv);
   return rv;

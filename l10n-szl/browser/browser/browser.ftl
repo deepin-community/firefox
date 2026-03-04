@@ -2,16 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
 browser-main-window-window-titles =
@@ -19,14 +18,17 @@ browser-main-window-window-titles =
     .data-title-private = Prywatne Przeglōndanie { -brand-full-name }
     .data-content-title-default = { $content-title } — { -brand-full-name }
     .data-content-title-private = { $content-title } — Prywatne przeglōndanie { -brand-full-name }
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
@@ -437,9 +439,6 @@ sharing-warning-proceed-to-tab =
 sharing-warning-disable-for-session =
     .label = Zastow ôchrōna udostympnianio we tyj sesyji
 
-## DevTools F12 popup
-
-
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
@@ -549,6 +548,17 @@ urlbar-result-action-copy-to-clipboard = Kopiuj
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Zokłodki
+urlbar-searchmode-tabs =
+    .label = Karty
+urlbar-searchmode-history =
+    .label = Historyjo
+urlbar-searchmode-actions =
+    .label = Akcyje
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -582,11 +592,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Zawrzij podglōnd czytanio
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -841,17 +846,6 @@ unified-extensions-button =
     .label = Rozszyrzynia
     .tooltiptext = Rozszyrzynia
 
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
-
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } niy doł tyj strōnie sie autōmatycznie przeladować.
@@ -859,9 +853,6 @@ refresh-blocked-redirect-label = { -brand-short-name } niy doł tyj strōnie aut
 refresh-blocked-allow =
     .label = Przizwōl
     .accesskey = P
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

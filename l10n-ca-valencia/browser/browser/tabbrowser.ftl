@@ -121,9 +121,6 @@ tabbrowser-confirm-caretbrowsing-title = Navegació amb cursor
 tabbrowser-confirm-caretbrowsing-message = En prémer F7 s'activa o es desactiva la navegació amb cursor. Esta característica col·loca un cursor mòbil a les pàgines web que vos permet seleccionar text amb el teclat. Voleu activar-la?
 tabbrowser-confirm-caretbrowsing-checkbox = No em tornes a mostrar este diàleg.
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -155,6 +152,3 @@ tabbrowser-context-unmute-selected-tabs =
 #   $tabCount (Number): The number of tabs in the current browser window. It will always be 2 at least.
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = Llista les { $tabCount } pestanyes
-
-## Tab manager menu buttons
-

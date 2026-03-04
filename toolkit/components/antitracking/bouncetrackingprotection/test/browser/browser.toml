@@ -16,11 +16,17 @@ support-files = [
   "file_web_worker.js",
 ]
 
+["browser_bouncetracking_clearingPurgeLogCrash.js"]
+
 ["browser_bouncetracking_cookie_behavior.js"]
 
 ["browser_bouncetracking_dry_run.js"]
 
+["browser_bouncetracking_fpi.js"]
+
 ["browser_bouncetracking_mode_prefs.js"]
+
+["browser_bouncetracking_nimbus.js"]
 
 ["browser_bouncetracking_oa_isolation.js"]
 
@@ -41,6 +47,8 @@ support-files = [
 ["browser_bouncetracking_stateful_storage.js"]
 
 ["browser_bouncetracking_stateful_web_worker.js"]
+
+["browser_bouncetracking_tab_close.js"]
 
 ["browser_bouncetracking_telemetry_purge_count.js"]
 

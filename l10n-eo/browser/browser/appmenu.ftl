@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Elŝutoj
 appmenuitem-passwords =
     .label = Pasvortoj
+appmenuitem-extensions-and-themes =
+    .label = Etendaĵoj kaj etosoj
+appmenuitem-extensions =
+    .label = Etendaĵoj
 appmenuitem-addons-and-themes =
     .label = Aldonaĵoj kaj etosoj
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Speguli kaj konservi datumojn
 appmenu-fxa-signed-in-label = Komenci seancon
 appmenu-fxa-setup-sync =
     .label = Ŝalti speguladon…
+appmenu-fxa-setup-sync-new = Ŝalti
 appmenuitem-save-page =
     .label = Konservi paĝon kiel…
+appmenuitem-fxa-sync-off-title = Spegulado estas malŝaltita
+appmenuitem-fxa-sync-off-description = Protektu kaj aliru el ie ajn viajn legosignojn, pasvortojn kaj pli.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Stir+Maj+2
     }
+profiler-button-dropmarker =
+    .label = Malfermi la rulanalizilon
+    .tooltiptext = Malfermi la rulanalizilon
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Rekomendita agordaro por senerarigo de sono kaj video en { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Aŭdvidaĵo
+profiler-popup-presets-ml-description = Agordoj por senerarigo de aŭtomata lernado en { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Aŭtomata lernado
 profiler-popup-presets-networking-description = Rekomendita agordaro por esploro de retaj eraroj en { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Reto
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Antaŭagordo por senerarigo en { -brand-shorter-name }. Tio postulas multe pli da rimedoj, ne uzu por mezuri efikecon sed por pli koncentriĝe kompreni la konduton de la retumilo.
 profiler-popup-presets-debug-label =
     .label = Senerarigi
+profiler-popup-presets-web-compat-description = Rekomendita agordaro por senerarigo de problemoj pri kongrueco en retejoj, kaj ne por sekvi ilian efikecon.
+profiler-popup-presets-web-compat-label =
+    .label = Teksaĵa kongrueco
 profiler-popup-presets-custom-label =
     .label = Personecigita
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Ricevu atentigojn pri datumfuĝoj
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maski vian veran retpoŝton kaj telefonnumeron
+appmenuitem-services-relay-description = Malfermi la panelon pri retpoŝtaj maskoj
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Protekto por la integra aparato
 appmenuitem-vpn-description = Protektu vian retumon
+appmenu-services-header = Miaj servoj
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Provu aliajn protektajn ilojn de Mozilla:
+appmenu-other-protection-header = Testu aliajn protektajn ilojn de { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Aliaj profiloj
+appmenu-manage-profiles =
+    .label = Administri profilojn
+appmenu-copy-profile =
+    .label = Kopii tiun ĉi profilon
+appmenu-create-profile =
+    .label = Nova profilo
+appmenu-edit-profile =
+    .aria-label = Modifi profilon
+appmenu-profiles-2 =
+    .label = Profiloj

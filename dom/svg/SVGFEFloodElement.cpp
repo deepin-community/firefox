@@ -7,11 +7,11 @@
 #include "mozilla/dom/SVGFEFloodElement.h"
 
 #include "FilterSupport.h"
+#include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/SVGFEFloodElementBinding.h"
 #include "nsColor.h"
 #include "nsIFrame.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/BindContext.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEFlood)
 
@@ -77,7 +77,7 @@ nsresult SVGFEFloodElement::BindToTree(BindContext& aCtx, nsINode& aParent) {
 
 SVGElement::StringAttributesInfo SVGFEFloodElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 }  // namespace mozilla::dom

@@ -24,7 +24,7 @@ class ErrorSummaryFormatter(BaseFormatter):
         self.line_count = 0
         self.dump_passing_tests = False
 
-        if os.environ.get("MOZLOG_DUMP_ALL_TESTS", False):
+        if os.environ.get("MOZLOG_DUMP_ALL_TESTS"):
             self.dump_passing_tests = True
 
     def __call__(self, data):
@@ -158,8 +158,16 @@ class ErrorSummaryFormatter(BaseFormatter):
 
     def shutdown_failure(self, item):
         data = {"status": "FAIL", "test": item["group"], "message": item["message"]}
-        data["group"] = [g for g in self.groups if item["group"].endswith(g)][0]
-        self.groups[data["group"]]["status"] = "FAIL"
+        data["group"] = [g for g in self.groups if item["group"].endswith(g)]
+        if data["group"]:
+            data["group"] = data["group"][0]
+            self.groups[data["group"]]["status"] = "FAIL"
+        else:
+            self.log({
+                "level": "ERROR",
+                "message": "Group '%s' was not found in known groups: %s.  Please look at item: %s"
+                % (item["group"], self.groups, item),
+            })
         return self._output("log", data)
 
     def crash(self, item):

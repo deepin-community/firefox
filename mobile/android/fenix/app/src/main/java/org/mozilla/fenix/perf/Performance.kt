@@ -11,6 +11,7 @@ import android.os.BatteryManager
 import androidx.core.content.ContextCompat
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.utils.ext.registerReceiverCompat
+import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.onboarding.FenixOnboarding
 import android.provider.Settings as AndroidSettings
@@ -36,7 +37,8 @@ object Performance {
         disableOnboarding(context)
         disableTrackingProtectionPopups(context)
         disableFirstTimePWAPopup(context)
-        disableTCPPopup(context)
+        disableOpenInApp(context)
+        disableCFRs(context)
     }
 
     /**
@@ -95,9 +97,17 @@ object Performance {
     }
 
     /**
-     * Disables the TCP popup.
+     * Disables open in app prompt.
      */
-    private fun disableTCPPopup(context: Context) {
-        context.components.settings.shouldShowTotalCookieProtectionCFR = false
+    private fun disableOpenInApp(context: Context) {
+        context.components.settings.openLinksInExternalApp =
+            context.getString(R.string.pref_key_open_links_in_apps_never)
+    }
+
+    /**
+     * Disables CFRs.
+     */
+    private fun disableCFRs(context: Context) {
+        context.components.settings.hasSeenBrowserToolbarCFR = true
     }
 }

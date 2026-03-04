@@ -42,38 +42,51 @@ add_task(async function test_updatePing() {
   registerCleanupFunction(async () => {
     let activeUpdateFile = getActiveUpdateFile();
     activeUpdateFile.remove(false);
-    reloadUpdateManagerData(true);
+    await reloadUpdateManagerData(true);
   });
   writeFile(XML_UPDATE, getActiveUpdateFile());
   writeSuccessUpdateStatusFile();
-  reloadUpdateManagerData(false);
+  await reloadUpdateManagerData(false);
 
   // Start monitoring the ping archive.
   let archiveChecker = new TelemetryArchiveTesting.Checker();
   await archiveChecker.promiseInit();
 
-  // Manually call the BrowserContentHandler: this automatically gets called when
-  // the browser is started and an update was applied successfully in order to
-  // display the "update" info page.
-  Cc["@mozilla.org/browser/clh;1"].getService(Ci.nsIBrowserHandler).defaultArgs;
-
-  // We cannot control when the ping will be generated/archived after we trigger
-  // an update, so let's make sure to have one before moving on with validation.
   let updatePing;
-  await BrowserTestUtils.waitForCondition(
-    async function () {
-      // Check that the ping made it into the Telemetry archive.
-      // The test data is defined in ../data/sharedUpdateXML.js
-      updatePing = await archiveChecker.promiseFindPing("update", [
-        [["payload", "reason"], "success"],
-        [["payload", "previousBuildId"], TEST_BUILDID],
-        [["payload", "previousVersion"], TEST_VERSION],
-      ]);
-      return !!updatePing;
+  let gleanPrevChannel;
+  await GleanPings.update.testSubmission(
+    reason => {
+      Assert.equal("success", reason);
+      Assert.equal(TEST_BUILDID, Glean.update.previousBuildId.testGetValue());
+      Assert.equal(TEST_VERSION, Glean.update.previousVersion.testGetValue());
+      gleanPrevChannel = Glean.update.previousChannel.testGetValue();
     },
-    "Make sure the ping is generated before trying to validate it.",
-    500,
-    100
+    async () => {
+      // Manually call the BrowserContentHandler: this automatically gets called
+      // when the browser is started and an update was applied successfully in
+      // order to display the "update" info page.
+      Cc["@mozilla.org/browser/clh;1"]
+        .getService(Ci.nsIBrowserHandler)
+        .getFirstWindowArgs();
+
+      // We cannot control when the ping will be generated/archived after we trigger
+      // an update, so let's make sure to have one before moving on with validation.
+      await BrowserTestUtils.waitForCondition(
+        async function () {
+          // Check that the ping made it into the Telemetry archive.
+          // The test data is defined in ../data/sharedUpdateXML.js
+          updatePing = await archiveChecker.promiseFindPing("update", [
+            [["payload", "reason"], "success"],
+            [["payload", "previousBuildId"], TEST_BUILDID],
+            [["payload", "previousVersion"], TEST_VERSION],
+          ]);
+          return !!updatePing;
+        },
+        "Make sure the ping is generated before trying to validate it.",
+        500,
+        100
+      );
+    }
   );
 
   ok(updatePing, "The 'update' ping must be correctly sent.");
@@ -92,6 +105,7 @@ add_task(async function test_updatePing() {
       "string",
       "'previousChannel' must be a string, if available."
     );
+    Assert.equal(channelField, gleanPrevChannel);
   }
 
   // Also make sure that the ping contains both a client id and an
@@ -132,8 +146,8 @@ function getActiveUpdateFile() {
  *         be reset. If false (the default), the update xml files will be read
  *         to populate the update metadata.
  */
-function reloadUpdateManagerData(skipFiles = false) {
-  Cc["@mozilla.org/updates/update-manager;1"]
+async function reloadUpdateManagerData(skipFiles = false) {
+  await Cc["@mozilla.org/updates/update-manager;1"]
     .getService(Ci.nsIUpdateManager)
     .internal.reload(skipFiles);
 }

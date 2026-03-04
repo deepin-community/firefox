@@ -8,11 +8,24 @@
 newtab-page-title = Uusi välilehti
 newtab-settings-button =
     .title = Muokkaa Uusi välilehti -sivua
+newtab-customize-panel-icon-button =
+    .title = Mukauta tätä sivua
+newtab-customize-panel-icon-button-label = Mukauta
+newtab-personalize-settings-icon-label =
+    .title = Mukauta uutta välilehteä
+    .aria-label = Asetukset
+newtab-settings-dialog-label =
+    .aria-label = Asetukset
 newtab-personalize-icon-label =
     .title = Muokkaa uutta välilehteä
     .aria-label = Muokkaa uutta välilehteä
 newtab-personalize-dialog-label =
     .aria-label = Muokkaa
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+newtab-card-dismiss-button =
+    .title = Hylkää
+    .aria-label = Hylkää
 
 ## Search box component.
 
@@ -46,12 +59,19 @@ newtab-topsites-add-shortcut-header = Uusi oikotie
 newtab-topsites-edit-topsites-header = Muokkaa ykkössivustoa
 newtab-topsites-edit-shortcut-header = Muokkaa oikotietä
 newtab-topsites-add-shortcut-label = Lisää pikavalinta
+newtab-topsites-add-shortcut-title =
+    .title = Lisää pikavalinta
+    .aria-label = Lisää pikavalinta
 newtab-topsites-title-label = Otsikko
 newtab-topsites-title-input =
     .placeholder = Kirjoita otsikko
 newtab-topsites-url-label = Osoite
 newtab-topsites-url-input =
-    .placeholder = Kirjoita tai liitä osoite
+    .placeholder =
+        { PLATFORM() ->
+            [macos] Kirjoita tai sijoita osoite
+           *[other] Kirjoita tai liitä osoite
+        }
 newtab-topsites-url-validation = Kelvollinen osoite vaaditaan
 newtab-topsites-image-url-label = Oman kuvan osoite
 newtab-topsites-use-image-link = Käytä omaa kuvaa…
@@ -74,6 +94,14 @@ newtab-confirm-delete-history-p2 = Tämä toiminto on peruuttamaton.
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Sponsoroitu
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (kiinnitetty)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +137,21 @@ newtab-menu-save-to-pocket = Tallenna { -pocket-brand-name }-palveluun
 newtab-menu-delete-pocket = Poista { -pocket-brand-name }-palvelusta
 newtab-menu-archive-pocket = Arkistoi { -pocket-brand-name }-palveluun
 newtab-menu-show-privacy-info = Tukijamme ja yksityisyytesi
+newtab-menu-about-fakespot = Tietoja { -fakespot-brand-name }ista
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Ilmoita
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Estä
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Lopeta aiheen seuraaminen
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Hallinnoi sponsoroitua sisältöä
+newtab-menu-our-sponsors-and-your-privacy = Tukijamme ja yksityisyytesi
+newtab-menu-report-this-ad = Ilmoita tästä mainoksesta
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +213,8 @@ newtab-label-sponsored-by = Sponsorina { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Sponsoroitu
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +277,6 @@ newtab-pocket-learn-more = Lue lisää
 newtab-pocket-cta-button = Hanki { -pocket-brand-name }
 newtab-pocket-cta-text = Tallenna tykkäämäsi tekstit { -pocket-brand-name }iin ja ravitse mieltäsi kiinnostavilla teksteillä.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } on osa { -brand-product-name }-perhettä
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Tallenna
 newtab-pocket-saved = Tallennettu
 
@@ -244,7 +288,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ei minulle
-newtab-toast-thumbs-up-or-down = Kiitos. Palautteesi auttaa meitä parantamaan syötettäsi.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Kiitos. Palautteesi auttaa meitä parantamaan syötettäsi.
 newtab-toast-dismiss-button =
     .title = Hylkää
     .aria-label = Hylkää
@@ -280,16 +326,32 @@ newtab-custom-pocket-subtitle = Poikkeuksellista, valikoitua sisältöä { -pock
 newtab-custom-stories-toggle =
     .label = Suositellut tarinat
     .description = Poikkeuksellista { -brand-product-name }-perheen kuratoimaa sisältöä
+newtab-custom-stories-personalized-toggle =
+    .label = Tarinat
+newtab-custom-stories-personalized-checkbox-label = Personoituja tarinoita aktiivisuuteesi pohjautuen
 newtab-custom-pocket-sponsored = Sponsoroidut tarinat
 newtab-custom-pocket-show-recent-saves = Näytä viimeisimmät tallennukset
 newtab-custom-recent-title = Viimeisin toiminta
 newtab-custom-recent-subtitle = Valikoima viimeisimpiä sivustoja ja sisältöä
-newtab-custom-recent-toggle =
-    .label = Viimeisin toiminta
-    .description = Valikoima viimeisimpiä sivustoja ja sisältöä
 newtab-custom-weather-toggle =
     .label = Sää
     .description = Päivän sääennuste yhdellä vilkaisulla
+newtab-custom-widget-weather-toggle =
+    .label = Sää
+newtab-custom-widget-lists-toggle =
+    .label = Listat
+newtab-custom-widget-timer-toggle =
+    .label = Ajastin
+newtab-custom-widget-section-title = Pienoisohjelmat
+newtab-custom-widget-section-toggle =
+    .label = Pienoisohjelmat
+newtab-widget-manage-title = Pienoisohjelmat
+newtab-widget-manage-widget-button =
+    .label = Hallitse pienoisohjelmia
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Sulje
+    .aria-label = Sulje valikko
 newtab-custom-close-button = Sulje
 newtab-custom-settings = Muokkaa lisää asetuksia
 
@@ -297,6 +359,13 @@ newtab-custom-settings = Muokkaa lisää asetuksia
 
 newtab-wallpaper-title = Taustakuvat
 newtab-wallpaper-reset = Palauta oletusarvo
+newtab-wallpaper-upload-image = Lähetä kuva
+newtab-wallpaper-custom-color = Valitse väri
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Kuvan koko ylitti tiedostokokorajan { $file_size } Mt. Yritä ladata pienempi tiedosto.
+newtab-wallpaper-error-upload-file-type = Tiedostosi lataaminen epäonnistui. Yritä uudelleen kuvatiedostolla.
+newtab-wallpaper-error-file-type = Tiedostoa ei voitu lähettää. Yritä uudelleen toisella tiedostotyypillä.
 newtab-wallpaper-light-red-panda = Kultapanda
 newtab-wallpaper-light-mountain = Valkoinen vuori
 newtab-wallpaper-light-sky = Taivas violettien ja vaaleanpunaisten pilvien kera
@@ -309,6 +378,8 @@ newtab-wallpaper-dark-panda = Kultapanda metsän piilossa
 newtab-wallpaper-dark-sky = Kaupunkimaisema ja yötaivas
 newtab-wallpaper-dark-mountain = Vuorimaisema
 newtab-wallpaper-dark-city = Purppura kaupunkimaisema
+newtab-wallpaper-dark-fox-anniversary = Kettu jalkakäytävällä lähellä metsää
+newtab-wallpaper-light-fox-anniversary = Kettu ruohopellolla ja sumuinen vuoristomaisema
 
 ## Solid Colors
 
@@ -338,8 +409,12 @@ newtab-wallpaper-abstract-purple = Violetit muodot
 newtab-wallpaper-abstract-orange = Oranssit muodot
 newtab-wallpaper-gradient-orange = Oranssi ja pinkki liukuväreissä
 newtab-wallpaper-abstract-blue-purple = Sinisiä ja violetteja muotoja
+newtab-wallpaper-abstract-white-curves = Valkoista ja varjostettuja kaaria
+newtab-wallpaper-abstract-purple-green = Violetin ja vihreän valon liukuväriä
+newtab-wallpaper-abstract-blue-purple-waves = Sinisiä ja violetteja aaltoilevia muotoja
+newtab-wallpaper-abstract-black-waves = Mustia aaltoilevia muotoja
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Valokuvat
 newtab-wallpaper-beach-at-sunrise = Ranta auringonnousun aikaan
@@ -348,6 +423,12 @@ newtab-wallpaper-storm-sky = Myrskyinen taivas
 newtab-wallpaper-sky-with-pink-clouds = Taivas ja vaaleanpunaiset pilvet
 newtab-wallpaper-red-panda-yawns-in-a-tree = Kultapanda haukottelee puussa
 newtab-wallpaper-white-mountains = Valkoiset vuoret
+newtab-wallpaper-hot-air-balloons = Värikkäitä kuumailmapalloja päiväsaikaan
+newtab-wallpaper-starry-canyon = Sininen tähtiyö
+newtab-wallpaper-suspension-bridge = Harmaa riippusilta päiväsaikaan
+newtab-wallpaper-sand-dunes = Valkoiset hiekkadyynit
+newtab-wallpaper-palm-trees = Kookospalmujen siluetti auringonnousun aikana
+newtab-wallpaper-blue-flowers = Lähikuva siniterälehtisistä kukista
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +444,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Taivaallinen
+newtab-wallpaper-celestial-lunar-eclipse = Kuunpimennys
+newtab-wallpaper-celestial-earth-night = Yökuva matalalta Maan kiertoradalta
+newtab-wallpaper-celestial-starry-sky = Tähtitaivas
+newtab-wallpaper-celestial-eclipse-time-lapse = Kuunpimennyksen kuvasarja
+newtab-wallpaper-celestial-black-hole = Mustan aukon galaksikuvitus
+newtab-wallpaper-celestial-river = Satelliittikuva joesta
+
 ## New Tab Weather
 
 # Variables:
@@ -373,8 +471,12 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsoroitu
 newtab-weather-menu-change-location = Vaihda sijaintia
-newtab-weather-change-location-search-input = Hae sijaintia
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Hae sijaintia
+    .aria-label = Hae sijaintia
 newtab-weather-menu-weather-display = Sään näkymä
+newtab-weather-todays-forecast = Tämän päivän ennuste
+newtab-weather-see-full-forecast = Katso koko ennuste
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
@@ -387,10 +489,24 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Vaihda Fahrenheitiin
 newtab-weather-menu-change-temperature-units-celsius = Vaihda Celsiukseen
+newtab-weather-menu-hide-weather-v2 = Piilota sää
 newtab-weather-menu-hide-weather = Piilota sää uudessa välilehdessä
 newtab-weather-menu-learn-more = Lue lisää
+newtab-weather-menu-detect-my-location = Havaitse sijaintini
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Säätiedot eivät ole tällä hetkellä saatavilla.
+newtab-weather-opt-in-see-weather = Haluatko nähdä sijaintisi sään?
+newtab-weather-opt-in-not-now =
+    .label = Ei nyt
+newtab-weather-opt-in-yes =
+    .label = Kyllä
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = Helsinki
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Katso ennuste palvelussa { $provider }
+    .aria-description = { $provider } ∙ Sponsoroitu
 
 ## Topic Labels
 
@@ -431,3 +547,201 @@ newtab-topic-selection-button-maybe-later = Ehkä myöhemmin
 newtab-topic-selection-privacy-link = Lue lisää, kuinka suojaamme ja hallitsemme tietoja
 newtab-topic-selection-button-update-interests = Päivitä kiinnostuksen kohteesi
 newtab-topic-selection-button-pick-interests = Valitse kiinnostuksen kohteesi
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Seuraa
+newtab-section-following-button = Seurataan
+newtab-section-unfollow-button = Lopeta seuraaminen
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Hienosäädä syötettä
+newtab-section-follow-highlight-subtitle = Seuraa kiinnostuksen kohteitasi nähdäksesi enemmän sinua kiinnostavia asioita.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Estä
+newtab-section-blocked-button = Estetty
+newtab-section-unblock-button = Poista esto
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Ei nyt
+newtab-section-confirm-block-topic-p1 = Haluatko varmasti estää tämän aiheen?
+newtab-section-confirm-block-topic-p2 = Estetyt aiheet eivät enää näy syötteessäsi.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Estä { $topic }
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Aiheet
+newtab-section-manage-topics-button-v2 =
+    .label = Hallinnoi aiheita
+newtab-section-mangage-topics-followed-topics = Seurattu
+newtab-section-mangage-topics-followed-topics-empty-state = Et ole vielä seurannut yhtäkään aihetta.
+newtab-section-mangage-topics-blocked-topics = Estetty
+newtab-section-mangage-topics-blocked-topics-empty-state = Et ole vielä estänyt yhtäkään aihetta.
+newtab-custom-wallpaper-title = Mukautetut taustakuvat ovat täällä
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Valitse oma taustakuvasi tai mukautettu väri ja tee { -brand-product-name }ista mieluisesi.
+newtab-custom-wallpaper-cta = Kokeile
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Valitse taustakuva ja tee { -brand-product-name }ista omasi
+newtab-new-user-custom-wallpaper-subtitle = Tee jokaisesta uudesta välilehdestä tutunomainen mukautetuilla taustakuvilla ja väreillä.
+newtab-new-user-custom-wallpaper-cta = Kokeile nyt
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = Lataa { -brand-product-name } mobiililaitteille
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Skannaa koodi selataksesi turvallisesti liikkeellä ollessasi.
+newtab-download-mobile-highlight-body-variant-b = Jatka siitä, mihin jäit, synkronoimalla välilehdet, salasanat ja muut tiedot.
+newtab-download-mobile-highlight-body-variant-c = Tiesitkö, että voit ottaa { -brand-product-name }in mukaasi liikkeellä ollessasi? Sama selain. Taskussasi.
+newtab-download-mobile-highlight-image =
+    .aria-label = QR-koodi { -brand-product-name }in lataamiseksi mobiililaitteille
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Suosikkisi sormiesi ulottuvilla
+newtab-shortcuts-highlight-subtitle = Lisää pikakuvake, niin suosikkisivustosi ovat yhden napsautuksen päässä.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Miksi ilmoitat tästä?
+newtab-report-ads-reason-not-interested =
+    .label = En ole kiinnostunut
+newtab-report-ads-reason-inappropriate =
+    .label = Se on sopimatonta
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Olen nähnyt sen liian monta kertaa
+newtab-report-content-wrong-category =
+    .label = Väärä luokka
+newtab-report-content-outdated =
+    .label = Vanhentunut
+newtab-report-content-inappropriate-offensive =
+    .label = Sopimaton tai loukkaava
+newtab-report-content-spam-misleading =
+    .label = Roskapostia tai harhaanjohtavaa
+newtab-report-content-requires-payment-subscription =
+    .label = Vaatii maksun tai tilauksen
+newtab-report-content-requires-payment-subscription-learn-more = Lue lisää
+newtab-report-cancel = Peruuta
+newtab-report-submit = Lähetä
+newtab-toast-thanks-for-reporting =
+    .message = Kiitos, että ilmoitit tästä.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = Mahdollisuudet ovat rajattomat. Lisää yksi sellainen.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Uusi
+newtab-widget-lists-label-beta =
+    .label = Beeta
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Valmis ({ $number })
+newtab-widget-task-list-menu-copy = Kopioi
+newtab-widget-lists-menu-edit = Muokkaa listan nimeä
+newtab-widget-lists-menu-create = Luo uusi lista
+newtab-widget-lists-menu-delete = Poista tämä lista
+newtab-widget-lists-menu-copy = Kopioi lista leikepöydälle
+newtab-widget-lists-menu-hide = Piilota kaikki listat
+newtab-widget-lists-menu-learn-more = Lue lisää
+newtab-widget-lists-input-add-an-item =
+    .placeholder = Lisää kohde
+newtab-widget-lists-input-error = Sisällytä tekstiä lisätäksesi kohteen.
+newtab-widget-lists-input-menu-open-link = Avaa linkki
+newtab-widget-lists-input-menu-move-up = Siirrä ylös
+newtab-widget-lists-input-menu-move-down = Siirrä alas
+newtab-widget-lists-input-menu-delete = Poista
+newtab-widget-lists-input-menu-edit = Muokkaa
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Luo uusi lista
+newtab-widget-lists-name-label-default =
+    .label = Tehtävälista
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Tehtävälista
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Uusi lista
+newtab-widget-section-title = Pienoisohjelmat
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Piilota pienoisohjelmat
+    .aria-label = Piilota kaikki pienoisohjelmat
+newtab-widget-section-maximize =
+    .title = Laajenna pienoisohjelmat
+    .aria-label = Laajenna pienoisohjelmat täyteen kokoon
+newtab-widget-section-minimize =
+    .title = Pienennä pienoisohjelmat
+    .aria-label = Supista pienoisohjelmat kompaktiin kokoon
+
+## Strings for timer productivity widget
+## When the timer ends, a system notification may be shown. Depending on which mode the timer is in, that message would be shown
+
+newtab-widget-timer-notification-title = Ajastin
+newtab-widget-timer-notification-focus = Keskittymisaika on ohi. Hyvää työtä. Tarvitsetko tauon?
+newtab-widget-timer-notification-break = Taukosi on ohi. Oletko valmis keskittymään?
+newtab-widget-timer-notification-warning = Ilmoitukset ovat pois päältä
+newtab-widget-timer-mode-focus =
+    .label = Keskity
+newtab-widget-timer-mode-break =
+    .label = Tauko
+newtab-widget-timer-label-play =
+    .label = Käynnistä
+newtab-widget-timer-label-pause =
+    .label = Keskeytä
+newtab-widget-timer-reset =
+    .title = Nollaa
+newtab-widget-timer-menu-notifications = Poista ilmoitukset käytöstä
+newtab-widget-timer-menu-notifications-on = Ota ilmoitukset käyttöön
+newtab-widget-timer-menu-hide = Piilota ajastin
+newtab-widget-timer-menu-learn-more = Lue lisää
+# The title displays above a set of top news headlines.
+newtab-daily-briefing-card-title = Pääotsikot
+newtab-daily-briefing-card-menu-dismiss = Hylkää
+# Variables:
+#   $minutes (number) - Time since the feed has been refreshed
+newtab-daily-briefing-card-timestamp = Päivitetty { $minutes } min sitten
+newtab-widget-message-title = Pysy keskittyneenä listojen ja sisäänrakennetun ajastimen avulla
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Nopeista muistutuksista päivittäisiin tehtäviin, keskittymisharjoituksista venyttelytaukoihin – pysy tehtävässäsi ja aikataulussa.
+newtab-promo-card-title = Tue { -brand-product-name }ia
+newtab-promo-card-body = Sponsorimme tukevat tehtäväämme rakentaa parempaa Internetiä
+newtab-promo-card-cta = Lue lisää
+newtab-promo-card-dismiss-button =
+    .title = Hylkää
+    .aria-label = Hylkää
+
+## Strings for activation window message variants. In certain experiment configurations,
+## the strings from these variants may be displayed in a message below the search input
+## for the first 48 hours of a new profile's lifetime. Some messages include buttons with
+## labels, but not all.
+
+newtab-activation-window-message-dismiss-button =
+    .title = Hylkää
+    .aria-label = Hylkää
+# "This space" refers to about:newtab. The call to action here ("make it your own")
+# is to customize newtab with a background image or colour, or by tweaking the
+# existing widgetry that appears on it.
+newtab-activation-window-message-customization-focus-header = Tee tästä tilasta omasi
+newtab-activation-window-message-customization-focus-message = Valitse uusi taustakuva, lisää oikotiet suosikkisivustoillesi ja pysy ajan tasalla sinua kiinnostavista tarinoista.
+newtab-activation-window-message-customization-focus-primary-button =
+    .label = Aloita mukauttaminen
+# "This space" refers to about:newtab. The sentiment of "plays by your rules" is
+# meant to evoke the idea that newtab is malleable and customizable. The call to
+# action is to customize newtab with a background image or colour, or by tweaking
+# the existing widgetry that appears on it.
+newtab-activation-window-message-values-focus-header = Tämä tila toimii sinun säännöilläsi
+newtab-activation-window-message-values-focus-message = { -brand-product-name } antaa sinun selata verkkoa haluamallasi tavalla, tarjoten henkilökohtaisemman tavan aloittaa päiväsi verkossa. Tee { -brand-product-name }ista omasi.

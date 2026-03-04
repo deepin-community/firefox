@@ -2,12 +2,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 reload-tab =
     .label = Athlódáil an Cluaisín
     .accesskey = A
 tab-context-play-tab =
     .label = Seinn an Cluaisín
     .accesskey = l
+# The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Dún na cluaisíní ar dheis
     .accesskey = i
@@ -23,7 +29,3 @@ unpin-tab =
 move-to-new-window =
     .label = Bog go Fuinneog Nua
     .accesskey = N
-
-## Variables:
-##  $tabCount (Number): the number of tabs that are affected by the action.
-

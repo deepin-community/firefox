@@ -9,16 +9,19 @@
 #ifndef mozilla_ServoStyleConstsInlines_h
 #define mozilla_ServoStyleConstsInlines_h
 
-#include "mozilla/ServoStyleConsts.h"
+#include <new>
+#include <type_traits>
+
+#include "MainThreadUtils.h"
 #include "mozilla/AspectRatio.h"
 #include "mozilla/EndianUtils.h"
+#include "mozilla/IntegerRange.h"
+#include "mozilla/SVGContentUtils.h"
+#include "mozilla/ServoStyleConsts.h"
 #include "mozilla/URLExtraData.h"
 #include "mozilla/dom/WorkerCommon.h"
 #include "nsGkAtoms.h"
-#include "MainThreadUtils.h"
 #include "nsNetUtil.h"
-#include <type_traits>
-#include <new>
 
 // TODO(emilio): there are quite a few other implementations scattered around
 // that should move here.
@@ -43,6 +46,7 @@ template struct StyleStrong<StyleLockedStyleRule>;
 template struct StyleStrong<StyleLockedImportRule>;
 template struct StyleStrong<StyleLockedKeyframesRule>;
 template struct StyleStrong<StyleMediaRule>;
+template struct StyleStrong<StyleCustomMediaRule>;
 template struct StyleStrong<StyleDocumentRule>;
 template struct StyleStrong<StyleNamespaceRule>;
 template struct StyleStrong<StyleMarginRule>;
@@ -57,6 +61,7 @@ template struct StyleStrong<StyleContainerRule>;
 template struct StyleStrong<StyleScopeRule>;
 template struct StyleStrong<StyleStartingStyleRule>;
 template struct StyleStrong<StyleLockedPositionTryRule>;
+template struct StyleStrong<StyleLockedNestedDeclarationsRule>;
 
 template <typename T>
 inline void StyleOwnedSlice<T>::Clear() {
@@ -379,22 +384,25 @@ inline const URLExtraData& StyleCssUrl::ExtraData() const {
   return _0->extra_data.get();
 }
 
-inline StyleLoadData& StyleCssUrl::LoadData() const {
+inline const StyleLoadData& StyleCssUrl::LoadData() const {
   if (MOZ_LIKELY(_0->load_data.tag == StyleLoadDataSource::Tag::Owned)) {
-    MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread() ||
-                          dom::IsCurrentThreadRunningWorker());
-    return const_cast<StyleLoadData&>(_0->load_data.owned._0);
+    return _0->load_data.owned._0;
   }
-  MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread(),
-                        "Lazy load datas should come from user-agent sheets, "
-                        "which don't make sense on workers");
-  return const_cast<StyleLoadData&>(*Servo_LoadData_GetLazy(&_0->load_data));
+  return *Servo_LoadData_GetLazy(&_0->load_data);
+}
+
+inline StyleLoadData& StyleCssUrl::MutLoadData() const {
+  MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread() ||
+                        dom::IsCurrentThreadRunningWorker());
+  return const_cast<StyleLoadData&>(LoadData());
 }
 
 inline nsIURI* StyleCssUrl::GetURI() const {
-  auto& loadData = LoadData();
-  if (!(loadData.flags & StyleLoadDataFlags::TRIED_TO_RESOLVE_URI)) {
-    loadData.flags |= StyleLoadDataFlags::TRIED_TO_RESOLVE_URI;
+  auto& loadData = const_cast<StyleLoadData&>(LoadData());
+  // Try to read the flags first. If it's set we can avoid entering the CAS
+  // loop.
+  auto flags = __atomic_load_n(&loadData.flags.bits, __ATOMIC_RELAXED);
+  if (!(flags & StyleLoadDataFlags::TRIED_TO_RESOLVE_URI.bits)) {
     nsDependentCSubstring serialization = SpecifiedSerialization();
     // https://drafts.csswg.org/css-values-4/#url-empty:
     //
@@ -402,14 +410,29 @@ inline nsIURI* StyleCssUrl::GetURI() const {
     //     url()), the url must resolve to an invalid resource (similar to what
     //     the url about:invalid does).
     //
+    nsIURI* resolved = nullptr;
     if (!serialization.IsEmpty()) {
-      RefPtr<nsIURI> resolved;
-      NS_NewURI(getter_AddRefs(resolved), serialization, nullptr,
-                ExtraData().BaseURI());
-      loadData.resolved_uri = resolved.forget().take();
+      nsIURI* old_resolved = nullptr;
+      // NOTE: This addrefs `resolved`, and `resolved` might still be null for
+      // invalid URIs.
+      NS_NewURI(&resolved, serialization, nullptr, ExtraData().BaseURI());
+      if (!__atomic_compare_exchange_n(&loadData.resolved_uri, &old_resolved,
+                                       resolved, /* weak = */ false,
+                                       __ATOMIC_RELEASE, __ATOMIC_RELAXED)) {
+        // In the unlikely case two threads raced to write the url, avoid
+        // leaking resolved. The actual value is in `old_resolved`.
+        NS_IF_RELEASE(resolved);
+        resolved = old_resolved;
+      }
     }
+    // The flag is effectively just an optimization so we can use relaxed
+    // ordering.
+    __atomic_fetch_or(&loadData.flags.bits,
+                      StyleLoadDataFlags::TRIED_TO_RESOLVE_URI.bits,
+                      __ATOMIC_RELAXED);
+    return resolved;
   }
-  return loadData.resolved_uri;
+  return __atomic_load_n(&loadData.resolved_uri, __ATOMIC_ACQUIRE);
 }
 
 inline nsDependentCSubstring StyleComputedUrl::SpecifiedSerialization() const {
@@ -418,8 +441,11 @@ inline nsDependentCSubstring StyleComputedUrl::SpecifiedSerialization() const {
 inline const URLExtraData& StyleComputedUrl::ExtraData() const {
   return _0.ExtraData();
 }
-inline StyleLoadData& StyleComputedUrl::LoadData() const {
+inline const StyleLoadData& StyleComputedUrl::LoadData() const {
   return _0.LoadData();
+}
+inline StyleLoadData& StyleComputedUrl::MutLoadData() const {
+  return _0.MutLoadData();
 }
 inline StyleCorsMode StyleComputedUrl::CorsMode() const {
   return _0._0->cors_mode;
@@ -441,11 +467,11 @@ inline bool StyleComputedUrl::HasRef() const {
   return false;
 }
 
-inline bool StyleComputedImageUrl::IsImageResolved() const {
+inline bool StyleComputedUrl::IsImageResolved() const {
   return bool(LoadData().flags & StyleLoadDataFlags::TRIED_TO_RESOLVE_IMAGE);
 }
 
-inline imgRequestProxy* StyleComputedImageUrl::GetImage() const {
+inline imgRequestProxy* StyleComputedUrl::GetImage() const {
   MOZ_ASSERT(IsImageResolved());
   return LoadData().resolved_image;
 }
@@ -573,7 +599,7 @@ StyleCalcLengthPercentage& LengthPercentage::AsCalc() {
   MOZ_ASSERT(IsCalc());
   // NOTE: in 32-bits, the pointer is not swapped, and goes along with the tag.
 #ifdef SERVO_32_BITS
-  return *calc.ptr;
+  return *reinterpret_cast<StyleCalcLengthPercentage*>(calc.ptr);
 #else
   return *reinterpret_cast<StyleCalcLengthPercentage*>(
       NativeEndian::swapFromLittleEndian(calc.ptr));
@@ -806,6 +832,29 @@ void LengthPercentage::ScaleLengthsBy(float aScale) {
 IMPL_LENGTHPERCENTAGE_FORWARDS(LengthPercentageOrAuto)
 IMPL_LENGTHPERCENTAGE_FORWARDS(StyleSize)
 IMPL_LENGTHPERCENTAGE_FORWARDS(StyleMaxSize)
+IMPL_LENGTHPERCENTAGE_FORWARDS(StyleInset)
+IMPL_LENGTHPERCENTAGE_FORWARDS(StyleMargin)
+
+template <>
+inline bool StyleInset::HasAnchorPositioningFunction() const {
+  return IsAnchorFunction() || IsAnchorSizeFunction() ||
+         IsAnchorContainingCalcFunction();
+}
+
+template <>
+inline bool StyleMargin::HasAnchorPositioningFunction() const {
+  return IsAnchorSizeFunction() || IsAnchorContainingCalcFunction();
+}
+
+template <>
+inline bool StyleSize::HasAnchorPositioningFunction() const {
+  return IsAnchorSizeFunction() || IsAnchorContainingCalcFunction();
+}
+
+template <>
+inline bool StyleMaxSize::HasAnchorPositioningFunction() const {
+  return IsAnchorSizeFunction() || IsAnchorContainingCalcFunction();
+}
 
 #undef IMPL_LENGTHPERCENTAGE_FORWARDS
 
@@ -829,14 +878,20 @@ inline bool StyleFlexBasis::IsAuto() const {
   return IsSize() && AsSize().IsAuto();
 }
 
-#define IMPL_BEHAVES_LIKE_SIZE_METHODS(ty_, isInitialValMethod_)       \
-  template <>                                                          \
-  inline bool ty_::BehavesLikeStretchOnInlineAxis() const {            \
-    return IsStretch() || IsMozAvailable() || IsWebkitFillAvailable(); \
-  }                                                                    \
-  template <>                                                          \
-  inline bool ty_::BehavesLikeInitialValueOnBlockAxis() const {        \
-    return isInitialValMethod_() || !IsLengthPercentage();             \
+#define IMPL_BEHAVES_LIKE_SIZE_METHODS(ty_, isInitialValMethod_)        \
+  template <>                                                           \
+  inline bool ty_::BehavesLikeStretchOnInlineAxis() const {             \
+    return IsStretch() || IsMozAvailable() || IsWebkitFillAvailable();  \
+  }                                                                     \
+  template <>                                                           \
+  inline bool ty_::BehavesLikeStretchOnBlockAxis() const {              \
+    /* TODO(dholbert): Add "|| IsMozAvailable()" in bug 527285. */      \
+    return IsStretch() || IsWebkitFillAvailable();                      \
+  }                                                                     \
+  template <>                                                           \
+  inline bool ty_::BehavesLikeInitialValueOnBlockAxis() const {         \
+    return isInitialValMethod_() ||                                     \
+           (!BehavesLikeStretchOnBlockAxis() && !IsLengthPercentage()); \
   }
 
 IMPL_BEHAVES_LIKE_SIZE_METHODS(StyleSize, IsAuto)
@@ -968,7 +1023,7 @@ inline bool RestyleHint::DefinitelyRecascadesAllSubtree() const {
 }
 
 template <>
-ImageResolution StyleImage::GetResolution(const ComputedStyle&) const;
+ImageResolution StyleImage::GetResolution(const ComputedStyle*) const;
 
 template <>
 inline const StyleImage& StyleImage::FinalImage() const {
@@ -991,8 +1046,7 @@ inline bool StyleImage::IsImageRequestType() const {
 }
 
 template <>
-inline const StyleComputedImageUrl* StyleImage::GetImageRequestURLValue()
-    const {
+inline const StyleComputedUrl* StyleImage::GetImageRequestURLValue() const {
   const auto& finalImage = FinalImage();
   if (finalImage.IsUrl()) {
     return &finalImage.AsUrl();
@@ -1051,14 +1105,14 @@ inline void StyleFontStyle::ToString(nsACString& aString) const {
 
 inline bool StyleFontWeight::IsBold() const { return *this >= BOLD_THRESHOLD; }
 
-inline bool StyleFontStyle::IsItalic() const { return *this == ITALIC; }
-
-inline bool StyleFontStyle::IsOblique() const {
-  return !IsItalic() && !IsNormal();
+inline bool StyleFontWeight::PreferBold() const {
+  return *this > PREFER_BOLD_THRESHOLD;
 }
 
+inline bool StyleFontStyle::IsItalic() const { return *this == ITALIC; }
+
 inline float StyleFontStyle::ObliqueAngle() const {
-  MOZ_ASSERT(IsOblique());
+  MOZ_ASSERT(!IsItalic());
   return ToFloat();
 }
 
@@ -1225,6 +1279,187 @@ inline gfx::Point StyleCoordinatePair<LengthPercentage>::ToGfxPoint(
   MOZ_ASSERT(aBasis);
   return gfx::Point(x.ResolveToCSSPixels(aBasis->Width()),
                     y.ResolveToCSSPixels(aBasis->Height()));
+}
+
+template <>
+inline gfx::Point StyleShapePosition<StyleCSSFloat>::ToGfxPoint(
+    const CSSSize* aBasis) const {
+  return gfx::Point(horizontal, vertical);
+}
+
+template <>
+inline gfx::Point StyleShapePosition<LengthPercentage>::ToGfxPoint(
+    const CSSSize* aBasis) const {
+  MOZ_ASSERT(aBasis);
+  return gfx::Point(horizontal.ResolveToCSSPixels(aBasis->Width()),
+                    vertical.ResolveToCSSPixels(aBasis->Height()));
+}
+
+template <>
+inline gfx::Point
+StyleCommandEndPoint<StyleShapePosition<StyleCSSFloat>,
+                     StyleCSSFloat>::ToGfxPoint(const CSSSize* aBasis) const {
+  if (IsToPosition()) {
+    auto& pos = AsToPosition();
+    return pos.ToGfxPoint();
+  } else {
+    auto& coord = AsByCoordinate();
+    return coord.ToGfxPoint();
+  }
+}
+
+template <>
+inline gfx::Point StyleCommandEndPoint<
+    StyleShapePosition<LengthPercentage>,
+    LengthPercentage>::ToGfxPoint(const CSSSize* aBasis) const {
+  MOZ_ASSERT(aBasis);
+  if (IsToPosition()) {
+    auto& pos = AsToPosition();
+    return pos.ToGfxPoint(aBasis);
+  } else {
+    auto& coord = AsByCoordinate();
+    return coord.ToGfxPoint(aBasis);
+  }
+}
+
+template <>
+inline gfx::Coord StyleAxisEndPoint<StyleCSSFloat>::ToGfxCoord(
+    const StyleCSSFloat* aBasis) const {
+  if (IsToPosition()) {
+    const auto pos = AsToPosition();
+    MOZ_ASSERT(pos.IsLengthPercent());
+    return gfx::Coord(pos.AsLengthPercent());
+  }
+  return gfx::Coord(AsByCoordinate());
+}
+
+template <>
+inline gfx::Coord StyleAxisEndPoint<LengthPercentage>::ToGfxCoord(
+    const StyleCSSFloat* aBasis) const {
+  MOZ_ASSERT(aBasis);
+  if (IsToPosition()) {
+    const auto pos = AsToPosition();
+    MOZ_ASSERT(pos.IsLengthPercent());
+    return gfx::Coord(pos.AsLengthPercent().ResolveToCSSPixels(*aBasis));
+  }
+  return gfx::Coord(AsByCoordinate().ResolveToCSSPixels(*aBasis));
+}
+
+template <>
+inline gfx::Point
+StyleControlPoint<StyleShapePosition<StyleCSSFloat>, StyleCSSFloat>::ToGfxPoint(
+    const gfx::Point aStatePos, const gfx::Point aEndPoint,
+    const CSSSize* aBasis) const {
+  if (IsAbsolute()) {
+    auto& pos = AsAbsolute();
+    return pos.ToGfxPoint();
+  }
+
+  // Else
+  auto& point = AsRelative();
+  auto cp = point.coord.ToGfxPoint();
+  if (point.reference == StyleControlReference::Start) {
+    return cp + aStatePos;
+  } else if (point.reference == StyleControlReference::End) {
+    return cp + aEndPoint;
+  } else {
+    return cp;
+  }
+}
+
+template <>
+inline gfx::Point
+StyleControlPoint<StyleShapePosition<LengthPercentage>,
+                  LengthPercentage>::ToGfxPoint(const gfx::Point aStatePos,
+                                                const gfx::Point aEndPoint,
+                                                const CSSSize* aBasis) const {
+  MOZ_ASSERT(aBasis);
+  if (IsAbsolute()) {
+    auto& pos = AsAbsolute();
+    return pos.ToGfxPoint(aBasis);
+  }
+
+  // Else
+  auto& point = AsRelative();
+  auto cp = point.coord.ToGfxPoint(aBasis);
+  if (point.reference == StyleControlReference::Start) {
+    return cp + aStatePos;
+  } else if (point.reference == StyleControlReference::End) {
+    return cp + aEndPoint;
+  } else {
+    return cp;
+  }
+}
+
+template <>
+inline gfx::Point StyleArcRadii<StyleCSSFloat>::ToGfxPoint(
+    const CSSSize* aBasis) const {
+  return ry.IsSome() ? gfx::Point(rx, ry.AsSome()) : gfx::Point(rx, rx);
+}
+
+template <>
+inline gfx::Point StyleArcRadii<LengthPercentage>::ToGfxPoint(
+    const CSSSize* aBasis) const {
+  MOZ_ASSERT(aBasis);
+  if (ry.IsSome()) {
+    return gfx::Point(rx.ResolveToCSSPixels(aBasis->Width()),
+                      ry.AsSome().ResolveToCSSPixels(aBasis->Height()));
+  }
+
+  // Else percentages are resolved against the direction-agnostic size
+  // of the reference box for both radiuses.
+  // https://drafts.csswg.org/css-shapes-1/#typedef-shape-arc-command
+  const auto directionAgnostic = SVGContentUtils::ComputeNormalizedHypotenuse(
+      aBasis->Width(), aBasis->Height());
+  const auto radius = rx.ResolveToCSSPixels(directionAgnostic);
+  return gfx::Point(radius, radius);
+}
+
+inline StylePhysicalSide ToStylePhysicalSide(mozilla::Side aSide) {
+  // TODO(dshin): Should look into merging these two types...
+  static_assert(static_cast<uint8_t>(mozilla::Side::eSideLeft) ==
+                    static_cast<uint8_t>(StylePhysicalSide::Left),
+                "Left side doesn't match");
+  static_assert(static_cast<uint8_t>(mozilla::Side::eSideRight) ==
+                    static_cast<uint8_t>(StylePhysicalSide::Right),
+                "Left side doesn't match");
+  static_assert(static_cast<uint8_t>(mozilla::Side::eSideTop) ==
+                    static_cast<uint8_t>(StylePhysicalSide::Top),
+                "Left side doesn't match");
+  static_assert(static_cast<uint8_t>(mozilla::Side::eSideBottom) ==
+                    static_cast<uint8_t>(StylePhysicalSide::Bottom),
+                "Left side doesn't match");
+  return static_cast<StylePhysicalSide>(static_cast<uint8_t>(aSide));
+}
+
+inline StylePhysicalAxis ToStylePhysicalAxis(StylePhysicalSide aSide) {
+  return aSide == StylePhysicalSide::Top || aSide == StylePhysicalSide::Bottom
+             ? StylePhysicalAxis::Vertical
+             : StylePhysicalAxis::Horizontal;
+}
+
+inline StylePhysicalAxis ToStylePhysicalAxis(mozilla::Side aSide) {
+  return ToStylePhysicalAxis(ToStylePhysicalSide(aSide));
+}
+
+inline mozilla::Side ToSide(StylePhysicalSide aSide) {
+  return static_cast<mozilla::Side>(static_cast<uint8_t>(aSide));
+}
+
+#define DEFINE_LENGTH_PERCENTAGE_CTOR(ty_)                               \
+  template <>                                                            \
+  inline Style##ty_::StyleGeneric##ty_(const StyleLengthPercentage& aLP) \
+      : tag{Tag::LengthPercentage} {                                     \
+    ::new (&length_percentage._0)(StyleLengthPercentage)(aLP);           \
+  }
+
+DEFINE_LENGTH_PERCENTAGE_CTOR(Inset)
+DEFINE_LENGTH_PERCENTAGE_CTOR(Margin)
+DEFINE_LENGTH_PERCENTAGE_CTOR(Size)
+DEFINE_LENGTH_PERCENTAGE_CTOR(MaxSize)
+
+inline bool StylePositionArea::IsNone() const {
+  return first == StylePositionAreaKeyword::None;
 }
 
 }  // namespace mozilla

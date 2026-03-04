@@ -17,10 +17,10 @@ import ProjectSearch from "./ProjectSearch";
 import Tracer from "./Tracer";
 const AppErrorBoundary = require("resource://devtools/client/shared/components/AppErrorBoundary.js");
 
-const {
-  TabPanel,
-  Tabs,
-} = require("resource://devtools/client/shared/components/tabs/Tabs.js");
+const { TabPanel, Tabs } = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/components/tabs/Tabs.mjs",
+  { global: "current" }
+);
 
 // Note that the following list should follow the same order as displayed
 const tabs = [
@@ -43,7 +43,6 @@ class PrimaryPanes extends Component {
 
   static get propTypes() {
     return {
-      projectRootName: PropTypes.string.isRequired,
       selectedTab: PropTypes.oneOf(tabs).isRequired,
       setPrimaryPaneTab: PropTypes.func.isRequired,
       setActiveSearch: PropTypes.func.isRequired,

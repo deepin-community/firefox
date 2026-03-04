@@ -7,7 +7,7 @@
 use std::cell::RefCell;
 
 use neqo_common::qerror;
-use neqo_crypto::{hkdf, Aead, TLS_AES_128_GCM_SHA256, TLS_VERSION_1_3};
+use neqo_crypto::{hkdf, Aead, AeadTrait as _, TLS_AES_128_GCM_SHA256, TLS_VERSION_1_3};
 
 use crate::{version::Version, Error, Res};
 
@@ -16,15 +16,16 @@ fn make_aead(version: Version) -> Aead {
     #[cfg(debug_assertions)]
     ::neqo_crypto::assert_initialized();
 
-    let secret = hkdf::import_key(TLS_VERSION_1_3, version.retry_secret()).unwrap();
+    let secret = hkdf::import_key(TLS_VERSION_1_3, version.retry_secret()).expect("can import key");
     Aead::new(
         TLS_VERSION_1_3,
         TLS_AES_128_GCM_SHA256,
         &secret,
         version.label_prefix(),
     )
-    .unwrap()
+    .expect("can create AEAD")
 }
+#[cfg(feature = "draft-29")]
 thread_local!(static RETRY_AEAD_29: RefCell<Aead> = RefCell::new(make_aead(Version::Draft29)));
 thread_local!(static RETRY_AEAD_V1: RefCell<Aead> = RefCell::new(make_aead(Version::Version1)));
 thread_local!(static RETRY_AEAD_V2: RefCell<Aead> = RefCell::new(make_aead(Version::Version2)));
@@ -37,12 +38,13 @@ where
     match version {
         Version::Version2 => &RETRY_AEAD_V2,
         Version::Version1 => &RETRY_AEAD_V1,
-        Version::Draft29 | Version::Draft30 | Version::Draft31 | Version::Draft32 => &RETRY_AEAD_29,
+        #[cfg(feature = "draft-29")]
+        Version::Draft29 => &RETRY_AEAD_29,
     }
     .try_with(|aead| f(&aead.borrow()))
     .map_err(|e| {
-        qerror!("Unable to access Retry AEAD: {:?}", e);
-        Error::InternalError
+        qerror!("Unable to access Retry AEAD: {e:?}");
+        Error::Internal
     })?
 }
 

@@ -13,7 +13,7 @@ webconsole-commands-usage-block =
     
     Začne blokovat síťové požadavky
     
-      Přijímá pouze jeden parametr URL_STRING, řetězec neuvedený v uvozovkách, který bude použit k zablokování všech požadavků, jejichž URL adresa obsahuje tento řetězec.
+      Přijímá pouze jeden parametr URL_STRING, řetězec neuvedený v uvozovkách, který bude použit k zablokování všech požadavků, jejichž adresa URL obsahuje tento řetězec.
       Chcete-li toto blokování zrušit, použijte příkaz :unblock nebo postranní panel blokování požadavků monitoru síťových požadavků.
 # Usage string for :unblock command
 webconsole-commands-usage-unblock =
@@ -22,13 +22,3 @@ webconsole-commands-usage-unblock =
     Ukončí blokování síťových požadavků
     
       Přijímá pouze jeden parametr, přesně stejný řetězec, který byl předtím předán do příkazu :block.
-# Usage string for :trace command
-webconsole-commands-usage-trace =
-    :trace
-    
-    Přepne trasování JavaScriptu
-    
-      Podporuje následující parametry:
-        --logMethod, který je potřeba nastavit na 'console' pro logování do webové konzole (výchozí) nebo 'stdout' pro logování do standardního výstupu,
-        --prefix Volitelný řetězec, který bude zaznamenán před všechny protokoly trasování,
-        --help nebo --usage pro zobrazení této zprávy.

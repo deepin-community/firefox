@@ -3,32 +3,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/EnumeratedArray.h"
 #include "mozilla/EnumeratedRange.h"
 #include "mozilla/FloatingPoint.h"
 #include "mozilla/MacroArgs.h"
 #include "mozilla/MacroForEach.h"
-
+#include "mozilla/dom/DocumentFragmentBinding.h"
 #include "nsAtom.h"
+#include "nsComponentManagerUtils.h"
+#include "nsContentCreatorFunctions.h"
 #include "nsGkAtoms.h"
+#include "nsIContent.h"
+#include "nsImportModule.h"
+#include "nsPrintfCString.h"
+#include "nsTextNode.h"
+#include "prtime.h"
 #include "txExecutionState.h"
 #include "txExpr.h"
-#include "txIXPathContext.h"
 #include "txIEXSLTFunctions.h"
+#include "txIXPathContext.h"
+#include "txMozillaXMLOutput.h"
 #include "txNodeSet.h"
 #include "txOutputFormat.h"
 #include "txRtfHandler.h"
 #include "txXPathTreeWalker.h"
-#include "nsImportModule.h"
-#include "nsPrintfCString.h"
-#include "nsComponentManagerUtils.h"
-#include "nsContentCreatorFunctions.h"
-#include "nsIContent.h"
-#include "txMozillaXMLOutput.h"
-#include "nsTextNode.h"
-#include "mozilla/dom/DocumentFragmentBinding.h"
-#include "prtime.h"
 #include "xpcprivate.h"
 
 using namespace mozilla;
@@ -73,11 +71,7 @@ static nsresult convertRtfToNode(txIEvalContext* aContext,
   NS_ENSURE_SUCCESS(rv, rv);
 
   // The txResultTreeFragment will own this.
-  const txXPathNode* node =
-      txXPathNativeNode::createXPathNode(domFragment, true);
-  NS_ENSURE_TRUE(node, NS_ERROR_OUT_OF_MEMORY);
-
-  aRtf->setNode(node);
+  aRtf->setNode(new txXPathNode(domFragment));
 
   return NS_OK;
 }
@@ -95,8 +89,7 @@ static nsresult createTextNode(txIEvalContext* aContext, nsString& aValue,
   nsresult rv = text->SetText(aValue, false);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  *aResult = txXPathNativeNode::createXPathNode(text, true);
-  NS_ENSURE_TRUE(*aResult, NS_ERROR_OUT_OF_MEMORY);
+  *aResult = new txXPathNode(text);
 
   return NS_OK;
 }
@@ -126,11 +119,10 @@ static nsresult createAndAddToResult(nsAtom* aName, const nsAString& aValue,
     return error.StealNSResult();
   }
 
-  UniquePtr<txXPathNode> xpathNode(
-      txXPathNativeNode::createXPathNode(elem, true));
+  Maybe<txXPathNode> xpathNode(txXPathNativeNode::createXPathNode(elem));
   NS_ENSURE_TRUE(xpathNode, NS_ERROR_OUT_OF_MEMORY);
 
-  aResultSet->append(*xpathNode);
+  aResultSet->append(xpathNode.extract());
 
   return NS_OK;
 }
@@ -705,8 +697,7 @@ nsresult txEXSLTRegExFunctionCall::evaluate(txIEvalContext* aContext,
       UniquePtr<txXPathNode> node;
       for (nsIContent* result = docFrag->GetFirstChild(); result;
            result = result->GetNextSibling()) {
-        node = WrapUnique(txXPathNativeNode::createXPathNode(result, true));
-        rv = resultSet->add(*node);
+        rv = resultSet->add(txXPathNode(result));
         NS_ENSURE_SUCCESS(rv, rv);
       }
 

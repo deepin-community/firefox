@@ -38,6 +38,7 @@ struct CompilationStencil;
 struct CompilationGCOutput;
 struct CompilationInput;
 struct PreallocatedCompilationGCOutput;
+struct InitialStencilAndDelazifications;
 }  // namespace frontend
 }  // namespace js
 
@@ -47,7 +48,7 @@ struct PreallocatedCompilationGCOutput;
 
 namespace JS {
 
-using Stencil = js::frontend::CompilationStencil;
+using Stencil = js::frontend::InitialStencilAndDelazifications;
 using FrontendContext = js::FrontendContext;
 
 // Temporary storage used during instantiating Stencil.
@@ -193,7 +194,20 @@ extern JS_PUBLIC_API JSObject* InstantiateModuleStencil(
 namespace JS {
 
 // Serialize the Stencil into the transcode buffer.
+// This fails if the stencil contains asm.js.
+//
+// If the `buffer` isn't empty, the start of the `buffer` should meet
+// JS::IsTranscodingBytecodeAligned, and the length should meet
+// JS::IsTranscodingBytecodeOffsetAligned.
+//
+// NOTE: As long as IsTranscodingBytecodeOffsetAligned is met, that means
+//       there's JS::BytecodeOffsetAlignment+extra bytes in the buffer,
+//       IsTranscodingBytecodeAligned should be guaranteed to meet by
+//       malloc, used by MallocAllocPolicy in mozilla::Vector.
 extern JS_PUBLIC_API TranscodeResult EncodeStencil(JSContext* cx,
+                                                   Stencil* stencil,
+                                                   TranscodeBuffer& buffer);
+extern JS_PUBLIC_API TranscodeResult EncodeStencil(JS::FrontendContext* fc,
                                                    Stencil* stencil,
                                                    TranscodeBuffer& buffer);
 
@@ -205,29 +219,54 @@ extern JS_PUBLIC_API TranscodeResult
 DecodeStencil(JS::FrontendContext* fc, const ReadOnlyDecodeOptions& options,
               const TranscodeRange& range, Stencil** stencilOut);
 
-// Register an encoder on its script source, such that all functions can be
-// encoded as they are delazified.
-//
-// If the incremental encoding is already started for given stencil's script
-// source, alreadyStarted is set to true and returns true.
-// alreadyStarted is set to false otherwise.
-extern JS_PUBLIC_API bool StartIncrementalEncoding(JSContext* cx,
-                                                   RefPtr<Stencil>&& stencil,
-                                                   bool& alreadyStarted);
-
-}  // namespace JS
-
 // ************************************************************************
-//   Copy
+//   Collect delazifications
 // ************************************************************************
 
-namespace JS {
-
-// Duplicate the stencil object.
+// Start collecting delazifications for given script or module's source object.
 //
-// This is a temporary workaround until JS::StartIncrementalEncoding gets
-// refactored not to take the ownership.
-extern JS_PUBLIC_API Stencil* DuplicateStencil(JSContext* cx, Stencil* stencil);
+// If the source object is already collecting delazifications, alreadyStarted is
+// set to true and returns true. alreadyStarted is set to false otherwise.
+extern JS_PUBLIC_API bool StartCollectingDelazifications(
+    JSContext* cx, JS::Handle<JSScript*> script, Stencil* stencil,
+    bool& alreadyStarted);
+
+extern JS_PUBLIC_API bool StartCollectingDelazifications(
+    JSContext* cx, JS::Handle<JSObject*> module, Stencil* stencil,
+    bool& alreadyStarted);
+
+// Finish collecting delazifications and retrieve the result as a JS::Stencil
+// that reflects the delazification from the execution.
+//
+// The returned stencil is the same thing as what is passed to
+// JS::StartCollectingDelazifications.
+extern JS_PUBLIC_API bool FinishCollectingDelazifications(
+    JSContext* cx, Handle<JSScript*> script, JS::Stencil** stencilOut);
+
+// Similar to |JS::FinishCollectingDelazifications|, but receives module obect.
+extern JS_PUBLIC_API bool FinishCollectingDelazifications(
+    JSContext* cx, Handle<JSObject*> module, JS::Stencil** stencilOut);
+
+extern JS_PUBLIC_API void AbortCollectingDelazifications(
+    Handle<JSScript*> script);
+extern JS_PUBLIC_API void AbortCollectingDelazifications(
+    Handle<JSObject*> module);
+
+// ************************************************************************
+//   Cache
+// ************************************************************************
+
+// Returns true if the stencil is compatible with caching.
+// This returns false if the stencil contains asm.js.
+extern JS_PUBLIC_API bool IsStencilCacheable(JS::Stencil* stencil);
+
+// ************************************************************************
+//   Script Source
+// ************************************************************************
+
+// Returns the uncompressed source text length of given stencil.
+// Returns 0 if the source is discarded or somehow not accessible.
+extern JS_PUBLIC_API size_t GetScriptSourceLength(JS::Stencil* stencil);
 
 }  // namespace JS
 

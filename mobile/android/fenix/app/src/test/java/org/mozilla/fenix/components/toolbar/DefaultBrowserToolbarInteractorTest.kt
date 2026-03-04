@@ -83,20 +83,6 @@ class DefaultBrowserToolbarInteractorTest {
     }
 
     @Test
-    fun onEraseButtonClicked() {
-        interactor.onEraseButtonClicked()
-
-        verify { browserToolbarController.handleEraseButtonClick() }
-    }
-
-    @Test
-    fun onShoppingCfrActionClicked() {
-        interactor.onShoppingCfrActionClicked()
-
-        verify { browserToolbarController.handleShoppingCfrActionClick() }
-    }
-
-    @Test
     fun onTranslationsButtonClicked() {
         interactor.onTranslationsButtonClicked()
 
@@ -124,5 +110,12 @@ class DefaultBrowserToolbarInteractorTest {
         interactor.onMenuButtonClicked(accessPoint)
 
         verify { browserToolbarController.handleMenuButtonClicked(accessPoint) }
+    }
+
+    @Test
+    fun onShareButtonClicked() {
+        interactor.onShareActionClicked()
+
+        verify { browserToolbarController.onShareActionClicked() }
     }
 }

@@ -36,6 +36,9 @@ certificate-viewer-key-size = Kulcsméret
 certificate-viewer-inc-locality = Bejegyzés helyszíne
 certificate-viewer-locality = Helység
 certificate-viewer-location = Hely
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Naplónév
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Naplóazonosító
 certificate-viewer-method = Módszer
 certificate-viewer-modulus = Modulus
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Hitelesítői információk (AIA)
 certificate-viewer-certificate-policies = Tanúsítvány házirendek
 certificate-viewer-embedded-scts = Beágyazott SCT-k
 certificate-viewer-crl-endpoints = CRL végpontok
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Letöltés
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (tanúsítvány)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (lánc)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Ez a kiegészítő kritikusként lett megjelölve, ami azt jelenti, hogy a klienseknek el kell utasítaniuk a tanúsítványt, ha nem értik azt.
@@ -112,6 +113,8 @@ certificate-viewer-export = Exportálás
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (ismeretlen)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = tanúsítvány
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Gaitu helbideen osatze automatikoa
 policy-AutofillCreditCardEnabled = Gaitu ordainketa metodoen osatze automatikoa
 policy-AutoLaunchProtocolsFromOrigins = Definitu erabiltzaileari galdetu gabe jatorri zehatzetatik erabil daitezkeen kanpoko protokoloen zerrenda.
 policy-BackgroundAppUpdate2 = Gaitu edo desgaitu atzeko planoko eguneraketak.
+policy-Backup = Desgaitu profileko datuen babeskopia edo berrezartzea.
 policy-BlockAboutAddons = Blokeatu gehigarrien kudeatzailerako sarbidea (about:addons).
 policy-BlockAboutConfig = Blokeatu about:config orrirako sarbidea.
 policy-BlockAboutProfiles = Blokeatu about:profiles orrirako sarbidea.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Desgaitu webguneak { -pocket-brand-name } zerbitzura gor
 policy-DisablePrivateBrowsing = Desgaitu nabigatze pribatua.
 policy-DisableProfileImport = Desgaitu beste nabigatzaile batetik datuak inportatzeko menu-komandoa.
 policy-DisableProfileRefresh = Desgaitu 'Biziberritu { -brand-short-name }' botoia about:support orrian.
+policy-DisableRemoteImprovements = Eragotzi eguneraketen artean { -brand-short-name }(e)k errendimendu-, egonkortasun- eta eginbide-aldaketak aplikatzea.
 policy-DisableSafeMode = Desgaitu modu seguruan berrabiarazteko eginbidea. Oharra: modu segurura sartzeko shift tekla sakatzea Windowsen desgai daiteke soilik, talde-gidalerroak erabilita.
 policy-DisableSecurityBypass = Eragotzi erabiltzaileak zenbait segurtasun-abisu saihestea.
 policy-DisableSetAsDesktopBackground = Desgaitu irudientzat 'Jarri idazmahaiaren atzeko planoan' menu-komandoa.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Kudeatu hedapenen instalazioko arlo guztiak.
 policy-ExtensionUpdate = Gaitu edo desgaitu hedapenen eguneraketa automatikoa.
 policy-FirefoxHome2 = Konfiguratu { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Konfiguratu { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Konfiguratu AA sortzaileko eginbideak.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Hitz bakarreko sarrerak helbide-barran idaztean, behartu intranet gunerako nabigazio zuzena bilaketa egin ordez.
 policy-Handlers = Konfiguratu aplikazio-maneiatzaile lehenetsiak.
 policy-HardwareAcceleration = Ez badago ezarrita, hardware-azelerazioa desgaituko da.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Leheneratu SameSite po
 ##
 
 policy-LocalFileLinks = Baimendu gune zehatzei fitxategi lokalen loturak egitea.
+policy-LocalNetworkAccess = Gaitu edo desgaitu sare lokaleko sarbidearen egiaztapenak.
 policy-ManagedBookmarks = Administratzaileak kudeatutako eta erabiltzaileak aldatu ezin duen laster-marken zerrenda konfiguratzen du.
 policy-ManualAppUpdateOnly = Baimendu eskuzko eguneraketak soilik eta ez jakinarazi erabiltzailea eguneratzeei buruz.
 policy-PrimaryPassword = Behartu edo eragotzi pasahitz nagusia erabiltzea.
@@ -117,7 +121,8 @@ policy-PostQuantumKeyAgreementEnabled = Gaitu TLSrako post-quantum gako-hitzarme
 policy-PDFjs = Desgaitu edo konfiguratu PDF.js, { -brand-short-name }(r)en integratutako PDF ikustailea.
 policy-Permissions2 = Konfiguratu kamera, mikrofonoa, kokapena, jakinarazpenak eta erreprodukzio automatikoa erabiltzeko baimenak.
 policy-PictureInPicture = Gaitu edo desgaitu bideo beste leiho batean ikusteko eginbidea.
-policy-PopupBlocking = Baimendu zenbait webguneri lehenespenez popup leihoak bistaratzea.
+policy-PopupBlocking2 = Baimendu zenbait webguneri laster-leihoak bistaratzea eta hirugarrenen markoengandik birbideratuak izatea.
+policy-PopupBlocking = Baimendu zenbait webguneri lehenespenez laster-leihoak bistaratzea.
 policy-Preferences = Ezarri eta blokeatu hobespen-azpimultzo baten balioak.
 policy-PrivateBrowsingModeAvailability = Ezarri nabigatze pribatuko moduaren erabilgarritasuna.
 policy-PromptForDownloadLocation = Galdetu non gorde deskargatutako fitxategiak.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Gaitu edo desgaitu bilaketa-iradokizunak.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Gehitu edo ezabatu PKCS #11 moduluak.
 policy-ShowHomeButton = Erakutsi hasiera-orriko botoia tresna-barran.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Ez bistaratu erabiltzeko baldintzak eta pribatutasun-oharra abioan. Adierazten duzu nabigatzaile honetarako sarbidea ematen diezun norbanakoen izenean erabiltzeko baldintzak onartzeko autoritatea duzula eta hauek onartzen dituzula.
 policy-SSLVersionMax = Ezarri SSL bertsio maximoa.
 policy-SSLVersionMin = Ezarri SSL bertsio minimoa.
 policy-StartDownloadsInTempDirectory = Behartu deskargak aldi baterako kokaleku lokalean hastea deskarga-direktorio lehenetsiaren ordez.
@@ -137,6 +144,9 @@ policy-SupportMenu = Gehitu euskarrirako menu-elementu pertsonalizatua laguntzar
 policy-TranslateEnabled = Gaitu edo desgaitu web orrien itzulpena.
 policy-UserMessaging = Ez erakutsi zenbait mezu erabiltzaileari.
 policy-UseSystemPrintDialog = Inprimatu sistemaren inprimatzeko elkarrizketa-koadroa erabiliz…
+policy-VisualSearchEnabled = Gaitu edo desgaitu bilaketa bisuala.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokeatu zenbait webgune bisitatzea. Irakurri dokumentazioa formatuaren gaineko xehetasun gehiagorako.
 policy-Windows10SSO = Baimendu Windows saio-hasiera bakarra (SSO) Microsoft-, laneko eta eskolako kontuentzat.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Baimendu saio-hasiera bakarra Microsoft Entra kontuetarako.

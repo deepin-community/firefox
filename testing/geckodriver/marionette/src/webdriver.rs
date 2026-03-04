@@ -14,6 +14,8 @@ pub struct Url {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Locator {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub element: Option<String>,
     pub using: Selector,
     pub value: String,
 }
@@ -172,6 +174,7 @@ pub enum AuthenticatorTransport {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct AuthenticatorParameters {
     pub protocol: WebAuthnProtocol,
     pub transport: AuthenticatorTransport,
@@ -182,6 +185,7 @@ pub struct AuthenticatorParameters {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct CredentialParameters {
     pub credential_id: String,
     pub is_resident_credential: bool,
@@ -192,8 +196,15 @@ pub struct CredentialParameters {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct UserVerificationParameters {
     pub is_user_verified: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct GlobalPrivacyControlParameters {
+    pub gpc: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -251,18 +262,6 @@ pub enum Command {
     FindElement(Locator),
     #[serde(rename = "WebDriver:FindElements")]
     FindElements(Locator),
-    #[serde(rename = "WebDriver:FindElement")]
-    FindElementElement {
-        element: String,
-        using: Selector,
-        value: String,
-    },
-    #[serde(rename = "WebDriver:FindElements")]
-    FindElementElements {
-        element: String,
-        using: Selector,
-        value: String,
-    },
     #[serde(rename = "WebDriver:FindElementFromShadowRoot")]
     FindShadowRootElement {
         #[serde(rename = "shadowRoot")]
@@ -360,11 +359,11 @@ pub enum Command {
     #[serde(rename = "WebDriver:SwitchToWindow")]
     SwitchToWindow(Window),
     #[serde(rename = "WebDriver:TakeScreenshot")]
-    TakeElementScreenshot(ScreenshotOptions),
-    #[serde(rename = "WebDriver:TakeScreenshot")]
-    TakeFullScreenshot(ScreenshotOptions),
-    #[serde(rename = "WebDriver:TakeScreenshot")]
     TakeScreenshot(ScreenshotOptions),
+    #[serde(rename = "GPC:GetGlobalPrivacyControl")]
+    GPCGetGlobalPrivacyControl,
+    #[serde(rename = "GPC:SetGlobalPrivacyControl")]
+    GPCSetGlobalPrivacyControl(GlobalPrivacyControlParameters),
     #[serde(rename = "WebAuthn:AddVirtualAuthenticator")]
     WebAuthnAddVirtualAuthenticator(AuthenticatorParameters),
     #[serde(rename = "WebAuthn:RemoveVirtualAuthenticator")]
@@ -436,6 +435,7 @@ mod tests {
             "value": "link text",
         });
         let data = Locator {
+            element: None,
             using: Selector::PartialLinkText,
             value: "link text".into(),
         };
@@ -475,6 +475,7 @@ mod tests {
     #[test]
     fn test_command_with_params() {
         let locator = Locator {
+            element: None,
             using: Selector::Css,
             value: "value".into(),
         };
@@ -533,11 +534,11 @@ mod tests {
     #[test]
     fn test_json_command_as_struct() {
         assert_ser(
-            &Command::FindElementElement {
-                element: "foo".into(),
+            &Command::FindElement(Locator {
+                element: Some("foo".into()),
                 using: Selector::XPath,
                 value: "bar".into(),
-            },
+            }),
             json!({"WebDriver:FindElement": {"element": "foo", "using": "xpath", "value": "bar" }}),
         );
     }

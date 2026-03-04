@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = საიტებისთვის „არ მითვალთვალო“ მოთხოვნის გაგზავნა
-do-not-track-description2 =
-    .label = გაეგზავნოს ვებსაიტებს მოთხოვნად „არ მითვალთვალო“
-    .accesskey = ზ
+do-not-track-removal = აღარაა მხარდაჭერილი მოთხოვნა „არ მითვალთვალო“
 do-not-track-learn-more = ვრცლად
 do-not-track-option-default-content-blocking-known =
     .label = მხოლოდ მაშინ, როცა { -brand-short-name } ზღუდავს ცნობილ მეთვალყურეებს
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = ეცნობოს ვებსაიტებს, რომ არ მსურს გაყიდონ ან გააზიარონ ჩემი მონაცემები
     .accesskey = ყ
+non-technical-privacy-group =
+    .label = საიტის პირადულობის პარამეტრები
 non-technical-privacy-header = საიტის პირადულობის პარამეტრები
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -32,6 +34,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = პარამეტრებში ძიება
 managed-notice = თქვენი ბრაუზერი იმართება დაწესებულების მიერ.
+managed-notice-info-icon =
+    .alt = ცნობა
 category-list =
     .aria-label = კატეგორიები
 pane-general-title = მთავარი
@@ -49,6 +53,9 @@ category-privacy =
 pane-sync-title3 = სინქრონიზაცია
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+pane-ai-controls-title = AI-სამართავი
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
 pane-experimental-title = { -brand-short-name } ცდები
 category-experimental =
     .tooltiptext = { -brand-short-name } ცდები
@@ -58,6 +65,8 @@ pane-experimental-description2 = გაფართოებული პარ�
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description4 = მოსინჯეთ ჩვენი საცდელი შესაძლებლობები! ჯერ კიდევ დამუშავებისა და დახვეწის საფეხურზეა, რის შედეგადაც { -brand-short-name } შეიძლება განსხვავებულად მოქმედებდეს. ჩვენ მხოლოდ იმ შემთხვევაში გვეცნობება თქვენ მიერ გამოყენებული შესაძლებლობების შესახებ, თუ ჩართული გაქვთ <a data-l10n-name="data-collection">ტექნიკური და ურთიერთქმედების მონაცემების</a> გაგზავნა.
+pane-experimental-description3 = მოსინჯეთ ჩვენი საცდელი შესაძლებლობები! ჯერ კიდევ იხვეწება და ვითარდება, ამიტომ შეიძლება გავლენა ჰქონდეს, თუ როგორ იმუშავებს { -brand-short-name }.
 pane-experimental-reset =
     .label = ნაგულისხმევის აღდგენა
     .accesskey = უ
@@ -67,6 +76,8 @@ focus-search =
     .key = f
 close-button =
     .aria-label = დახურვა
+do-not-track-removal2 =
+    .label = აღარაა მხარდაჭერილი მოთხოვნა „არ მითვალთვალო“
 
 ## Browser Restart Dialog
 
@@ -108,6 +119,10 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = გაფართოების ჩასართავად, გადადით <img data-l10n-name="addons-icon"/> დამატებებზე <img data-l10n-name="menu-icon"/> მენიუდან.
+extension-controlled-enable-2 = ამ გაფართოების ხელახლა ჩასართავად იხილეთ <a data-l10n-name="addons-link">გაფართოებები და გაფორმებები</a>.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name } მართავს თქვენი საწყისი გვერდის ზოგიერთ პარამეტრს.
 
 ## Preferences UI Search Results
 
@@ -122,6 +137,10 @@ startup-header = ჩართვისას
 always-check-default =
     .label = ყოველთვის შემოწმდეს, არის თუ არა { -brand-short-name } ნაგულისხმევი ბრაუზერი
     .accesskey = ვ
+is-default-browser =
+    .message = ამჟამად { -brand-short-name } ნაგულისხმევი ბრაუზერია
+is-not-default-browser =
+    .message = { -brand-short-name } ნაგულისხმევი ბრაუზერი არაა
 is-default = ამჟამად { -brand-short-name } ნაგულისხმევი ბრაუზერია
 is-not-default = { -brand-short-name } ნაგულისხმევი ბრაუზერი არაა
 set-as-my-default-browser =
@@ -130,19 +149,63 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = წინა ფანჯრებისა და ჩანართების გახსნა
     .accesskey = გ
+startup-windows-launch-on-login-profile-disabled =
+    .message = ამ პარამეტრის ჩასართავად „{ profile-manager-use-selected.label }“ მონიშნეთ „მოხმარებლის პროფილის არჩევის“ ფანჯარაში.
 windows-launch-on-login =
     .label = გაეშვას { -brand-short-name } თავისით კომპიუტერის ჩართვისთანავე
     .accesskey = ე
 windows-launch-on-login-disabled = ეს შესაძლებლობა გათიშულია Windows-ში. შესაცვლელად იხილეთ <a data-l10n-name="startup-link">Startup Apps</a> სისტემის პარამეტრებში.
+windows-launch-on-login-profile-disabled = ამ პარამეტრის ჩასართავად „{ profile-manager-use-selected.label }“ მონიშნეთ „მოხმარებლის პროფილის არჩევის“ ფანჯარაში.
 startup-restore-warn-on-quit =
     .label = გაფრთხილება ბრაუზერის დახურვისას
 disable-extension =
     .label = გაფართოების ამორთვა
+preferences-data-migration-group =
+    .label = ბრაუზერის მონაცემების გადმოტანა
+    .description = გადმოიტანეთ თქვენი სანიშნები, პაროლები, ისტორია, გაფართოებები და შევსებული ველები სხვა ბრაუზერიდან.
 preferences-data-migration-header = ბრაუზერის მონაცემების გადმოტანა
 preferences-data-migration-description = გადმოიტანეთ სანიშნები, ისტორია, შევსებული ველების მონაცემები და პირდაპირ გამოიყენებს { -brand-short-name }.
 preferences-data-migration-button =
     .label = მონაცემთა გადმოტანა
     .accesskey = ტ
+preferences-profiles-group-header =
+    .heading = პროფილები
+preferences-profiles-subpane-description =
+    .description = თითოეულ პროფილს დათვალიერების განცალკევებული მონაცემები და პარამეტრები აქვს, მათ შორის ისტორია, პაროლები და სხვ.
+preferences-profiles-section-header =
+    .label = პროფილები
+    .description = თითოეულ პროფილს დათვალიერების განცალკევებული მონაცემები და პარამეტრები აქვს, მათ შორის ისტორია, პაროლები და სხვ.
+preferences-profiles-header = პროფილები
+preferences-manage-profiles-description = თითოეულ პროფილს დათვალიერების განცალკევებული მონაცემები და პარამეტრები აქვს, მათ შორის ისტორია, პაროლები და სხვ.
+preferences-manage-profiles-learn-more = ვრცლად
+preferences-manage-profiles-button =
+    .label = პროფილების მართვა
+preferences-profiles-settings-button =
+    .label = პარამეტრები
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = არსებული პროფილის ასლი
+    .description = ახალი პროფილი გადაიტანს თქვენი პარამეტრების, დამატებების, ისტორიისა და შენახული მონაცემების, მათ შორის სანიშნებისა და პაროლების ასლებს — ოღონდ არა თქვენი ანგარიშისა თუ დასინქრონების მონაცემებს.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = პროფილი ასლისთვის
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = პროფილის არჩევა
+preferences-copy-profile-button = ასლი
+tabs-group-header2 =
+    .label = ჩანართები
+tabs-opening-heading =
+    .label = გახსნა
+tabs-interaction-heading =
+    .label = ურთიერთქმედება
+tabs-containers-heading =
+    .label = სათავსები
+tabs-closing-heading =
+    .label = იხურება
 tabs-group-header = ჩანართები
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab წრიულად გადართვა ჩანართებზე ბოლო გამოყენების რიგითობით.
@@ -150,6 +213,19 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = ბმულების, ახალი ფანჯრების ნაცვლად, ახალ ჩანართებში გახსნა
     .accesskey = ჯ
+open-external-link-next-to-active-tab =
+    .label = გაიხსნას ბმულები პროგრამებიდან მოქმედი ჩანართების გვერდით
+ask-on-close-multiple-tabs =
+    .label = შეკითხვა რამდენიმე ჩანართის დახურვისას
+    .accesskey = რ
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = შეკითხვა დახურვისას ღილაკებით { $quitKey }
+    .accesskey = უ
 confirm-on-close-multiple-tabs =
     .label = გაფრთხილება რამდენიმე ჩანართის დახურვისას
     .accesskey = ფ
@@ -178,6 +254,8 @@ browser-containers-settings =
     .label = პარამეტრები…
     .accesskey = პ
 containers-disable-alert-title = გსურთ ყველა სათავსი ჩანართის დახურვა?
+startup-group =
+    .label = ჩართვისას
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -206,12 +284,52 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = სათავსის წაშლა
 containers-remove-cancel-button = სათავსის დატოვება
+settings-tabs-show-image-in-preview =
+    .label = შეთვალიერების ჩვენება ჩანართზე მაჩვენებლის გადატარებისას
+    .accessKey = ტ
+browser-layout-header2 =
+    .label = ბრაუზერის განლაგება
+browser-layout-horizontal-tabs2 =
+    .label = თარაზული ჩანართები
+    .title = ჩანართები ზემოთ
+    .description = ჩანართები ზემოთ
+browser-layout-vertical-tabs2 =
+    .label = შვეული ჩანართები
+    .title = ჩანართები გვერდით ზოლზე
+    .description = ჩანართები გვერდით ზოლზე
+browser-layout-show-sidebar2 =
+    .label = გვერდითი ზოლის ჩვენება
+    .description = სწრაფი წვდომა სანიშნებთან, ჩანართებთან, AI-თანამოსაუბრესთან და სხვ. მთავარი ფანჯრისგან თვალის მოუცილებლად.
+browser-layout-header = ბრაუზერის განლაგება
+browser-layout-horizontal-tabs =
+    .label = თარაზული ჩანართები
+browser-layout-horizontal-tabs-desc = გამოჩენა ბრაუზერის ზემოთ
+browser-layout-vertical-tabs =
+    .label = შვეული ჩანართები
+browser-layout-vertical-tabs-desc = გამოჩენა გვერდით, ცალკე ზოლზე
+browser-layout-show-sidebar =
+    .label = გვერდითი ზოლის ჩვენება
+browser-layout-show-sidebar-desc = სწრაფი წვდომა სანიშნებთან, ჩანართებთან, AI-თანამოსაუბრესთან და სხვ. მთავარი ფანჯრისგან თვალის მოუცილებლად.
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ენა და იერსახე
+appearance-group =
+    .label = საიტის იერსახე
+    .description = ზოგიერთი ვებსაიტი თავის ფერებს უხამებს თქვენი პარამეტრებით მითითებულს. აირჩიეთ ფერები ამგვარი საიტებისთვის.
 preferences-web-appearance-header = საიტის იერსახე
 preferences-web-appearance-description = ზოგიერთი ვებსაიტი თავის ფერებს უხამებს თქვენი პარამეტრებით მითითებულს. აირჩიეთ ფერები ამგვარი საიტებისთვის.
+preferences-web-appearance-choice-auto2 =
+    .label = თვითშერჩევა
+    .title = საიტის ფონი და შიგთავსი შეიცვლება სისტემის პარამეტრებისა და იმის მიხედვით, თუ რა გაფორმებას იყენებს { -brand-short-name }.
+preferences-web-appearance-choice-light2 =
+    .label = ნათელი
+    .title = გამოიყენეთ ნათელი იერსახე ვებსაიტის ფონისა და შიგთავსისთვის.
+preferences-web-appearance-choice-dark2 =
+    .label = მუქი
+    .title = გამოიყენეთ მუქი იერსახე ვებსაიტის ფონისა და შიგთავსისთვის.
+web-appearance-group =
+    .aria-label = საიტის იერსახე
 preferences-web-appearance-choice-auto = თვითშერჩევა
 preferences-web-appearance-choice-light = ნათელი
 preferences-web-appearance-choice-dark = მუქი
@@ -229,19 +347,45 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = თქვენ მიერ შერჩეული ფერები ჩაანაცვლებს საიტის გაფორმებას. <a data-l10n-name="colors-link">ფერების მართვა</a>
+preferences-web-appearance-override-warning3 =
+    .message = სიმკვეთრის თქვენ მიერ შერჩეული პარამეტრები ჩაანაცვლებს საიტის გაფორმებას.
+preferences-web-appearance-link =
+    .label = გააფორმეთ { -brand-short-name } გაფართოებებისა და თემების განყოფილებიდან
+preferences-contrast-control-group =
+    .label = ვებსაიტზე ფერთა გამოკვეთა
+    .description = ვებსაიტებზე განსხვავებული ფერებია წინა და უკანა ფონზე. სიმკვეთრის შენარჩუნებისთვის შეგიძლიათ ყველა საიტზე ერთი და იმავე ფერების მითითება.
+preferences-contrast-control-radio-group =
+    .label = ფერების ჩანაცვლება
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = თქვენ მიერ შერჩეული ფერები ჩაანაცვლებს საიტის გაფორმებას.
+preferences-web-appearance-override-warning = თქვენ მიერ შერჩეული ფერები ჩაანაცვლებს საიტის გაფორმებას. <a data-l10n-name="colors-link">ფერების მართვა</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = გააფორმეთ { -brand-short-name } <a data-l10n-name="themes-link">გაფართოებებისა და თემების</a> განყოფილებიდან
+preferences-contrast-control-header = გამოკვეთილობის მართვა
+preferences-contrast-control-description = საიტებს გააჩნია სხვადასხვა სახის წინა და ფონური ფერები. მომართეთ { -brand-short-name }, რომ ერთი და იგივე ფერები გამოიყენოს საიტებზე კითხვის გასაიოლებლად.
+preferences-contrast-control-use-platform-settings =
+    .label = თვითშერჩევა (სისტემის მიხედვით)
+    .accesskey = ვ
+preferences-contrast-control-off =
+    .label = გამორთ.
+    .accesskey = ო
+preferences-contrast-control-custom =
+    .label = მორგებული
+    .accesskey = რ
 preferences-colors-header = ფერები
 preferences-colors-description = ყოველთვის ჩანაცვლდეს ნაწერის, საიტის ფონისა და ბმულების გაფორმება იმ ნაგულისხმევი ფერებით, რომელთაც { -brand-short-name } იყენებს.
 preferences-colors-manage-button =
     .label = ფერების მართვა…
     .accesskey = ფ
+preferences-fonts-header2 =
+    .label = შრიფტები
+default-font-2 =
+    .label = შრიფტის შერჩევა
+    .accesskey = შ
+default-font-size-2 =
+    .label = ზომა
+    .accesskey = ზ
 preferences-fonts-header = შრიფტები
 default-font = შრიფტის შერჩევა
     .accesskey = შ
@@ -251,6 +395,12 @@ advanced-fonts =
     .label = დამატებით…
     .accesskey = დ
 # Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = ზომა
+preferences-default-zoom-label =
+    .label = ნაგულისხმევი ზომა
+    .accesskey = ზ
+# Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = ზომა
 preferences-default-zoom = ნაგულისხმევი ზომა
     .accesskey = ზ
@@ -259,10 +409,34 @@ preferences-default-zoom = ნაგულისხმევი ზომა
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
-    .label = მხოლოდ ტექსტის ზომა
-    .accesskey = ტ
+    .label = მხოლოდ ნაწერის ზომა
+    .accesskey = ზ
+preferences-text-zoom-override-warning =
+    .message = გაფრთხილება: როცა მონიშნულია „მხოლოდ ნაწერის ზომა“ და მოახლოება ნაგულისხმევად არაა 100%, შეიძლება ზოგიერთ საიტზე დაირღვეს შიგთავსის განლაგება.
 language-header = ენა
 choose-language-description = მიუთითეთ სასურველი ენა გვერდების საჩვენებლად
+website-language-heading =
+    .label = ვებსაიტის ენა
+    .description = ზოგიერთი ვებგვერდი რამდენიმე ენაზეა. მიუთითეთ ენები სასურველი მიმდევრობით.
+website-preferred-language =
+    .label = სასურველი ენები
+website-add-language =
+    .label = ენის დამატება
+website-add-language-button =
+    .aria-label = შერჩეული ენის დამატება
+    .title = შერჩეული ენის დამატება
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = მოცილდეს { $locale }
+    .title = მოცილდეს { $locale }
 choose-button =
     .label = არჩევა…
     .accesskey = ა
@@ -282,17 +456,84 @@ translate-attribution = თარგმანის მომწოდებე�
 translate-exceptions =
     .label = გამონაკლისები…
     .accesskey = ნ
+settings-translations-header =
+    .label = თარგმანები
+    .aria-label = თარგმანები
+    .description = თარგმნეთ გვერდები ან მონიშნული ნაწერი. პირადულობის დასაცავად ნათარგმნი არ ტოვებს თქვენს მოწყობილობას.
+settings-translations-offer-to-translate-label =
+    .label = სრული გვერდის თარგმნის შემოთავაზება
+settings-translations-more-settings-button =
+    .label = თარგმნის სხვა პარამეტრები
+    .description = გამართეთ ენები, ვებსაიტები და კავშირგარეშე თარგმნა.
+settings-translations-subpage-header =
+    .heading = თარგმნის სხვა პარამეტრები
+settings-translations-subpage-speed-up-translation-header =
+    .label = თარგმნის ასწრაფება
+    .description = ჩამოტვირთეთ სრული ენა კავშირგარეშე სწრაფი თარგმნისთვის.
+settings-translations-subpage-automatic-translation-header =
+    .label = ავტომატური თარგმანი
+settings-translations-subpage-always-translate-header =
+    .label = ყოველთვის ითარგმნოს ამ ენებიდან
+settings-translations-subpage-never-translate-header =
+    .label = არასდროს ითარგმნოს ამ ენებიდან
+settings-translations-subpage-never-translate-sites-header =
+    .label = არასდროს ითარგმნოს ეს საიტები
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = საიტის დასამატებლად, გახსენით <img data-l10n-name="translations-icon"/> თარგმნის არე, აირჩიეთ <img data-l10n-name="settings-icon"/> თარგმანის პარამეტრები, შემდეგ კი მიუთითეთ „არასდროს ითარგმნოს ეს საიტი”
+settings-translations-subpage-language-select-option =
+    .label = ენის დამატება
+settings-translations-subpage-language-add-button =
+    .aria-label = ენის დამატება
+    .title = ენის დამატება
+settings-translations-subpage-download-languages-header =
+    .label = ენების ჩამოტვირთვა
+settings-translations-subpage-download-languages-select-option =
+    .label = ენის არჩევა
+settings-translations-subpage-download-languages-button =
+    .aria-label = ენის ჩამოტვირთვა
+    .title = ენის ჩამოტვირთვა
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size }ᲛᲑ)
+    .label = { $language } ({ $size }ᲛᲑ)
+settings-translations-subpage-no-languages-downloaded =
+    .label = ენები არაა ჩამოტვირთული
+settings-translations-subpage-no-languages-added =
+    .label = ენები არაა დამატებული
+settings-translations-subpage-download-progress = ჩამოტვირთვა მიმდინარეობს…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = { $language } ვერ ჩამოიტვირთა ({ $size }ᲛᲑ)
+settings-translations-subpage-download-retry-button =
+    .label = ხელახლა ცდა
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = წაიშალოს { $language } ({ $size }ᲛᲑ)?
+settings-translations-subpage-download-delete-button =
+    .label = წაშლა
+settings-translations-subpage-download-cancel-button =
+    .label = გაუქმება
+settings-translations-subpage-no-sites-added =
+    .label = საიტები არაა დამატებული
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
-    .label = თარიღის, დროის, ციფრებისა და საზომი ერთეულებისთვის გამოიყენოს საოპერაციო სისტემის პარამეტრები ენისთვის „{ $localeName }“.
+    .label = თარიღის, დროის, ციფრებისა და საზომი ერთეულებისთვის საოპერაციო სისტემას მიეთითოს „{ $localeName }“.
 check-user-spelling =
-    .label = მართლწერის შემოწმება ტექსტის აკრეფისას
+    .label = მართლწერის შემოწმება აკრეფისთანავე
     .accesskey = მ
 
 ## General Section - Files and Applications
 
 files-and-applications-title = ფაილები და პროგრამები
+downloads-header-2 =
+    .label = ჩამოტვირთვები
+download-save-where-2 =
+    .label = ფაილების შესანახი მდებარეობა
+    .accesskey = შ
 download-header = ჩამოტვირთვები
 download-save-where = ფაილების შესანახი მდებარეობა
     .accesskey = შ
@@ -310,6 +551,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = ფაილების შენახვისას ადგილმდებარეობის ყოველ ჯერზე მითითება
     .accesskey = ყ
+download-private-browsing-delete =
+    .label = პირადი თვალიერებისას ჩამოტვირთული ფაილების წაშლა ყველა პირადი ფანჯრის დახურვისას
+    .accesskey = წ
 applications-header = პროგრამები
 applications-description = აირჩიეთ, როგორ მოეპყრას { -brand-short-name } ინტერნეტიდან ჩამოტვირთულ ფაილებს ან იმ პროგრამებს, რომელთაც გვერდების მონახულებისას იყენებთ.
 applications-filter =
@@ -392,6 +636,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = ყოველ ჯერზე იკითხოს, გახსნას თუ შეინახოს
     .accesskey = ჯ
+drm-group =
+    .label = ციფრული უფლებების მართვის (DRM) შიგთავსი
 drm-content-header = ციფრული უფლებების მართვის (DRM) შიგთავსი
 play-drm-content =
     .label = DRM-დაქვემდებარებული შიგთავსის გაშვება
@@ -441,6 +687,16 @@ update-in-progress-ok-button = &უარყოფა
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = &გაგრძელება
 
+## Firefox support
+
+support-application-heading =
+    .label = { -brand-short-name } – მხარდაჭერა
+    .description = მოაგვარეთ ხარვეზები ან გაუზიარეთ მოსაზრებები ერთობის წევრებს.
+support-get-help =
+    .label = დახმარების მიღება
+support-share-ideas =
+    .label = მოსაზრების მოხსენება და გამოხმაურება
+
 ## General Section - Performance
 
 performance-title = წარმადობა
@@ -460,10 +716,14 @@ performance-limit-content-process-blocked-desc = შიგთავსის პ
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (ნაგულისხმევი)
+performance-group =
+    .label = წარმადობა
 
 ## General Section - Browsing
 
 browsing-title = გვერდების მონახულება
+browsing-group-label =
+    .aria-label = გვერდების მონახულება
 browsing-use-autoscroll =
     .label = თვითგადაადგილების გამოყენება
     .accesskey = თ
@@ -491,6 +751,9 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = ეკრანი-ეკრანში ვიდეოს სამართავი
     .accesskey = მ
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = დარჩეს გაშვებული ვიდეოები ეკრანი-ეკრანში ჩანართებზე გადასვლისას
+    .accesskey = კ
 browsing-picture-in-picture-learn-more = ვრცლად
 browsing-media-control =
     .label = გაშვებული ფაილების მართვა კლავიშებით, ყურსასმენით ან პროგრამულად
@@ -503,6 +766,8 @@ browsing-cfr-features =
     .label = შესაძლებლობების შემოთავაზებები გვერდების მონახულებისას
     .accesskey = ზ
 browsing-cfr-recommendations-learn-more = ვრცლად
+browsing-group =
+    .label = გვერდების მონახულება
 
 ## General Section - Proxy
 
@@ -512,16 +777,36 @@ network-proxy-connection-learn-more = ვრცლად
 network-proxy-connection-settings =
     .label = პარამეტრები…
     .accesskey = პ
+network-proxy-group =
+    .label = ქსელის პარამეტრები
+    .description = მიუთითეთ, როგორ დაუკავშირდეს { -brand-short-name } ინტერნეტს.
 
 ## Home Section
 
 home-new-windows-tabs-header = ახალი ფანჯრები და ჩანართები
 home-new-windows-tabs-description2 = მიუთითეთ, რისი ხილვა გსურთ საწყისი გვერდის, ახალი ფანჯრებისა და ახალი ჩანართების გახსნისას.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+home-default-browser-title =
+    .label = ნაგულისხმევი ბრაუზერი
+is-default-browser-2 =
+    .message = { -brand-short-name } ნაგულისხმევი ბრაუზერია. გონივრული არჩევანია.
+is-not-default-browser-2 =
+    .message = ჰმ, { -brand-short-name } არ აგირჩევიათ ნაგულისხმევად.
+set-as-my-default-browser-2 =
+    .label = ნაგულისხმევად მითითება
+    .accesskey = ნ
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = საწყისი გვერდი და ახალი ფანჯრები
+home-homepage-new-windows =
+    .label = ახალი ფანჯრები
+home-homepage-mode-label2 = ახალი ფანჯრები
 home-newtabs-mode-label = ახალი ჩანართები
+home-homepage-new-tabs =
+    .label = ახალი ჩანართები
 home-restore-defaults =
     .label = ნაგულისხმევის აღდგენა
     .accesskey = ნ
@@ -533,6 +818,14 @@ home-mode-choice-blank =
     .label = ცარიელი გვერდი
 home-homepage-custom-url =
     .placeholder = URL-მისამართის ჩასმა...
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = გაფართოების მართვა
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = აირჩიეთ ცალკეული საიტი
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = აირჩიეთ ცალკეული საიტი
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -547,6 +840,44 @@ use-current-pages =
 choose-bookmark =
     .label = სანიშნის გამოყენება…
     .accesskey = ს
+home-homepage-header = საწყისი გვერდი
+
+## Home Section - Home Page Customization
+
+home-homepage-title =
+    .label = საწყისი გვერდი
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = მორგებული საწყისი გვერდი
+home-custom-homepage-subpage =
+    .heading = მორგებული საწყისი გვერდი
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = საიტის მისამართ(ებ)ი
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = საიტის მისამართ(ებ)ი
+home-custom-homepage-address =
+    .placeholder = შეიყვანეთ მისამართი
+home-custom-homepage-address-button =
+    .label = მისამართის დამატება
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = საიტები ჯერ არ დამატებულა.
+home-custom-homepage-delete-address-button =
+    .aria-label = მისამართის წაშლა
+    .title = მისამართის წაშლა
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = საიტები ჯერ არ დამატებულა.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = ჩაანაცვლებს
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = ახლად გახსნილი გვერდები
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = სანიშნები…
 
 ## Home Section - Firefox Home Content Customization
 
@@ -554,24 +885,36 @@ home-prefs-content-header2 = { -firefox-home-brand-name } – შიგთავ
 home-prefs-content-description2 = აირჩიეთ, რისი ხილვა გსურთ { -firefox-home-brand-name(case: "loc") }
 home-prefs-search-header =
     .label = საძიებო ველი
+home-prefs-search-header2 =
+    .label = ძიება
 home-prefs-shortcuts-header =
     .label = მალსახმობები
 home-prefs-shortcuts-description = საიტები, რომლებსაც ინახავთ ან სტუმრობთ
 home-prefs-shortcuts-by-option-sponsored =
-    .label = დაფინანსებული მალსახმობები
+    .label = მალსახმობები დამკვეთებისგან
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } გირჩევთ
 home-prefs-recommended-by-description-new = გამორჩეული მასალები, რომელსაც { $provider } გთავაზობთ, { -brand-product-name }-ოჯახის ნაწილი.
+home-prefs-recommended-by-header-generic =
+    .label = შემოთავაზებული ამბები
+home-prefs-recommended-by-description-generic = გამორჩეული მასალები, რომელთაც გთავაზობთ { -brand-product-name }-ოჯახი
+home-prefs-stories-header =
+    .label = ამბები
+home-prefs-stories-description = თქვენს საქმიანობაზე მორგებული ამბები
+home-prefs-stories-header2 =
+    .label = ამბები
+    .description = გამორჩეული მასალები, რომელთაც გთავაზობთ { -brand-product-name }-ოჯახი
 
 ##
 
 home-prefs-recommended-by-learn-more = როგორ მუშაობს
 home-prefs-recommended-by-option-sponsored-stories =
-    .label = დაფინანსებული სტატიები
+    .label = ამბები დამკვეთებისგან
 home-prefs-recommended-by-option-recent-saves =
     .label = ბოლოს შენახულის ჩვენება
 home-prefs-highlights-option-visited-pages =
@@ -592,6 +935,31 @@ home-prefs-recent-activity-description = ბოლოს ნანახი ს�
 home-prefs-snippets-header =
     .label = ცნობები
 home-prefs-snippets-description-new = რჩევები და სიახლეები, რომელთაც გთავაზობთ { -vendor-short-name } და { -brand-product-name }
+home-prefs-weather-header =
+    .label = ამინდი
+home-prefs-weather-description = მოსალოდნელი ამინდისთვის თვალის შევლება
+home-prefs-weather-learn-more-link = ვრცლად
+home-prefs-widgets-header =
+    .label = ჩანამატები
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = სიები
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = წამმზომი
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = თანადგომა – { -brand-product-name }
+home-prefs-mission-message = ჩვენი დამკვეთები მხარს უჭერენ ჩვენს მიზანს უკეთესი ვებსივრცის ჩამოსაყალიბებლად
+home-prefs-mission-message-learn-more-link = იხილეთ, როგორ
+home-prefs-mission-message2 =
+    .message = ჩვენი დამკვეთები მხარს უჭერენ ჩვენს მიზანს უკეთესი ვებსივრცის ჩამოსაყალიბებლად.
+home-prefs-manage-topics-link = თემების მართვა
+home-prefs-manage-topics-link2 =
+    .label = თემების მართვა
+home-prefs-choose-wallpaper-link = ფონის არჩევა
+home-prefs-choose-wallpaper-link2 =
+    .label = ფონის არჩევა
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -625,11 +993,40 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ძიების შემოთავაზებები მისამართების ველის შედეგებში
     .accesskey = ძ
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = ძიების შემოთავაზებების გამოჩენა მონახულებულ გვერდებზე წინ, მისამართების ველის შედეგებში
+search-show-suggestions-private-windows-2 =
+    .label = ძიების შემოთავაზებები პირად ფანჯრებში
+search-suggestions-cant-show-2 =
+    .message = მისამართების ველში ძიების შემოთავაზებები არ გამოჩნდება, ვინაიდან მითითებული გაქვთ, რომ { -brand-short-name } არასოდეს დაიმახსოვრებს ისტორიას.
+addressbar-header-1 =
+    .label = მისამართების ველი
+    .description = აირჩიეთ, რომელი შემოთავაზებები გამოჩნდეს თქვენი მისამართების ველში
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = მისამართების ველში შემოთავაზებების წყაროა { -brand-short-name } და ჩვენი მოკავშირეები.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = საძიებო სიტყვების ჩვენება მისამართების ველში შედეგების გვერდზე
+search-separate-default-engine-2 =
+    .label = აირჩიეთ განსხვავებული საძიებო პირადი ფანჯრებისთვის
+    .accesskey = რ
+search-separate-default-engine-dropdown =
+    .aria-label = ნაგულისხმევი საძიებო პირად ფანჯრებში
+search-suggestions-header-2 =
+    .label = საძიებოს შემოთავაზებები
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
 search-show-search-term-option =
-    .label = ბმულები ჩანაცვლდეს მოსაძიებელი ფრაზებით ნაგულისხმევი საძიებოს შედეგებში
+    .label = ბმულების ნაცვლად მოსაძიებელი ფრაზები გამოჩნდეს ნაგულისხმევი საძიებოს შედეგებში
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -643,6 +1040,9 @@ suggestions-addressbar-settings-generic2 = პარამეტრები მ
 search-suggestions-cant-show = მისამართების ველში ძიების შემოთავაზებები არ გამოჩნდება, ვინაიდან მითითებული გაქვთ, რომ { -brand-short-name } არასოდეს დაიმახსოვრებს ისტორიას.
 search-one-click-header2 = ძიების მალსახმობები
 search-one-click-desc = მიუთითეთ სათადარიგო საძიებოები, რომლებიც გამოჩნდება მისამართებისა და ძიების ველების ქვემოთ საძებნი ფრაზის აკრეფისას.
+search-one-click-header-3 =
+    .label = დამატებითი საძიებოები
+    .description = აირჩიეთ რომელი საძიებო და მალსახმობი გამოჩნდეს მისამართების ველში.
 search-choose-engine-column =
     .label = საძიებო სისტემა
 search-choose-keyword-column =
@@ -656,6 +1056,12 @@ search-remove-engine =
 search-add-engine =
     .label = დამატება
     .accesskey = ტ
+search-add-engine-2 =
+    .label = საძიებოს დამატება
+    .accesskey = ტ
+search-edit-engine =
+    .label = ჩასწორება
+    .accesskey = წ
 search-find-more-link = სხვა საძიებო სისტემების მონახვა
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -664,12 +1070,25 @@ search-keyword-warning-title = საკვანძო სიტყვა უ�
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = თქვენ მიერ შერჩეულ საკვანძო სიტყვას უკვე იყენებს "{ $name }". გთხოვთ, შეარჩიოთ სხვა.
 search-keyword-warning-bookmark = თქვენ მიერ შერჩეულ საკვანძო სიტყვას უკვე იყენებს სანიშნი. გთხოვთ, შეარჩიოთ სხვა.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = საძიებო უკვე არსებობს სახელით „{ $name }“. გთხოვთ, აირჩიოთ სხვა სახელი.
+remove-engine-confirmation = ნამდვილად გსურთ ამ საძიებოს მოცილება?
+remove-engine-remove = მოცილება
+remove-addon-engine-alert = ამ საძიებო სისტემის მოსაცილებლად მოაცილეთ შესაბამისი დამატება.
+search-engine-group =
+    .label = ნაგულისხმევი საძიებო სისტემა
+search-default-engine =
+    .aria-label = ნაგულისხმევი საძიებო სისტემა
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = პარამეტრებზე დაბრუნება
 containers-header = სათავსი ჩანართები
+containers-section-header =
+    .heading = სათავსი ჩანართები
 containers-add-button =
     .label = ახალი სათავსის დამატება
     .accesskey = ა
@@ -681,14 +1100,30 @@ containers-settings-button =
 containers-remove-button =
     .label = წაშლა
 
+## Account and sync
+
+sync-group-label =
+    .label = სინქრონიზაცია
+account-group-label =
+    .label = { -vendor-short-name }-ანგარიში
+account-placeholder =
+    .label = შესული არ ხართ.
+    .description = შედით, რომ თქვენი მონაცემები დარჩეს პირადული, დაშიფრული და დასინქრონებული სხვადასხვა მოწყობილობაზე.
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
-sync-signedout-caption = წაიყოლეთ თქვენი მონაცემები თან
+sync-signedout-caption = გაიყოლეთ თქვენი მონაცემები თან
 sync-signedout-description2 = დაასინქრონეთ თქვენი სანიშნები, ისტორია, ჩანართები, პაროლები, დამატებები და პარამეტრები ყველა მოწყობილობაზე.
 sync-signedout-account-signin3 =
     .label = სინქრონიზაციაში შესვლა
     .accesskey = ი
+sync-signedout-account-signin-4 =
+    .label = შედით თქვენს ანგარიშზე დასინქრონებისთვის
+    .accesskey = დ
+sync-signedout-account-short =
+    .label = შესვლა
+    .accesskey = ს
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
 #   `<a data-l10n-name="android-link">` - Link to Android Download
@@ -697,7 +1132,7 @@ sync-signedout-account-signin3 =
 #
 # They can be moved within the sentence as needed to adapt
 # to your language, but should not be changed or translated.
-sync-mobile-promo = Firefox ჩამოტვირთეთ <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android-ისთვის</a> ან <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS-ისთვის</a> თქვენს მობილურ მოწყობილობასთან სინქრონიზაციისთვის.
+sync-mobile-promo = Firefox ჩამოტვირთეთ <img data-l10n-name="android-icon"/> <a data-l10n-name="android-link">Android-ზე</a> ან <img data-l10n-name="ios-icon"/> <a data-l10n-name="ios-link">iOS-ზე</a> თქვენს მობილურ მოწყობილობასთან სინქრონიზაციისთვის.
 
 ## Firefox account - Signed in
 
@@ -706,17 +1141,44 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = პროფილის სურათის შეცვლა
     .alt = პროფილის სურათის შეცვლა
+sync-profile-picture-account-problem =
+    .alt = ანგარიშის პროფილის სურათი
+fxa-login-rejected-warning =
+    .alt = გაფრთხილება
 sync-sign-out =
     .label = გამოსვლა...
     .accesskey = გ
+sync-sign-out2 =
+    .label = გამოსვლა
+    .accesskey = გ
 sync-manage-account = ანგარიშის მართვა
+    .accesskey = მ
+sync-manage-account2 =
+    .label = ანგარიშის მართვა
     .accesskey = მ
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } გადამოწმებული არაა.
+sync-signedin-unverified2 =
+    .label = { $email } ჯერ არ დამოწმებულა
+    .description = იხილეთ საფოსტო ყუთი ანგარიშის დასამოწმებლად და ასამოქმედებლად
 sync-signedin-login-failure = ხელახლა დასაკავშირებლად გთხოვთ შედით სისტემაში { $email }
+sync-signedin-login-failure2 =
+    .label = თქვენ გამოსული ხართ ანგარიშიდან { $email }
+    .description = კვლავ შედით მისაერთებლად და მონაცემთა დასინქრონებისთვის.
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -736,9 +1198,17 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = დასინქრონება: ჩართ.
+prefs-syncing-on-2 =
+    .label = დასინქრონება ჩართ.
 prefs-syncing-off = დასინქრონება: გამორ.
+prefs-syncing-off-2 =
+    .label = დასინქრონება გამორ.
+    .description = ჩართეთ სინქრონიზაცია სანიშნების, პაროლების, ისტორიისა და სხვა მონაცემების ნებისმიერ მოწყობილობაზე მისაღებად.
 prefs-sync-turn-on-syncing =
     .label = დასინქრონების ჩართვა…
+    .accesskey = ქ
+prefs-sync-turn-on-syncing-2 =
+    .label = დასინქრონების ჩართვა
     .accesskey = ქ
 prefs-sync-offer-setup-label2 = დაასინქრონეთ თქვენი სანიშნები, ისტორია, ჩანართები, პაროლები, დამატებები და პარამეტრები ყველა მოწყობილობაზე.
 prefs-sync-now =
@@ -748,12 +1218,22 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = დასინქრონება ახლავე
     .accesskey = ნ
+prefs-sync-now-button-2 =
+    .label = დასინქრონება ახლავე
+    .accesskey = ნ
 prefs-syncing-button =
     .label = სინქრონდება...
+prefs-syncing-button-2 =
+    .label = სინქრონდება...
+    .title = დასინქრონება ახლავე
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = ეს ერთეულები დასინქრონებული გაქვთ ყველა დაკავშირებულ მოწყობილობაში:
+sync-syncing-across-devices-heading-2 = მონაცემები დასინქრონებულია მოწყობილობებს შორის.
+sync-syncing-across-devices-empty-state =
+    .label = ჯერ არაფერია დასინქრონებული…
+    .description = დაიწყეთ დასინქრონება, რომ იხილოთ ყველა მონაცემი სხვა მოწყობილობებზეც.
 sync-currently-syncing-bookmarks = სანიშნები
 sync-currently-syncing-history = ისტორია
 sync-currently-syncing-tabs = გახსნილი ჩანართები
@@ -764,6 +1244,12 @@ sync-currently-syncing-creditcards = საკრედიტო ბარათ
 sync-currently-syncing-payment-methods = გადახდის საშუალებები
 sync-currently-syncing-addons = დამატებები
 sync-currently-syncing-settings = პარამეტრები
+sync-manage-options =
+    .label = სინქრონიზაციის მართვა…
+    .accesskey = მ
+sync-manage-options-2 =
+    .label = დასინქრონებული მონაცემების მართვა
+    .accesskey = მ
 sync-change-options =
     .label = შეცვლა…
     .accesskey = შ
@@ -816,10 +1302,27 @@ sync-engine-settings =
     .label = პარამეტრები
     .tooltiptext = შეცვლილი მთავარი, პირადულობისა და უსაფრთხოების პარამეტრები
     .accesskey = პ
+sync-choose-what-to-sync-dialog4 =
+    .title = მართეთ, რა დასინქრონირდეს ყველა თქვენს მოწყობილობაზე
+    .style = min-width: 36em;
+    .buttonlabelaccept = შენახვა
+    .buttonaccesskeyaccept = ხ
+    .buttonlabelextra2 = გამოთიშვა…
+    .buttonaccesskeyextra2 = გ
 
 ## The device name controls.
 
 sync-device-name-header = მოწყობილობის სახელი
+sync-device-name-header-2 =
+    .label = მოწყობილობის სახელი
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = მოწყობილობის სახელი
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = მოწყობილობის სახელის შეცვლა
+    .accesskey = ს
 sync-device-name-change =
     .label = მოწყობილობის სახელის შეცვლა…
     .accesskey = ს
@@ -830,6 +1333,8 @@ sync-device-name-save =
     .label = შენახვა
     .accesskey = ე
 sync-connect-another-device = სხვა მოწყობილობასთან დაკავშირება
+sync-connect-another-device-2 =
+    .label = სხვა მოწყობილობასთან დაკავშირება
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -861,10 +1366,16 @@ forms-ask-to-save-logins =
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = პაროლები
     .searchkeywords = ანგარიშები
+forms-passwords-header =
+    .label = პაროლები
+    .aria-label = პაროლები
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = პაროლის შენახვის მოთხოვნა
     .accesskey = თ
+forms-manage-password-exceptions =
+    .label = პაროლების გამონაკლისების მართვა
+    .accesskey = ვ
 forms-exceptions =
     .label = გამონაკლისები…
     .accesskey = ნ
@@ -875,13 +1386,13 @@ forms-suggest-passwords =
     .label = მძლავრი პაროლის შემოთავაზება…
     .accesskey = მ
 forms-breach-alerts =
-    .label = შეტყობინება პაროლებზე იერიშმიტანილი საიტებისთვის
+    .label = ცნობები პაროლების შესახებ იერიშმიტანილი საიტებიდან
     .accesskey = შ
 forms-breach-alerts-learn-more-link = ვრცლად
 preferences-relay-integration-checkbox =
-    .label = { -relay-brand-name } შემოთავაზება, დაიცვას ელფოსტა მისი შენიღბვით
+    .label = { -relay-brand-name } შემოგთავაზებთ, დაიცვას ელფოსტა მისი შენიღბვით
 preferences-relay-integration-checkbox2 =
-    .label = { -relay-brand-name } შემოთავაზება, დაიცვას ელფოსტა მისი შენიღბვით
+    .label = { -relay-brand-name } შემოგთავაზებთ, დაიცვას ელფოსტა მისი შენიღბვით
     .accesskey = ფ
 relay-integration-learn-more-link = ვრცლად
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
@@ -895,12 +1406,40 @@ forms-saved-logins =
 forms-fill-usernames-and-passwords =
     .label = მომხმარებლის სახელებისა და პაროლების თვითშევსება
     .accesskey = ო
+forms-fill-usernames-and-passwords-2 =
+    .label = მეტსახელებისა თუ პაროლების შენახვა და თვითშევსება
+    .accesskey = მ
 forms-saved-passwords =
     .label = შენახული პაროლები
     .accesskey = ო
+forms-saved-passwords-2 =
+    .label = შენახული პაროლების მართვა
+    .accesskey = უ
+forms-saved-passwords-searchkeywords = საიტები, რომელთა ანგარიშის მონაცემებიც თქვენს კომპიუტერში ინახება
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = დამატებითი უსაფრთხოება
 forms-primary-pw-use =
     .label = მთავარი პაროლის გამოყენება
     .accesskey = გ
+forms-primary-pw-use-2 =
+    .label = მთავარი პაროლის გამოყენება
+    .description = ამატებს უსაფრთხოების დამატებით შრეს პაროლების დასაცავად.
+    .accesskey = ყ
+forms-primary-pw-set =
+    .label = მთავარი პაროლის დაყენება
+forms-primary-pw-on =
+    .label = მთავარი პაროლი ᲩᲐᲠᲗ.
+forms-primary-pw-change-2 =
+    .label = ჩემი პაროლის შეცვლა
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = გამორთვა
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = საჭიროა მოწყობილობით დამოწმება პაროლების შესავსებად და სამართავად
+forms-os-reauth-2 =
+    .label = საჭიროა მოწყობილობით დამოწმება პაროლების სამართავად
 forms-primary-pw-learn-more-link = ვრცლად
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -921,7 +1460,7 @@ forms-windows-sso =
     .label = Windows-ით ერთიანად შესვლის დაშვება, Microsoft-ის, სამუშაოს ან სკოლის ანგარიშებზე
 forms-windows-sso-learn-more-link = ვრცლად
 forms-windows-sso-desc = ანგარიშების მართვა, მოწყობილობის პარამეტრებიდან
-windows-passkey-settings-label = პაროლის გასაღებების მართვა სისტემის პარამეტრებში
+windows-passkey-settings-label = საშვების მართვა სისტემის პარამეტრებში
 
 ## OS Authentication dialog
 
@@ -933,6 +1472,13 @@ primary-password-os-auth-dialog-message-win = მთავარი პარო
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = მთავარი პაროლის დაყენებას
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] პარამეტრების შეცვლას გადახდის საშუალებებისთვის
+       *[other] { -brand-short-name } ცდილობს შეცვალოს გადახდის საშუალებების პარამეტრები. გამოიყენეთ მოწყობილობით შესვლის დამოწმება ნების მისაცემად.
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
@@ -947,10 +1493,98 @@ autofill-payment-methods-checkbox-submessage = საკრედიტო დ�
     .accesskey = ვ
 autofill-saved-payment-methods-button = შენახული გადახდის საშუალებები
     .accesskey = ხ
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = საჭიროა მოწყობილობით დამოწმება პაროლების შესავსებად და სამართავად
+    .accesskey = ო
+autofill-payment-methods-title = გადახდის საშუალებები
+autofill-payment-methods-header =
+    .aria-label = გადახდის საშუალებები
+autofill-payment-methods-checkbox-message-2 =
+    .label = შეინახოს და შეივსოს გადახდის მონაცემები
+    .accesskey = დ
+autofill-payment-methods-manage-payments-title =
+    .heading = გადახდის საშუალებების მართვა
+autofill-payment-methods-manage-payments-button =
+    .label = გადახდის საშუალებების მართვა
+    .accesskey = მ
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = საჭიროა მოწყობილობით დამოწმება გადახდის მონაცემების შესავსებად და სამართავად
+    .accesskey = ვ
+autofill-payment-methods-add-button = გადახდის საშუალების დამატება
+payments-list-header =
+    .label = გადახდის საშუალებები
+payments-list-item-label = <strong>გადახდის საშუალებები</strong>
+payments-delete-payment-prompt-title = მოცილდეს გადახდის ეს საშუალება?
+payments-delete-payment-prompt-confirm-button = წაშლა
+payments-delete-payment-prompt-cancel-button = გაუქმება
+payments-delete-payment-button-label =
+    .aria-label = წაშლა
+payments-edit-payment-button-label =
+    .aria-label = ჩასწორება
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = გადახდის საშუალება არაა დამატებული
+payments-remove-payment-prompt-title = მოცილდეს გადახდის ეს საშუალება?
+payments-remove-payment-prompt-confirm-button = მოცილება
+payments-remove-payment-prompt-cancel-button = გაუქმება
+autofill-addresses-title = მისამართები და სხვა
+autofill-addresses-header =
+    .aria-label = მისამართები და სხვა
+autofill-addresses-checkbox-message =
+    .label = მისამართების შენახვა და თვითშევსება
+    .accesskey = ნ
+autofill-addresses-manage-addresses-button =
+    .label = მისამართების მართვა და სხვა
+    .accesskey = მ
+addresses-list-header =
+    .label = მისამართები
+addreses-delete-address-button-label =
+    .aria-label = წაშლა
+addreses-edit-address-button-label =
+    .aria-label = ჩასწორება
+addresses-delete-address-prompt-title = წაიშალოს მისამართი?
+addresses-delete-address-prompt-confirm-button = წაშლა
+addresses-delete-address-prompt-cancel-button = გაუქმება
+autofill-addresses-add-button = ახალი მისამართის დამატება
+autofill-addresses-manage-addresses-title =
+    .heading = მისამართების მართვა და სხვა
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = მისამართები არაა დამატებული
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+    .label = { $name }
+    .description = { $address }
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = მისამართები და სხვა
+payments-group =
+    .label = გადახდის საშუალებები
 
 ## Privacy Section - History
 
 history-header = ისტორია
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } მონაცემებს
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -968,6 +1602,24 @@ history-remember-option-never =
     .label = არასოდეს დაიმახსოვრებს
 history-remember-option-custom =
     .label = მონიშნული მითითებებით განკარგავს
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } შეინახავს მონახულებული გვერდების, ჩამოტვირთვების, შევსებული ველებისა და ძიების ისტორიას.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ისარგებლებს პირადი ფანჯრის პარამეტრებით და არ შეინახავს თქვენ მიერ მონახულებული საიტების ისტორიას.
+history-custom-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } გამოიყენებს მორგებულ პარამეტრებს მონახულებული გვერდების, ჩამოთვირთვების, შევსებული ველებისა თუ მოძიებული გვერდების მიხედვით.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } შეინახავს მონახულებული გვერდების, ჩამოტვირთვების, შევსებული ველებისა და ძიების ისტორიას.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ისარგებლებს პირადი ფანჯრის პარამეტრებით და არ შეინახავს თქვენ მიერ მონახულებული საიტების ისტორიას.
+history-custom-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } გამოიყენებს მორგებულ პარამეტრებს მონახულებული გვერდების, ჩამოთვირთვების, შევსებული ველებისა თუ მოძიებული გვერდების მიხედვით.
 history-remember-description = { -brand-short-name } შეინახავს მონახულებული გვერდების, ჩამოტვირთვების, შევსებული ველებისა და ძიების ისტორიას.
 history-dontremember-description = { -brand-short-name } ისარგებლებს პირადი ფანჯრის პარამეტრებით და არ შეინახავს თქვენ მიერ მონახულებული საიტების ისტორიას.
 history-private-browsing-permanent =
@@ -988,11 +1640,19 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = ისტორიის გასუფთავება…
     .accesskey = ს
+history-group =
+    .label = ისტორია
 
 ## Privacy Section - Site Data
 
 sitedata-header = ფუნთუშები და საიტის მონაცემები
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = ითვლება საიტის მუდმივი და დროებითი მონაცემების მოცულობა…
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size2 = თქვენ მიერ შენახულ ფუნთუშებს, საიტის მონაცემებს, მარაგებს ამჟამად დისკზე უკავია <strong>{ $value } { $unit }</strong> მოცულობა.
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
@@ -1001,7 +1661,10 @@ sitedata-learn-more = ვრცლად
 sitedata-delete-on-close =
     .label = ფუნთუშებისა და საიტის მონაცემების წაშლა, როცა { -brand-short-name } დაიხურება
     .accesskey = ხ
+sitedata-delete-on-close-private-browsing3 =
+    .message = თქვენი ისტორიის პარამეტრებიდან გამომდინარე { -brand-short-name } წაშლის ფუნთუშებსა და საიტის მონაცემებს ბრაუზერის დახურვისას.
 sitedata-delete-on-close-private-browsing = პირადი თვალიერების მუდმივ რეჟიმში, ფუნთუშები და საიტის მონაცემები ყოველთვის გასუფთავდება, როცა { -brand-short-name } დაიხურება.
+sitedata-delete-on-close-private-browsing2 = თქვენი ისტორიის პარამეტრებიდან გამომდინარე { -brand-short-name } წაშლის ფუნთუშებსა და საიტის მონაცემებს ბრაუზერის დახურვისას.
 sitedata-allow-cookies-option =
     .label = ფუნთუშებისა და საიტის მონაცემები მიღება
     .accesskey = ღ
@@ -1016,6 +1679,8 @@ sitedata-option-block-cross-site-trackers =
     .label = საიტთაშორისი მეთვალყურეები
 sitedata-option-block-cross-site-tracking-cookies =
     .label = საიტთაშორისი მეთვალყურე ფუნთუშები
+sitedata-option-block-cross-site-cookies2 =
+    .label = საიტთაშორისი ფუნთუშების გამიჯვნა
 sitedata-option-block-cross-site-cookies =
     .label = საიტთაშორისი მეთვალყურე ფუნთუშები დანარჩენი ფუნთუშების გამიჯვნით
 sitedata-option-block-unvisited =
@@ -1024,6 +1689,12 @@ sitedata-option-block-all-cross-site-cookies =
     .label = ყველა საიტთაშორისი ფუნთუშა (იწვევს ზოგი საიტის გაუმართაობას)
 sitedata-option-block-all =
     .label = ყველა ფუნთუშა (იწვევს საიტების გაუმართაობას)
+sitedata-clear2 =
+    .label = დათვალიერების მონაცემების წაშლა
+    .accesskey = წ
+sitedata-settings2 =
+    .label = დათვალიერების მონაცემების მართვა
+    .accesskey = თ
 sitedata-clear =
     .label = მონაცემთა გასუფთავება…
     .accesskey = მ
@@ -1033,6 +1704,12 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = გამონაკლისების მართვა
     .accesskey = კ
+sitedata-cookies-exceptions2 =
+    .label = გამონაკლისების მართვა
+    .accesskey = ლ
+    .description = შეგიძლიათ მიუთითოთ ვებსაიტები, რომლებიც ყოველთვის ან არასდროს გამოიყენებს ფუნთუშებსა და საიტის მონაცემებს.
+cookies-site-data-group =
+    .label = ფუნთუშები და საიტის მონაცემები
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1049,10 +1726,22 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = ფუნთუშების მოთხოვნებზე ავტომატური უარი
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = მისამართების ველი
-addressbar-suggest = შემოთავაზებები, მისამართების ველით სარგებლობისას
+addressbar-suggest-1 = აირჩიეთ, რომელი შემოთავაზებები გამოჩნდეს თქვენი მისამართების ველში
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest-1 = მისამართების ველში შემოთავაზებების წყაროა { -brand-short-name } და ჩვენი მოკავშირეები.
+addressbar-suggest = შემოთავაზებები მისამართების ველით სარგებლობისას
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = მისამართების ველი — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = მიუთითეთ შემოთავაზებების სახეობა, რომელიც გამოჩნდება მისამართების ველში.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = ვრცლად
 addressbar-locbar-history-option =
     .label = დათვალიერების ისტორია
     .accesskey = ი
@@ -1072,17 +1761,64 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = რჩეული საიტები
     .accesskey = ჩ
+addressbar-locbar-engines-option-1 =
+    .label = გამოსაყენებელი საძიებოები
+    .accesskey = ო
 addressbar-locbar-engines-option =
     .label = საძიებო სისტემები
     .accesskey = ე
 addressbar-locbar-quickactions-option =
     .label = სწრაფი მოქმედებები
     .accesskey = წ
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = ბოლოს მოძიებული
+    .accesskey = ო
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = ხშირად მოძიებულის შემოთავაზება
+    .accesskey = ხ
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = გთავაზობთ { -brand-short-name }
+    .description = შემოთავაზებები ვებსივრციდან თქვენ მიერ მოძიებულის შესაბამისად.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = შემოთავაზებები დამკვეთებისგან
+    .description = თანადგომისთვის იხილეთ შემოთავაზებები დამკვეთებისგან, { -brand-short-name } დროდადრო რომ მოგაწვდით
 addressbar-suggestions-settings = საძიებო სისტემის შემოთავაზებების პარამეტრები
 addressbar-locbar-showrecentsearches-option =
     .label = ბოლოს მოძიებულის ჩვენება
     .accesskey = ო
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = ხშირად მოძიებულის შემოთავაზებები
+    .accesskey = ხ
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = გთავაზობთ { -brand-short-name }
+addressbar-locbar-suggest-all-option-desc = შემოთავაზებები ვებსივრციდან თქვენ მიერ მოძიებულის შესაბამისად.
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = გთავაზობთ { -brand-short-name }
+addressbar-locbar-suggest-nonsponsored-desc = შემოთავაზებები ვებსივრციდან თქვენ მიერ მოძიებულის შესაბამისად.
+addressbar-locbar-suggest-sponsored-option =
+    .label = შემოთავაზებები დამკვეთებისგან
+addressbar-locbar-suggest-sponsored-desc = თანადგომისთვის იხილეთ შემოთავაზებები დამკვეთებისგან, { -brand-short-name } დროდადრო რომ მოგაწვდით
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = შემოთავაზებებს აკრეფისთანავე მოგაწვდით Mozilla
+addressbar-dismissed-suggestions-label-2 =
+    .label = შეთავაზებების აცილება
+    .description = აცილებული შემოთავაზებების დაბრუნება, რომელთაც გაწვდით დამკვეთები და { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button-2 =
+    .label = შემოთავაზებების დაბრუნება
 addressbar-quickactions-learn-more = ვრცლად
+addressbar-dismissed-suggestions-label = შეთავაზებების აცილება
+addressbar-restore-dismissed-suggestions-description = აცილებული შემოთავაზებების დაბრუნება, რომელთაც გაწვდით დამკვეთები და { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button =
+    .label = დაბრუნება
 
 ## Privacy Section - Content Blocking
 
@@ -1100,8 +1836,8 @@ content-blocking-rfp-incompatibility-warning = თუ ჩართული გ�
 
 # "Standard" in this case is an adjective, meaning "default" or "normal".
 enhanced-tracking-protection-setting-standard =
-    .label = ჩვეულებრივი
-    .accesskey = ჩ
+    .label = საშუალო
+    .accesskey = უ
 enhanced-tracking-protection-setting-strict =
     .label = მკაცრი
     .accesskey = კ
@@ -1119,6 +1855,7 @@ content-blocking-private-windows = მეთვალყურე შიგთ�
 content-blocking-cross-site-cookies-in-all-windows2 = საიტთაშორისი ფუნთუშები ყველა ფანჯარაში
 content-blocking-cross-site-tracking-cookies = საიტთაშორისი მეთვალყურე ფუნთუშები
 content-blocking-all-cross-site-cookies-private-windows = საიტთაშორისი ფუნთუშები პირად ფანჯრებში
+content-blocking-isolate-cross-site-cookies = საიტთაშორისი ფუნთუშების გამიჯვნა
 content-blocking-cross-site-tracking-cookies-plus-isolate = საიტთაშორისი მეთვალყურე ფუნთუშები, დანარჩენი ფუნთუშების გამიჯვნით
 content-blocking-social-media-trackers = სოციალური ქსელის მეთვალყურეები
 content-blocking-all-cookies = ყველა ფუნთუშა
@@ -1139,8 +1876,23 @@ content-blocking-etp-standard-tcp-rollout-description = ფუნთუშებ
 content-blocking-etp-standard-tcp-rollout-learn-more = ვრცლად
 content-blocking-etp-standard-tcp-title = მოიცავს ფუნთუშებისგან ყოველმხრივ დაცვასაც, ჩვენს არნახულად მძლავრ საშუალებას პირადულობისთვის
 content-blocking-warning-title = ფრთხილად!
+content-blocking-warning-title-2 = ზოგ საიტზე გაუმართაობას იწვევს თვალთვალისგან მკაცრი დაცვა
+content-blocking-warning-title-custom = ზოგ საიტზე გაუმართაობას იწვევს თვალთვალისგან მორგებული დაცვა
+# “Fix site issues” references the string content-blocking-exceptions-subheader
+content-blocking-and-isolating-etp-warning-description-4 = { -brand-short-name } გირჩევთ გამოიყენოთ „საიტზე ხარვეზების გამოსწორება“ გაუმართავი შესაძლებლობებისა და შიგთავსის შესამცირებლად. თუ საიტი ხარვეზიანია, სცადეთ ამ საიტზე თვალთვალისგან დაცვის გამორთვა შიგთავსის სრულად ჩასატვირთად.
 content-blocking-and-isolating-etp-warning-description-2 = ამ პარამეტრებმა შეიძლება გამოიწვიოს გაუმართაობები ზოგიერთი საიტის შიგთავსის ჩვენებასა და მუშაობაში. თუ საიტი დაზიანდება, მოგიწევთ მისი გამოთიშვა თვალთვალისგან დაცვიდან შიგთავსის სრულად ჩასატვირთად.
 content-blocking-warning-learn-how = იხილეთ როგორ
+content-blocking-baseline-exceptions-3 =
+    .label = საიტზე მნიშვნელოვანი ხარვეზების გამოსწორება (სასურველია)
+    .description = გეხმარებათ საიტებისა და შესაძლებლობების სათანადოდ ჩატვირთვაში შეზღუდვების მოხსნით მხოლოდ ძირითად ნაწილებზე, რომლებიც შესაძლოა მეთვალყურეებსაც შეიცავდეს. აგვარებს გავრცელებული ხარვეზების უმეტესობას.
+# This option to fix minor site issues must be used with the option to fix major site issues (string content-blocking-baseline-exceptions-3)
+content-blocking-convenience-exceptions-3 =
+    .label = საიტზე მცირე ხარვეზების გამოსწორება
+    .description = აღადგენს სტატიებში გამქრალ ვიდეოებსა თუ გამოხმაურებების არეებს იმ ნაწილებზე შეზღუდვების მოხსნით, რომლებიც მეთვალყურეებს შეიძლება შეიცავდეს. ეს შეამცირებს საიტის ხარვეზებს, მაგრამ უზრუნველყოფს ნაკლებ დაცვას. მიზანშეწონილია მნიშვნელოვანი ხარვეზების გამოსასწორებლად.
+content-blocking-baseline-uncheck-warning-dialog-title = ნამდვილად გსურთ ხარვეზების გამოსწორების უარყოფა?
+content-blocking-baseline-uncheck-warning-dialog-body = ეს პარამეტრი გამოგადგებათ საიტის გავრცელებული ხარვეზების გამოსწორებაში. გამორთვის შემთხვევაში ზოგი საიტი გაუმართავად იმუშავებს და { -brand-short-name } ამ ხარვეზების აღმოფხვრაში ვერ დაგეხმარებათ.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = გასწორების გამორთვა
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = გასწორების დატოვება
 content-blocking-reload-description = საჭიროა ჩანართების ხელახლა გახსნა ცვლილებების ასახვისთვის.
 content-blocking-reload-tabs-button =
     .label = ყველა ჩანართის ხელახლა გახსნა
@@ -1220,10 +1972,27 @@ permissions-notification-link = ვრცლად
 permissions-notification-pause =
     .label = შეჩერდეს შეტყობინებები, სანამ { -brand-short-name } ხელახლა გაეშვება
     .accesskey = ჩ
+permissions-autoplay2 =
+    .label = თვითგაშვება
 permissions-autoplay = თვითგაშვება
 permissions-autoplay-settings =
     .label = პარამეტრები…
     .accesskey = ტ
+permissions-block-popups2 =
+    .label = გარეშე მხარის მიერ გადამისამართების შეზღუდვა
+    .accesskey = ზ
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button2 =
+    .label = მართეთ ამომხტომებისა და გარე გადამისამართების გამონაკლისები…
+    .accesskey = კ
+    .searchkeywords = ამომხტომები
+permissions-addon-install-warning2 =
+    .label = გაფრთხილება საიტების მიერ გაფართოების ჩადგმის მცდელობისას
+    .accesskey = ფ
+permissions-addon-exceptions2 =
+    .label = აირჩიეთ საიტები, რომელთაც შეეძლება გაფართოებების დაყენება
+    .accesskey = გ
 permissions-block-popups =
     .label = ამომხტომი ფანჯრების შეზღუდვა
     .accesskey = ზ
@@ -1239,23 +2008,71 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = გამონაკლისები…
     .accesskey = გ
+permissions-header2 =
+    .label = ნებართვები
+    .description = ნებართვები, რომელთაც ანიჭებთ მონახულებულ საიტებს.
+permissions-location2 =
+    .label = მდებარეობა
+permissions-localhost2 =
+    .label = მოწყობილობის პროგრამები და მომსახურებები
+permissions-local-network2 =
+    .label = შიდა ქსელის მოწყობილობები
+permissions-xr2 =
+    .label = წარმოსახვითი სინამდვილე
+permissions-camera2 =
+    .label = კამერა
+permissions-microphone2 =
+    .label = მიკროფონი
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = ხმამაღლამოლაპარაკე
+permissions-notification2 =
+    .label = შეტყობინებები
 
 ## Privacy Section - Data Collection
 
 collection-header = { -brand-short-name } – მონაცემთა აღრიცხვა და გამოყენება
-collection-header2 = { -brand-short-name } მონაცემთა აღრიცხვა და გამოყენება
+collection-header2 = { -brand-short-name } – მონაცემთა აღრიცხვა და გამოყენება
     .searchkeywords = telemetry
+preferences-collection-description = ჩვენ მთელი ძალისხმევით ვცდილობთ, მოგცეთ არჩევანის საშუალება და აღვრიცხოთ მხოლოდ ის უმცირესი მონაცემები, რომლებიც მეტად წაგვადგება, რომ გავაუმჯობესოთ { -brand-product-name }.
+preferences-collection-privacy-notice = იხილეთ პირადულობის დაცვის განაცხადი
+preferences-across-profiles = მოცემულ პარამეტრებს ასახავს { -brand-product-name } თითოეულ პროფილზე ამ მოწყობილობაში.
+preferences-view-profiles = ყველა პროფილის ნახვა
 collection-description = ჩვენ ვცდილობთ მოგცეთ არჩევანის უფლება და აღვრიცხოთ მხოლოდ ის მონაცემები, რომლებიც დაგვეხმარება, გავაუმჯობესოთ { -brand-short-name }. ყოველთვის დაგეკითხებით პირადი ინფორმაციის მიღებამდე.
 collection-privacy-notice = პირადი მონაცემების დაცვის განაცხადი
-collection-health-report-telemetry-disabled = თქვენ გააუქმეთ ნებართვა და შედეგად { -vendor-short-name } ვეღარ შეძლებს ტექნიკური და გამოყენების მონაცემების აღრიცხვას. აქამდე შეგროვებული ყველა მონაცემი წაიშლება 30 დღეში.
+collection-health-report-telemetry-disabled = თქვენ გაუქმებული გაქვთ ნებართვა და შედეგად { -vendor-short-name } ვეღარ აღრიცხავს ტექნიკურ და გამოყენების მონაცემებს. აქამდე შეგროვებული ყველა მონაცემი წაიშლება 30 დღეში.
 collection-health-report-telemetry-disabled-link = ვრცლად
+collection-usage-ping =
+    .label = გაეგზავნოს დღიური მოხმარების უწყება { -vendor-short-name }-ს
+    .accesskey = ზ
+collection-usage-ping-description = ამით { -vendor-short-name } მიახლოებით ითვლის მოქმედ მომხმარებლებს.
+collection-health-report2 =
+    .label = გაეგზავნოს ტექნიკური და გამოყენების მონაცემები { -vendor-short-name }-ს
+    .accesskey = ქ
 collection-health-report =
     .label = ნებართვა, რომ { -brand-short-name } მიაწვდის ტექნიკურ და გამოყენების მონაცემებს { -vendor-short-name }-ს
     .accesskey = რ
 collection-health-report-link = ვრცლად
+collection-health-report-description = ეს გვეხმარება გავაუმჯობესოთ { -brand-product-name } შესაძლებლობების, წარმადობისა და მდგრადობის კუთხით.
+collection-studies2 =
+    .label = კვლევების ჩადგმა და გაშვება
+collection-studies-description = გამოცადეთ შესაძლებლობები ჯერ კიდევ ჩანაფიქრის დონეზე, სანამ ყველასთვის ხილული გახდება.
 collection-studies =
     .label = ნებართვა, რომ { -brand-short-name } დააყენებს და გაუშვებს კვლევებს
 collection-studies-link = იხილეთ { -brand-short-name } – კვლევები
+nimbus-rollouts-enabled =
+    .label = ნებართვა, რომ { -brand-short-name } შეძლებს გააუმჯობესოს შესაძლებლობები, წარმადობა და მდგრადობა განახლებებს შორის შუალედშიც
+nimbus-rollouts-enabled-description = ცვლილებები აისახება დაშორებულ რეჟიმში.
+addon-recommendations2 =
+    .label = გაფართოებების მორგებული შემოთავაზებების ნებართვა
+addon-recommendations-description = მიიღეთ გაფართოებების შემოთავაზებები გვერდების თვალიერების გასაუმჯობესებლად.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = მოხსენებები გათიშული ამ გამართვის მქონე ანაწყობისთვის.
+collection-backlogged-crash-reports2 =
+    .label = უეცარი გათიშვის მოხსენებების თვითგაგზავნა
+    .accesskey = ც
+collection-backlogged-crash-reports-description = მისი მეშვეობით { -vendor-short-name } მოახერხებს ხარვეზების გამოვლენასა და მოგვარებას ბრაუზერში. მოხსენებები შეიძლება შეიცავდეს პირად ან საფრთხილო მონაცემებს.
 addon-recommendations =
     .label = ნებართვა, რომ { -brand-short-name } შემოგთავაზებთ მორგებულ გაფართოებებს
 addon-recommendations-link = ვრცლად
@@ -1263,8 +2080,6 @@ addon-recommendations-link = ვრცლად
 # or builds with no Telemetry support available.
 collection-health-report-disabled = მოხსენებები გამორთულია ანაწყობის ამ კონფიგურაციისთვის
 collection-backlogged-crash-reports-with-link = ნებართვა, რომ { -brand-short-name } თავადვე გაგზავნის უეცარი გათიშვების მოხსენებებს <a data-l10n-name="crash-reports-link">ვრცლად</a>
-    .accesskey = უ
-collection-backlogged-crash-reports = ნებართვა, რომ { -brand-short-name } თავადვე გაგზავნის უეცარი გათიშვების მოხსენებებს
     .accesskey = უ
 privacy-segmentation-section-header = ახალი შესაძლებლობები მოხერხებულად სარგებლობისთვის
 privacy-segmentation-section-description = როცა გთზავაზობთ შესაძლებლობებს თქვენი მონაცემების საფუძველზე მეტად მორგებული მომსახურებისთვის:
@@ -1275,6 +2090,11 @@ privacy-segmentation-radio-on =
 
 ## Privacy Section - Website Advertising Preferences
 
+website-advertising-header = საიტის სარეკლამო პარამეტრები
+website-advertising-private-attribution =
+    .label = ვებსაიტებისთვის ნების დართვა, შეაგროვონ სარეკლამო გაზომვები პირადულობის დაცვით
+    .accesskey = კ
+website-advertising-private-attribution-description = ეს ეხმარება საიტებს, გაარკვიონ, რამდენად შედეგიანია მათი რეკლამები თქვენ შესახებ მონაცემების აღურიცხავად.
 
 ## Privacy Section - Security
 ##
@@ -1282,6 +2102,8 @@ privacy-segmentation-radio-on =
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = უსაფრთხოება
+browsing-protection-group =
+    .label = თაღლითური შიგთავსისა და სახიფათო პროგრამებისგან დაცვა
 security-browsing-protection = თაღლითური შიგთავსისა და სახიფათო პროგრამებისგან დაცვა
 security-enable-safe-browsing =
     .label = სახიფათო და თაღლითური შიგთავსის შეზღუდვა
@@ -1309,28 +2131,48 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = ნებართვა, რომ { -brand-short-name } თავისთავად სანდოდ მიიჩნევს გარეშე მხარის ძირეულ სერტიფიკატებს, რომელთაც ჩააყენებთ
     .accesskey = ბ
+certs-devices-enable-fips = FIPS-ის ჩართვა
 space-alert-over-5gb-settings-button =
     .label = პარამეტრების გახსნა
     .accesskey = ხ
 space-alert-over-5gb-message2 = <strong>{ -brand-short-name } იუწყება, რომ დისკზე ადგილი ეწურება.</strong> საიტების შიგთავსი, შეიძლება არ გამოჩნდეს სათანადოდ. შენახული მონაცემების წაშლა და ადგილის გამოთავისუფლება შეგიძლიათ მენიუდან – პარამეტრები > პირადულობა და უსაფრთხოება > ფუნთუშები და საიტის მონაცემები.
 space-alert-under-5gb-message2 = <strong>{ -brand-short-name } იუწყება, რომ დისკზე ადგილი ეწურება.</strong> საიტების შიგთავსი, შეიძლება არ გამოჩნდეს სათანადოდ. იხილეთ „ვრცლად“, თუ როგორ გამოათავისუფლოთ ადგილი დისკზე, გვერდების შეუფერხებლად მოსანახულებლად.
+certs-description2 =
+    .label = სერტიფიკატები
+    .description = იმ სერტიფიკატების გამართვა, რომელთაც { -brand-short-name } იყენებს დამოწმებისთვის.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = მხოლოდ-HTTPS-რეჟიმი
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = მხოლოდ დაცული კავშირის მქონე საიტებთან წვდომა. { -brand-short-name } ნებართვას მოითხოვს დაუცველი კავშირის დამყარებამდე.
+httpsonly-description3 = მხოლოდ დაცული კავშირის მქონე საიტებთან წვდომა. { -brand-short-name } ნებართვას მოითხოვს დაუცველი კავშირის დამყარებამდე.
+httpsonly-learn-more2 = როგორ მუშაობს მხოლოდ-HTTPS
 httpsonly-description = HTTPS საშუალებას იძლევა, რომ { -brand-short-name } უსაფრთხოდ და მონაცემთა დაშიფვრით დაუკავშირდეს საიტს, რომელსაც ეწვევით. უმეტეს ვებსაიტზე HTTPS მხარდაჭერილია და როცა მხოლოდ-HTTPS-რეჟიმი ჩართულია, { -brand-short-name } ყველა კავშირს ატარებს HTTPS-ით.
 httpsonly-learn-more = ვრცლად
 httpsonly-radio-enabled =
     .label = მხოლოდ-HTTPS-რეჟიმი ყველა ფანჯარაში
 httpsonly-radio-enabled-pbm =
     .label = მხოლოდ-HTTPS-რეჟიმი პირად ფანჯრებში
+httpsonly-radio-disabled3 =
+    .label = არ ამოქმედდეს მხოლოდ-HTTPS-რეჟიმი
+    .description = { -brand-short-name } ზოგ კავშირს მაინც გადაიყვანს დაცულზე
 httpsonly-radio-disabled =
     .label = მხოლოდ-HTTPS-რეჟიმის გარეშე
+httpsonly-group =
+    .label = მხოლოდ-HTTPS-რეჟიმი
+    .description = მხოლოდ დაცული კავშირის მქონე საიტებთან წვდომა. { -brand-short-name } ნებართვას მოითხოვს დაუცველი კავშირის დამყარებამდე.
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
-preferences-doh-header = DNS-ის HTTPS-ით გადაცემა
+preferences-doh-header = DNS-მოთხოვნა HTTPS-ით
+dns-over-https-group =
+    .label = DNS-მოთხოვნა HTTPS-ით
 preferences-doh-description = საიტთა სახელების გადამყვანი (DNS) მომსახურების HTTPS-ით გატარებისას საიტის მისამართის მოთხოვნები იგზავნება დაშიფრული არხით, შედეგად იქმნება დაცული DNS და გარეშე პირებს უძნელდებათ გაარკვიონ, რომელ ვებსაიტებთან ცდილობთ წვდომას.
+preferences-doh-description2 = საიტთა სახელების გადამყვანი (DNS) მომსახურების HTTPS-ით გატარებისას საიტის მისამართის მოთხოვნები იგზავნება დაშიფრული არხით, შედეგად იქმნება დაცული DNS და გარეშე პირებს უძნელდებათ გაარკვიონ, რომელ ვებსაიტებთან ცდილობთ წვდომას.
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = მდგომარეობა: { $status }
@@ -1347,13 +2189,14 @@ preferences-doh-status-disabled = გამორთ.
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = უქმი ({ $reason })
 preferences-doh-group-message = დაცული DNS:
+preferences-doh-group-message2 = ჩაირთოს DNS-მოთხოვნა HTTPS-ით:
 preferences-doh-expand-section =
     .tooltiptext = ვრცლად
 preferences-doh-setting-default =
     .label = ნაგულისხმევი უსაფრთხოება
     .accesskey = ნ
 preferences-doh-default-desc = { -brand-short-name } წყვეტს, როდის გამოიყენოს დაცული DNS თქვენი პირადულობისთვის.
-preferences-doh-default-detailed-desc-1 = გამოიყენება დაცული DNS იმ მხარეში, სადაც ხელმისაწვდომია
+preferences-doh-default-detailed-desc-1 = გამოიყენება დაცული DNS იმ მხარეში, რომელშიც ხელმისაწვდომია
 preferences-doh-default-detailed-desc-2 = გამოიყენება ნაგულისხმევი DNS, თუ ხარვეზითაა დაცული DNS
 preferences-doh-default-detailed-desc-3 = გამოიყენება ადგილობრივი მომწოდებელი, თუ მისაწვდომია
 preferences-doh-default-detailed-desc-4 = გამოირთვება, როცა VPN, მშობლის ზედამხედველობა ან დაწესებულების დებულებებია ამოქმედებული
@@ -1376,7 +2219,7 @@ preferences-doh-setting-off =
     .accesskey = ო
 preferences-doh-off-desc = გამოიყენება თქვენი ნაგულისხმევი DNS-გადამყვანი
 preferences-doh-checkbox-warn =
-    .label = გაფრთხილება, თუ გარეშე მხარე ხელს უშლის დაცულ DNS-ს
+    .label = გაფრთხილება, თუ გარეშე მხარე ცდილობს აირიდოს დაცული DNS
     .accesskey = ფ
 preferences-doh-select-resolver = მომწოდებლის არჩევა:
 preferences-doh-exceptions-description = { -brand-short-name } არ გამოიყენებს დაცულ DNS-ს ამ საიტებზე
@@ -1389,3 +2232,62 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = სამუშაო ეკრანი
 downloads-folder-name = ჩამოტვირთვები
 choose-download-folder-title = ჩამოტვირთვების საქაღალდის არჩევა:
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+preferences-ai-controls-description = ყოველთვის გაძლევთ { -brand-short-name } არჩევანის უფლებას, მათ შორის ხელოვნური ინტელექტის შესაძლებლობებით სარგებლობის შემთხვევაშიც. მართვის სხვა საშუალებებიც მალე დაემატება.
+preferences-ai-controls-block-ai-label = შეიზღუდოს AI-შესაძლებლობები?
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-block-ai-description = შეზღუდვა გულისხმობს, რომ თქვენთვის აღარ გამოაჩენს { -brand-short-name } ახალ ან არსებულ AI-შესაძლებლობებს, არც მათ შესახებ ამომხტომ ცნობებს. <a data-l10n-name="link">იხილეთ ვრცლად</a>, თუ რას მოიცავს და როგორ იმართება ძველებური სახის მანქანური დასწავლის მქონე შესაძლებლობები, მათ შორის ძიებისა თუ სხვა შემოთავაზებები.
+preferences-ai-controls-blocked-message =
+    .message = ახალი ან არსებული AI-შესაძლებლობები შეიზღუდება ნაგულისხმევად. ცალკეულ შესაძლებლობაზე შეზღუდვის მოსახსნელად გამოიყენეთ სამართავი ქვემოთ.
+preferences-ai-controls-on-device-group =
+    .label = მოწყობილობაზე მომუშავე AI
+    .description = გამოყენებული იქნება ხელგონის მცირე მოდელები, რომლებიც ჩამოიტვირთება მოწყობილობაზე შესაძლებლობის გამოყენებისას. ამგვარი მიდგომა დაიცავს თქვენს პირადულობას.
+preferences-ai-controls-translations-control =
+    .label = თარგმანები
+    .description = შეუფერხებლად მონახულეთ გვერდები სასურველ ენაზე.
+preferences-ai-controls-translations-more-link = თარგმნის სხვა პარამეტრები
+preferences-ai-controls-pdfjs-control =
+    .label = სურათზე დართული წარწერა { -brand-short-name } PDF-მნახველში
+    .description = სურათების დამატებისას PDF-ებში დაერთვება აღმწერი წარწერებიც მეტი ხელმისაწვდომობისთვის.
+preferences-ai-controls-tab-group-suggestions-control =
+    .label = ჩანართის დაჯგუფების შემოთავაზებები
+    .description = მიიღეთ შემოთავაზებები ჩანართების დალაგებისა და გადარქმევის შესახებ.
+preferences-ai-controls-key-points-control =
+    .label = საკვანძო საკითხები ბმულის შეთვალიერებისას
+    .description = იხილეთ მოკლე შეჯამება ბმულის გახსნამდე.
+preferences-ai-controls-sidebar-chatbot-group =
+    .label = AI-თანამოსაუბრის მომწოდებლები გვერდით ზოლზე
+    .description = თან იქონიეთ თანამოსაუბრე ხელგონი გვერდების მონახულებისას. აირჩიეთ Anthropic Claude, ChatGPT, Copilot, Google Gemini ან Le Chat Mistral.
+preferences-ai-controls-sidebar-chatbot-control =
+    .label = თანამოსაუბრე გვერდით ზოლზე
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = ხელმისაწვდომი
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = ამოქმედებული
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = შეზღუდული
+preferences-ai-controls-state-description-before = რას გულისხმობს ეს პარამეტრები:
+preferences-ai-controls-state-description-available = <strong>ხელმისაწვდომი:</strong> შეგიძლიათ იხილოთ და გამოიყენოთ.
+preferences-ai-controls-state-description-enabled = <strong>ამოქმედებული:</strong> ჩართული გაქვთ და სარგებლობთ ამ შესაძლებლობით.
+preferences-ai-controls-state-description-blocked = <strong>შეზღუდული:</strong> ვერ იხილავთ და ვერ გამოიყენებთ ამ შესაძლებლობას. მოწყობილობაზე მომუშავე ხელგონი ან წინათ ჩამოტვირთული ნებისმიერი მოდელი მოცილებულია.
+preferences-ai-controls-block-confirmation-heading = შეიზღუდოს AI-შესაძლებლობები?
+preferences-ai-controls-block-confirmation-description = თქვენთვის აღარ გამოაჩენს { -brand-short-name } ახალ ან არსებულ AI-შესაძლებლობებს და მათ შესახებ ამომხტომ ცნობებს. მომავალში შეგეძლებათ კვლავ მოხსნათ შეზღუდვა და სურვილისამებრ განაგრძოთ გამოყენება.
+preferences-ai-controls-block-confirmation-features-start = რა შეიზღუდება:
+preferences-ai-controls-block-confirmation-translations = თარგმანები
+preferences-ai-controls-block-confirmation-pdfjs = სურათზე დართული წარწერა { -brand-short-name } PDF-მნახველში
+preferences-ai-controls-block-confirmation-tab-group-suggestions = ჩანართის დაჯგუფების შემოთავაზებები
+preferences-ai-controls-block-confirmation-key-points = საკვანძო საკითხები ბმულის შეთვალიერებისას
+preferences-ai-controls-block-confirmation-sidebar-chatbot = AI-თანამოსაუბრის მომწოდებლები გვერდით ზოლზე
+preferences-ai-controls-block-confirmation-features-after = შეზღუდვა ასევე შეეხება ხელგონით მოსარგებლე გაფართოებებს, რომელთა მუშაობასაც უზრუნველყოფს { -brand-short-name }.
+preferences-ai-controls-block-confirmation-cancel =
+    .label = გაუქმება
+preferences-ai-controls-block-confirmation-confirm =
+    .label = შეზღუდვა

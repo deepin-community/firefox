@@ -3,18 +3,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/FloatingPoint.h"
-
-#include "txExpr.h"
-#include "txNodeSet.h"
-#include "nsGkAtoms.h"
-#include "txIXPathContext.h"
-#include "nsWhitespaceTokenizer.h"
-#include "txXPathTreeWalker.h"
 #include <math.h>
+
+#include "mozilla/FloatingPoint.h"
+#include "nsGkAtoms.h"
+#include "nsWhitespaceTokenizer.h"
+#include "txExpr.h"
+#include "txIXPathContext.h"
+#include "txNodeSet.h"
 #include "txStringUtils.h"
 #include "txXMLUtils.h"
+#include "txXPathTreeWalker.h"
 
 using namespace mozilla;
 
@@ -647,7 +646,7 @@ bool txCoreFunctionCall::isSensitiveTo(ContextSensitivity aContext) {
 // static
 bool txCoreFunctionCall::getTypeFromAtom(nsAtom* aName, eType& aType) {
   uint32_t i;
-  for (i = 0; i < ArrayLength(descriptTable); ++i) {
+  for (i = 0; i < std::size(descriptTable); ++i) {
     if (aName == descriptTable[i].mName) {
       aType = static_cast<eType>(i);
 

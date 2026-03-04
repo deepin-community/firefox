@@ -117,8 +117,8 @@ function checkRules(view, data) {
 
   is(rule.selectorText, "#testid", "Second rule is #testid.");
   is(
-    !!textPropEditor.expander.getAttribute("open"),
-    data.isExpanderOpen,
+    textPropEditor.expander.getAttribute("aria-expanded"),
+    data.isExpanderOpen + "",
     "Got correct expander state."
   );
   is(
@@ -164,8 +164,9 @@ async function clearSearchAndCheckRules(view) {
   const computed = textPropEditor.computed;
 
   info("Clearing the search filter");
+  const onRuleViewFiltered = view.inspector.once("ruleview-filtered");
   EventUtils.synthesizeMouseAtCenter(searchClearButton, {}, win);
-  await view.inspector.once("ruleview-filtered");
+  await onRuleViewFiltered;
 
   info("Check the search filter is cleared and no rules are highlighted");
   is(view.element.children.length, 3, "Should have 3 rules.");
@@ -175,6 +176,10 @@ async function clearSearchAndCheckRules(view) {
     "No rules are higlighted"
   );
 
-  ok(!textPropEditor.expander.getAttribute("open"), "Expander is closed.");
+  is(
+    textPropEditor.expander.getAttribute("aria-expanded"),
+    "false",
+    "Expander is closed."
+  );
   ok(!computed.hasAttribute("filter-open"), "margin computed list is closed.");
 }

@@ -39,6 +39,30 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["ping"], *args, **kwargs)
 
+    async def lbheartbeat(self, *args, **kwargs):
+        """
+        Load Balancer Heartbeat
+
+        Respond without doing anything.
+        This endpoint is used to check that the service is up.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["lbheartbeat"], *args, **kwargs)
+
+    async def version(self, *args, **kwargs):
+        """
+        Taskcluster Version
+
+        Respond with the JSON version object.
+        https://github.com/mozilla-services/Dockerflow/blob/main/docs/version_object.md
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["version"], *args, **kwargs)
+
     async def listClients(self, *args, **kwargs):
         """
         List Clients
@@ -77,8 +101,8 @@ class Auth(AsyncBaseClient):
         You should store the `accessToken` from this API call as there is no
         other way to retrieve it.
 
-        If you loose the `accessToken` you can call `resetAccessToken` to reset
-        it, and a new `accessToken` will be returned, but you cannot retrieve the
+        If you lose the `accessToken` you can call `resetAccessToken` to reset
+        it, and a new `accessToken` will be returned. You cannot retrieve the
         current `accessToken`.
 
         If a client with the same `clientId` already exists this operation will
@@ -91,6 +115,28 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["createClient"], *args, **kwargs)
 
+    async def getEntityHistory(self, *args, **kwargs):
+        """
+        Get Entity History
+
+        Get entity history based on entity type and entity name
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["getEntityHistory"], *args, **kwargs)
+
+    async def listAuditHistory(self, *args, **kwargs):
+        """
+        List Audit History
+
+        Get audit history of a client based on clientId.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["listAuditHistory"], *args, **kwargs)
+
     async def resetAccessToken(self, *args, **kwargs):
         """
         Reset `accessToken`
@@ -99,7 +145,7 @@ class Auth(AsyncBaseClient):
         `accessToken`, generate a new `accessToken` and return it from this
         call.
 
-        There is no way to retrieve an existing `accessToken`, so if you loose it
+        There is no way to retrieve an existing `accessToken`, so if you lose it
         you must reset the accessToken to acquire it again.
 
         This method is ``stable``
@@ -347,7 +393,7 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all Azure accounts managed by Taskcluster Auth.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureAccounts"], *args, **kwargs)
@@ -358,7 +404,7 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all tables in an account.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureTables"], *args, **kwargs)
@@ -374,7 +420,7 @@ class Auth(AsyncBaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         table if it doesn't already exist.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureTableSAS"], *args, **kwargs)
@@ -385,7 +431,7 @@ class Auth(AsyncBaseClient):
 
         Retrieve a list of all containers in an account.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureContainers"], *args, **kwargs)
@@ -401,7 +447,7 @@ class Auth(AsyncBaseClient):
         which type of credentials are returned.  If level is read-write, it will create the
         container if it doesn't already exist.
 
-        This method is ``stable``
+        This method is ``deprecated``
         """
 
         return await self._makeApiCall(self.funcinfo["azureContainerSAS"], *args, **kwargs)
@@ -524,6 +570,20 @@ class Auth(AsyncBaseClient):
 
         return await self._makeApiCall(self.funcinfo["testAuthenticateGet"], *args, **kwargs)
 
+    async def heartbeat(self, *args, **kwargs):
+        """
+        Heartbeat
+
+        Respond with a service heartbeat.
+
+        This endpoint is used to check on backing services this service
+        depends on.
+
+        This method is ``stable``
+        """
+
+        return await self._makeApiCall(self.funcinfo["heartbeat"], *args, **kwargs)
+
     funcinfo = {
         "authenticateHawk": {
             'args': [],
@@ -549,7 +609,7 @@ class Auth(AsyncBaseClient):
             'name': 'azureAccounts',
             'output': 'v1/azure-account-list-response.json#',
             'route': '/azure/accounts',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureContainerSAS": {
             'args': ['account', 'container', 'level'],
@@ -557,7 +617,7 @@ class Auth(AsyncBaseClient):
             'name': 'azureContainerSAS',
             'output': 'v1/azure-container-response.json#',
             'route': '/azure/<account>/containers/<container>/<level>',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureContainers": {
             'args': ['account'],
@@ -566,7 +626,7 @@ class Auth(AsyncBaseClient):
             'output': 'v1/azure-container-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/containers',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureTableSAS": {
             'args': ['account', 'table', 'level'],
@@ -574,7 +634,7 @@ class Auth(AsyncBaseClient):
             'name': 'azureTableSAS',
             'output': 'v1/azure-table-access-response.json#',
             'route': '/azure/<account>/table/<table>/<level>',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "azureTables": {
             'args': ['account'],
@@ -583,7 +643,7 @@ class Auth(AsyncBaseClient):
             'output': 'v1/azure-table-list-response.json#',
             'query': ['continuationToken'],
             'route': '/azure/<account>/tables',
-            'stability': 'stable',
+            'stability': 'deprecated',
         },
         "client": {
             'args': ['clientId'],
@@ -664,6 +724,38 @@ class Auth(AsyncBaseClient):
             'name': 'gcpCredentials',
             'output': 'v1/gcp-credentials-response.json#',
             'route': '/gcp/credentials/<projectId>/<serviceAccount>',
+            'stability': 'stable',
+        },
+        "getEntityHistory": {
+            'args': ['entityType', 'entityId'],
+            'method': 'get',
+            'name': 'getEntityHistory',
+            'output': 'v1/get-entity-history-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/audit/<entityType>/<entityId>',
+            'stability': 'stable',
+        },
+        "heartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'heartbeat',
+            'route': '/__heartbeat__',
+            'stability': 'stable',
+        },
+        "lbheartbeat": {
+            'args': [],
+            'method': 'get',
+            'name': 'lbheartbeat',
+            'route': '/__lbheartbeat__',
+            'stability': 'stable',
+        },
+        "listAuditHistory": {
+            'args': ['clientId'],
+            'method': 'get',
+            'name': 'listAuditHistory',
+            'output': 'v1/get-entity-history-response.json#',
+            'query': ['continuationToken', 'limit'],
+            'route': '/clients/<clientId>/audit',
             'stability': 'stable',
         },
         "listClients": {
@@ -765,6 +857,13 @@ class Auth(AsyncBaseClient):
             'name': 'updateRole',
             'output': 'v1/get-role-response.json#',
             'route': '/roles/<roleId>',
+            'stability': 'stable',
+        },
+        "version": {
+            'args': [],
+            'method': 'get',
+            'name': 'version',
+            'route': '/__version__',
             'stability': 'stable',
         },
         "websocktunnelToken": {

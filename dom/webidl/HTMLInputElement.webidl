@@ -22,14 +22,7 @@ enum SelectionMode {
 
 interface XULControllers;
 
-[Exposed=Window,
- InstrumentedProps=(capture,
-                    incremental,
-                    onsearch,
-                    popoverTargetAction,
-                    popoverTargetElement,
-                    webkitEntries,
-                    webkitdirectory)]
+[Exposed=Window]
 interface HTMLInputElement : HTMLElement {
   [HTMLConstructor] constructor();
 
@@ -183,6 +176,7 @@ partial interface HTMLInputElement {
   [ChromeOnly, NewObject]
   Promise<sequence<(File or Directory)>> getFilesAndDirectories();
 
+  [ChromeOnly]
   boolean mozIsTextField(boolean aExcludePassword);
 
   [ChromeOnly]
@@ -243,8 +237,6 @@ HTMLInputElement includes MozImageLoadingContent;
 
 HTMLInputElement includes PopoverInvokerElement;
 
-HTMLInputElement includes InvokerElement;
-
 // https://wicg.github.io/entries-api/#idl-index
 partial interface HTMLInputElement {
   [Pref="dom.webkitBlink.filesystem.enabled", Frozen, Cached, Pure]
@@ -253,6 +245,8 @@ partial interface HTMLInputElement {
   [Pref="dom.webkitBlink.dirPicker.enabled", BinaryName="WebkitDirectoryAttr", SetterThrows]
           attribute boolean webkitdirectory;
 };
+
+// Chrome-only functions for datetime picker
 
 dictionary DateTimeValue {
   long hour;
@@ -279,10 +273,10 @@ partial interface HTMLInputElement {
   undefined openDateTimePicker(optional DateTimeValue initialValue = {});
 
   [Func="IsChromeOrUAWidget"]
-  undefined updateDateTimePicker(optional DateTimeValue value = {});
+  undefined closeDateTimePicker();
 
   [Func="IsChromeOrUAWidget"]
-  undefined closeDateTimePicker();
+  undefined setOpenState(boolean aIsOpen);
 
   [Func="IsChromeOrUAWidget"]
   undefined setFocusState(boolean aIsFocused);
@@ -295,4 +289,24 @@ partial interface HTMLInputElement {
 
   [Func="IsChromeOrUAWidget", BinaryName="getStepBaseAsDouble"]
   double getStepBase();
+};
+
+// Chrome-only functions for color picker
+
+dictionary InputPickerColor {
+  required float component1;
+  required float component2;
+  required float component3;
+
+  // bug 1919718
+  // required float alpha;
+  // required InputColorSpace colorSpace;
+};
+
+partial interface HTMLInputElement {
+  [Func="IsChromeOrUAWidget"]
+  InputPickerColor getColor();
+
+  [Func="IsChromeOrUAWidget"]
+  undefined setUserInputColor(InputPickerColor aColor);
 };

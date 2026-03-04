@@ -170,6 +170,8 @@ extensions-warning-update-security-button = Ynskeakelje
 extensions-warning-imported-addons2 =
     .message = Foltôgje de ynstallaasje fan útwreidingen dy’t ymportearre binne nei { -brand-short-name }.
 extensions-warning-imported-addons-button = Utwreidingen ynstallearje
+extensions-warning-safe-mode3 =
+    .message = Alle add-ons binne útskeakele troch de Probleemoplossingsmodus.
 
 ## Strings connected to add-on updates
 
@@ -206,6 +208,10 @@ addon-updates-manual-updates-found = Beskikbere fernijingen toane
 
 addon-install-from-file = Ynstallearje add-on út bestân…
     .accesskey = Y
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Add-on ynstallearje of bywurkje fan bestân…
+    .accesskey = y
 addon-install-from-file-dialog-title = Selektearje add-on om te ynstallearjen
 addon-install-from-file-filter-name = Add-ons
 addon-open-about-debugging = Add-ons debugge
@@ -225,7 +231,7 @@ shortcuts-remove-button =
     .aria-label = Fluchkeppeling fuortsmite
 shortcuts-browserAction2 = Arkbalkeknop aktivearje
 shortcuts-pageAction = Side-aksje aktivearje
-shortcuts-sidebarAction = De sydbalke yn-/útskeakelje
+shortcuts-sidebarAction = De sidebalke yn-/útskeakelje
 shortcuts-modifier-mac = Druk ek op Ctrl, Alt of ⌘
 shortcuts-modifier-other = Druk ek op Ctrl of Alt
 shortcuts-invalid = Unjildige kombinaasje
@@ -277,6 +283,19 @@ discopane-notice-recommendations2 =
         Inkelde fan dizze oanrekommandaasjes binne personalisearre. Se binne basearre op oare
         troch jo ynstallearre útwreidingen, profylfoarkarren en brûksstatistiken.
 discopane-notice-learn-more = Mear ynfo
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Jo kleurstellingentema(’s) is/binne fuortsmiten.
+    .message =
+        { -brand-product-name } hat har kleurstellingenkolleksje bywurke. Wy hawwe
+        de âlde ferzje(s) út jo list ‘Bewarre tema’s’ fuortsmiten. Download nije ferzjes op
+        de add-onswebsite.
+colorway-removal-notice-learn-more = Mear ynfo
+colorway-removal-notice-button = Bywurke kleurstellingentema’s krije
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Jo kontrastynstellingen fan Windows hawwe foarrang op { -brand-short-name }-tema’s. Skeakelje dizze ynstellingen út om tema’s yn { -brand-short-name } te brûken.
 privacy-policy = Privacybelied
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -297,6 +316,16 @@ find-more-themes = Fyn mear tema’s
 # used for screen readers.
 addon-options-button =
     .aria-label = Mear opsjes
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Me útwreidingen en tema’s kinne jo { -brand-product-name } oanpasse. Se kinne privacy,
+    produktiviteit en media ferbetterje, it uterlik fan { -brand-product-name } wizigje, en
+    sa folle mear. Dizze lytse softwareprogramma’s wurde faak troch in tredde partij ûntwikkele. Dit is
+    in seleksje dy’t Firefox <a data-l10n-name="learn-more-trigger">oanrekommandearret</a>
+    foar útsûnderlike befeiliging, prestaasjes en funksjonaliteit.
 
 ## Add-on actions
 
@@ -383,6 +412,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Tastien yn priveefinsters
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Tastien yn priveefinsters
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -422,6 +455,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Dizze útwreiding is beoardiele en foldocht oan ús noarms foar befeiliging en prestaasjes
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Offisjele troch Mozilla Firefox boude útwreiding. Foldocht oan befeiligings- en prestaasjenoarmen.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Dizze útwreiding is beoardiele en foldocht oan noarms foar befeiliging en prestaasjes
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox rekommandearret allinnich útwreidingen oan dy’t oan noarms foar befeiliging en prestaasjes foldogge.
 
 ##
 
@@ -429,6 +480,10 @@ available-updates-heading = Beskikbere fernijingen
 recent-updates-heading = Resinte fernijingen
 release-notes-loading = Lade…
 release-notes-error = Sorry, mar der wie in flater mei it laden fan de útjefteopmerkingen.
+addon-permissions-heading = Tastimmingen
+addon-permissions-empty2 = Foar dizze útwreiding binne gjin tastimmingen fereaske.
+addon-permissions-required-label = Fereaske:
+addon-permissions-optional-label = Opsjoneel:
 addon-permissions-empty = Foar dizze útwreiding binne gjin tastimmingen fereaske
 addon-permissions-required = Fereaske tastimmingen foar kernfunksjonaliteit:
 addon-permissions-optional = Opsjonele tastimmingen foar ekstra funksjonaliteit:
@@ -456,6 +511,9 @@ shortcuts-heading = Utwreidingsfluchtoetsen beheare
 default-heading-search-label = Mear add-ons sykje
 addons-heading-search-input =
     .placeholder = addons.mozilla.org trochsykje
+addons-heading-search-button =
+    .title = addons.mozilla.org trochsykje
+    .aria-label = addons.mozilla.org trochsykje
 addon-page-options-button =
     .title = Ark foar alle add-ons
 
@@ -478,14 +536,32 @@ details-notification-unsigned-and-disabled-link = Mear ynformaasje
 details-notification-unsigned = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name }. Wês foarsichtich as jo fierdergean.
 details-notification-unsigned2 =
     .message = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name }. Wês foarsichtich as jo fierdergean.
+details-notification-hard-blocked-extension =
+    .message = Dizze útwreiding is blokkearre fanwegen skeining fan it belied fan Mozilla en is útskeakele.
+details-notification-hard-blocked-other =
+    .message = Dizze add-on is blokkearre fanwegen skeining fan it belied fan Mozilla en is útskeakele.
 details-notification-unsigned-link = Mear ynformaasje
 details-notification-blocked = { $name } is útskeakele om reden fan feilichheid of stabiliteit.
-details-notification-blocked2 =
-    .message = { $name } is útskeakele om reden fan feilichheid of stabiliteit.
+details-notification-blocked-link2 = Details besjen
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Dizze útwreiding is beheind en is útskeakele. Jo kinne it ynskeakelje, mar dit kin riskant wêze.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Dizze útwreiding is beheind. It brûken derfan kin riskant wêze.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Dizze add-on is beheind en is útskeakele. Jo kinne it ynskeakelje, mar dit kin riskant wêze.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Dizze add-on is beheind. It brûken derfan kin riskant wêze.
+details-notification-soft-blocked-extension-disabled =
+    .message = Dizze útwreiding is beheind fanwegen skeinen fan it belied fan Mozilla en is útskeakele. Jo kinne it ynskeakelje, mar dit kin gefaarlik wêze.
+details-notification-soft-blocked-extension-enabled =
+    .message = Dizze útwreiding skeint it belied fan Mozilla. It brûken hjirfan kin gefaarlik wêze.
+details-notification-soft-blocked-other-disabled =
+    .message = Dizze add-on is beheind fanwegen skeinen fan it belied fan Mozilla en is útskeakele. Jo kinne it ynskeakelje, mar dit kin gefaarlik wêze.
+details-notification-soft-blocked-other-enabled =
+    .message = Dizze add-on skeint it belied fan Mozilla. It brûken hjirfan kin gefaarlik wêze.
+details-notification-softblocked-link2 = Details besjen
 details-notification-blocked-link = Mear ynformaasje
 details-notification-softblocked = { $name } kin feilichheids- of stabiliteitsproblemen feroarsaakje.
-details-notification-softblocked2 =
-    .message = { $name } kin feilichheids- of stabiliteitsproblemen feroarsaakje.
 details-notification-softblocked-link = Mear ynformaasje
 details-notification-gmp-pending = { $name } sil ynkoarten ynstallearre wurde.
 details-notification-gmp-pending2 =
@@ -499,3 +575,45 @@ plugins-openh264-name = OpenH264-fideocodec útjûn troch Cisco Systems, Inc.
 plugins-openh264-description = Dizze ynstekker wurdt automatysk troch Mozilla ynstallearre om oan de WebRTC-spesifikaasje te foldwaan en WebRTC-petearen mei apparaten dy’t de H.264-fideocodec fereaskje mooglik te meitsjen. Besykje http://www.openh264.org/ foar de boarnekoade fan de codec en mear ynfo oer de ymplemintaasje.
 plugins-widevine-name = Widevine Content Decryption Module levere troch Google Inc.
 plugins-widevine-description = Dizze ynstekker soarget foar it ôfspyljen fan fersifere media mei achtslaan fan de Encrypted Media Extensions-spesifikaasje. Fersifere media wurde trochgeans troch websites brûkt ta beskerming tsjin it kopiearjen fan premium-media-ynhâld. Besykje https://www.w3.org/TR/encrypted-media/ foar mear ynformaasje oer Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Fereaske gegevenssammeling:
+addon-permissions-optional-data-collection = Opsjonele gegevenssammeling:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Tastimmingen en gegevens
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Brûkt troch de útwreiding { $extensionName }
+addon-permissions-data-collection-heading = Gegevenssamling
+addon-permissions-data-collection-empty = De ûntwikkeler seit dat dizze útwreiding gjin gegevenssamling fereasket.
+addon-data-collection-provided = Ynfo levere troch de ûntwikkeler fan de útwreiding
+addon-data-collection-learnmore = Mear ynfo oer gegevenssamling
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } brûkt dit op about:inference
+mlmodel-link-preview = { -brand-short-name } brûkt dit om wichtige punten te generearjen as jo foarbylden fan keppelingen besjogge
+mlmodel-pdfjs = { -brand-short-name } brûkt dit om alt-tekst te meitsjen foar ôfbyldingen dy’t jo oan PDF’s tafoegje
+mlmodel-smart-tab-topic-engine = { -brand-short-name } brûkt dit om nammen foar jo ljepblêdgroepen foar te stellen
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } brûkt dit om ljepblêden foar jo ljepblêdgroepen foar te stellen
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI op apparaat
+addon-category-mlmodel-title =
+    .title = AI op apparaat
+mlmodel-heading = AI-modellen op apparaat beheare
+mlmodel-description = Guon funksjes en útwreidingen yn { -brand-short-name } wurde mooglik makke troch AI-modellen dy’t lokaal op jo apparaat wurkje. Dizze oanpak beskermet jo privacy en ferbetteret yn in protte gefallen de prestaasjes. <a data-l10n-name="learn-more">Mear ynfo</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Fuortsmite
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Bestânsgrutte
+mlmodel-addon-detail-last-used-label = Lêst brûkt
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Brûkt troch
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Modelkaart
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Besjen op Hugging Face

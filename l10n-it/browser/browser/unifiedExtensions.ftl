@@ -11,6 +11,15 @@
 unified-extensions-header-title = Estensioni
 unified-extensions-manage-extensions =
     .label = Gestisci estensioni
+unified-extensions-discover-extensions =
+    .label = Scopri estensioni
+unified-extensions-empty-reason-private-browsing-not-allowed = Hai delle estensioni installate, ma non attive in finestre anonime
+unified-extensions-empty-reason-extension-not-enabled = Hai delle estensioni installate, ma non attive
+# In this headline, “Level up” means to enhance your browsing experience.
+unified-extensions-empty-reason-zero-extensions-onboarding = Migliora la tua navigazione con le estensioni
+unified-extensions-empty-content-explain-enable2 = Seleziona “{ unified-extensions-manage-extensions.label }” per attivarle nelle impostazioni.
+unified-extensions-empty-content-explain-manage2 = Seleziona “{ unified-extensions-manage-extensions.label }” per gestirle nelle impostazioni.
+unified-extensions-empty-content-explain-extensions-onboarding = Personalizza { -brand-short-name } cambiandone l’aspetto, migliorando le prestazioni o aumentando privacy e sicurezza.
 
 ## An extension in the main list
 
@@ -21,6 +30,12 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = Apri il menu per { $extensionName }
 unified-extensions-item-message-manage = Gestisci estensione
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked2 = { $extensionName } è soggetto a restrizioni. Utilizzarlo potrebbe comportare dei rischi.
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = { $extensionName } viola i criteri di Mozilla. Il suo utilizzo potrebbe comportare dei rischi.
 
 ## Extension's context menu
 
@@ -45,7 +60,50 @@ unified-extensions-mb-quarantined-domain-message = Solo alcune estensioni monito
 unified-extensions-mb-quarantined-domain-message-3 =
     .heading = Alcune estensioni non sono consentite
     .message = Per proteggere i tuoi dati, alcune estensioni non possono leggere o modificare dati in questo sito. Utilizza le impostazioni dell’estensione per consentirne il funzionamento in siti con restrizioni identificati da { -vendor-short-name }.
-
 unified-extensions-mb-quarantined-domain-learn-more = Ulteriori informazioni
     .aria-label = Ulteriori informazioni sul motivo per cui alcune estensioni non sono consentite
-
+unified-extensions-mb-about-addons-link = Vai alle impostazioni dell’estensione
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single2 =
+    .heading = { $extensionName } disattivata
+    .message =
+        Questa estensione è soggetta a restrizioni ed è stata disattivata. 
+        È possibile attivarla nelle impostazioni, ma il suo utilizzo potrebbe comportare dei rischi.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = { $extensionName } disattivata
+    .message =
+        Questa estensione viola i criteri di Mozilla ed è stata disattivata.
+        È possibile attivarla nelle impostazioni, ma il suo utilizzo potrebbe comportare dei rischi.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = { $extensionName } disattivata
+    .message = Questa estensione viola i criteri di Mozilla ed è stata disattivata.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple2 =
+    .heading =
+        { $extensionsCount ->
+            [one] { $extensionsCount } estensione disattivata
+           *[other] { $extensionsCount } estensioni disattivate
+        }
+    .message =
+        Alcune estensioni sono soggette a restrizioni e sono state disattivate. 
+        È possibile attivarle nelle impostazioni, ma il loro utilizzo potrebbe comportare dei rischi.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading = { $extensionsCount } estensioni disattivate
+    .message =
+        Alcune estensioni violano i criteri di Mozilla e sono state disattivate.
+        È possibile attivarle nelle impostazioni, ma il loro utilizzo potrebbe comportare dei rischi.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading = { $extensionsCount } estensioni disattivate
+    .message = Alcune estensioni violano i criteri di Mozilla e sono state disattivate.
+unified-extensions-notice-safe-mode =
+    .message = Tutte le estensioni sono state disattivate dalla modalità risoluzione problemi.

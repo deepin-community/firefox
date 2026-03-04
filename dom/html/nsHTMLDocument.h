@@ -6,17 +6,15 @@
 #ifndef nsHTMLDocument_h___
 #define nsHTMLDocument_h___
 
-#include "mozilla/Attributes.h"
-#include "nsContentList.h"
+#include "PLDHashTable.h"
+#include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/HTMLSharedElement.h"
+#include "nsContentList.h"
 #include "nsIHTMLCollection.h"
 #include "nsIScriptElement.h"
 #include "nsTArray.h"
-
-#include "PLDHashTable.h"
 #include "nsThreadUtils.h"
-#include "mozilla/dom/HTMLSharedElement.h"
-#include "mozilla/dom/BindingDeclarations.h"
 
 class nsCommandManager;
 class nsIURI;
@@ -41,7 +39,7 @@ class nsHTMLDocument : public mozilla::dom::Document {
  public:
   using Document::SetDocumentURI;
 
-  nsHTMLDocument();
+  explicit nsHTMLDocument(mozilla::dom::LoadedAsData aLoadedAsData);
   virtual nsresult Init(nsIPrincipal* aPrincipal,
                         nsIPrincipal* aPartitionedPrincipal) override;
 
@@ -70,9 +68,11 @@ class nsHTMLDocument : public mozilla::dom::Document {
   bool IsViewSource() const { return mViewSource; }
 
   // Returns whether an object was found for aName.
-  bool ResolveName(JSContext* aCx, const nsAString& aName,
-                   JS::MutableHandle<JS::Value> aRetval,
-                   mozilla::ErrorResult& aError);
+  bool ResolveNameForWindow(JSContext* aCx, const nsAString& aName,
+                            JS::MutableHandle<JS::Value> aRetVal,
+                            mozilla::ErrorResult& aError);
+
+  void GetSupportedNamesForWindow(nsTArray<nsString>& aNames);
 
   /**
    * Called when form->BindToTree() is called so that document knows
@@ -109,15 +109,9 @@ class nsHTMLDocument : public mozilla::dom::Document {
                              JS::Handle<JSObject*> aGivenProto) override;
   bool IsRegistrableDomainSuffixOfOrEqualTo(const nsAString& aHostSuffixString,
                                             const nsACString& aOrigHost);
-  void NamedGetter(JSContext* cx, const nsAString& aName, bool& aFound,
-                   JS::MutableHandle<JSObject*> aRetval,
-                   mozilla::ErrorResult& rv) {
-    JS::Rooted<JS::Value> v(cx);
-    if ((aFound = ResolveName(cx, aName, &v, rv))) {
-      SetUseCounter(mozilla::eUseCounter_custom_HTMLDocumentNamedGetterHit);
-      aRetval.set(v.toObjectOrNull());
-    }
-  }
+  void NamedGetter(JSContext* aCx, const nsAString& aName, bool& aFound,
+                   JS::MutableHandle<JSObject*> aRetVal,
+                   mozilla::ErrorResult& aRv);
   void GetSupportedNames(nsTArray<nsString>& aNames);
   // We're picking up GetLocation from Document
   already_AddRefed<mozilla::dom::Location> GetLocation() const {

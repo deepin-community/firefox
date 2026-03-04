@@ -207,7 +207,7 @@ add_task(async function test_check_open_with_internal_handler() {
     await SpecialPowers.spawn(newTab.linkedBrowser, [], async () => {
       let downloadButton;
       await ContentTaskUtils.waitForCondition(() => {
-        downloadButton = content.document.querySelector("#download");
+        downloadButton = content.document.querySelector("#downloadButton");
         return !!downloadButton;
       });
       ok(downloadButton, "Download button should be present in pdf.js");
@@ -735,11 +735,12 @@ add_task(async function test_check_open_with_internal_handler_noask() {
             case "popup":
               content.open(contentUrl);
               break;
-            case "frame":
+            case "frame": {
               let frame = content.document.createElement("iframe");
               frame.setAttribute("src", contentUrl);
               content.document.body.appendChild(frame);
               break;
+            }
             default:
               ok(false, "Unknown where value");
               break;

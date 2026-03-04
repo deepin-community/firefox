@@ -35,6 +35,15 @@ size_t BaseCompiler::countMemRefsOnStk() {
   }
   return nRefs;
 }
+
+bool BaseCompiler::hasLiveRegsOnStk() {
+  for (Stk& v : stk_) {
+    if (v.isReg()) {
+      return true;
+    }
+  }
+  return false;
+}
 #endif
 
 template <typename T>
@@ -1200,12 +1209,12 @@ RegI64 BaseCompiler::popI64ToSpecific(RegI64 specific) {
   return popI64(specific);
 }
 
-RegI64 BaseCompiler::popIndexToInt64(IndexType indexType) {
-  if (indexType == IndexType::I64) {
+RegI64 BaseCompiler::popAddressToInt64(AddressType addressType) {
+  if (addressType == AddressType::I64) {
     return popI64();
   }
 
-  MOZ_ASSERT(indexType == IndexType::I32);
+  MOZ_ASSERT(addressType == AddressType::I32);
 #ifdef JS_64BIT
   return RegI64(Register64(popI32()));
 #else
@@ -1216,28 +1225,25 @@ RegI64 BaseCompiler::popIndexToInt64(IndexType indexType) {
 #endif
 }
 
-RegI32 BaseCompiler::popTableIndexToClampedInt32(IndexType indexType) {
-  if (indexType == IndexType::I32) {
+RegI32 BaseCompiler::popTableAddressToClampedInt32(AddressType addressType) {
+  if (addressType == AddressType::I32) {
     return popI32();
   }
 
-#ifdef ENABLE_WASM_MEMORY64
-  MOZ_ASSERT(indexType == IndexType::I64);
+  MOZ_ASSERT(addressType == AddressType::I64);
   RegI64 val = popI64();
   RegI32 clamped = narrowI64(val);
-  masm.wasmClampTable64Index(val, clamped);
+  masm.wasmClampTable64Address(val, clamped);
   return clamped;
-#else
-  MOZ_CRASH("got i64 table index without memory64 enabled");
-#endif
 }
 
-void BaseCompiler::replaceTableIndexWithClampedInt32(IndexType indexType) {
-  if (indexType == IndexType::I32) {
+void BaseCompiler::replaceTableAddressWithClampedInt32(
+    AddressType addressType) {
+  if (addressType == AddressType::I32) {
     return;
   }
 
-  pushI32(popTableIndexToClampedInt32(indexType));
+  pushI32(popTableAddressToClampedInt32(addressType));
 }
 
 #ifdef JS_CODEGEN_ARM

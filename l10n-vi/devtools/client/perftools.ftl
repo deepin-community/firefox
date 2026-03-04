@@ -69,6 +69,14 @@ perftools-button-add-directory = Thêm một thư mục
 perftools-button-remove-directory = Xóa mục đã chọn
 perftools-button-edit-settings = Chỉnh sửa cài đặt…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Hành động khác
+perftools-menu-more-actions-restart-with-profiling = Khởi động lại { -brand-shorter-name } với startup profiling được bật
+perftools-menu-more-actions-copy-for-startup = Sao chép biến môi trường cho startup profiling
+perftools-menu-more-actions-copy-for-perf-tests = Sao chép các tham số cho việc kiểm tra hiệu suất
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -89,9 +97,6 @@ perftools-thread-jvm-nimbus =
     .title = Luồng chính cho Nimbus experiments SDK
 perftools-thread-jvm-glean =
     .title = Luồng chính cho Glean telemetry SDK
-
-##
-
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -120,6 +125,8 @@ perftools-presets-graphics-label = Đồ họa
 perftools-presets-graphics-description = Giá trị đặt trước để điều tra lỗi đồ họa trong { -brand-shorter-name }.
 perftools-presets-media-label = Đa phương tiện
 perftools-presets-media-description2 = Giá trị đặt trước để điều tra lỗi âm thanh và video trong { -brand-shorter-name }.
+perftools-presets-ml-label = Học máy (Machine Learning)
+perftools-presets-ml-description2 = Cài đặt trước để điều tra lỗi học máy (machine learning) trong { -brand-shorter-name }.
 perftools-presets-networking-label = Kết nối mạng
 perftools-presets-networking-description = Giá trị đặt trước để điều tra lỗi mạng trong { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -127,7 +134,6 @@ perftools-presets-power-label = Điện năng
 perftools-presets-power-description = Giá trị đặt trước để điều tra lỗi sử dụng điện năng trong { -brand-shorter-name }, với chi phí thấp.
 perftools-presets-debug-label = Gỡ lỗi
 perftools-presets-debug-description = Giá trị đặt trước để gỡ lỗi trong { -brand-shorter-name }. Tải thêm cao, không sử dụng cho công việc về hiệu suất mà sử dụng để tập trung vào việc tìm hiểu hành vi của trình duyệt.
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = Giá trị đặt trước được đề xuất để gỡ lỗi các sự cố tương thích web, thay vì theo dõi hiệu suất.
 perftools-presets-custom-label = Tùy chọn
-
-##
-

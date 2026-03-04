@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Tillat
     .accesskey = T
+permissions-add =
+    .label = Legg til
+    .accesskey = L
 permissions-button-off =
     .label = Slå av
     .accesskey = S
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Du kan slå av kun-HTTPS-modus for bestemte nettsteder. { -brand-short-name } prøver ikke å oppgradere tilkoblingen til sikker HTTPS for disse nettstedene. Unntak gjelder ikke private vinduer.
 permissions-exceptions-https-only-desc2 = Du kan slå av kun-HTTPS-modus for bestemte nettsteder. { -brand-short-name } prøver ikke å oppgradere tilkoblingen til sikker HTTPS for disse nettstedene.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Tillatte nettsteder – sprettoppvinduer og tredjepartvideresendinger
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Du kan angi hvilke nettsteder som har lov til å åpne sprettoppvinduer og bli videresendt av tredjepartsrammer.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Følgende nettsteder har bedt om tilgang til kame
 permissions-site-camera-disable-label =
     .label = Blokker nye forespørsler som ber om tilgang til kameraet ditt
 permissions-site-camera-disable-desc = Dette forhindrer nettsteder som ikke er oppført ovenfor, og ber om tillatelse til å få tilgang til kameraet ditt. Hvis du blokkerer tilgang til kameraet ditt, kan det hende at noen nettstedsfunksjoner ikke vil fungere.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Innstillinger – Enhetsapper og -tjenester
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Disse nettstedene har bedt om tilgang til apper og tjenester på denne enheten. Du kan velge å tillate eller blokkere nettsteder fra å gjøre dette.
+permissions-site-localhost-disable-label =
+    .label = Blokker nye forespørsler om tilgang til apper og tjenester på denne enheten
+permissions-site-localhost-disable-desc = Dette vil hindre nettsteder som ikke er oppført ovenfor i å be om tilgang til apper og tjenester på denne enheten. Dette kan føre til at enkelte nettstedsfunksjoner ikke fungerer.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Innstillinger – Lokale nettverksenheter
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Disse nettstedene har bedt om tilgang til apper og tjenester på enheter som er koblet til Wi-Fi-nettverket eller det lokale nettverket ditt. Du kan velge å tillate eller blokkere nettsteder fra å gjøre dette.
+permissions-site-local-network-disable-label =
+    .label = Blokker nye forespørsler om tilgang til apper og tjenester på enheter som er koblet til Wi-Fi-nettverket eller det lokale nettverket ditt.
+permissions-site-local-network-disable-desc = Dette vil hindre nettsteder som ikke er oppført ovenfor i å be om tilgang til apper og tjenester på enheter som er koblet til Wi-Fi eller lokale nettverksenheter. Dette kan føre til at enkelte nettstedsfunksjoner ikke fungerer.
 
 ## Site Permissions - Microphone
 

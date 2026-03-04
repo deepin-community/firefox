@@ -11,7 +11,7 @@ about-processes-column-action =
 ## Tooltips
 
 about-processes-shutdown-process =
-    .title = Inaktivera flikar och avsluta processen
+    .title = Frigör flikar och avsluta processen
 about-processes-kill-process =
     .title = Avsluta processen
 about-processes-shutdown-tab =
@@ -131,6 +131,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows-verktyg
 about-processes-utility-actor-windows-file-dialog = Windows fildialog
+about-processes-utility-actor-pkcs11-module = Hjälpverktyg för säkerhetsmoduler
 
 ## Displaying CPU (percentage and total)
 ## Variables:

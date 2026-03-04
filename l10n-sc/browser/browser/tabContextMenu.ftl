@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Ischeda noa
     .accesskey = n
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Serra is ischedas de sa manca
     .accesskey = m
+close-tabs-to-the-start-vertical =
+    .label = Serra is ischedas in artu
+    .accesskey = S
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Serra s'ischeda de sa dereta
     .accesskey = d
+close-tabs-to-the-end-vertical =
+    .label = Serra is ischedas in bàsciu
+    .accesskey = e
 close-other-tabs =
     .label = Serra sas àteras ischedas
     .accesskey = e
@@ -78,6 +88,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Cumpartzi
     .accesskey = C
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Ischeda noa a dereta
+    .accesskey = c
+tab-context-new-tab-open-vertical =
+    .label = Ischeda noa in bàsciu
+    .accesskey = b
+tab-context-new-group =
+    .label = Grupu nou
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -103,6 +123,15 @@ tab-context-move-tabs =
            *[other] Move is ischedas
         }
     .accesskey = v
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Imbia a unu dispositivu
+            [one] Imbia s’ischeda a unu dispositivu
+           *[other] Imbia { $tabCount } ischedas a unu dispositivu
+        }
+    .accesskey = I
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -110,3 +139,11 @@ tab-context-send-tabs-to-device =
            *[other] Imbia { $tabCount } ischedas a unu dispositivu
         }
     .accesskey = m
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Iscàrriga s’ischeda dae sa memòria
+            [one] Iscàrriga s’ischeda dae sa memòria
+           *[other] Iscàrriga { $tabCount } ischedas dae sa memòria
+        }
+    .accesskey = I

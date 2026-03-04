@@ -15,7 +15,7 @@
 #include "mozilla/net/CookieJarSettings.h"
 #include "mozilla/net/UrlClassifierCommon.h"
 #include "mozilla/StaticPrefs_network.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/AntitrackingMetrics.h"
 #include "nsContentUtils.h"
 #include "nsIChannel.h"
 #include "nsIClassifiedChannel.h"
@@ -373,7 +373,7 @@ void FinishAntiTrackingRedirectHeuristic(nsIChannel* aNewChannel,
   newLoadInfo->SetAllowListFutureDocumentsCreatedFromThisRedirectChain(true);
 
   uint64_t innerWindowID;
-  Unused << newChannel->GetTopLevelContentWindowId(&innerWindowID);
+  (void)newChannel->GetTopLevelContentWindowId(&innerWindowID);
 
   nsAutoString errorText;
   AutoTArray<nsString, 2> params = {NS_ConvertUTF8toUTF16(newOrigin),
@@ -387,10 +387,24 @@ void FinishAntiTrackingRedirectHeuristic(nsIChannel* aNewChannel,
         innerWindowID);
   }
 
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::StorageGranted);
-  Telemetry::AccumulateCategorical(
-      Telemetry::LABELS_STORAGE_ACCESS_GRANTED_COUNT::Redirect);
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eStoragegranted)
+      .Add();
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eRedirecttracker)
+      .Add();
+
+  // We don't need to test if it is a tracker, since we already know it is one!
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eStoragegrantedCt)
+      .Add();
+  glean::contentblocking::storage_access_granted_count
+      .EnumGet(glean::contentblocking::StorageAccessGrantedCountLabel::
+                   eRedirecttrackerCt)
+      .Add();
 
   // We don't care about this promise because the operation is actually sync.
   RefPtr<StorageAccessAPIHelper::ParentAccessGrantPromise> promise =
@@ -398,7 +412,7 @@ void FinishAntiTrackingRedirectHeuristic(nsIChannel* aNewChannel,
           newPrincipal, oldPrincipal,
           StorageAccessAPIHelper::StorageAccessPromptChoices::eAllow, false,
           StaticPrefs::privacy_restrict3rdpartystorage_expiration_redirect());
-  Unused << promise;
+  (void)promise;
 }
 
 }  // namespace mozilla

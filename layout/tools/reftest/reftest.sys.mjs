@@ -6,6 +6,8 @@ import { FileUtils } from "resource://gre/modules/FileUtils.sys.mjs";
 
 import { globals } from "resource://reftest/globals.sys.mjs";
 
+import { setTimeout } from "resource://gre/modules/Timer.sys.mjs";
+
 const {
   XHTML_NS,
   XUL_NS,
@@ -51,7 +53,7 @@ const lazy = {};
 XPCOMUtils.defineLazyServiceGetters(lazy, {
   proxyService: [
     "@mozilla.org/network/protocol-proxy-service;1",
-    "nsIProtocolProxyService",
+    Ci.nsIProtocolProxyService,
   ],
 });
 
@@ -189,9 +191,16 @@ export function OnRefTestLoad(win) {
   g.browser.setAttribute("remote", g.browserIsRemote ? "true" : "false");
   // Make sure the browser element is exactly 800x1000, no matter
   // what size our window is
-  g.browser.setAttribute(
-    "style",
-    "padding: 0px; margin: 0px; border:none; min-width: 800px; min-height: 1000px; max-width: 800px; max-height: 1000px; color-scheme: env(-moz-content-preferred-color-scheme)"
+  g.browser.style.setProperty("padding", "0px");
+  g.browser.style.setProperty("margin", "0px");
+  g.browser.style.setProperty("border", "none");
+  g.browser.style.setProperty("min-width", "800px");
+  g.browser.style.setProperty("min-height", "1000px");
+  g.browser.style.setProperty("max-width", "800px");
+  g.browser.style.setProperty("max-height", "1000px");
+  g.browser.style.setProperty(
+    "color-scheme",
+    "env(-moz-content-preferred-color-scheme)"
   );
 
   if (Services.appinfo.OS == "Android") {
@@ -944,6 +953,13 @@ async function StartCurrentURI(aURLTargetType) {
       );
     }
 
+    if (prefSettings.length) {
+      // Some prefs affect CSS parsing.
+      ChromeUtils.clearResourceCache({
+        types: ["stylesheet"],
+      });
+    }
+
     var type = g.urls[0].type;
     if (TYPE_SCRIPT == type) {
       SendLoadScriptTest(g.currentURL, g.loadTimeout);
@@ -1207,7 +1223,7 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
         CleanUpCrashDumpFiles();
         StartCurrentURI(URL_TARGET_TYPE_REFERENCE);
         break;
-      case URL_TARGET_TYPE_REFERENCE:
+      case URL_TARGET_TYPE_REFERENCE: {
         let pathToTestPdf = g.testPrintOutput;
         let pathToRefPdf = typeSpecificResults;
         comparePdfs(pathToTestPdf, pathToRefPdf, function (error, results) {
@@ -1244,7 +1260,7 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
             }
             results.forEach(function (result) {
               output = outputPair[result.passed];
-              let extra = { status_msg: output.n };
+              let extraOpt = { status_msg: output.n };
               ++g.testResults[output.n];
               logger.testEnd(
                 g.urls[0].identifier,
@@ -1252,13 +1268,14 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
                 output.s[1],
                 result.description,
                 null,
-                extra
+                extraOpt
               );
             });
           }
           FinishTestItem();
         });
         break;
+      }
       default:
         throw new Error("Unexpected state.");
     }
@@ -1316,18 +1333,18 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
     }
     var index = 0;
     typeSpecificResults.forEach(function (result) {
-      var output = outputPair[result.passed];
-      var extra = { status_msg: output.n };
+      var output2 = outputPair[result.passed];
+      var extraOpt = { status_msg: output2.n };
 
-      ++g.testResults[output.n];
+      ++g.testResults[output2.n];
       logger.testStatus(
         g.urls[0].identifier,
         result.description + " item " + ++index,
-        output.s[0],
-        output.s[1],
+        output2.s[0],
+        output2.s[1],
         null,
         null,
-        extra
+        extraOpt
       );
     });
 
@@ -1363,7 +1380,7 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
       CleanUpCrashDumpFiles();
       StartCurrentURI(URL_TARGET_TYPE_REFERENCE);
       break;
-    case URL_TARGET_TYPE_REFERENCE:
+    case URL_TARGET_TYPE_REFERENCE: {
       // Both documents have been loaded. Compare the renderings and see
       // if the comparison result matches the expected result specified
       // in the manifest.
@@ -1581,6 +1598,7 @@ function RecordResult(testRunTime, errorMsg, typeSpecificResults) {
       CleanUpCrashDumpFiles();
       FinishTestItem();
       break;
+    }
     default:
       throw new Error("Unexpected state.");
   }
@@ -1747,10 +1765,19 @@ function ResetRenderingState() {
 }
 
 async function RestoreChangedPreferences() {
-  if (!g.prefsToRestore.length) {
+  // Restore any preferences set via SpecialPowers in a previous test.
+  // On Android, g.containingWindow typically doesn't doesn't have a
+  // SpecialPowers property because it was created before SpecialPowers was
+  // registered.
+  // Get a parent actor so that there is less waiting than with a child.
+  let { requiresRefresh } =
+    g.containingWindow.browsingContext.currentWindowGlobal
+      .getActor("SpecialPowers")
+      .flushPrefEnv();
+
+  if (!g.prefsToRestore.length && !requiresRefresh) {
     return;
   }
-  var requiresRefresh = false;
   g.prefsToRestore.reverse();
   g.prefsToRestore.forEach(function (ps) {
     requiresRefresh = requiresRefresh || ps.requiresRefresh;
@@ -1919,8 +1946,13 @@ function RecvContentReady(info) {
     g.resolveContentReady();
     g.resolveContentReady = null;
   } else {
-    g.contentGfxInfo = info.gfx;
-    InitAndStartRefTests();
+    // Prevent a race with GeckoView:SetFocused, bug 1960620
+    // If about:blank loads synchronously, we'll RecvContentReady on the first tick,
+    // which is also the tick where GeckoViewContent processes messages from GeckoView.
+    setTimeout(() => {
+      g.contentGfxInfo = info.gfx;
+      InitAndStartRefTests();
+    }, 0);
   }
   return { remote: g.browserIsRemote };
 }
@@ -2229,12 +2261,12 @@ function comparePdfs(pathToTestPdf, pathToRefPdf, callback) {
                     let refTextItems = texts[1].items;
                     let testText;
                     let refText;
-                    let passed = refTextItems.every(function (o, i) {
+                    let passed = refTextItems.every(function (o, index) {
                       refText = o.str;
-                      if (!testTextItems[i]) {
+                      if (!testTextItems[index]) {
                         return false;
                       }
-                      testText = testTextItems[i].str;
+                      testText = testTextItems[index].str;
                       return testText === refText;
                     });
                     let description;
@@ -2265,10 +2297,8 @@ function comparePdfs(pathToTestPdf, pathToRefPdf, callback) {
                       passed,
                       description,
                     });
-                  },
-                  reject);
-                },
-                reject);
+                  }, reject);
+                }, reject);
               })
             );
           }

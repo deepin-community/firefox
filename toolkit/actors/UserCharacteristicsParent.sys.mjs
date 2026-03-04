@@ -17,8 +17,15 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "UserCharacteristicsPageService",
   "@mozilla.org/user-characteristics-page;1",
-  "nsIUserCharacteristicsPageService"
+  Ci.nsIUserCharacteristicsPageService
 );
+
+function mapToObjectReplacer(_key, value) {
+  if (value instanceof Map) {
+    return Object.fromEntries(value);
+  }
+  return value;
+}
 
 class UserCharacteristicsParent extends JSWindowActorParent {
   receiveMessage(aMessage) {
@@ -35,14 +42,14 @@ class UserCharacteristicsParent extends JSWindowActorParent {
         Services.obs.notifyObservers(
           null,
           "user-characteristics-screen-info-done",
-          JSON.stringify(aMessage.data)
+          JSON.stringify(aMessage.data, mapToObjectReplacer)
         );
         break;
       case "PointerInfo:Populated":
         Services.obs.notifyObservers(
           null,
           "user-characteristics-pointer-info-done",
-          JSON.stringify(aMessage.data)
+          JSON.stringify(aMessage.data, mapToObjectReplacer)
         );
         break;
       case "WindowInfo::Done":
@@ -59,4 +66,5 @@ class UserCharacteristicsParent extends JSWindowActorParent {
 export {
   UserCharacteristicsParent,
   UserCharacteristicsParent as UserCharacteristicsWindowInfoParent,
+  UserCharacteristicsParent as UserCharacteristicsCanvasRenderingParent,
 };

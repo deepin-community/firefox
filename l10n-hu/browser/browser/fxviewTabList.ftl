@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Áthelyezés a végére
     .accesskey = v
 fxviewtabrow-move-tab-window = Áthelyezés új ablakba
     .accesskey = a
+fxviewtabrow-send-to-device = Küldés eszközre
+    .accesskey = K
 fxviewtabrow-send-tab = Lap küldése eszközre
     .accesskey = k
 fxviewtabrow-pin-tab = Lap rögzítése
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Lap visszahangosítása
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = A(z) { $tabTitle } beállításai
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = A(z) { $tabTitle } némítása
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = A(z) { $tabTitle } némításának feloldása
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

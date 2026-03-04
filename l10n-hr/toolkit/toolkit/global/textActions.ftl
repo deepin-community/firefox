@@ -22,25 +22,29 @@ text-action-copy =
     .accesskey = K
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Kopiraj bez praćenja stranice
-    .accesskey = K
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Kopiraj čistu poveznicu
+    .accesskey = n
 text-action-paste =
     .label = Umetni
     .accesskey = U
 text-action-paste-no-formatting =
-    .label = Umetni bez formata
+    .label = Umetni neformatirano
     .accesskey = m
 text-action-paste-shortcut =
     .key = V
 text-action-delete =
     .label = Izbriši
     .accesskey = I
+text-action-reveal-password =
+    .label = Prikaži lozinku
+    .accesskey = k
 text-action-select-all =
-    .label = Označi sve
-    .accesskey = a
+    .label = Odaberi sve
+    .accesskey = d
 text-action-select-all-shortcut =
     .key = A
 text-action-spell-no-suggestions =
@@ -63,4 +67,13 @@ text-action-spell-dictionaries =
 text-action-search-text-box-clear =
     .title = Izbriši
 text-action-highlight-selection =
-    .label = Označi odabir
+    .label = Istakni odabir
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Kopiraj poveznicu na istaknuti tekst
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Kopiraj čistu poveznicu na istaknuti tekst

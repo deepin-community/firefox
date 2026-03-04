@@ -5,11 +5,10 @@
 #include "AudioDecoderInputTrack.h"
 
 #include "MediaData.h"
+#include "RLBoxSoundTouch.h"
+#include "Tracing.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_media.h"
-#include "Tracing.h"
-
-#include "RLBoxSoundTouch.h"
 
 namespace mozilla {
 
@@ -176,7 +175,7 @@ void AudioDecoderInputTrack::DispatchPushBatchedDataIfNeeded() {
         }
         PushBatchedDataIfNeeded();
       },
-      []() { MOZ_DIAGNOSTIC_ASSERT(false); });
+      []() { MOZ_DIAGNOSTIC_CRASH("DispatchPushBatchedDataIfNeeded reject"); });
 }
 
 void AudioDecoderInputTrack::PushBatchedDataIfNeeded() {
@@ -219,7 +218,7 @@ void AudioDecoderInputTrack::PushDataToSPSCQueue(SPSCData& data) {
   AssertOnDecoderThread();
   const bool rv = mSPSCQueue.Enqueue(data);
   MOZ_DIAGNOSTIC_ASSERT(rv, "Failed to push data, SPSC queue is full!");
-  Unused << rv;
+  (void)rv;
 }
 
 void AudioDecoderInputTrack::SetVolume(float aVolume) {
@@ -441,7 +440,7 @@ TrackTime AudioDecoderInputTrack::AppendTimeStretchedDataToSegment(
     }
   });
   MOZ_ASSERT(consumedDuration >= 0);
-  Unused << GetDataFromTimeStretcher(aExpectedDuration, aOutput);
+  (void)GetDataFromTimeStretcher(aExpectedDuration, aOutput);
   return consumedDuration;
 }
 

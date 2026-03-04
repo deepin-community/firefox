@@ -112,7 +112,7 @@ impl<'a> FirefoxCapabilities<'a> {
     }
 }
 
-impl<'a> BrowserCapabilities for FirefoxCapabilities<'a> {
+impl BrowserCapabilities for FirefoxCapabilities<'_> {
     fn init(&mut self, capabilities: &Capabilities) {
         self.set_binary(capabilities);
     }
@@ -323,6 +323,7 @@ impl<'a> BrowserCapabilities for FirefoxCapabilities<'a> {
                     ));
                 }
             }
+            // Bug 1967916: Remove when Firefox 140 is no longer supported
             "moz:debuggerAddress" => {
                 if !value.is_boolean() {
                     return Err(WebDriverError::new(

@@ -30,6 +30,10 @@ options-context-inspector = Inspektör
 options-show-user-agent-styles-label = Visa webbläsarstilar
 options-show-user-agent-styles-tooltip =
     .title = Slå på detta kommer att visa standard stilar som är laddade av webbläsaren.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Visa Browser Shadow DOM
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Aktivera detta kommer att visa Shadow DOM-element som hanteras av webbläsaren.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Trunkera DOM-attribut
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Inaktivera HTTP Cache (när verktygslådan ä
 options-disable-http-cache-tooltip =
     .title = Aktivera det här alternativet inaktiverar HTTP-cache för alla flikar som har verktygslådan öppen. Service Workers påverkas inte av det här alternativet.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Inaktivera JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Inaktivera JavaScript *
 options-disable-javascript-tooltip =
     .title = Väljer du det här alternativet kommer JavaScript att inaktiveras för den aktuella fliken. Om fliken eller verktygslådan stängs kommer inställningen att glömmas.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Aktivera källmappning
 options-source-maps-tooltip =
     .title = Om du aktiverar det här alternativet kommer källor att mappas i verktygen.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (endast aktuell session, laddar om sidan)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Endast aktuell session, laddar om sidan
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (laddar om sidan)

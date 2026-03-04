@@ -26,7 +26,7 @@ menu =
     .title = Aberi su menù
 # This menuitem is only visible on Windows and macOS
 about-logins-menu-menuitem-import-from-another-browser = Importa dae un'àteru navigadore...
-about-logins-menu-menuitem-import-from-a-file = Importa dae un'archìviu...
+about-logins-menu-menuitem-import-from-a-file = Importa dae un’archìviu...
 about-logins-menu-menuitem-export-logins = Esporta credentziales...
 about-logins-menu-menuitem-remove-all-logins = Boga·nche totu is credentziales...
 about-logins-menu-menuitem-export-logins2 = Esporta craes…
@@ -113,8 +113,8 @@ login-intro-instructions-fxa2 = Crea unu contu o identìfica·ti in su dispositi
 login-intro-instructions-fxa-settings = Bae a Cunfiguratzione > Sincroniza > Ativa sincronizatzione... Seletziona sa casella «Credentziales e craes».
 login-intro-instructions-fxa-passwords-help = Bìsita s'<a data-l10n-name="passwords-help-link">assistèntzia pro is craes</a> pro àteru agiudu.
 about-logins-intro-browser-only-import = Si is credentziales tuas sunt sarvadas in un'àteru navigadore, ddas podes <a data-l10n-name="import-link">importare a { -brand-product-name }</a>
-about-logins-intro-import2 = Si is credentziales tuas sunt sarvadas a foras de { -brand-product-name }, ddas podes <a data-l10n-name="import-browser-link">importare dae un'àteru navigadore</a> o <a data-l10n-name="import-file-link">dae un'archìviu</a>
-about-logins-intro-import3 = Sèbera su sinnu "prus" in artu pro agiùnghere una crae. Podes fintzas <a data-l10n-name="import-browser-link">importare craes dae un'àteru navigadore</a> o <a data-l10n-name="import-file-link">dae un'archìviu</a>.
+about-logins-intro-import2 = Si is credentziales tuas sunt sarvadas a foras de { -brand-product-name }, ddas podes <a data-l10n-name="import-browser-link">importare dae un’àteru navigadore</a> o <a data-l10n-name="import-file-link">dae un’archìviu</a>
+about-logins-intro-import3 = Sèbera su sinnu "prus" in artu pro agiùnghere una crae. Podes fintzas <a data-l10n-name="import-browser-link">importare craes dae un’àteru navigadore</a> o <a data-l10n-name="import-file-link">dae un’archìviu</a>.
 
 ## Login
 
@@ -140,6 +140,8 @@ login-item-copied-username-button-text = Copiadu!
 login-item-password-label = Crae
 login-item-password-reveal-checkbox =
     .aria-label = Ammustra crae
+login-item-password-conceal-checkbox =
+    .aria-label = Cua sa crae
 login-item-copy-password-button-text = Còpia
 login-item-copied-password-button-text = Copiadu!
 login-item-save-changes-button = Sarva is modìficas
@@ -301,7 +303,7 @@ about-logins-confirm-remove-all-sync-dialog-message3 =
 ##
 
 about-logins-confirm-export-dialog-title = Esporta credentziales e craes
-about-logins-confirm-export-dialog-message = Is craes tuas ant a èssere sarvadas comente testu leghìbile (comente «Cr@eN0Segura»), duncas chie si siat abèrgiat s'archìviu esportadu ddas at a pòdere bìdere.
+about-logins-confirm-export-dialog-message = Is craes tuas ant a èssere sarvadas comente testu leghìbile (comente «Cr@eN0Segura»), duncas chie si siat abèrgiat s’archìviu esportadu ddas at a pòdere bìdere.
 about-logins-confirm-export-dialog-confirm-button = Esporta...
 about-logins-confirm-export-dialog-title2 = Avisu in contu de s’esportatzione de craes
 about-logins-confirm-export-dialog-message2 =

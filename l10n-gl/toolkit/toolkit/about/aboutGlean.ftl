@@ -3,15 +3,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-### "Glean" and "Glean SDK" should remain in English.
-
 ### "FOG", "Glean", and "Glean SDK" should remain in English.
 
 -fog-brand-name = FOG
 -glean-brand-name = Glean
 glean-sdk-brand-name = SDK de { -glean-brand-name }
 glean-debug-ping-viewer-brand-name = Visor de latencia de depuración de { -glean-brand-name }
-
 about-glean-page-title2 = Sobre { -glean-brand-name }
 about-glean-header = Sobre { -glean-brand-name }
 about-glean-interface-description =
@@ -19,7 +16,11 @@ about-glean-interface-description =
     é unha biblioteca de recollida de datos utilizada nos proxectos de { -vendor-short-name }.
     Esta interface está deseñada para que persoas desenvolvedoras e probadoras
     <a data-l10n-name="fog-link">proben a instrumentación</a> manualmente.
-
+about-glean-category-about-glean = Acerca de { -glean-brand-name }
+about-glean-category-manual-testing = Proba manual
+about-glean-category-adhoc-testing = Proba ad hoc
+about-glean-category-profiler = Usando o perfilador
+about-glean-category-about-data = Acerca dos datos
 about-glean-upload-enabled = A carga de datos está activada.
 about-glean-upload-disabled = A carga de datos está desactivada.
 about-glean-upload-enabled-local = A carga de datos só está activada para enviar a un servidor local.
@@ -29,7 +30,6 @@ about-glean-upload-fake-enabled =
     para que os datos se graven en local.
     Nota: se defines unha etiqueta de depuración, os pings enviaranse ao
     <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a> sen importar a configuración.
-
 # This message is followed by a bulleted list.
 about-glean-prefs-and-defines = As <a data-l10n-name="fog-prefs-and-defines-doc-link">preferencias e definicións</a> relevantes inclúen:
 # Variables:
@@ -48,7 +48,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
-
+about-glean-additional-links =
+    Para unha explicación das diferentes formas de rexistrar e atopar datos, consulta a
+    pestana <strong>Acerca dos datos</strong>.
 about-glean-about-testing-header = Sobre as probas
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -56,11 +58,12 @@ about-glean-manual-testing =
     <a data-l10n-name="fog-instrumentation-test-doc-link">documentación de proba de instrumentación de { -fog-brand-name }</a>
     e na documentación de <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>,
     pero, en resumo, para probar manualmente que a súa instrumentación funciona, debería:
-
 # This message is an option in a dropdown filled with untranslated names of pings.
 about-glean-no-ping-label = (non enviar ningún ping)
 # An in-line text input field precedes this string.
 about-glean-label-for-tag-pings = No campo anterior asegúrate de que hai unha etiqueta de depuración memorable para que poidas recoñecer os teus pings máis tarde.
+# An in-line text input field precedes this string.
+about-glean-label-for-tag-pings-with-requirements = Establece unha etiqueta de depuración fácil de recordar <span>(20 caracteres ou menos, só alfanuméricos e -)</span> para que poidas recoñecer os teus pings máis tarde.
 # An in-line drop down list precedes this string.
 # Do not translate strings between <code> </code> tags.
 about-glean-label-for-ping-names =
@@ -83,7 +86,6 @@ about-glean-label-for-controls-submit =
 about-glean-li-for-visit-gdpv =
     <a data-l10n-name="gdpv-tagged-pings-link">Visita a páxina de { glean-debug-ping-viewer-brand-name } para ver os pings coa túa etiqueta</a>.
     Non deberían pasar máis duns segundos desde que premas o botón ata que chegue o ping. Ás veces pode levar uns poucos minutos.
-
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-explanation =
     Para máis probas <i>ad hoc</i>,
@@ -91,11 +93,52 @@ about-glean-adhoc-explanation =
     abrindo unha consola de ferramentas de desenvolvemento aquí en <code>about:glean</code>
     e usando a API <code>testGetValue()</code> como
     <code>Glean.metricCategory.metricName.testGetValue()</code>.
-
-
+# Do not translate strings between <code> </code> tags.
+about-glean-adhoc-explanation2 =
+    Para máis probas <i>ad hoc</i>,
+    tamén pode determinar o valor actual dunha determinada peza de instrumentación
+    abrindo unha consola de ferramentas de desenvolvemento aquí en <code>about:glean</code>
+    e usando a API <code>testGetValue()</code> como
+    <code>Glean.metricCategory.metricName.testGetValue()</code>
+    para unha métrica chamada <code>metric.category.metric_name</code>.
+# Do not translate strings between <code> </code> tags.
+about-glean-adhoc-note =
+    Ten en conta que estás a usar a API de Glean JS mediante a consola das ferramentas de desenvolvemento.
+    Isto significa que a categoría e o nome da métrica están formateados
+    <code>camelCase</code> a diferenza das API Rust e C++.
+about-glean-profiler-explanation =
+    Para ver unha vista completa de todas as métricas rexistradas, podes usar o { -profiler-brand-name }.
+    Primeiro debes <a data-l10n-name="firefox-profiler-link">capturar un perfil de rendemento</a>.
+    Unha vez que captures o perfil, selecciona <q>Gráfico de marcadores</q> e mira os marcadores en <q>Telemetría</q>.
+about-glean-profiler-explanation-profiler =
+    No perfil de rendemento podes ver todas as métricas recompiladas, cando se
+    recompilaron e exactamente que valores se recompilaron. Ao pasar o rato sobre os marcadores individuais,
+    pode verificar que se recompilou o valor correcto e que a recompilación se realizou no momento adecuado.
 controls-button-label-verbose = Aplicar a configuración e enviar un ping
-
+about-glean-feedback-settings-only =
+    .message = Configuración aplicada!
+about-glean-feedback-settings-and-ping =
+    .message = Configuración aplicada e ping enviado!
 about-glean-about-data-header = Sobre os datos
+about-glean-about-data-description =
+    Existen diferentes ferramentas que podes usar para visualizar os teus datos, dependendo do
+    que esteas buscando.
+about-glean-about-data-description-list-intro =
+    Consulta a lista a continuación para coñecer os casos de uso
+    específicos de cada ferramenta:
+about-glean-about-data-list-item-dictionary =
+    Para consultar a lista de datos recompilados por { -glean-brand-name } por aplicación, consulta o
+    <a data-l10n-name="glean-dictionary-link">dicionario de { -glean-brand-name }</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Para consultar os datos recompilados mediante a telemetría herdada, consulta
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Para consultar as etiquetas de depuración, ver pings completos, ver unha transmisión de eventos en directo ou ver as visualizacións
+    das métricas, consulta o
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Para rexistrar un perfil de rendemento e ver todas as métricas rexistradas, utiliza o
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     Para consultar a lista de datos recollidos, consulte a
     <a data-l10n-name="glean-dictionary-link">dicionario de { -glean-brand-name }</a>.

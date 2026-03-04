@@ -14,17 +14,20 @@ const require = BrowserLoader({
 
 const {
   createFactory,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const {
   render,
   unmountComponentAtNode,
-} = require("resource://devtools/client/shared/vendor/react-dom.js");
+} = require("resource://devtools/client/shared/vendor/react-dom.mjs");
 const Provider = createFactory(
   require("resource://devtools/client/shared/vendor/react-redux.js").Provider
 );
 const {
   bindActionCreators,
 } = require("resource://devtools/client/shared/vendor/redux.js");
+const {
+  START_IGNORE_ACTION,
+} = require("resource://devtools/client/shared/redux/middleware/ignore.js");
 const {
   l10n,
 } = require("resource://devtools/client/application/src/modules/l10n.js");
@@ -132,6 +135,9 @@ window.Application = {
   },
 
   destroy() {
+    // Prevents any further action from being dispatched
+    this.store.dispatch(START_IGNORE_ACTION);
+
     this.workersListener.removeListener();
 
     this._commands.resourceCommand.unwatchResources(

@@ -9,6 +9,7 @@
 
 // Keep others in (case-insensitive) order:
 #include "ImgDrawResult.h"
+#include "SVGGeometryProperty.h"
 #include "gfxContext.h"
 #include "mozilla/AutoRestore.h"
 #include "mozilla/PresShell.h"
@@ -18,10 +19,9 @@
 #include "mozilla/dom/SVGForeignObjectElement.h"
 #include "nsDisplayList.h"
 #include "nsGkAtoms.h"
-#include "nsNameSpaceManager.h"
 #include "nsLayoutUtils.h"
+#include "nsNameSpaceManager.h"
 #include "nsRegion.h"
-#include "SVGGeometryProperty.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::image;
@@ -67,7 +67,7 @@ void SVGForeignObjectFrame::Init(nsIContent* aContent,
 
 nsresult SVGForeignObjectFrame::AttributeChanged(int32_t aNameSpaceID,
                                                  nsAtom* aAttribute,
-                                                 int32_t aModType) {
+                                                 AttrModType) {
   if (aNameSpaceID == kNameSpaceID_None) {
     if (aAttribute == nsGkAtoms::transform) {
       // We don't invalidate for transform changes (the layers code does that).
@@ -236,8 +236,12 @@ void SVGForeignObjectFrame::ReflowSVG() {
       static_cast<SVGElement*>(GetContent()), &x, &y, &w, &h);
 
   // If mRect's width or height are negative, reflow blows up! We must clamp!
-  if (w < 0.0f) w = 0.0f;
-  if (h < 0.0f) h = 0.0f;
+  if (w < 0.0f) {
+    w = 0.0f;
+  }
+  if (h < 0.0f) {
+    h = 0.0f;
+  }
 
   mRect = nsLayoutUtils::RoundGfxRectToAppRect(gfxRect(x, y, w, h),
                                                AppUnitsPerCSSPixel());
@@ -276,15 +280,16 @@ void SVGForeignObjectFrame::ReflowSVG() {
                   NS_FRAME_HAS_DIRTY_CHILDREN);
 }
 
-void SVGForeignObjectFrame::NotifySVGChanged(uint32_t aFlags) {
-  MOZ_ASSERT(aFlags & (TRANSFORM_CHANGED | COORD_CONTEXT_CHANGED),
+void SVGForeignObjectFrame::NotifySVGChanged(ChangeFlags aFlags) {
+  MOZ_ASSERT(aFlags.contains(ChangeFlag::TransformChanged) ||
+                 aFlags.contains(ChangeFlag::CoordContextChanged),
              "Invalidation logic may need adjusting");
 
   bool needNewBounds = false;  // i.e. mRect or ink overflow rect
   bool needReflow = false;
   bool needNewCanvasTM = false;
 
-  if (aFlags & COORD_CONTEXT_CHANGED) {
+  if (aFlags.contains(ChangeFlag::CoordContextChanged)) {
     // Coordinate context changes affect mCanvasTM if we have a
     // percentage 'x' or 'y'
     if (StyleSVGReset()->mX.HasPercent() || StyleSVGReset()->mY.HasPercent()) {
@@ -292,16 +297,17 @@ void SVGForeignObjectFrame::NotifySVGChanged(uint32_t aFlags) {
       needNewCanvasTM = true;
     }
 
+    const auto anchorResolutionParams = AnchorPosResolutionParams::From(this);
     // Our coordinate context's width/height has changed. If we have a
     // percentage width/height our dimensions will change so we must reflow.
-    if (StylePosition()->mWidth.HasPercent() ||
-        StylePosition()->mHeight.HasPercent()) {
+    if (StylePosition()->GetWidth(anchorResolutionParams)->HasPercent() ||
+        StylePosition()->GetHeight(anchorResolutionParams)->HasPercent()) {
       needNewBounds = true;
       needReflow = true;
     }
   }
 
-  if (aFlags & TRANSFORM_CHANGED) {
+  if (aFlags.contains(ChangeFlag::TransformChanged)) {
     if (mCanvasTM && mCanvasTM->IsSingular()) {
       needNewBounds = true;  // old bounds are bogus
     }
@@ -351,8 +357,12 @@ SVGBBox SVGForeignObjectFrame::GetBBoxContribution(
   SVGGeometryProperty::ResolveAll<SVGT::X, SVGT::Y, SVGT::Width, SVGT::Height>(
       content, &x, &y, &w, &h);
 
-  if (w < 0.0f) w = 0.0f;
-  if (h < 0.0f) h = 0.0f;
+  if (w < 0.0f) {
+    w = 0.0f;
+  }
+  if (h < 0.0f) {
+    h = 0.0f;
+  }
 
   if (aToBBoxUserspace.IsSingular()) {
     // XXX ReportToConsole
@@ -366,13 +376,10 @@ SVGBBox SVGForeignObjectFrame::GetBBoxContribution(
 gfxMatrix SVGForeignObjectFrame::GetCanvasTM() {
   if (!mCanvasTM) {
     NS_ASSERTION(GetParent(), "null parent");
-
     auto* parent = static_cast<SVGContainerFrame*>(GetParent());
     auto* content = static_cast<SVGForeignObjectElement*>(GetContent());
-
-    gfxMatrix tm = content->PrependLocalTransformsTo(parent->GetCanvasTM());
-
-    mCanvasTM = MakeUnique<gfxMatrix>(tm);
+    mCanvasTM = MakeUnique<gfxMatrix>(content->ChildToUserSpaceTransform() *
+                                      parent->GetCanvasTM());
   }
   return *mCanvasTM;
 }

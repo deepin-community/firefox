@@ -6,11 +6,11 @@
 
 #include "mozilla/dom/TrustedTypePolicy.h"
 
+#include <utility>
+
 #include "mozilla/dom/DOMString.h"
 #include "mozilla/dom/TrustedTypePolicyFactory.h"
 #include "mozilla/dom/TrustedTypesBinding.h"
-
-#include <utility>
 
 namespace mozilla::dom {
 
@@ -70,7 +70,7 @@ already_AddRefed<T> TrustedTypePolicy::CreateTrustedType(
     policyValue = EmptyString();
   }
 
-  RefPtr<T> trustedObject = MakeRefPtr<T>(std::move(policyValue));
+  RefPtr<T> trustedObject = new T(std::move(policyValue));
 
   // TODO: add special handling for `TrustedScript` when default policy support
   // is added.
@@ -81,7 +81,7 @@ already_AddRefed<T> TrustedTypePolicy::CreateTrustedType(
 template <typename CallbackObject>
 void TrustedTypePolicy::DetermineTrustedPolicyValue(
     const RefPtr<CallbackObject>& aCallbackObject, const nsAString& aValue,
-    const Sequence<JS::Value>& aArguments, bool aThrowIfMissing,
+    const nsTArray<JS::Value>& aArguments, bool aThrowIfMissing,
     ErrorResult& aErrorResult, nsAString& aResult) const {
   if (!aCallbackObject) {
     aResult.SetIsVoid(true);

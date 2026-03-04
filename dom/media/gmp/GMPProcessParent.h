@@ -7,11 +7,11 @@
 #ifndef GMPProcessParent_h
 #define GMPProcessParent_h 1
 
-#include "mozilla/Attributes.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/thread.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
+#include "mozilla/media/MediaUtils.h"
 #include "nsIFile.h"
 
 class nsIRunnable;
@@ -88,6 +88,9 @@ class GMPProcessParent final : public mozilla::ipc::GeckoChildProcessHost {
   static bool sIsMainThreadInitDone;
 #  endif
 #endif
+
+  // Ticket for blocking shutdown while the process is live.
+  UniquePtr<media::ShutdownBlockingTicket> mShutdownBlocker;
 
   // For normalizing paths to be compatible with sandboxing.
   // We use normalized paths to generate the sandbox ruleset. Once

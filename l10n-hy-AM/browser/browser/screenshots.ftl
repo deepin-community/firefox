@@ -9,8 +9,8 @@ screenshot-shortcut =
     .key = S
 screenshots-instructions = Քաշեք և սեղմեք էջի վրա՝ ընտրելու տարածքը: Սեղմեք ESC՝ չեղարկելու համար:
 screenshots-cancel-button = Չեղարկել
-screenshots-save-visible-button = Պահպանել տեսանելին
-screenshots-save-page-button = Պահպանել ամբողջ էջը
+screenshots-save-visible-button = Պահել տեսանելին
+screenshots-save-page-button = Պահել ամբողջ էջը
 screenshots-download-button = Ներբեռնել
 screenshots-download-button-tooltip = Ներբեռնել էկրանի կորզումը
 screenshots-copy-button = Պատճենել
@@ -29,14 +29,14 @@ screenshots-meta-key =
        *[other] Ctrl
     }
 screenshots-notification-link-copied-title = Հղումը պատճենվել է
-screenshots-notification-link-copied-details = Ձեր պատկերի հղումը պատճենվել է: Սեղմեք { screenshots-meta-key }-V՝ այն տեղադրելու համար:
+screenshots-notification-link-copied-details = Ձեր պատկերի հղումը պատճենվել է: Սեղմեք { screenshots-meta-key }-V՝ այն փակցնելու համար:
 screenshots-notification-image-copied-title = Պատճենվել է
-screenshots-notification-image-copied-details = Ձեր պատկերը պատճենվել է սեղմատախտակին։ Սեղմեք { screenshots-meta-key }-V տեղադրելու համար։
+screenshots-notification-image-copied-details = Ձեր պատկերը պատճենվել է սեղմատախտակին։ Սեղմեք { screenshots-meta-key }-V փակցնելու համար։
 screenshots-request-error-title = Անսարք:
-screenshots-request-error-details = Ցավոք մենք չենք կարող պահպանել պատկեր: Կրկին փորձեք ավելի ուշ:
+screenshots-request-error-details = Ցավոք մենք չենք կարող պահել պատկեր: Կրկին փորձեք ավելի ուշ:
 screenshots-connection-error-title = Հնարավոր չէ ապակցել էկրանի ձեր հանույթներին:
 screenshots-connection-error-details = Խնդրում ենք ստուգել կապակցումը համացանցին: Եթե մուտք չունեք համացանց՝ հնարավոր է՝ դա { -screenshots-brand-name } ծառայության հետ կապված ժամանակավոր խնդիր է:
-screenshots-login-error-details = Մենք չենք կարող պահպանել ձեր պատկերը, քանի որ խնդիր կա { -screenshots-brand-name } ծառայության հետ: Փորձեք ավելի ուշ:
+screenshots-login-error-details = Մենք չենք կարող պահել ձեր պատկերը, քանի որ խնդիր կա { -screenshots-brand-name } ծառայության հետ: Փորձեք ավելի ուշ:
 screenshots-unshootable-page-error-title = Հնարավոր չէ ստանալ էկրանի հանույթը:
 screenshots-unshootable-page-error-details = Սա ստանդարտ վեբ էջ չէ, ուստի դուք չեք կարող ստանալ դրա հանույթը:
 screenshots-empty-selection-error-title = Ընտրվածը քիչ է
@@ -56,18 +56,6 @@ screenshots-component-cancel-button =
     .aria-label = Չեղարկել
 # Variables
 #   $shortcut (String) - A keyboard shortcut for copying the screenshot.
-screenshots-component-copy-button =
-    .title = Պատճենել ({ $shortcut })
-    .aria-label = Պատճենել
-screenshots-component-copy-button-label = Պատճենել
-# Variables
-#   $shortcut (String) - A keyboard shortcut for saving/downloading the screenshot.
-screenshots-component-download-button =
-    .title = Ներբեռնել ({ $shortcut })
-    .aria-label = Ներբեռնել
-screenshots-component-download-button-label = Ներբեռնել
-# Variables
-#   $shortcut (String) - A keyboard shortcut for copying the screenshot.
 screenshots-component-copy-button-2 = Պատճենել
     .title = Պատճենել ({ $shortcut })
     .aria-label = Պատճենել
@@ -82,12 +70,3 @@ screenshots-component-download-button-2 = Ներբեռնել
 
 screenshots-component-download-key = S
 screenshots-component-copy-key = C
-
-##
-
-# This string represents the selection size area
-# "x" here represents "by" (i.e 123 by 456)
-# Variables:
-#   $width (Number) - The width of the selection region in pixels
-#   $height (Number) - The height of the selection region in pixels
-screenshots-overlay-selection-region-size-2 = { $width } x { $height }

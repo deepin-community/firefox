@@ -2,17 +2,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-crashreporter-title = Amassaɣay n uɣelluy
-crashreporter-crash-message = { -brand-short-name } yufa-d ugur arussin u yeɣli.
+crashreporter-branded-title = { -brand-short-name } aneqqis n truẓi
+crashreporter-apology = Nesḥassef
 crashreporter-plea = Iwakken ad ɣ-d-tefkeḍ tallalt i tifin akked useɣti n wugur-agi, tzemreḍ ad ɣ-d-tazeneḍ assaɣ n uɣelluy.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Ttfaṣil: { $details }
+crashreporter-error-details-header = Talqayt :
 crashreporter-no-run-message = Asnas-agi ittuselkem deffir n uɣelluy iwakken ad yazen ugur yeḍṛan i umaẓrag n usnas. Ur issefk ara ad ittusenker s srid.
 crashreporter-button-details = Aglam leqqayen…
+crashreporter-loading-details = Asali…
 crashreporter-view-report-title = Agbur n ussaɣ
 crashreporter-comment-prompt = Rnu awennit (Iwenniten ad ten-walin akk yemdanen)
 crashreporter-report-info = Assaɣ-agi yegber diɣen talɣut tatiknikant ɣef waddad n usnas m'akken yeɣli.
+crashreporter-checkbox-test-hardware = Senqed uguren n warrum d twila ɣef yibenk-inu.
+crashreporter-checkbox-send-report = Mel i { -vendor-short-name } yerzan taruẓi-a i wakken ad tt-iṣeggem.
+crashreporter-checkbox-include-url = Seddu tansa n usebter iɣef lliɣ.
 crashreporter-submit-status = Aneqqis-inek n uɣelluy ad ittwazen send amdal neɣ asenker n wahil.
+crashreporter-submit-waiting-hardware-tests = Asenqed uguren n warrum d twila ɣef yibenk…
 crashreporter-submit-in-progress = Tuzzna n ussaɣ…
 crashreporter-submit-success = Assaɣ yettwazen akken iwata!
 crashreporter-submit-failure = Yeḍra-d wugur di tuzzna n ussaɣ.
@@ -23,6 +27,20 @@ crashreporter-button-ok = IH
 crashreporter-button-close = Mdel
 # $id (String) - the crash id from the server, typically a UUID
 crashreporter-crash-identifier = Asulay n uɣelluy: { $id }
+# $url (String) - the url which the user can use to view the submitted crash report
+crashreporter-crash-details = Tzemreḍ ad twaliḍ talqayt n truẓi-a di { $url }.
 
 # Error strings
 
+# $path (String) - the file path
+crashreporter-error-opening-file = Yecceḍ ulday n ufaylu ({ $path })
+# $path (String) - the file path
+crashreporter-error-loading-file = Yecceḍ usali n ufaylu ({ $path })
+# $path (String) - the path
+crashreporter-error-creating-dir = Yecceḍ usnulfu n uakaram ({ $path })
+crashreporter-error-no-home-dir = Ixuṣṣ ukaram agejdan
+# $from (String) - the source path
+# $to (String) - the destination path
+crashreporter-error-moving-path = Yecceḍ usenkez n { $from } ɣer { $to }
+crashreporter-error-version-eol = Taggara n lqem n ufaylu: ineqqisen n truẓi dayen ur ttwaqbalen ara.
+crashreporter-error-failed-to-generate-minidump = Asnas yecceḍ deg usirew n telɣut n truẓi.

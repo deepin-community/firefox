@@ -12,6 +12,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import mozilla.components.lib.auth.AuthenticationDelegate
 import mozilla.components.lib.auth.BiometricPromptAuth
@@ -41,22 +42,26 @@ class BiometricAuthenticationFragment : Fragment(), AuthenticationDelegate {
     ): View {
         return ComposeView(requireContext()).apply {
             setBiometricPrompt(this)
-            setContent {
-                FocusTheme {
-                    val biometricErrorText by biometricErrorText
-                    BiometricPromptContent(biometricErrorText) {
-                        showBiometricPrompt(
-                            biometricPromptAuth.get(),
-                            getString(R.string.biometric_prompt_title),
-                            getString(R.string.biometric_prompt_subtitle),
-                        )
-                    }
-                }
-            }
             isTransitionGroup = true
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (view as ComposeView).setContent {
+            FocusTheme {
+                val biometricErrorText by biometricErrorText
+                BiometricPromptContent(biometricErrorText) {
+                    showBiometricPrompt(
+                        biometricPromptAuth.get(),
+                        getString(R.string.biometric_prompt_title),
+                        getString(R.string.biometric_prompt_subtitle),
+                    )
+                }
+            }
+        }
+    }
     override fun onResume() {
         super.onResume()
         hideToolbar()

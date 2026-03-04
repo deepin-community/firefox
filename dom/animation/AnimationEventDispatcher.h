@@ -13,10 +13,11 @@
 #include "mozilla/ContentEvents.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/EventListenerManager.h"
+#include "mozilla/ProfilerMarkers.h"
 #include "mozilla/Variant.h"
 #include "mozilla/dom/AnimationPlaybackEvent.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/KeyframeEffect.h"
-#include "mozilla/ProfilerMarkers.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsPresContext.h"
 
@@ -29,6 +30,12 @@ struct AnimationEventInfo {
     OwningAnimationTarget mTarget;
     const EventMessage mMessage;
     const double mElapsedTime;
+    // The transition generation or animation relative position in the global
+    // animation list. We use this information to determine the order of
+    // cancelled transitions or animations. (i.e. We override the animation
+    // index of the cancelled transitions/animations because their animation
+    // indexes have been changed.)
+    const uint64_t mAnimationIndex;
     // FIXME(emilio): is this needed? This preserves behavior from before
     // bug 1847200, but it's unclear what the timeStamp of the event should be.
     // See also https://github.com/w3c/csswg-drafts/issues/9167
@@ -41,7 +48,7 @@ struct AnimationEventInfo {
 
   struct CssTransitionData : public CssAnimationOrTransitionData {
     // For transition events only.
-    const AnimatedPropertyID mProperty;
+    const CSSPropertyId mProperty;
   };
 
   struct WebAnimationData {
@@ -67,19 +74,36 @@ struct AnimationEventInfo {
     return nullptr;
   }
 
+  // Return the event context if the event is animationcancel or
+  // transitioncancel.
+  Maybe<dom::Animation::EventContext> GetEventContext() const {
+    if (mData.is<CssAnimationData>()) {
+      const auto& data = mData.as<CssAnimationData>();
+      return Some(dom::Animation::EventContext{
+          NonOwningAnimationTarget(data.mTarget), data.mAnimationIndex});
+    }
+    if (mData.is<CssTransitionData>()) {
+      const auto& data = mData.as<CssTransitionData>();
+      return Some(dom::Animation::EventContext{
+          NonOwningAnimationTarget(data.mTarget), data.mAnimationIndex});
+    }
+    return Nothing();
+  }
+
   void MaybeAddMarker() const;
 
   // For CSS animation events
   AnimationEventInfo(RefPtr<nsAtom> aAnimationName,
                      const NonOwningAnimationTarget& aTarget,
                      EventMessage aMessage, double aElapsedTime,
+                     uint64_t aAnimationIndex,
                      const TimeStamp& aScheduledEventTimeStamp,
                      dom::Animation* aAnimation)
       : mAnimation(aAnimation),
         mScheduledEventTimeStamp(aScheduledEventTimeStamp),
         mData(CssAnimationData{
-            {OwningAnimationTarget(aTarget.mElement, aTarget.mPseudoType),
-             aMessage, aElapsedTime},
+            {OwningAnimationTarget(aTarget.mElement, aTarget.mPseudoRequest),
+             aMessage, aElapsedTime, aAnimationIndex},
             std::move(aAnimationName)}) {
     if (profiler_thread_is_being_profiled_for_markers()) {
       MaybeAddMarker();
@@ -87,16 +111,17 @@ struct AnimationEventInfo {
   }
 
   // For CSS transition events
-  AnimationEventInfo(const AnimatedPropertyID& aProperty,
+  AnimationEventInfo(const CSSPropertyId& aProperty,
                      const NonOwningAnimationTarget& aTarget,
                      EventMessage aMessage, double aElapsedTime,
+                     uint64_t aTransitionGeneration,
                      const TimeStamp& aScheduledEventTimeStamp,
                      dom::Animation* aAnimation)
       : mAnimation(aAnimation),
         mScheduledEventTimeStamp(aScheduledEventTimeStamp),
         mData(CssTransitionData{
-            {OwningAnimationTarget(aTarget.mElement, aTarget.mPseudoType),
-             aMessage, aElapsedTime},
+            {OwningAnimationTarget(aTarget.mElement, aTarget.mPseudoRequest),
+             aMessage, aElapsedTime, aTransitionGeneration},
             aProperty}) {
     if (profiler_thread_is_being_profiled_for_markers()) {
       MaybeAddMarker();
@@ -120,23 +145,28 @@ struct AnimationEventInfo {
   AnimationEventInfo(AnimationEventInfo&& aOther) = default;
   AnimationEventInfo& operator=(AnimationEventInfo&& aOther) = default;
 
-  bool operator<(const AnimationEventInfo& aOther) const {
-    if (this->mScheduledEventTimeStamp != aOther.mScheduledEventTimeStamp) {
+  int32_t Compare(const AnimationEventInfo& aOther,
+                  nsContentUtils::NodeIndexCache& aCache) const {
+    if (mScheduledEventTimeStamp != aOther.mScheduledEventTimeStamp) {
       // Null timestamps sort first
-      if (this->mScheduledEventTimeStamp.IsNull() ||
-          aOther.mScheduledEventTimeStamp.IsNull()) {
-        return this->mScheduledEventTimeStamp.IsNull();
+      if (mScheduledEventTimeStamp.IsNull()) {
+        return -1;
       }
-      return this->mScheduledEventTimeStamp < aOther.mScheduledEventTimeStamp;
+      if (aOther.mScheduledEventTimeStamp.IsNull()) {
+        return 1;
+      }
+      return mScheduledEventTimeStamp < aOther.mScheduledEventTimeStamp ? -1
+                                                                        : 1;
     }
 
     // Events in the Web Animations spec are prior to CSS events.
-    if (this->IsWebAnimationEvent() != aOther.IsWebAnimationEvent()) {
-      return this->IsWebAnimationEvent();
+    if (IsWebAnimationEvent() != aOther.IsWebAnimationEvent()) {
+      return IsWebAnimationEvent() ? -1 : 1;
     }
 
-    AnimationPtrComparator<RefPtr<dom::Animation>> comparator;
-    return comparator.LessThan(this->mAnimation, aOther.mAnimation);
+    return mAnimation->CompareCompositeOrder(GetEventContext(),
+                                             *aOther.mAnimation,
+                                             aOther.GetEventContext(), aCache);
   }
 
   bool IsWebAnimationEvent() const { return mData.is<WebAnimationData>(); }
@@ -184,8 +214,8 @@ struct AnimationEventInfo {
       InternalTransitionEvent event(true, data.mMessage);
       data.mProperty.ToString(event.mPropertyName);
       event.mElapsedTime = data.mElapsedTime;
-      event.mPseudoElement =
-          nsCSSPseudoElements::PseudoTypeAsString(data.mTarget.mPseudoType);
+      event.mPseudoElement = nsCSSPseudoElements::PseudoRequestAsString(
+          data.mTarget.mPseudoRequest);
       event.AssignEventTime(WidgetEventTime(data.mEventEnqueueTimeStamp));
       RefPtr target = data.mTarget.mElement;
       EventDispatcher::Dispatch(target, aPresContext, &event);
@@ -197,7 +227,7 @@ struct AnimationEventInfo {
     data.mAnimationName->ToString(event.mAnimationName);
     event.mElapsedTime = data.mElapsedTime;
     event.mPseudoElement =
-        nsCSSPseudoElements::PseudoTypeAsString(data.mTarget.mPseudoType);
+        nsCSSPseudoElements::PseudoRequestAsString(data.mTarget.mPseudoRequest);
     event.AssignEventTime(WidgetEventTime(data.mEventEnqueueTimeStamp));
     RefPtr target = data.mTarget.mElement;
     EventDispatcher::Dispatch(target, aPresContext, &event);
@@ -207,7 +237,7 @@ struct AnimationEventInfo {
 class AnimationEventDispatcher final {
  public:
   explicit AnimationEventDispatcher(nsPresContext* aPresContext)
-      : mPresContext(aPresContext), mIsSorted(true), mIsObserving(false) {}
+      : mPresContext(aPresContext), mIsSorted(true) {}
 
   NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(AnimationEventDispatcher)
   NS_DECL_CYCLE_COLLECTION_NATIVE_CLASS(AnimationEventDispatcher)
@@ -220,7 +250,6 @@ class AnimationEventDispatcher final {
   // This will call SortEvents automatically if it has not already been
   // called.
   void DispatchEvents() {
-    mIsObserving = false;
     if (!mPresContext || mPendingEvents.IsEmpty()) {
       return;
     }
@@ -247,16 +276,19 @@ class AnimationEventDispatcher final {
   }
   bool HasQueuedEvents() const { return !mPendingEvents.IsEmpty(); }
 
- private:
-#ifndef DEBUG
-  ~AnimationEventDispatcher() = default;
-#else
-  ~AnimationEventDispatcher() {
-    MOZ_ASSERT(!mIsObserving,
-               "AnimationEventDispatcher should have disassociated from "
-               "nsRefreshDriver");
+  // There shouldn't be a lot of events in the queue, so linear search should be
+  // fine.
+  bool HasQueuedEventsFor(const dom::Animation* aAnimation) const {
+    for (const AnimationEventInfo& info : mPendingEvents) {
+      if (info.mAnimation.get() == aAnimation) {
+        return true;
+      }
+    }
+    return false;
   }
-#endif
+
+ private:
+  ~AnimationEventDispatcher() = default;
 
   // Sort all pending CSS animation/transition events by scheduled event time
   // and composite order.
@@ -266,11 +298,16 @@ class AnimationEventDispatcher final {
       return;
     }
 
-    for (auto& pending : mPendingEvents) {
-      pending.mAnimation->CachedChildIndexRef().reset();
-    }
+    struct AnimationEventInfoComparator {
+      mutable nsContentUtils::NodeIndexCache mCache;
 
-    mPendingEvents.StableSort();
+      bool LessThan(const AnimationEventInfo& aOne,
+                    const AnimationEventInfo& aOther) const {
+        return aOne.Compare(aOther, mCache) < 0;
+      }
+    };
+
+    mPendingEvents.StableSort(AnimationEventInfoComparator());
     mIsSorted = true;
   }
   void ScheduleDispatch();
@@ -279,7 +316,6 @@ class AnimationEventDispatcher final {
   using EventArray = nsTArray<AnimationEventInfo>;
   EventArray mPendingEvents;
   bool mIsSorted;
-  bool mIsObserving;
 };
 
 }  // namespace mozilla

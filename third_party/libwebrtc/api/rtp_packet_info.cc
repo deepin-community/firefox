@@ -11,7 +11,13 @@
 #include "api/rtp_packet_info.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <utility>
+#include <vector>
+
+#include "api/rtp_headers.h"
+#include "api/units/timestamp.h"
 
 namespace webrtc {
 

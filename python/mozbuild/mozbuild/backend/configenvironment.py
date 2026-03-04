@@ -11,9 +11,8 @@ from pathlib import Path
 from types import ModuleType
 
 import mozpack.path as mozpath
-import six
+from mozshellutil import quote as shell_quote
 
-from mozbuild.shellutil import quote as shell_quote
 from mozbuild.util import (
     FileAvoidWrite,
     ReadOnlyDict,
@@ -26,7 +25,7 @@ class ConfigStatusFailure(Exception):
     """Error loading config.status"""
 
 
-class BuildConfig(object):
+class BuildConfig:
     """Represents the output of configure."""
 
     _CODE_CACHE = {}
@@ -54,7 +53,7 @@ class BuildConfig(object):
             mod.__file__ = path
             sys.modules["config.status"] = mod
 
-            with open(path, "rt") as fh:
+            with open(path) as fh:
                 source = fh.read()
                 code_cache[path] = (
                     mtime,
@@ -76,7 +75,7 @@ class BuildConfig(object):
         return config
 
 
-class ConfigEnvironment(object):
+class ConfigEnvironment:
     """Perform actions associated with a configured but bare objdir.
 
     The purpose of this class is to preprocess files from the source directory
@@ -151,28 +150,24 @@ class ConfigEnvironment(object):
         self.bin_suffix = self.substs.get("BIN_SUFFIX", "")
 
         global_defines = [name for name in self.defines]
-        self.substs["ACDEFINES"] = " ".join(
-            [
-                "-D%s=%s" % (name, shell_quote(self.defines[name]).replace("$", "$$"))
-                for name in sorted(global_defines)
-            ]
-        )
+        self.substs["ACDEFINES"] = " ".join([
+            "-D%s=%s" % (name, shell_quote(self.defines[name]).replace("$", "$$"))
+            for name in sorted(global_defines)
+        ])
 
         def serialize(name, obj):
-            if isinstance(obj, six.string_types):
+            if isinstance(obj, str):
                 return obj
             if isinstance(obj, Iterable):
                 return " ".join(obj)
             raise Exception("Unhandled type %s for %s", type(obj), str(name))
 
         self.substs["ALLSUBSTS"] = "\n".join(
-            sorted(
-                [
-                    "%s = %s" % (name, serialize(name, self.substs[name]))
-                    for name in self.substs
-                    if self.substs[name]
-                ]
-            )
+            sorted([
+                "%s = %s" % (name, serialize(name, self.substs[name]))
+                for name in self.substs
+                if self.substs[name]
+            ])
         )
         self.substs["ALLEMPTYSUBSTS"] = "\n".join(
             sorted(["%s =" % name for name in self.substs if not self.substs[name]])
@@ -198,7 +193,7 @@ class ConfigEnvironment(object):
         )
 
 
-class PartialConfigDict(object):
+class PartialConfigDict:
     """Facilitates mapping the config.statusd defines & substs with dict-like access.
 
     This allows a buildconfig client to use buildconfig.defines['FOO'] (and
@@ -218,7 +213,7 @@ class PartialConfigDict(object):
         try:
             with open(self._config_track) as fh:
                 existing_files.update(fh.read().splitlines())
-        except IOError:
+        except OSError:
             pass
         return existing_files
 
@@ -241,7 +236,7 @@ class PartialConfigDict(object):
         existing_files = {Path(f) for f in existing_files}
 
         new_files = set()
-        for k, v in six.iteritems(values):
+        for k, v in values.items():
             new_files.add(Path(self._write_file(k, v)))
 
         for filename in existing_files - new_files:
@@ -268,7 +263,7 @@ class PartialConfigDict(object):
                 self._files.add(filename)
                 with open(filename) as f:
                     data = json.load(f)
-            except IOError:
+            except OSError:
                 pass
             self._dict[key] = data
 
@@ -297,7 +292,7 @@ class PartialConfigDict(object):
             yield var, self[var]
 
 
-class PartialConfigEnvironment(object):
+class PartialConfigEnvironment:
     """Allows access to individual config.status items via config.statusd/* files.
 
     This class is similar to the full ConfigEnvironment, which uses
@@ -335,13 +330,10 @@ class PartialConfigEnvironment(object):
         defines = config["defines"].copy()
 
         global_defines = [name for name in config["defines"]]
-        acdefines = " ".join(
-            [
-                "-D%s=%s"
-                % (name, shell_quote(config["defines"][name]).replace("$", "$$"))
-                for name in sorted(global_defines)
-            ]
-        )
+        acdefines = " ".join([
+            "-D%s=%s" % (name, shell_quote(config["defines"][name]).replace("$", "$$"))
+            for name in sorted(global_defines)
+        ])
         substs["ACDEFINES"] = acdefines
 
         all_defines = OrderedDict()

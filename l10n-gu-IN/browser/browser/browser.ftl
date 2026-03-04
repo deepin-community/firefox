@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -70,9 +67,6 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = ઓછ ટાઇપ કરો, વધુ શોધો: { $engineName } તમારા સરનામાં બારમાંથી જ શોધો.
 
-## Local search mode indicator labels in the urlbar
-
-
 ##
 
 urlbar-geolocation-blocked =
@@ -104,9 +98,6 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = આ પાનાં ({ $shortcut }) ને બુકમાર્ક કરો
 
-## Page Action Context Menu
-
-
 ## Auto-hide Context Menu
 
 full-screen-autohide =
@@ -118,7 +109,7 @@ full-screen-exit =
 
 ## Search Engine selection buttons (one-offs)
 
-# This string prompts the user to use the list of one-click search engines in
+# This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
 search-one-offs-with-title = આ સમયે, આની સાથે શોધો:
 search-one-offs-change-settings-compact-button =
@@ -133,19 +124,6 @@ search-one-offs-context-set-as-default =
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
     .label = શોધ એન્જિન ઉમેરો
-
-## Local search mode one-off buttons
-## Variables:
-##  $restrict (String): The restriction token corresponding to the search mode.
-##    Restriction tokens are special characters users can type in the urlbar to
-##    restrict their searches to certain sources (e.g., "*" to search only
-##    bookmarks).
-
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
 
 ## Bookmark Panel
 
@@ -212,32 +190,17 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = બંધ કરો
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = તમારી સ્ક્રીન પર બધી દૃશ્યમાન વિન્ડો વહેંચાયેલ હશે.
-
-## WebRTC window or screen share tab switch warning
-
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
 urlbar-search-mode-indicator-close =
     .aria-label = બંધ કરો
+# This placeholder is used when not in search mode and the user's default search
+# engine is unknown.
 urlbar-placeholder =
     .placeholder = સરનામું શોધો અથવા દાખલ કરો
 # Variables
@@ -265,14 +228,6 @@ urlbar-result-action-search-w-engine = { $engine } સાથે શોધો
 urlbar-result-action-switch-tab = ટૅબ પર સ્વિચ કરો
 urlbar-result-action-visit = મુલાકાત
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
-## In these actions "Search" is a verb, followed by where the search is performed.
-
-
-## Labels shown above groups of urlbar results
-
-
 ## Reader View toolbar buttons
 
 # This should match menu-view-enter-readerview in menubar.ftl
@@ -281,11 +236,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = રીડર દૃશ્ય બંધ કરો
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -363,9 +313,6 @@ save-to-pocket-button =
     .label = { -pocket-brand-name } પર સાચવો
     .tooltiptext = { -pocket-brand-name } પર સાચવો
 
-## Repair text encoding toolbar button
-
-
 ## Customize Toolbar Buttons
 
 toolbar-overflow-customize-button =
@@ -397,9 +344,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = આ સાઇટ પરના કેટલાક ઑડિઓ અથવા વિડિઓ DRM સૉફ્ટવેરનો ઉપયોગ કરે છે, જે { -brand-short-name } તમને તેની સાથે શું કરી શકે છે તે મર્યાદિત કરી શકે છે.
 
-## Password save/update panel
-
-
 ##
 
 ui-tour-info-panel-close =
@@ -420,10 +364,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = જ્યારે પોપઅપ અટકાવાયેલ હોય ત્યારે આ સંદેશો બતાવશો નહિં
     .accesskey = D
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -458,29 +398,12 @@ tabs-toolbar-list-all-tabs =
     .label = બધા ટૅબ્સની યાદી કરો
     .tooltiptext = બધા ટૅબ્સની યાદી કરો
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } એ { -vendor-short-name } ને આપોઆપ અમુક માહિતી મોકલે છે કે જેથી અમે તમારો અનુભવ સુધારી શકીએ.
 data-reporting-notification-button =
     .label = શું વહેંચવું છે તે પસંદ કરો
     .accesskey = C
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -489,9 +412,6 @@ refresh-blocked-redirect-label = { -brand-short-name } એ આ પાનાં�
 refresh-blocked-allow =
     .label = પરવાનગી આપો
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

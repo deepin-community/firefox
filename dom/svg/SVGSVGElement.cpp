@@ -6,27 +6,26 @@
 
 #include "mozilla/dom/SVGSVGElement.h"
 
+#include "DOMSVGAngle.h"
+#include "DOMSVGLength.h"
+#include "DOMSVGNumber.h"
+#include "DOMSVGPoint.h"
+#include "ISVGSVGFrame.h"
 #include "mozilla/ContentEvents.h"
-#include "mozilla/dom/BindContext.h"
-#include "mozilla/dom/DOMMatrix.h"
-#include "mozilla/dom/SVGSVGElementBinding.h"
-#include "mozilla/dom/SVGMatrix.h"
-#include "mozilla/dom/SVGRect.h"
-#include "mozilla/dom/SVGViewElement.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/ISVGDisplayableFrame.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/SMILAnimationController.h"
 #include "mozilla/SMILTimeContainer.h"
 #include "mozilla/SVGUtils.h"
-
-#include "DOMSVGAngle.h"
-#include "DOMSVGLength.h"
-#include "DOMSVGNumber.h"
-#include "DOMSVGPoint.h"
+#include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/DOMMatrix.h"
+#include "mozilla/dom/SVGMatrix.h"
+#include "mozilla/dom/SVGRect.h"
+#include "mozilla/dom/SVGSVGElementBinding.h"
+#include "mozilla/dom/SVGViewElement.h"
 #include "nsFrameSelection.h"
 #include "nsIFrame.h"
-#include "ISVGSVGFrame.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT_CHECK_PARSER(SVG)
 
@@ -130,7 +129,8 @@ float SVGSVGElement::CurrentScale() const { return mCurrentScale; }
 
 void SVGSVGElement::SetCurrentScale(float aCurrentScale) {
   // Prevent bizarre behaviour and maxing out of CPU and memory by clamping
-  aCurrentScale = clamped(aCurrentScale, CURRENT_SCALE_MIN, CURRENT_SCALE_MAX);
+  aCurrentScale =
+      std::clamp(aCurrentScale, CURRENT_SCALE_MIN, CURRENT_SCALE_MAX);
 
   if (aCurrentScale == mCurrentScale) {
     return;
@@ -171,6 +171,20 @@ void SVGSVGElement::PauseAnimations() {
   // else we're not the outermost <svg> or not bound to a tree, so silently fail
 }
 
+static SMILTime SecondsToSMILTime(float aSeconds) {
+  double milliseconds = double(aSeconds) * PR_MSEC_PER_SEC;
+  // Round to nearest whole number before converting, to avoid precision
+  // errors
+  return SVGUtils::ClampToInt64(NS_round(milliseconds));
+}
+
+void SVGSVGElement::PauseAnimationsAt(float aSeconds) {
+  if (mTimedDocumentRoot) {
+    mTimedDocumentRoot->PauseAt(SecondsToSMILTime(aSeconds));
+  }
+  // else we're not the outermost <svg> or not bound to a tree, so silently fail
+}
+
 void SVGSVGElement::UnpauseAnimations() {
   if (mTimedDocumentRoot) {
     mTimedDocumentRoot->Resume(SMILTimeContainer::PAUSE_SCRIPT);
@@ -205,11 +219,7 @@ void SVGSVGElement::SetCurrentTime(float seconds) {
     return;
   }
   FlushAnimations();
-  double fMilliseconds = double(seconds) * PR_MSEC_PER_SEC;
-  // Round to nearest whole number before converting, to avoid precision
-  // errors
-  SMILTime lMilliseconds = SVGUtils::ClampToInt64(NS_round(fMilliseconds));
-  mTimedDocumentRoot->SetCurrentTime(lMilliseconds);
+  mTimedDocumentRoot->SetCurrentTime(SecondsToSMILTime(seconds));
   AnimationNeedsResample();
   // Trigger synchronous sample now, to:
   //  - Make sure we get an up-to-date paint after this method
@@ -387,6 +397,31 @@ bool SVGSVGElement::IsEventAttributeNameInternal(nsAtom* aName) {
 LengthPercentage SVGSVGElement::GetIntrinsicWidthOrHeight(int aAttr) {
   MOZ_ASSERT(aAttr == ATTR_WIDTH || aAttr == ATTR_HEIGHT);
 
+  int otherAttr = (aAttr == ATTR_HEIGHT) ? ATTR_WIDTH : ATTR_HEIGHT;
+
+  if (!mLengthAttributes[aAttr].IsExplicitlySet() &&
+      mLengthAttributes[otherAttr].IsExplicitlySet()) {
+    const auto& viewBox = GetViewBoxInternal();
+    if (viewBox.HasRect()) {
+      auto aspectRatio = AspectRatio::FromSize(viewBox.GetAnimValue().width,
+                                               viewBox.GetAnimValue().height);
+      if (aAttr == ATTR_HEIGHT && aspectRatio) {
+        aspectRatio = aspectRatio.Inverted();
+      }
+      if (aspectRatio) {
+        if (mLengthAttributes[otherAttr].IsPercentage()) {
+          float rawSize = aspectRatio.ApplyToFloat(
+              mLengthAttributes[otherAttr].GetAnimValInSpecifiedUnits());
+          return LengthPercentage::FromPercentage(rawSize);
+        }
+
+        float rawSize = aspectRatio.ApplyToFloat(
+            mLengthAttributes[otherAttr].GetAnimValueWithZoom(this));
+        return LengthPercentage::FromPixels(rawSize);
+      }
+    }
+  }
+
   if (mLengthAttributes[aAttr].IsPercentage()) {
     float rawSize = mLengthAttributes[aAttr].GetAnimValInSpecifiedUnits();
     return LengthPercentage::FromPercentage(rawSize);
@@ -455,12 +490,12 @@ void SVGSVGElement::InvalidateTransformNotifyFrame() {
   // might fail this check if we've failed conditional processing
   if (ISVGSVGFrame* svgframe = do_QueryFrame(GetPrimaryFrame())) {
     svgframe->NotifyViewportOrTransformChanged(
-        ISVGDisplayableFrame::TRANSFORM_CHANGED);
+        ISVGDisplayableFrame::ChangeFlag::TransformChanged);
   }
 }
 
 SVGElement::EnumAttributesInfo SVGSVGElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 void SVGSVGElement::SetImageOverridePreserveAspectRatio(

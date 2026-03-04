@@ -7,11 +7,10 @@
 #ifndef mozilla_dom_idbfactory_h__
 #define mozilla_dom_idbfactory_h__
 
-#include "mozilla/Attributes.h"
-#include "mozilla/dom/BindingDeclarations.h"
-#include "mozilla/dom/quota/PersistenceType.h"
 #include "mozilla/GlobalTeardownObserver.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/quota/PersistenceType.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsISupports.h"
@@ -59,9 +58,6 @@ class IDBFactory final : public GlobalTeardownObserver, public nsWrapperCache {
   struct IDBFactoryGuard {};
 
   UniquePtr<PrincipalInfo> mPrincipalInfo;
-
-  // TODO: Unused, remove me!
-  nsCOMPtr<nsIGlobalObject> mGlobal;
 
   // This will only be set if the factory belongs to a window in a child
   // process.

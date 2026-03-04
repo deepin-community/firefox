@@ -38,6 +38,7 @@ import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSession.PromptDelegate
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.AutocompleteRequest
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.BeforeUnloadPrompt
+import org.mozilla.geckoview.GeckoSession.PromptDelegate.CertificateRequest
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.DateTimePrompt.Type.DATE
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.DateTimePrompt.Type.DATETIME_LOCAL
 import org.mozilla.geckoview.GeckoSession.PromptDelegate.DateTimePrompt.Type.MONTH
@@ -70,7 +71,7 @@ typealias AC_FILE_FACING_MODE = PromptRequest.File.FacingMode
 /**
  * Gecko-based PromptDelegate implementation.
  */
-@Suppress("LargeClass")
+@Suppress("LargeClass", "TooManyFunctions")
 internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSession) :
     PromptDelegate {
     override fun onSelectIdentityCredentialProvider(
@@ -169,6 +170,25 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
                 ),
             )
         }
+        return geckoResult
+    }
+
+    override fun onRequestCertificate(
+        session: GeckoSession,
+        request: CertificateRequest,
+    ): GeckoResult<PromptResponse> {
+        val geckoResult = GeckoResult<PromptResponse>()
+
+        val onComplete: (String?) -> Unit = {
+            geckoResult.complete(request.confirm(it))
+        }
+
+        geckoEngineSession.notifyObservers {
+            onPromptRequest(
+                PromptRequest.CertificateRequest(request.host, request.issuers, onComplete),
+            )
+        }
+
         return geckoResult
     }
 
@@ -282,15 +302,14 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
         return geckoResult
     }
 
-    @Suppress("MaxLineLength")
     override fun onLoginSelect(
         session: GeckoSession,
         prompt: AutocompleteRequest<Autocomplete.LoginSelectOption>,
     ): GeckoResult<PromptResponse>? {
         val promptOptions = prompt.options
 
-        val generatedPassword =
-            promptOptions.firstOrNull { option -> option.hint == Autocomplete.SelectOption.Hint.GENERATED }?.value?.password
+        val generatedPassword = promptOptions
+            .firstOrNull { option -> option.hint == Autocomplete.SelectOption.Hint.GENERATED }?.value?.password
 
         val geckoResult = GeckoResult<PromptResponse>()
         val onConfirmSelect: (Login) -> Unit = { login ->
@@ -449,6 +468,27 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
         prompt: PromptDelegate.FilePrompt,
     ): GeckoResult<PromptResponse>? {
         val geckoResult = GeckoResult<PromptResponse>()
+
+        if (prompt.type == GECKO_PROMPT_FILE_TYPE.FOLDER) {
+            val onSelect: (Context, Uri) -> Unit = { context, uri ->
+                if (!prompt.isComplete) {
+                    geckoResult.complete(prompt.confirm(context, uri))
+                }
+            }
+            val onDismiss: () -> Unit = {
+                prompt.dismissSafely(geckoResult)
+            }
+            geckoEngineSession.notifyObservers {
+                onPromptRequest(
+                    PromptRequest.Folder(
+                        onSelect,
+                        onDismiss,
+                    ),
+                )
+            }
+            return geckoResult
+        }
+
         val isMultipleFilesSelection = prompt.type == GECKO_PROMPT_FILE_TYPE.MULTIPLE
 
         val captureMode = when (prompt.capture) {
@@ -492,7 +532,6 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
         return geckoResult
     }
 
-    @Suppress("ComplexMethod")
     override fun onDateTimePrompt(
         session: GeckoSession,
         prompt: PromptDelegate.DateTimePrompt,
@@ -683,6 +722,30 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
         return geckoResult
     }
 
+    override fun onRedirectPrompt(
+        session: GeckoSession,
+        prompt: PromptDelegate.RedirectPrompt,
+    ): GeckoResult<PromptResponse> {
+        val geckoResult = GeckoResult<PromptResponse>()
+        val onAllow: () -> Unit = {
+            if (!prompt.isComplete) {
+                geckoResult.complete(prompt.confirm(AllowOrDeny.ALLOW))
+            }
+        }
+        val onDeny: () -> Unit = {
+            if (!prompt.isComplete) {
+                geckoResult.complete(prompt.confirm(AllowOrDeny.DENY))
+            }
+        }
+
+        geckoEngineSession.notifyObservers {
+            onPromptRequest(
+                PromptRequest.Redirect(prompt.targetUri ?: "", onAllow, onDeny),
+            )
+        }
+        return geckoResult
+    }
+
     override fun onBeforeUnloadPrompt(
         session: GeckoSession,
         geckoPrompt: BeforeUnloadPrompt,
@@ -701,8 +764,12 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
             }
         }
 
+        val onDismiss: () -> Unit = {
+            geckoPrompt.dismissSafely(geckoResult)
+        }
+
         geckoEngineSession.notifyObservers {
-            onPromptRequest(PromptRequest.BeforeUnload(title, onAllow, onDeny))
+            onPromptRequest(PromptRequest.BeforeUnload(title, onAllow, onDeny, onDismiss))
         }
 
         return geckoResult
@@ -808,6 +875,30 @@ internal class GeckoPromptDelegate(private val geckoEngineSession: GeckoEngineSe
                     onCancel,
                 ),
             )
+        }
+        return geckoResult
+    }
+
+    override fun onFolderUploadPrompt(
+        session: GeckoSession,
+        prompt: PromptDelegate.FolderUploadPrompt,
+    ): GeckoResult<PromptResponse>? {
+        val geckoResult = GeckoResult<PromptResponse>()
+        val directoryName = prompt.directoryName ?: ""
+
+        val onConfirm: () -> Unit = {
+            if (!prompt.isComplete) {
+                geckoResult.complete(prompt.confirm(AllowOrDeny.ALLOW))
+            }
+        }
+        val onCancel: () -> Unit = {
+            if (!prompt.isComplete) {
+                geckoResult.complete(prompt.confirm(AllowOrDeny.DENY))
+            }
+        }
+
+        geckoEngineSession.notifyObservers {
+            onPromptRequest(PromptRequest.FolderUploadPrompt(directoryName, onConfirm, onCancel))
         }
         return geckoResult
     }

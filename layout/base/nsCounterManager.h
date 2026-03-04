@@ -9,11 +9,10 @@
 #ifndef nsCounterManager_h_
 #define nsCounterManager_h_
 
-#include "mozilla/Attributes.h"
-#include "nsGenConList.h"
-#include "nsClassHashtable.h"
-#include "mozilla/Likely.h"
 #include "CounterStyleManager.h"
+#include "mozilla/Likely.h"
+#include "nsClassHashtable.h"
+#include "nsGenConList.h"
 
 class nsCounterList;
 struct nsCounterUseNode;
@@ -191,10 +190,11 @@ inline nsCounterChangeNode* nsCounterNode::ChangeNode() {
 }
 
 inline void nsCounterNode::Calc(nsCounterList* aList, bool aNotify) {
-  if (mType == USE)
+  if (mType == USE) {
     UseNode()->Calc(aList, aNotify);
-  else
+  } else {
     ChangeNode()->Calc(aList);
+  }
 }
 
 inline bool nsCounterNode::IsContentBasedReset() {
@@ -217,6 +217,10 @@ class nsCounterList : public nsGenConList {
       : mCounterName(aCounterName), mScope(aScope) {
     MOZ_ASSERT(aScope);
   }
+
+#if defined(DEBUG) || defined(MOZ_LAYOUT_DEBUGGER)
+  void Dump();
+#endif
 
   // Return the first node for aFrame on this list, or nullptr.
   nsCounterNode* GetFirstNodeFor(nsIFrame* aFrame) const {

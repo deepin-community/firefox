@@ -26,7 +26,6 @@
 #define jit_shared_AtomicOperations_feeling_lucky_gcc_h
 
 #include "mozilla/Assertions.h"
-#include "mozilla/Types.h"
 
 // Explicitly exclude tier-1 platforms.
 
@@ -136,6 +135,10 @@ inline void js::jit::AtomicOperations::fenceSeqCst() {
 #else
   __atomic_thread_fence(__ATOMIC_SEQ_CST);
 #endif
+}
+
+inline void js::jit::AtomicOperations::pause() {
+  // No default implementation.
 }
 
 template <typename T>

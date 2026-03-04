@@ -96,7 +96,7 @@ TEST(DelayedRunnable, BackgroundTaskQueueShutdownTask)
 
   // Leak the queue, so it gets cleaned up by xpcom-shutdown.
   nsISerialEventTarget* tq = taskQueue.forget().take();
-  mozilla::Unused << tq;
+  (void)tq;
 }
 
 /*
@@ -112,7 +112,7 @@ TEST(DelayedRunnable, nsThreadShutdownTask)
 
   // Leak the thread, so it gets cleaned up by xpcom-shutdown.
   nsIThread* t = thread.forget().take();
-  mozilla::Unused << t;
+  (void)t;
 }
 
 TEST(DelayedRunnable, TimerFiresBeforeRunnableRuns)
@@ -144,7 +144,7 @@ TEST(DelayedRunnable, TimerFiresBeforeRunnableRuns)
         tailTaskQueue2->DelayedDispatch(
             NS_NewRunnableFunction(__func__, [&] {}), 1);
         MonitorAutoLock lock(monitor);
-        auto timer = MakeRefPtr<mozilla::MediaTimer>();
+        auto timer = MakeRefPtr<mozilla::MediaTimer<mozilla::TimeStamp>>();
         timer->WaitFor(mozilla::TimeDuration::FromMilliseconds(1), __func__)
             ->Then(noTailTaskQueue, __func__, [&] {
               MonitorAutoLock lock(monitor);

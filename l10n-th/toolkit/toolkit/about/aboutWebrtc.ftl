@@ -194,7 +194,7 @@ about-webrtc-configuration-element-provided = จัดเตรียมไว�
 # been provided
 about-webrtc-configuration-element-not-provided = ไม่ได้จัดเตรียมไว้
 # The options set by the user in about:config that could impact a WebRTC call
-about-webrtc-custom-webrtc-configuration-heading = การกำหนดลักษณะ WebRTC ที่ตั้งโดยผู้ใช้
+about-webrtc-custom-webrtc-configuration-heading = ค่าปรับแต่ง WebRTC ที่ตั้งโดยผู้ใช้
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-user-modified-configuration-heading = การกำหนดค่า WebRTC ที่ผู้ใช้ปรับเปลี่ยน
 
@@ -227,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = สถิติเฟรมวิดีโอ - รหัส MediaStreamTrack: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = ได้บันทึกหน้าลงใน: { $path }
 about-webrtc-debug-mode-off-state-msg = บันทึกร่องรอยสามารถพบได้ที่: { $path }
@@ -315,6 +312,3 @@ about-webrtc-hide-msg-sdp = ซ่อน SDP
 about-webrtc-media-context-show-msg = แสดงบริบทสื่อ
 about-webrtc-media-context-hide-msg = ซ่อนบริบทสื่อ
 about-webrtc-media-context-heading = บริบทสื่อ
-
-##
-

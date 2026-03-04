@@ -34,9 +34,6 @@ download-cert-view-cert =
     .label = اعرض
 download-cert-view-text = افحص شهادة سلطة الشّهادات
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -66,8 +63,6 @@ client-auth-cert-details-issued-by = أصدرها: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = محفوظة في: { $storedOn }
-client-auth-cert-remember-box =
-    .label = تذكّر هذا القرار
 
 ## Set password (p12) dialog
 
@@ -79,6 +74,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = كلمة سرّ النّسخة الاحتياطيّة للشّهادة (مرّة ثانية):
 set-password-reminder = هامّ: إذا نسيت كلمة سرّ النّسخة الاحتياطيّة للشّهادة، لن تكون قادرًا على استعادة هذه النّسخة الاحتياطيّة لاحقًا.  الرجاء تسجيلها بمكان آمن.
-
-## Protected authentication alert
-

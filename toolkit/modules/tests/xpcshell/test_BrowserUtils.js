@@ -1,10 +1,6 @@
 /* Any copyright is dedicated to the Public Domain.
 http://creativecommons.org/publicdomain/zero/1.0/ */
 
-const { AppConstants } = ChromeUtils.importESModule(
-  "resource://gre/modules/AppConstants.sys.mjs"
-);
-
 const { BrowserUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/BrowserUtils.sys.mjs"
 );
@@ -19,14 +15,6 @@ const { Region } = ChromeUtils.importESModule(
 
 const { updateAppInfo } = ChromeUtils.importESModule(
   "resource://testing-common/AppInfo.sys.mjs"
-);
-
-const { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
-
-const { TestUtils } = ChromeUtils.importESModule(
-  "resource://testing-common/TestUtils.sys.mjs"
 );
 
 // Helper to run tests for specific regions
@@ -306,7 +294,7 @@ add_task(async function test_callModulesFromCategory() {
 
   try {
     // There's nothing in this category right now so this should be a no-op.
-    BrowserUtils.callModulesFromCategory(CATEGORY, "Hello");
+    BrowserUtils.callModulesFromCategory({ categoryName: CATEGORY }, "Hello");
   } catch (ex) {
     Assert.ok(false, `Should not have thrown but received an exception ${ex}`);
   }
@@ -339,7 +327,7 @@ add_task(async function test_callModulesFromCategory() {
 
   // This entry will cause an observer topic to notify, so ensure that happens.
   let moduleResult = rvFromModule(OBSTOPIC1);
-  BrowserUtils.callModulesFromCategory(CATEGORY, "Hello");
+  BrowserUtils.callModulesFromCategory({ categoryName: CATEGORY }, "Hello");
   Assert.equal(
     Cu.isESModuleLoaded(MODULE1),
     true,
@@ -363,7 +351,7 @@ add_task(async function test_callModulesFromCategory() {
     rvFromModule(OBSTOPIC2),
   ]);
 
-  BrowserUtils.callModulesFromCategory(CATEGORY, "Hello");
+  BrowserUtils.callModulesFromCategory({ categoryName: CATEGORY }, "Hello");
   Assert.deepEqual(
     ["Hello", "Hello"],
     await moduleResult,
@@ -378,11 +366,138 @@ add_task(async function test_callModulesFromCategory() {
   Services.obs.addObserver(ob, OBSTOPIC1);
 
   moduleResult = rvFromModule(OBSTOPIC2);
-  BrowserUtils.callModulesFromCategory(CATEGORY, "Hello");
+  BrowserUtils.callModulesFromCategory({ categoryName: CATEGORY }, "Hello");
   Assert.equal(
     "Hello",
     await moduleResult,
     "Second module should still be called."
   );
+
+  let idleResult = null;
+  let idlePromise = TestUtils.topicObserved(OBSTOPIC2).then(([_subj, data]) => {
+    idleResult = data;
+    return data;
+  });
+  BrowserUtils.callModulesFromCategory(
+    { categoryName: CATEGORY, idleDispatch: true },
+    "Hello"
+  );
+  Assert.equal(idleResult, null, "Idle calls should not happen immediately.");
+  Assert.equal("Hello", await idlePromise, "Idle calls should run eventually.");
+
   Services.obs.removeObserver(ob, OBSTOPIC1);
+
+  // Now clean up our category for later tests.
+  Services.catMan.deleteCategory(CATEGORY);
+});
+
+// Test that errors are reported but do not throw at the callsite,
+// and that custom error handlers are invoked.
+add_task(async function test_callModulesFromCategory_errors() {
+  const OTHER_CAT = "someothercat";
+  const MODULE1 = "resource://test/my_catman_1.sys.mjs";
+
+  // Add an item that doesn't exist, and check that although we report errors,
+  // the callsite doesn't throw.
+  let catManUpdated = TestUtils.topicObserved("xpcom-category-entry-added");
+  Services.catMan.addCategoryEntry(
+    OTHER_CAT,
+    MODULE1,
+    `Module1.nonExistantFunction`,
+    false,
+    false
+  );
+  await catManUpdated;
+  let catEntries = Array.from(Services.catMan.enumerateCategory(OTHER_CAT));
+  Assert.equal(catEntries.length, 1);
+
+  let consolePromise = TestUtils.consoleMessageObserved(m => {
+    let firstArg = m.wrappedJSObject.arguments?.[0]?.message;
+    return typeof firstArg == "string" && firstArg.includes("not a function");
+  });
+  BrowserUtils.callModulesFromCategory(
+    {
+      categoryName: OTHER_CAT,
+    },
+    "Hello"
+  );
+  let reportedError = await consolePromise;
+  let firstArg = reportedError.wrappedJSObject.arguments?.[0]?.message;
+  Assert.stringContains(
+    firstArg,
+    MODULE1,
+    "Error message should include module URL."
+  );
+  Services.catMan.deleteCategoryEntry(OTHER_CAT, MODULE1, false);
+
+  // Check that custom exception handling from extant methods works:
+  catManUpdated = TestUtils.topicObserved("xpcom-category-entry-added");
+  Services.catMan.addCategoryEntry(
+    OTHER_CAT,
+    MODULE1,
+    `Module1.throwingFunction`,
+    false,
+    false
+  );
+  await catManUpdated;
+  Assert.equal(catEntries.length, 1);
+  let exHandler = Promise.withResolvers();
+  BrowserUtils.callModulesFromCategory({
+    categoryName: OTHER_CAT,
+    failureHandler: exHandler.resolve,
+  });
+  let caughtException = await exHandler.promise;
+  Assert.stringContains(
+    caughtException.message,
+    "Uh oh",
+    "Exceptions should be handled."
+  );
+
+  // Now clean up our category for later tests.
+  Services.catMan.deleteCategory(OTHER_CAT);
+});
+
+/**
+ * Test that callModulesFromCategory returns a Promise that resolves when all
+ * category tasks have settled.
+ */
+add_task(async function test_callModulesFromCategory_returns_promise() {
+  const CATEGORY = "test-modules-from-catman";
+  const MODULE1 = "resource://test/my_catman_1.sys.mjs";
+  const OBSTOPIC1 = CATEGORY + "-notification";
+
+  let catManUpdated = TestUtils.topicObserved("xpcom-category-entry-added");
+  Services.catMan.addCategoryEntry(
+    CATEGORY,
+    MODULE1,
+    `Module1.test`,
+    false,
+    false
+  );
+  await catManUpdated;
+
+  let moduleResult = TestUtils.topicObserved(OBSTOPIC1).then(
+    ([_subj, data]) => data
+  );
+
+  let result = BrowserUtils.callModulesFromCategory(
+    { categoryName: CATEGORY },
+    "Hello"
+  );
+
+  Assert.ok(result.then, "Should return a Promise");
+
+  let settledResults = await result;
+  Assert.ok(Array.isArray(settledResults), "Should return an array of results");
+  Assert.equal(settledResults.length, 1, "Should have one result");
+  Assert.equal(
+    settledResults[0].status,
+    "fulfilled",
+    "Task should have been fulfilled"
+  );
+
+  Assert.equal(await moduleResult, "Hello", "Module should have been called");
+
+  // Now clean up our category for later tests.
+  Services.catMan.deleteCategory(CATEGORY);
 });

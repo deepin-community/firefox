@@ -11,6 +11,9 @@
 const EventEmitter = require("devtools/shared/event-emitter");
 const { InspectorCSSParserWrapper } = require("devtools/shared/css/lexer");
 const { throttle } = require("devtools/shared/throttle");
+const {
+  canPointerEventDrag,
+} = require("resource://devtools/client/shared/events.js");
 const XHTML_NS = "http://www.w3.org/1999/xhtml";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -30,8 +33,7 @@ const percentFormatter = new Intl.NumberFormat("en", {
  * only handle points inside [0,0] [1,1] to represent most common use cases (even though
  * the line will properly link points outside of this range)
  *
- *
- * @emits "updated" events whenever the line is changed, with the updated property value.
+ * @fires "updated" events whenever the line is changed, with the updated property value.
  */
 class LinearEasingFunctionWidget extends EventEmitter {
   /**
@@ -190,9 +192,7 @@ class LinearEasingFunctionWidget extends EventEmitter {
    */
   #onPointerDown(event) {
     if (
-      // We want to handle a drag during a mouse button is pressed.  So, we can
-      // ignore pointer events which are caused by other devices.
-      event.pointerType != "mouse" ||
+      !canPointerEventDrag(event) ||
       !event.target.classList.contains(
         LinearEasingFunctionWidget.CONTROL_POINTS_CLASSNAME
       )
@@ -407,8 +407,8 @@ class LinearEasingFunctionWidget extends EventEmitter {
   /**
    * Create a control points for the svg line.
    *
-   * @param {Number} cx
-   * @param {Number} cy
+   * @param {number} cx
+   * @param {number} cy
    * @returns {SVGCircleElement}
    */
   #createSvgControlPointEl(cx, cy) {
@@ -429,7 +429,7 @@ class LinearEasingFunctionWidget extends EventEmitter {
    * Return the position in the SVG viewbox from mouse event.
    *
    * @param {MouseEvent} event
-   * @returns {Object} An object with x and y properties
+   * @returns {object} An object with x and y properties
    */
   #getPositionInSvgFromEvent(event) {
     const position = this.#svgEl.createSVGPoint();
@@ -447,7 +447,7 @@ class LinearEasingFunctionWidget extends EventEmitter {
    * Provide the value of the linear() function we want to visualize here.
    * Called from the tooltip with the value of the function in the rule view.
    *
-   * @param {String} linearFunctionValue: e.g. `linear(0, 0.5, 1)`.
+   * @param {string} linearFunctionValue: e.g. `linear(0, 0.5, 1)`.
    */
   setCssLinearValue(linearFunctionValue) {
     if (!linearFunctionValue) {
@@ -466,7 +466,7 @@ class LinearEasingFunctionWidget extends EventEmitter {
    * Return the value of the linear() function based on the state of the graph.
    * The resulting value is what we emit in the "updated" event.
    *
-   * @return {String|null} e.g. `linear(0 0%, 0.5 50%, 1 100%)`.
+   * @return {string | null} e.g. `linear(0 0%, 0.5 50%, 1 100%)`.
    */
   getCssLinearValue() {
     if (!this.#functionPoints) {
@@ -533,6 +533,7 @@ class TimingFunctionPreviewWidget {
    * Preview a new timing function. The current preview will only be stopped if
    * the supplied function value is different from the previous one. If the
    * supplied function is invalid, the preview will stop.
+   *
    * @param {Array} value
    */
   preview(timingFunction) {
@@ -545,6 +546,7 @@ class TimingFunctionPreviewWidget {
 
   /**
    * Re-start the preview animation from the beginning.
+   *
    * @param {Array} points
    */
   #restartAnimation = throttle(timingFunction => {
@@ -554,21 +556,33 @@ class TimingFunctionPreviewWidget {
     // And start the new one.
     // The animation consists of a few keyframes that move the dot to the right of the
     // container, and then move it back to the left.
-    // It also contains some pause where the dot is semi transparent, before it moves to
+    // It also contains some pause where the dot is greyed-out, before it moves to
     // the right, and once again, before it comes back to the left.
     // The timing function passed to this function is applied to the keyframes that
     // actually move the dot. This way it can be previewed in both direction, instead of
     // being spread over the whole animation.
+    const grayscaleFilter = "grayscale(100%)";
+
     this.#dotEl.animate(
       [
-        { translate: "0%", opacity: 0.5, offset: 0 },
-        { translate: "0%", opacity: 0.5, offset: 0.19 },
-        { translate: "0%", opacity: 1, offset: 0.2, easing: timingFunction },
-        { translate: "100%", opacity: 1, offset: 0.5 },
-        { translate: "100%", opacity: 0.5, offset: 0.51 },
-        { translate: "100%", opacity: 0.5, offset: 0.7 },
-        { translate: "100%", opacity: 1, offset: 0.71, easing: timingFunction },
-        { translate: "0%", opacity: 1, offset: 1 },
+        { translate: "0%", filter: grayscaleFilter, offset: 0 },
+        { translate: "0%", filter: grayscaleFilter, offset: 0.19 },
+        {
+          translate: "0%",
+          filter: "none",
+          offset: 0.2,
+          easing: timingFunction,
+        },
+        { translate: "100%", filter: "none", offset: 0.5 },
+        { translate: "100%", filter: grayscaleFilter, offset: 0.51 },
+        { translate: "100%", filter: grayscaleFilter, offset: 0.7 },
+        {
+          translate: "100%",
+          filter: "none",
+          offset: 0.71,
+          easing: timingFunction,
+        },
+        { translate: "0%", filter: "none", offset: 1 },
       ],
       {
         duration: this.#PREVIEW_DURATION * 2,
@@ -582,8 +596,8 @@ class TimingFunctionPreviewWidget {
  * Parse a linear() string to collect the different values.
  * https://drafts.csswg.org/css-easing-2/#the-linear-easing-function
  *
- * @param {String} value
- * @return {Array<Object>|undefined} returns undefined if value isn't a valid linear() value.
+ * @param {string} value
+ * @return {Array<object> | undefined} returns undefined if value isn't a valid linear() value.
  *                                   the items of the array are objects with {Number} `input`
  *                                   and {Number} `output` properties.
  */
@@ -716,11 +730,11 @@ function parseTimingFunction(value) {
 /**
  * Linearly interpolate between 2 numbers.
  *
- * @param {Number} x
- * @param {Number} y
- * @param {Number} a
+ * @param {number} x
+ * @param {number} y
+ * @param {number} a
  *        A value of 0 returns x, and 1 returns y
- * @return {Number}
+ * @return {number}
  */
 function lerp(x, y, a) {
   return x * (1 - a) + y * a;
@@ -730,10 +744,10 @@ function lerp(x, y, a) {
  * Clamp value in a range, meaning the result won't be smaller than min
  * and no bigger than max.
  *
- * @param {Number} min
- * @param {Number} max
- * @param {Number} value
- * @returns {Number}
+ * @param {number} min
+ * @param {number} max
+ * @param {number} value
+ * @returns {number}
  */
 function clamp(min, max, value) {
   return Math.max(min, Math.min(value, max));

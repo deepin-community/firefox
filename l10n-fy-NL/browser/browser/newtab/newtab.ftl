@@ -8,11 +8,21 @@
 newtab-page-title = Nij ljepblêd
 newtab-settings-button =
     .title = Jo side foar nije ljepblêden oanpasse
+newtab-customize-panel-icon-button =
+    .title = Dizze side oanpasse
+newtab-customize-panel-icon-button-label = Oanpasse
+newtab-personalize-settings-icon-label =
+    .title = Nij ljepblêd personalisearje
+    .aria-label = Ynstellingen
+newtab-settings-dialog-label =
+    .aria-label = Ynstellingen
 newtab-personalize-icon-label =
     .title = Nij ljepblêd personalisearje
     .aria-label = Nij ljepblêd personalisearje
 newtab-personalize-dialog-label =
     .aria-label = Personalisearje
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -46,6 +56,9 @@ newtab-topsites-add-shortcut-header = Nije fluchkeppeling
 newtab-topsites-edit-topsites-header = Topwebsite tafoegje
 newtab-topsites-edit-shortcut-header = Fluchkeppeling bewurkje
 newtab-topsites-add-shortcut-label = Fluchkeppeling tafoegje
+newtab-topsites-add-shortcut-title =
+    .title = Fluchkeppeling tafoegje
+    .aria-label = Fluchkeppeling tafoegje
 newtab-topsites-title-label = Titel
 newtab-topsites-title-input =
     .placeholder = Titel ynfiere
@@ -74,6 +87,14 @@ newtab-confirm-delete-history-p2 = Dizze aksje kin net ûngedien makke wurde.
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Sponsore
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (fêstset)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +130,21 @@ newtab-menu-save-to-pocket = Bewarje nei { -pocket-brand-name }
 newtab-menu-delete-pocket = Fuortsmite út { -pocket-brand-name }
 newtab-menu-archive-pocket = Argivearje yn { -pocket-brand-name }
 newtab-menu-show-privacy-info = Us sponsors en jo privacy
+newtab-menu-about-fakespot = Oer { -fakespot-brand-name }
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Rapportearje
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokkearje
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Underwerp net mear folgje
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Sponsore ynhâld beheare
+newtab-menu-our-sponsors-and-your-privacy = Us sponsors en jo privacy
+newtab-menu-report-this-ad = Dizze advertinsje rapportearje
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +206,8 @@ newtab-label-sponsored-by = Sponsore troch { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min.
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Sponsore
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +270,6 @@ newtab-pocket-learn-more = Mear ynfo
 newtab-pocket-cta-button = { -pocket-brand-name } brûke
 newtab-pocket-cta-text = Bewarje de ferhalen dy’t jo ynteressant fine yn { -pocket-brand-name }, en stimulearje jo tinzen mei boeiende lêsstof.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } is ûnderdiel fan de { -brand-product-name }-famylje
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Bewarje
 newtab-pocket-saved = Bewarre
 
@@ -244,7 +281,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Neat foar my
-newtab-toast-thumbs-up-or-down = Tank. Jo feedback sil ús helpe om jo feed te ferbetterjen.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Tank. Jo feedback sil ús helpe om jo feed te ferbetterjen.
 newtab-toast-dismiss-button =
     .title = Slute
     .aria-label = Slute
@@ -280,16 +319,32 @@ newtab-custom-pocket-subtitle = Utsûnderlike ynhâld, gearstald troch { -pocket
 newtab-custom-stories-toggle =
     .label = Oanrekommandearre ferhalen
     .description = Utsûnderlike ynhâld, sammele troch de { -brand-product-name }-famylje
+newtab-custom-stories-personalized-toggle =
+    .label = Ferhalen
+newtab-custom-stories-personalized-checkbox-label = Personalisearre ferhalen op basis fan jo aktiviteit
 newtab-custom-pocket-sponsored = Sponsore ferhalen
 newtab-custom-pocket-show-recent-saves = Koartlyn bewarre items toane
 newtab-custom-recent-title = Resinte aktiviteit
 newtab-custom-recent-subtitle = In seleksje fan resinte websites en ynhâld
-newtab-custom-recent-toggle =
-    .label = Resinte aktiviteit
-    .description = In seleksje fan resinte websites en ynhâld
 newtab-custom-weather-toggle =
     .label = It waar
     .description = De waarsferwachting fan hjoed yn ien eachopslach
+newtab-custom-widget-weather-toggle =
+    .label = It waar
+newtab-custom-widget-lists-toggle =
+    .label = Listen
+newtab-custom-widget-timer-toggle =
+    .label = Timer
+newtab-custom-widget-section-title = Widgets
+newtab-custom-widget-section-toggle =
+    .label = Widgets
+newtab-widget-manage-title = Widgets
+newtab-widget-manage-widget-button =
+    .label = Widgets beheare
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Slute
+    .aria-label = Menu slute
 newtab-custom-close-button = Slute
 newtab-custom-settings = Mear ynstellingen beheare
 
@@ -297,6 +352,13 @@ newtab-custom-settings = Mear ynstellingen beheare
 
 newtab-wallpaper-title = Eftergrûnen
 newtab-wallpaper-reset = Standertwearden
+newtab-wallpaper-upload-image = In ôfbylding oplade
+newtab-wallpaper-custom-color = Kies in kleur
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = De ôfbylding giet oer de limyt fan { $file_size } MB. Probearje in lytser bestân op te laden.
+newtab-wallpaper-error-upload-file-type = Wy koene jo bestân net oplade. Probearje it opnij mei in ôfbyldingsbestân.
+newtab-wallpaper-error-file-type = Wy koene jo bestân net oplade. Probearje it nochris mei in oar bestânstype.
 newtab-wallpaper-light-red-panda = Reade panda
 newtab-wallpaper-light-mountain = Wite berch
 newtab-wallpaper-light-sky = Himel mei pearze en rôze wolken
@@ -309,6 +371,8 @@ newtab-wallpaper-dark-panda = Reade panda ferburgen yn bosk
 newtab-wallpaper-dark-sky = Stedslânskip mei in nachthimel
 newtab-wallpaper-dark-mountain = Lânskip mei berch
 newtab-wallpaper-dark-city = Pears stêdslânskip
+newtab-wallpaper-dark-fox-anniversary = In foks op de stoepe by in bosk
+newtab-wallpaper-light-fox-anniversary = In foks yn in gersfjild mei in mistich berchlânskip
 
 ## Solid Colors
 
@@ -338,8 +402,12 @@ newtab-wallpaper-abstract-purple = Pearze foarmen
 newtab-wallpaper-abstract-orange = Oranje foarmen
 newtab-wallpaper-gradient-orange = Ferrin oranje en rôze
 newtab-wallpaper-abstract-blue-purple = Blauwe en pearze foarmen
+newtab-wallpaper-abstract-white-curves = Wyt mei arsearre rûningen
+newtab-wallpaper-abstract-purple-green = Pears en griene ljochtgradiïnt
+newtab-wallpaper-abstract-blue-purple-waves = Blauwe en pearze golvjende foarmen
+newtab-wallpaper-abstract-black-waves = Swarte golvjende foarmen
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Foto’s
 newtab-wallpaper-beach-at-sunrise = Strân by sinneopgong
@@ -348,6 +416,12 @@ newtab-wallpaper-storm-sky = Tongerloft
 newtab-wallpaper-sky-with-pink-clouds = Loft mei rôze wolken
 newtab-wallpaper-red-panda-yawns-in-a-tree = Reade panda gappet yn in beam
 newtab-wallpaper-white-mountains = Wite bergen
+newtab-wallpaper-hot-air-balloons = Hjitteluchtballonnen in ferskate kleuren oerdeis
+newtab-wallpaper-starry-canyon = Blauwe stjerrenacht
+newtab-wallpaper-suspension-bridge = Foto’s fan in folsleine hingbrêge oerdeis
+newtab-wallpaper-sand-dunes = Wite sândunen
+newtab-wallpaper-palm-trees = Silhûet fan kokospalms wylst gouden oere
+newtab-wallpaper-blue-flowers = Close-upfotografy fan blauwe blommen yn bloei
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +437,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Kosmysk
+newtab-wallpaper-celestial-lunar-eclipse = Moannefertsjustering
+newtab-wallpaper-celestial-earth-night = Nachtfoto fan in lege baan om de ierde út
+newtab-wallpaper-celestial-starry-sky = Stjerrehimel
+newtab-wallpaper-celestial-eclipse-time-lapse = Time-lapse fan moannefertsjustering
+newtab-wallpaper-celestial-black-hole = Yllustraasje fan in swart-gatstjerrestelsel
+newtab-wallpaper-celestial-river = Satellytfoto fan rivier
+
 ## New Tab Weather
 
 # Variables:
@@ -373,8 +464,12 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsore
 newtab-weather-menu-change-location = Lokaasje wizigje
-newtab-weather-change-location-search-input = Lokaasje sykje
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Lokaasje sykje
+    .aria-label = Lokaasje sykje
 newtab-weather-menu-weather-display = Waarwerjefte
+newtab-weather-todays-forecast = Waarfoarsizzing foar hjoed
+newtab-weather-see-full-forecast = Folsleine waarfoarsizzing besjen
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
@@ -387,10 +482,24 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Wikselje nei Fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Wikselje nei Celsius
+newtab-weather-menu-hide-weather-v2 = Waar ferstopje
 newtab-weather-menu-hide-weather = It waar op nij ljepblêd ferstopje
 newtab-weather-menu-learn-more = Mear ynfo
+newtab-weather-menu-detect-my-location = Myn lokaasje detektearje
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Waargegevens binne op dit stuit net beskikber.
+newtab-weather-opt-in-see-weather = Wolle jo it waar foar jo lokaasje sjen?
+newtab-weather-opt-in-not-now =
+    .label = No net
+newtab-weather-opt-in-yes =
+    .label = Ja
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = New York
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = It waar besjen foar { $provider }
+    .aria-description = { $provider } ∙ Sponsore
 
 ## Topic Labels
 
@@ -431,3 +540,179 @@ newtab-topic-selection-button-maybe-later = Miskien letter
 newtab-topic-selection-privacy-link = Lês hoe’t wy gegevens beskermje en beheare
 newtab-topic-selection-button-update-interests = Wurkje jo ynteressen by
 newtab-topic-selection-button-pick-interests = Kies jo ynteressen
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Folgje
+newtab-section-following-button = Folgjend
+newtab-section-unfollow-button = Untfolgje
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Jo feed ferfynje
+newtab-section-follow-highlight-subtitle = Folgje jo ynteressen om mear te sjen fan dêr’t jo wol oer meie.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokkearje
+newtab-section-blocked-button = Blokkearre
+newtab-section-unblock-button = Blokkearring opheffe
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = No net
+newtab-section-confirm-block-topic-p1 = Binne jo wis dat jo dit ûnderwerp blokkearje wolle?
+newtab-section-confirm-block-topic-p2 = Blokkearre ûnderwerpen ferskine net mear yn jo feed.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } blokkearje
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Underwerpen
+newtab-section-manage-topics-button-v2 =
+    .label = Underwerpen beheare
+newtab-section-mangage-topics-followed-topics = Folge
+newtab-section-mangage-topics-followed-topics-empty-state = Jo hawwe noch gjin ûnderwerpen folge.
+newtab-section-mangage-topics-blocked-topics = Blokkearre
+newtab-section-mangage-topics-blocked-topics-empty-state = Jo hawwe noch gjin ûnderwerpen blokkearre.
+newtab-custom-wallpaper-title = Hjir fine jo oanpaste eftergrûnen
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Laad jo eigen eftergrûn op of kies in oanpaste kleur om { -brand-product-name } fan josels te meitsjen.
+newtab-custom-wallpaper-cta = Probearje
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Kies in eftergrûn om { -brand-product-name } fan jo te meitsjen
+newtab-new-user-custom-wallpaper-subtitle = Lit elk nij ljepblêd as thús fiele mei oanpaste eftergrûnen en kleuren.
+newtab-new-user-custom-wallpaper-cta = No probearje
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = { -brand-product-name } foar mobyl downloade
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Scan de koade om feilich ûnderweis te navigearjen.
+newtab-download-mobile-highlight-body-variant-b = Gean troch wêr’t jo bleaun wiene wannear’t jo jo ljepblêden, wachtwurden en mear syngronisearje.
+newtab-download-mobile-highlight-body-variant-c = Wisten jo dat jo { -brand-product-name } ek ûnderweis meinimme kinne? Deselde browser. Yn jo bûse.
+newtab-download-mobile-highlight-image =
+    .aria-label = QR-koade om { -brand-product-name } foar mobyl te downloaden
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Jo favoriten foar de hân
+newtab-shortcuts-highlight-subtitle = Foegje in fluchkeppeling ta om jo favorite websites op ien klik ôfstân te hâlden.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Wêrom melde jo dit?
+newtab-report-ads-reason-not-interested =
+    .label = Ik bin net ynteressearre
+newtab-report-ads-reason-inappropriate =
+    .label = It is net geskikt
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Ik haw it te faak sjoen
+newtab-report-content-wrong-category =
+    .label = Ferkearde kategory
+newtab-report-content-outdated =
+    .label = Ferâldere
+newtab-report-content-inappropriate-offensive =
+    .label = Unpaslik of beledigjend
+newtab-report-content-spam-misleading =
+    .label = Spam of misliedend
+newtab-report-content-requires-payment-subscription =
+    .label = Fereasket betelling of abonnemint
+newtab-report-content-requires-payment-subscription-learn-more = Mear ynfo
+newtab-report-cancel = Annulearje
+newtab-report-submit = Yntsjinje
+newtab-toast-thanks-for-reporting =
+    .message = Tank foar it melden.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = De mooglikheden binne einleas. Foegje der ien ta.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Nij
+newtab-widget-lists-label-beta =
+    .label = Beta
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Foltôge ({ $number })
+newtab-widget-task-list-menu-copy = Kopiearje
+newtab-widget-lists-menu-edit = Listnamme bewurkje
+newtab-widget-lists-menu-create = Nije list oanmeitsje
+newtab-widget-lists-menu-delete = Dizze list fuortsmite?
+newtab-widget-lists-menu-copy = List nei klamboerd kopiearje
+newtab-widget-lists-menu-hide = Alle listen ferstopje
+newtab-widget-lists-menu-learn-more = Mear ynfo
+newtab-widget-lists-input-add-an-item =
+    .placeholder = In item tafoegje
+newtab-widget-lists-input-error = Foegje tekst ta om in item ta te foegjen.
+newtab-widget-lists-input-menu-open-link = Keppeling iepenje
+newtab-widget-lists-input-menu-move-up = Omheech ferpleatse
+newtab-widget-lists-input-menu-move-down = Omleech ferpleatse
+newtab-widget-lists-input-menu-delete = Fuortsmite
+newtab-widget-lists-input-menu-edit = Bewurkje
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + In nije list oanmeitsje
+newtab-widget-lists-name-label-default =
+    .label = Takelist
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Takelist
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Nije list
+newtab-widget-section-title = Widgets
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Widgets ferstopje
+    .aria-label = Alle widgets ferstopje
+newtab-widget-section-maximize =
+    .title = Widgets útklappe
+    .aria-label = Alle widgets oant folsleine ôfmjitting útklappe
+newtab-widget-section-minimize =
+    .title = Widgets minimalisearje
+    .aria-label = Alle widgets ynklappe oant kompakte ôfmjitting
+
+## Strings for timer productivity widget
+## When the timer ends, a system notification may be shown. Depending on which mode the timer is in, that message would be shown
+
+newtab-widget-timer-notification-title = Timer
+newtab-widget-timer-notification-focus = De fokustiid is foarby. Goed dien. Skoft?
+newtab-widget-timer-notification-break = Jo skoft is foarby. Ree om te fokusjen?
+newtab-widget-timer-notification-warning = Notifikaasjes stean út
+newtab-widget-timer-mode-focus =
+    .label = Fokus
+newtab-widget-timer-mode-break =
+    .label = Skoft
+newtab-widget-timer-label-play =
+    .label = Ofspylje
+newtab-widget-timer-label-pause =
+    .label = Pauzearje
+newtab-widget-timer-reset =
+    .title = Opnij inisjalisearje
+newtab-widget-timer-menu-notifications = Notifikaasjes útskeakelje
+newtab-widget-timer-menu-notifications-on = Notifikaasjes ynskeakelje
+newtab-widget-timer-menu-hide = Timer ferstopje
+newtab-widget-timer-menu-learn-more = Mear ynfo
+# The title displays above a set of top news headlines.
+newtab-daily-briefing-card-title = Topberjochten
+newtab-daily-briefing-card-menu-dismiss = Slute
+# Variables:
+#   $minutes (number) - Time since the feed has been refreshed
+newtab-daily-briefing-card-timestamp = { $minutes } min. lyn bywurke
+newtab-widget-message-title = Bliuw fokust mei listen en in ynboude timer
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Fan rappe yn ’t sin bringers oant deistige taken, fokussesjes oant stretchskoft – bliuw by de taak en op tiid.
+newtab-promo-card-title = { -brand-product-name } stypje
+newtab-promo-card-body = Us sponsors stypje ús misje om in better web te bouwen
+newtab-promo-card-cta = Mear ynfo
+newtab-promo-card-dismiss-button =
+    .title = Slute
+    .aria-label = Slute

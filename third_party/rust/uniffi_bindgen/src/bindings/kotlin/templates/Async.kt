@@ -12,7 +12,7 @@ internal object uniffiRustFutureContinuationCallbackImpl: UniffiRustFutureContin
     }
 }
 
-internal suspend fun<T, F, E: Exception> uniffiRustCallAsync(
+internal suspend fun<T, F, E: kotlin.Exception> uniffiRustCallAsync(
     rustFuture: Long,
     pollFunc: (Long, UniffiRustFutureContinuationCallback, Long) -> Unit,
     completeFunc: (Long, UniffiRustCallStatus) -> F,
@@ -54,7 +54,7 @@ internal inline fun<T> uniffiTraitInterfaceCallAsync(
     val job = GlobalScope.launch {
         try {
             handleSuccess(makeCall())
-        } catch(e: Exception) {
+        } catch(e: kotlin.Exception) {
             handleError(
                 UniffiRustCallStatus.create(
                     UNIFFI_CALL_UNEXPECTED_ERROR,
@@ -78,7 +78,7 @@ internal inline fun<T, reified E: Throwable> uniffiTraitInterfaceCallAsyncWithEr
     val job = GlobalScope.launch {
         try {
             handleSuccess(makeCall())
-        } catch(e: Exception) {
+        } catch(e: kotlin.Exception) {
             if (e is E) {
                 handleError(
                     UniffiRustCallStatus.create(

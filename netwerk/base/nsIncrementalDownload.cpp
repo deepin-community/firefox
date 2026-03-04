@@ -4,7 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/Attributes.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/UniquePtr.h"
@@ -149,6 +148,7 @@ class nsIncrementalDownload final : public nsIIncrementalDownload,
   nsCOMPtr<nsIChannel> mNewRedirectChannel;
   nsCString mPartialValidator;
   bool mCacheBust{false};
+  nsCString mExtraHeaders;
 
   // nsITimerCallback is implemented on a subclass so that the name attribute
   // doesn't conflict with the name attribute of the nsIRequest interface.
@@ -247,6 +247,11 @@ nsresult nsIncrementalDownload::ProcessTimeout() {
 
   rv = ClearRequestHeader(http);
   if (NS_FAILED(rv)) return rv;
+
+  if (!mExtraHeaders.IsEmpty()) {
+    rv = AddExtraHeaders(http, mExtraHeaders);
+    if (NS_FAILED(rv)) return rv;
+  }
 
   // Don't bother making a range request if we are just going to fetch the
   // entire document.
@@ -416,7 +421,7 @@ nsIncrementalDownload::SetLoadGroup(nsILoadGroup* loadGroup) {
 
 NS_IMETHODIMP
 nsIncrementalDownload::Init(nsIURI* uri, nsIFile* dest, int32_t chunkSize,
-                            int32_t interval) {
+                            int32_t interval, const nsACString& extraHeaders) {
   // Keep it simple: only allow initialization once
   NS_ENSURE_FALSE(mURI, NS_ERROR_ALREADY_INITIALIZED);
 
@@ -428,6 +433,9 @@ nsIncrementalDownload::Init(nsIURI* uri, nsIFile* dest, int32_t chunkSize,
 
   if (chunkSize > 0) mChunkSize = chunkSize;
   if (interval >= 0) mInterval = interval;
+
+  mExtraHeaders = extraHeaders;
+
   return NS_OK;
 }
 
@@ -609,7 +617,7 @@ nsIncrementalDownload::OnStartRequest(nsIRequest* aRequest) {
     // Update knowledge of mFinalURI
     rv = http->GetURI(getter_AddRefs(mFinalURI));
     if (NS_FAILED(rv)) return rv;
-    Unused << http->GetResponseHeader("Etag"_ns, mPartialValidator);
+    (void)http->GetResponseHeader("Etag"_ns, mPartialValidator);
     if (StringBeginsWith(mPartialValidator, "W/"_ns)) {
       mPartialValidator.Truncate();  // don't use weak validators
     }
@@ -843,9 +851,14 @@ nsIncrementalDownload::AsyncOnChannelRedirect(
   nsresult rv = ClearRequestHeader(newHttpChannel);
   if (NS_FAILED(rv)) return rv;
 
+  if (!mExtraHeaders.IsEmpty()) {
+    rv = AddExtraHeaders(http, mExtraHeaders);
+    if (NS_FAILED(rv)) return rv;
+  }
+
   // If we didn't have a Range header, then we must be doing a full download.
   nsAutoCString rangeVal;
-  Unused << http->GetRequestHeader(rangeHdr, rangeVal);
+  (void)http->GetRequestHeader(rangeHdr, rangeVal);
   if (!rangeVal.IsEmpty()) {
     rv = newHttpChannel->SetRequestHeader(rangeHdr, rangeVal, false);
     NS_ENSURE_SUCCESS(rv, rv);

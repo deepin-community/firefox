@@ -6,10 +6,8 @@
 #ifndef WidevineVideoFrame_h_
 #define WidevineVideoFrame_h_
 
-#include "stddef.h"
 #include "content_decryption_module.h"
-#include "mozilla/Attributes.h"
-#include <vector>
+#include "stddef.h"
 
 namespace mozilla {
 
@@ -44,8 +42,8 @@ class WidevineVideoFrame : public cdm::VideoFrame {
   cdm::VideoFormat mFormat;
   cdm::Size mSize;
   cdm::Buffer* mBuffer;
-  uint32_t mPlaneOffsets[cdm::VideoPlane::kMaxPlanes];
-  uint32_t mPlaneStrides[cdm::VideoPlane::kMaxPlanes];
+  uint32_t mPlaneOffsets[cdm::kMaxPlanes];
+  uint32_t mPlaneStrides[cdm::kMaxPlanes];
   int64_t mTimestamp;
 };
 

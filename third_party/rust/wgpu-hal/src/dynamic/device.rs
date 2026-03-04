@@ -1,3 +1,5 @@
+use alloc::{borrow::ToOwned as _, boxed::Box, vec::Vec};
+
 use crate::{
     AccelerationStructureBuildSizes, AccelerationStructureDescriptor, Api, BindGroupDescriptor,
     BindGroupLayoutDescriptor, BufferDescriptor, BufferMapping, CommandEncoderDescriptor,
@@ -5,7 +7,7 @@ use crate::{
     GetAccelerationStructureBuildSizesDescriptor, Label, MemoryRange, PipelineCacheDescriptor,
     PipelineCacheError, PipelineError, PipelineLayoutDescriptor, RenderPipelineDescriptor,
     SamplerDescriptor, ShaderError, ShaderInput, ShaderModuleDescriptor, TextureDescriptor,
-    TextureViewDescriptor,
+    TextureViewDescriptor, TlasInstance,
 };
 
 use super::{
@@ -16,14 +18,13 @@ use super::{
 };
 
 pub trait DynDevice: DynResource {
-    unsafe fn exit(self: Box<Self>, queue: Box<dyn DynQueue>);
-
     unsafe fn create_buffer(
         &self,
         desc: &BufferDescriptor,
     ) -> Result<Box<dyn DynBuffer>, DeviceError>;
 
     unsafe fn destroy_buffer(&self, buffer: Box<dyn DynBuffer>);
+    unsafe fn add_raw_buffer(&self, buffer: &dyn DynBuffer);
 
     unsafe fn map_buffer(
         &self,
@@ -41,6 +42,8 @@ pub trait DynDevice: DynResource {
         desc: &TextureDescriptor,
     ) -> Result<Box<dyn DynTexture>, DeviceError>;
     unsafe fn destroy_texture(&self, texture: Box<dyn DynTexture>);
+    unsafe fn add_raw_texture(&self, texture: &dyn DynTexture);
+
     unsafe fn create_texture_view(
         &self,
         texture: &dyn DynTexture,
@@ -57,7 +60,6 @@ pub trait DynDevice: DynResource {
         &self,
         desc: &CommandEncoderDescriptor<dyn DynQueue>,
     ) -> Result<Box<dyn DynCommandEncoder>, DeviceError>;
-    unsafe fn destroy_command_encoder(&self, pool: Box<dyn DynCommandEncoder>);
 
     unsafe fn create_bind_group_layout(
         &self,
@@ -133,11 +135,11 @@ pub trait DynDevice: DynResource {
         &self,
         fence: &dyn DynFence,
         value: FenceValue,
-        timeout_ms: u32,
+        timeout: Option<core::time::Duration>,
     ) -> Result<bool, DeviceError>;
 
-    unsafe fn start_capture(&self) -> bool;
-    unsafe fn stop_capture(&self);
+    unsafe fn start_graphics_debugger_capture(&self) -> bool;
+    unsafe fn stop_graphics_debugger_capture(&self);
 
     unsafe fn pipeline_cache_get_data(&self, cache: &dyn DynPipelineCache) -> Option<Vec<u8>>;
 
@@ -157,16 +159,15 @@ pub trait DynDevice: DynResource {
         &self,
         acceleration_structure: Box<dyn DynAccelerationStructure>,
     );
+    fn tlas_instance_to_bytes(&self, instance: TlasInstance) -> Vec<u8>;
 
     fn get_internal_counters(&self) -> wgt::HalCounters;
     fn generate_allocator_report(&self) -> Option<wgt::AllocatorReport>;
+
+    fn check_if_oom(&self) -> Result<(), DeviceError>;
 }
 
 impl<D: Device + DynResource> DynDevice for D {
-    unsafe fn exit(self: Box<Self>, queue: Box<dyn DynQueue>) {
-        unsafe { D::exit(*self, queue.unbox()) }
-    }
-
     unsafe fn create_buffer(
         &self,
         desc: &BufferDescriptor,
@@ -176,6 +177,10 @@ impl<D: Device + DynResource> DynDevice for D {
 
     unsafe fn destroy_buffer(&self, buffer: Box<dyn DynBuffer>) {
         unsafe { D::destroy_buffer(self, buffer.unbox()) };
+    }
+    unsafe fn add_raw_buffer(&self, buffer: &dyn DynBuffer) {
+        let buffer = buffer.expect_downcast_ref();
+        unsafe { D::add_raw_buffer(self, buffer) };
     }
 
     unsafe fn map_buffer(
@@ -215,6 +220,11 @@ impl<D: Device + DynResource> DynDevice for D {
 
     unsafe fn destroy_texture(&self, texture: Box<dyn DynTexture>) {
         unsafe { D::destroy_texture(self, texture.unbox()) };
+    }
+
+    unsafe fn add_raw_texture(&self, texture: &dyn DynTexture) {
+        let texture = texture.expect_downcast_ref();
+        unsafe { D::add_raw_texture(self, texture) };
     }
 
     unsafe fn create_texture_view(
@@ -261,10 +271,6 @@ impl<D: Device + DynResource> DynDevice for D {
             .map(|b| -> Box<dyn DynCommandEncoder> { Box::new(b) })
     }
 
-    unsafe fn destroy_command_encoder(&self, encoder: Box<dyn DynCommandEncoder>) {
-        unsafe { D::destroy_command_encoder(self, encoder.unbox()) };
-    }
-
     unsafe fn create_bind_group_layout(
         &self,
         desc: &BindGroupLayoutDescriptor,
@@ -289,7 +295,7 @@ impl<D: Device + DynResource> DynDevice for D {
         let desc = PipelineLayoutDescriptor {
             label: desc.label,
             bind_group_layouts: &bind_group_layouts,
-            push_constant_ranges: desc.push_constant_ranges,
+            immediate_size: desc.immediate_size,
             flags: desc.flags,
         };
 
@@ -331,6 +337,11 @@ impl<D: Device + DynResource> DynDevice for D {
             .iter()
             .map(|a| a.expect_downcast_ref())
             .collect();
+        let external_textures: Vec<_> = desc
+            .external_textures
+            .iter()
+            .map(|et| et.clone().expect_downcast())
+            .collect();
 
         let desc = BindGroupDescriptor {
             label: desc.label.to_owned(),
@@ -340,6 +351,7 @@ impl<D: Device + DynResource> DynDevice for D {
             textures: &textures,
             entries: desc.entries,
             acceleration_structures: &acceleration_structures,
+            external_textures: &external_textures,
         };
 
         unsafe { D::create_bind_group(self, &desc) }
@@ -374,14 +386,28 @@ impl<D: Device + DynResource> DynDevice for D {
         let desc = RenderPipelineDescriptor {
             label: desc.label,
             layout: desc.layout.expect_downcast_ref(),
-            vertex_buffers: desc.vertex_buffers,
-            vertex_stage: desc.vertex_stage.clone().expect_downcast(),
+            vertex_processor: match &desc.vertex_processor {
+                crate::VertexProcessor::Standard {
+                    vertex_buffers,
+                    vertex_stage,
+                } => crate::VertexProcessor::Standard {
+                    vertex_buffers,
+                    vertex_stage: vertex_stage.clone().expect_downcast(),
+                },
+                crate::VertexProcessor::Mesh {
+                    task_stage: task,
+                    mesh_stage: mesh,
+                } => crate::VertexProcessor::Mesh {
+                    task_stage: task.as_ref().map(|a| a.clone().expect_downcast()),
+                    mesh_stage: mesh.clone().expect_downcast(),
+                },
+            },
             primitive: desc.primitive,
             depth_stencil: desc.depth_stencil.clone(),
             multisample: desc.multisample,
             fragment_stage: desc.fragment_stage.clone().map(|f| f.expect_downcast()),
             color_targets: desc.color_targets,
-            multiview: desc.multiview,
+            multiview_mask: desc.multiview_mask,
             cache: desc.cache.map(|c| c.expect_downcast_ref()),
         };
 
@@ -460,18 +486,18 @@ impl<D: Device + DynResource> DynDevice for D {
         &self,
         fence: &dyn DynFence,
         value: FenceValue,
-        timeout_ms: u32,
+        timeout: Option<core::time::Duration>,
     ) -> Result<bool, DeviceError> {
         let fence = fence.expect_downcast_ref();
-        unsafe { D::wait(self, fence, value, timeout_ms) }
+        unsafe { D::wait(self, fence, value, timeout) }
     }
 
-    unsafe fn start_capture(&self) -> bool {
-        unsafe { D::start_capture(self) }
+    unsafe fn start_graphics_debugger_capture(&self) -> bool {
+        unsafe { D::start_graphics_debugger_capture(self) }
     }
 
-    unsafe fn stop_capture(&self) {
-        unsafe { D::stop_capture(self) }
+    unsafe fn stop_graphics_debugger_capture(&self) {
+        unsafe { D::stop_graphics_debugger_capture(self) }
     }
 
     unsafe fn pipeline_cache_get_data(&self, cache: &dyn DynPipelineCache) -> Option<Vec<u8>> {
@@ -514,11 +540,19 @@ impl<D: Device + DynResource> DynDevice for D {
         unsafe { D::destroy_acceleration_structure(self, acceleration_structure.unbox()) }
     }
 
+    fn tlas_instance_to_bytes(&self, instance: TlasInstance) -> Vec<u8> {
+        D::tlas_instance_to_bytes(self, instance)
+    }
+
     fn get_internal_counters(&self) -> wgt::HalCounters {
         D::get_internal_counters(self)
     }
 
     fn generate_allocator_report(&self) -> Option<wgt::AllocatorReport> {
         D::generate_allocator_report(self)
+    }
+
+    fn check_if_oom(&self) -> Result<(), DeviceError> {
+        D::check_if_oom(self)
     }
 }

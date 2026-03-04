@@ -20,7 +20,6 @@
 #include "mozilla/mozalloc.h"
 #include "mozilla/RangeBoundary.h"
 #include "mozilla/StaticPrefs_editor.h"
-#include "mozilla/ToString.h"
 #include "mozilla/dom/Selection.h"
 
 #include "nsAtom.h"
@@ -394,6 +393,17 @@ DeleteRangeTransaction::AppendTransactionsToDeleteNodesWhoseEndBoundaryIn(
     }
   }
   return NS_OK;
+}
+
+EditorDOMPoint DeleteRangeTransaction::SuggestPointToPutCaret() const {
+  if (!mPointToPutCaret.IsSetAndValidInComposedDoc()) {
+    return EditorDOMPoint();
+  }
+  if (!mPointToPutCaret.IsInNativeAnonymousSubtreeInTextControl() &&
+      !HTMLEditUtils::IsSimplyEditableNode(*mPointToPutCaret.GetContainer())) {
+    return EditorDOMPoint();
+  }
+  return mPointToPutCaret;
 }
 
 }  // namespace mozilla

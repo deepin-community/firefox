@@ -1,5 +1,5 @@
 // META: title=test WebNN API gruCell operation
-// META: global=window,dedicatedworker
+// META: global=window
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -41,7 +41,7 @@
 
 
 const getGruCellPrecisionTolerance = (graphResources) => {
-  const toleranceValueDict = {float32: 3};
+  const toleranceValueDict = {float32: 3, float16: 3};
   const expectedDataType =
       graphResources
           .expectedOutputs[Object.keys(graphResources.expectedOutputs)[0]]
@@ -50,21 +50,22 @@ const getGruCellPrecisionTolerance = (graphResources) => {
 };
 
 const gruCellTests = [
+  // float32 tests
   {
     'name':
-        'gruCell float32 tensors with options.bias, options.recurrentBias and options.activations=[\'relu\', \'relu\']',
+        "gruCell float32 tensors with options.bias, options.recurrentBias and options.activations=['relu', 'relu']",
     'graph': {
       'inputs': {
         'gruCellInput': {
           'data': [1, 2, 2, 1, 1, 1],
-          'descriptor': {'dimensions': [3, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 2], dataType: 'float32'}
         },
         'gruCellWeight': {
           'data': [
             1,   -1,   2, -2,  0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,
             0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,  0.5, -0.5, 0, 0.1
           ],
-          'descriptor': {'dimensions': [12, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 2], dataType: 'float32'}
         },
         'gruCellRecurrentWeight': {
           'data': [
@@ -73,19 +74,19 @@ const gruCellTests = [
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1
           ],
-          'descriptor': {'dimensions': [12, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 4], dataType: 'float32'}
         },
         'gruCellHiddenState': {
           'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         },
         'gruCellBias': {
           'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         },
         'gruCellRecurrentBias': {
           'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -108,26 +109,26 @@ const gruCellTests = [
         'gruCellOutput': {
           'data':
               [0, 0, -0.25, -3.84, -4, -15, -2.25, -3.41, -1, -3, -1, -3.41],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         }
       }
     }
   },
   {
     'name':
-        'gruCell float32 tensors with options.bias, options.recurrentBias, options.activations=[\'relu\', \'relu\'] and and explicit options.layout=\'zrn\'',
+        "gruCell float32 tensors with options.bias, options.recurrentBias, options.activations=['relu', 'relu'] and explicit options.layout='zrn'",
     'graph': {
       'inputs': {
         'gruCellInput': {
           'data': [1, 2, 2, 1, 1, 1],
-          'descriptor': {'dimensions': [3, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 2], dataType: 'float32'}
         },
         'gruCellWeight': {
           'data': [
             1,   -1,   2, -2,  0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,
             0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,  0.5, -0.5, 0, 0.1
           ],
-          'descriptor': {'dimensions': [12, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 2], dataType: 'float32'}
         },
         'gruCellRecurrentWeight': {
           'data': [
@@ -136,19 +137,19 @@ const gruCellTests = [
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1
           ],
-          'descriptor': {'dimensions': [12, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 4], dataType: 'float32'}
         },
         'gruCellHiddenState': {
           'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         },
         'gruCellBias': {
           'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         },
         'gruCellRecurrentBias': {
           'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -172,26 +173,26 @@ const gruCellTests = [
         'gruCellOutput': {
           'data':
               [0, 0, -0.25, -3.84, -4, -15, -2.25, -3.41, -1, -3, -1, -3.41],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         }
       }
     }
   },
   {
     'name':
-        'gruCell float32 tensors with options.bias, options.recurrentBias, options.activations=[\'relu\', \'relu\'] and and options.layout=\'rzn\'',
+        "gruCell float32 tensors with options.bias, options.recurrentBias, options.activations=['relu', 'relu'] and and options.layout='rzn'",
     'graph': {
       'inputs': {
         'gruCellInput': {
           'data': [1, 2, 2, 1, 1, 1],
-          'descriptor': {'dimensions': [3, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 2], dataType: 'float32'}
         },
         'gruCellWeight': {
           'data': [
             1,   -1,   2, -2,  0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,
             0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,  0.5, -0.5, 0, 0.1
           ],
-          'descriptor': {'dimensions': [12, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 2], dataType: 'float32'}
         },
         'gruCellRecurrentWeight': {
           'data': [
@@ -200,19 +201,19 @@ const gruCellTests = [
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
           ],
-          'descriptor': {'dimensions': [12, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 4], dataType: 'float32'}
         },
         'gruCellHiddenState': {
           'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         },
         'gruCellBias': {
           'data': [1, 1, 1, 1, 1, 2, 1, 2, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         },
         'gruCellRecurrentBias': {
           'data': [1, 1, 1, 1, 1, 2, 1, 2, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -236,7 +237,7 @@ const gruCellTests = [
         'gruCellOutput': {
           'data':
               [0, 0, -0.25, -3.84, -4, -15, -2.25, -3.41, -1, -3, -1, -3.41],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         }
       }
     }
@@ -247,14 +248,14 @@ const gruCellTests = [
       'inputs': {
         'gruCellInput': {
           'data': [1, 2, 2, 1, 1, 1],
-          'descriptor': {'dimensions': [3, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 2], dataType: 'float32'}
         },
         'gruCellWeight': {
           'data': [
             1,   -1,   2, -2,  0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,
             0.5, -0.5, 0, 0.1, 1,   -1,   2, -2,  0.5, -0.5, 0, 0.1
           ],
-          'descriptor': {'dimensions': [12, 2], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 2], dataType: 'float32'}
         },
         'gruCellRecurrentWeight': {
           'data': [
@@ -263,19 +264,19 @@ const gruCellTests = [
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
           ],
-          'descriptor': {'dimensions': [12, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [12, 4], dataType: 'float32'}
         },
         'gruCellHiddenState': {
           'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         },
         'gruCellBias': {
           'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         },
         'gruCellRecurrentBias': {
           'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
-          'descriptor': {'dimensions': [12], 'dataType': 'float32'}
+          'descriptor': {shape: [12], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -299,18 +300,312 @@ const gruCellTests = [
         'gruCellOutput': {
           'data':
               [0, 0, -0.25, -3.84, -4, -15, -2.25, -3.41, -1, -3, -1, -3.41],
-          'descriptor': {'dimensions': [3, 4], 'dataType': 'float32'}
+          'descriptor': {shape: [3, 4], dataType: 'float32'}
         }
       }
     }
   },
+
+  // float16 tests
+  {
+    'name':
+        "gruCell float16 tensors with options.bias, options.recurrentBias and options.activations=['relu', 'relu']",
+    'graph': {
+      'inputs': {
+        'gruCellInput': {
+          'data': [1, 2, 2, 1, 1, 1],
+          'descriptor': {shape: [3, 2], dataType: 'float16'}
+        },
+        'gruCellWeight': {
+          'data': [
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 2], dataType: 'float16'}
+        },
+        'gruCellRecurrentWeight': {
+          'data': [
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 4], dataType: 'float16'}
+        },
+        'gruCellHiddenState': {
+          'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        },
+        'gruCellBias': {
+          'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        },
+        'gruCellRecurrentBias': {
+          'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        }
+      },
+      'operators': [{
+        'name': 'gruCell',
+        'arguments': [
+          {'input': 'gruCellInput'}, {'weight': 'gruCellWeight'},
+          {'recurrentWeight': 'gruCellRecurrentWeight'},
+          {'hiddenState': 'gruCellHiddenState'}, {'hiddenSize': 4}, {
+            'options': {
+              'bias': 'gruCellBias',
+              'recurrentBias': 'gruCellRecurrentBias',
+              'resetAfter': false,
+              'activations': ['relu', 'relu']
+            }
+          }
+        ],
+        'outputs': 'gruCellOutput'
+      }],
+      'expectedOutputs': {
+        'gruCellOutput': {
+          'data': [
+            0, 0, -0.25, -3.83984375, -4, -15, -2.25, -3.41015625, -1, -3, -1,
+            -3.41015625
+          ],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        }
+      }
+    }
+  },
+  {
+    'name':
+        "gruCell float16 tensors with options.bias, options.recurrentBias, options.activations=['relu', 'relu'] and explicit options.layout='zrn'",
+    'graph': {
+      'inputs': {
+        'gruCellInput': {
+          'data': [1, 2, 2, 1, 1, 1],
+          'descriptor': {shape: [3, 2], dataType: 'float16'}
+        },
+        'gruCellWeight': {
+          'data': [
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 2], dataType: 'float16'}
+        },
+        'gruCellRecurrentWeight': {
+          'data': [
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 4], dataType: 'float16'}
+        },
+        'gruCellHiddenState': {
+          'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        },
+        'gruCellBias': {
+          'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        },
+        'gruCellRecurrentBias': {
+          'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        }
+      },
+      'operators': [{
+        'name': 'gruCell',
+        'arguments': [
+          {'input': 'gruCellInput'}, {'weight': 'gruCellWeight'},
+          {'recurrentWeight': 'gruCellRecurrentWeight'},
+          {'hiddenState': 'gruCellHiddenState'}, {'hiddenSize': 4}, {
+            'options': {
+              'bias': 'gruCellBias',
+              'recurrentBias': 'gruCellRecurrentBias',
+              'resetAfter': false,
+              'layout': 'zrn',
+              'activations': ['relu', 'relu']
+            }
+          }
+        ],
+        'outputs': 'gruCellOutput'
+      }],
+      'expectedOutputs': {
+        'gruCellOutput': {
+          'data': [
+            0, 0, -0.25, -3.83984375, -4, -15, -2.25, -3.41015625, -1, -3, -1,
+            -3.41015625
+          ],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        }
+      }
+    }
+  },
+  {
+    'name':
+        "gruCell float16 tensors with options.bias, options.recurrentBias, options.activations=['relu', 'relu'] and and options.layout='rzn'",
+    'graph': {
+      'inputs': {
+        'gruCellInput': {
+          'data': [1, 2, 2, 1, 1, 1],
+          'descriptor': {shape: [3, 2], dataType: 'float16'}
+        },
+        'gruCellWeight': {
+          'data': [
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 2], dataType: 'float16'}
+        },
+        'gruCellRecurrentWeight': {
+          'data': [
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 4], dataType: 'float16'}
+        },
+        'gruCellHiddenState': {
+          'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        },
+        'gruCellBias': {
+          'data': [1, 1, 1, 1, 1, 2, 1, 2, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        },
+        'gruCellRecurrentBias': {
+          'data': [1, 1, 1, 1, 1, 2, 1, 2, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        }
+      },
+      'operators': [{
+        'name': 'gruCell',
+        'arguments': [
+          {'input': 'gruCellInput'}, {'weight': 'gruCellWeight'},
+          {'recurrentWeight': 'gruCellRecurrentWeight'},
+          {'hiddenState': 'gruCellHiddenState'}, {'hiddenSize': 4}, {
+            'options': {
+              'bias': 'gruCellBias',
+              'recurrentBias': 'gruCellRecurrentBias',
+              'resetAfter': false,
+              'layout': 'rzn',
+              'activations': ['relu', 'relu']
+            }
+          }
+        ],
+        'outputs': 'gruCellOutput'
+      }],
+      'expectedOutputs': {
+        'gruCellOutput': {
+          'data': [
+            0, 0, -0.25, -3.83984375, -4, -15, -2.25, -3.41015625, -1, -3, -1,
+            -3.41015625
+          ],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        }
+      }
+    }
+  },
+  {
+    'name': 'gruCell float16 tensors with all options',
+    'graph': {
+      'inputs': {
+        'gruCellInput': {
+          'data': [1, 2, 2, 1, 1, 1],
+          'descriptor': {shape: [3, 2], dataType: 'float16'}
+        },
+        'gruCellWeight': {
+          'data': [
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375,
+            1, -1, 2, -2, 0.5, -0.5, 0, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 2], dataType: 'float16'}
+        },
+        'gruCellRecurrentWeight': {
+          'data': [
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375,
+            0.0999755859375, 0.0999755859375, 0.0999755859375, 0.0999755859375
+          ],
+          'descriptor': {shape: [12, 4], dataType: 'float16'}
+        },
+        'gruCellHiddenState': {
+          'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        },
+        'gruCellBias': {
+          'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        },
+        'gruCellRecurrentBias': {
+          'data': [1, 2, 1, 2, 1, 1, 1, 1, 0.5, 0.5, 0.5, 0.5],
+          'descriptor': {shape: [12], dataType: 'float16'}
+        }
+      },
+      'operators': [{
+        'name': 'gruCell',
+        'arguments': [
+          {'input': 'gruCellInput'}, {'weight': 'gruCellWeight'},
+          {'recurrentWeight': 'gruCellRecurrentWeight'},
+          {'hiddenState': 'gruCellHiddenState'}, {'hiddenSize': 4}, {
+            'options': {
+              'bias': 'gruCellBias',
+              'recurrentBias': 'gruCellRecurrentBias',
+              'resetAfter': false,
+              'layout': 'zrn',
+              'activations': ['relu', 'relu']
+            }
+          }
+        ],
+        'outputs': 'gruCellOutput'
+      }],
+      'expectedOutputs': {
+        'gruCellOutput': {
+          'data': [
+            0, 0, -0.25, -3.83984375, -4, -15, -2.25, -3.41015625, -1, -3, -1,
+            -3.41015625
+          ],
+          'descriptor': {shape: [3, 4], dataType: 'float16'}
+        }
+      }
+    }
+  }
 ];
 
-if (navigator.ml) {
-  gruCellTests.forEach((test) => {
-    webnn_conformance_test(
-        buildGraphAndCompute, getGruCellPrecisionTolerance, test);
-  });
-} else {
-  test(() => assert_implements(navigator.ml, 'missing navigator.ml'));
-}
+webnn_conformance_test(
+    gruCellTests, buildAndExecuteGraph, getGruCellPrecisionTolerance);

@@ -24,6 +24,7 @@
 #include "mozilla/dom/MediaKeySystemAccessBinding.h"
 #include "mozilla/dom/MediaKeySystemAccessManager.h"
 #include "mozilla/dom/MediaSource.h"
+#include "mozilla/dom/PContent.h"
 #include "nsDOMString.h"
 #include "nsIObserverService.h"
 #include "nsMimeTypes.h"
@@ -40,6 +41,12 @@
 #endif
 
 namespace mozilla::dom {
+
+#ifdef MOZ_WMF_CDM
+#  include "nsIWindowsMediaFoundationCDMOriginsListService.h"
+
+constinit static nsTArray<IPCOriginStatusEntry> sOriginStatusEntries;
+#endif
 
 #define LOG(msg, ...) \
   EME_LOG("MediaKeySystemAccess::%s " msg, __func__, ##__VA_ARGS__)
@@ -230,17 +237,39 @@ static KeySystemConfig::EMECodecString ToEMEAPICodecString(
 }
 
 #ifdef MOZ_WMF_CDM
-// TODO : we implement a temporary workaround to explicitly allow/block
-// domains for MFCDM capabilities. This workaround and should be removed after
-// fixing the bug 1901334, which could result in showing black frame for MFCDM
-// playback when specific CSS effects are applied on video, which requires
-// altering pixel's content.
+/* static */
+void MediaKeySystemAccess::UpdateMFCDMOriginEntries(
+    const nsTArray<IPCOriginStatusEntry>& aEntries) {
+  MOZ_ASSERT(NS_IsMainThread());
+  static bool sXPCOMShutdown = false;
+  if (sXPCOMShutdown) {
+    EME_LOG("XPCOM shutdown detected; entry update aborted");
+    return;
+  }
+  sOriginStatusEntries.Clear();
+  sOriginStatusEntries.AppendElements(aEntries);
+  EME_LOG("UpdateMFCDMOriginEntries");
+  for (const auto& entry : sOriginStatusEntries) {
+    EME_LOG("-- Origin: %s, Status: %d\n", entry.origin().get(),
+            entry.status());
+  }
+  RunOnShutdown([&] {
+    sOriginStatusEntries.Clear();
+    sXPCOMShutdown = true;
+  });
+}
+
 static bool IsMFCDMAllowedByOrigin(const Maybe<nsCString>& aOrigin) {
-  // 0 : disabled, 1 : enabled allowed list, 2 : enabled blocked list
+  // TODO: Remove hardcoded allowed and blocked lists once the Remote Settings
+  // lists are verified to be reliable in bug 1964811.
+  // 0 : disabled, 1 : enabled allowed list, 2 : enabled blocked list,
+  // 3 : enabled list status control via Remote Setting
   enum Filer : uint32_t {
     eDisable = 0,
     eAllowedListEnabled = 1,
     eBlockedListEnabled = 2,
+    eAllowedByDefaultRemoteSettings = 3,
+    eBlockedByDefaultRemoteSettings = 4,
   };
   const auto prefValue = StaticPrefs::media_eme_mfcdm_origin_filter_enabled();
   if (prefValue == Filer::eDisable || !aOrigin ||
@@ -271,24 +300,47 @@ static bool IsMFCDMAllowedByOrigin(const Maybe<nsCString>& aOrigin) {
   }
 
   // Check if the origin is blocked to use MFCDM.
-  MOZ_ASSERT(prefValue == Filer::eBlockedListEnabled);
-  static nsTArray<nsCString> kBlockedOrigins({
-      "https://on.orf.at"_ns,
-  });
-  for (const auto& blockedOrigin : kBlockedOrigins) {
-    if (FindInReadable(blockedOrigin, *aOrigin)) {
-      EME_LOG(
-          "MediaKeySystemAccess::IsMFCDMAllowedByOrigin, origin (%s) "
-          "is BLOCKED to use MFCDM",
-          aOrigin->get());
-      return false;
+  if (prefValue == Filer::eBlockedListEnabled) {
+    static nsTArray<nsCString> kBlockedOrigins({
+        "https://on.orf.at"_ns,
+        "https://www.hulu.com"_ns,
+    });
+    for (const auto& blockedOrigin : kBlockedOrigins) {
+      if (FindInReadable(blockedOrigin, *aOrigin)) {
+        EME_LOG(
+            "MediaKeySystemAccess::IsMFCDMAllowedByOrigin, origin (%s) "
+            "is BLOCKED to use MFCDM",
+            aOrigin->get());
+        return false;
+      }
+    }
+    EME_LOG(
+        "MediaKeySystemAccess::IsMFCDMAllowedByOrigin, origin (%s) "
+        "is allowed to use MFCDM",
+        aOrigin->get());
+    return true;
+  }
+
+  // List from Remote Settings. No duplicated origins; suborigins follow the
+  // main origin's result.
+  bool isAllowed = prefValue == Filer::eAllowedByDefaultRemoteSettings;
+  bool isFound = false;
+  for (const auto& entry : sOriginStatusEntries) {
+    // Check if the given origin matches the entry, or if it's a suborigin.
+    if (FindInReadable(entry.origin(), *aOrigin)) {
+      isAllowed =
+          entry.status() ==
+          nsIWindowsMediaFoundationCDMOriginsListService::ORIGIN_ALLOWED;
+      isFound = true;
+      break;
     }
   }
   EME_LOG(
       "MediaKeySystemAccess::IsMFCDMAllowedByOrigin, origin (%s) "
-      "is allowed to use MFCDM",
-      aOrigin->get());
-  return true;
+      "is %s to use MFCDM %s(Remote)",
+      aOrigin->get(), isAllowed ? "ALLOWED" : "BLOCKED",
+      isFound ? "" : "by default ");
+  return isAllowed;
 }
 #endif
 
@@ -383,8 +435,8 @@ static bool CanDecryptAndDecode(
     CodecType aCodecType,
     const KeySystemConfig::ContainerSupport& aContainerSupport,
     const nsTArray<KeySystemConfig::EMECodecString>& aCodecs,
-    const Maybe<CryptoScheme>& aScheme,
-    DecoderDoctorDiagnostics* aDiagnostics) {
+    const Maybe<CryptoScheme>& aScheme, DecoderDoctorDiagnostics* aDiagnostics,
+    Maybe<bool> aShouldResistFingerprinting) {
   MOZ_ASSERT(aCodecType != Invalid);
   for (const KeySystemConfig::EMECodecString& codec : aCodecs) {
     MOZ_ASSERT(!codec.IsEmpty());
@@ -396,7 +448,8 @@ static bool CanDecryptAndDecode(
 
     if (aContainerSupport.Decrypts(codec, aScheme)) {
       IgnoredErrorResult rv;
-      MediaSource::IsTypeSupported(aContentType, aDiagnostics, rv);
+      MediaSource::IsTypeSupported(aContentType, aDiagnostics, rv,
+                                   aShouldResistFingerprinting);
       if (!rv.Failed()) {
         // GMP can decrypt and is allowed to return compressed samples to
         // Gecko to decode, and Gecko has a decoder.
@@ -773,9 +826,13 @@ static Sequence<MediaKeySystemMediaCapability> GetSupportedCapabilities(
     // restrictions...
     const auto& containerSupport =
         supportedInMP4 ? aKeySystem.mMP4 : aKeySystem.mWebM;
+    Maybe<bool> shouldResistFingerprinting =
+        aDocument ? Some(aDocument->ShouldResistFingerprinting(
+                        RFPTarget::MediaCapabilities))
+                  : Nothing();
     if (!CanDecryptAndDecode(aKeySystem.mKeySystem, contentTypeString,
                              majorType, containerSupport, codecs, scheme,
-                             aDiagnostics)) {
+                             aDiagnostics, shouldResistFingerprinting)) {
       EME_LOG(
           "MediaKeySystemConfiguration (label='%s') "
           "MediaKeySystemMediaCapability('%s','%s','%s') unsupported; "
@@ -1169,26 +1226,29 @@ void MediaKeySystemAccess::NotifyObservers(nsPIDOMWindowInner* aWindow,
 }
 
 static nsCString ToCString(const nsString& aString) {
-  nsCString str("'");
+  nsCString str("\"");
   str.Append(NS_ConvertUTF16toUTF8(aString));
-  str.AppendLiteral("'");
+  str.AppendLiteral("\"");
   return str;
 }
 
 static nsCString ToCString(const MediaKeysRequirement aValue) {
-  nsCString str("'");
+  nsCString str("\"");
   str.AppendASCII(GetEnumString(aValue));
-  str.AppendLiteral("'");
+  str.AppendLiteral("\"");
   return str;
 }
 
 static nsCString ToCString(const MediaKeySystemMediaCapability& aValue) {
   nsCString str;
-  str.AppendLiteral("{contentType=");
-  str.Append(ToCString(aValue.mContentType));
-  str.AppendLiteral(", robustness=");
+  str.AppendLiteral(R"({"contentType":")");
+  // Escape any quotes in the content type
+  nsString escapedContentType(aValue.mContentType);
+  escapedContentType.ReplaceSubstring(u"\"", u"\\\"");
+  str.Append(NS_ConvertUTF16toUTF8(escapedContentType));
+  str.AppendLiteral(R"(", "robustness":)");
   str.Append(ToCString(aValue.mRobustness));
-  str.AppendLiteral(", encryptionScheme=");
+  str.AppendLiteral(R"(, "encryptionScheme":)");
   str.Append(ToCString(aValue.mEncryptionScheme));
   str.AppendLiteral("}");
   return str;
@@ -1246,25 +1306,25 @@ nsCString ToCString(
 nsCString MediaKeySystemAccess::ToCString(
     const MediaKeySystemConfiguration& aConfig) {
   nsCString str;
-  str.AppendLiteral("{label=");
+  str.AppendLiteral(R"({"label":)");
   str.Append(mozilla::dom::ToCString(aConfig.mLabel));
 
-  str.AppendLiteral(", initDataTypes=");
+  str.AppendLiteral(R"(, "initDataTypes":)");
   str.Append(mozilla::dom::ToCString(aConfig.mInitDataTypes));
 
-  str.AppendLiteral(", audioCapabilities=");
+  str.AppendLiteral(R"(, "audioCapabilities":)");
   str.Append(mozilla::dom::ToCString(aConfig.mAudioCapabilities));
 
-  str.AppendLiteral(", videoCapabilities=");
+  str.AppendLiteral(R"(, "videoCapabilities":)");
   str.Append(mozilla::dom::ToCString(aConfig.mVideoCapabilities));
 
-  str.AppendLiteral(", distinctiveIdentifier=");
+  str.AppendLiteral(R"(, "distinctiveIdentifier":)");
   str.Append(mozilla::dom::ToCString(aConfig.mDistinctiveIdentifier));
 
-  str.AppendLiteral(", persistentState=");
+  str.AppendLiteral(R"(, "persistentState":)");
   str.Append(mozilla::dom::ToCString(aConfig.mPersistentState));
 
-  str.AppendLiteral(", sessionTypes=");
+  str.AppendLiteral(R"(, "sessionTypes":)");
   str.Append(mozilla::dom::ToCString(aConfig.mSessionTypes));
 
   str.AppendLiteral("}");

@@ -14,6 +14,7 @@ EXPORTS.mozilla += [
     "IntegerPrintfMacros.h",
     "LoggingCore.h",
     "MmapFaultHandler.h",
+    "Now.h",
     "PlatformConditionVariable.h",
     "PlatformMutex.h",
     "PlatformRWLock.h",
@@ -37,7 +38,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "PreXULSkeletonUI.h",
         "StackWalk_windows.h",
         "StackWalkThread.h",
-        "TimeStamp_windows.h",
         "WindowsDpiAwareness.h",
     ]
 
@@ -50,8 +50,6 @@ SOURCES += [
     "Printf.cpp",
     "SIMD.cpp",
     "StackWalk.cpp",
-    "TimeStamp.cpp",
-    "Uptime.cpp",
 ]
 
 if CONFIG["TARGET_CPU"].startswith("x86"):
@@ -92,7 +90,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
     ]
     SOURCES += [
         "GetKnownFolderPath.cpp",
-        "TimeStamp_windows.cpp",
         "WindowsDiagnostics.cpp",
         "WindowsDllMain.cpp",
         "WindowsDpiInitialization.cpp",
@@ -101,11 +98,7 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "WindowsUnicode.cpp",
     ]
 
-    OS_LIBS += [
-        "dbghelp",
-        "oleaut32",
-        "ole32",
-    ]
+    OS_LIBS += ["dbghelp", "oleaut32", "ole32", "mincore"]
 
     if not CONFIG["JS_STANDALONE"]:
         SOURCES += [
@@ -113,17 +106,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
             "/ipc/mscom/ProcessRuntime.cpp",
             "PreXULSkeletonUI.cpp",
         ]
-
-elif CONFIG["OS_ARCH"] == "Darwin":
-    SOURCES += [
-        "TimeStamp_darwin.cpp",
-    ]
-elif CONFIG["HAVE_CLOCK_MONOTONIC"]:
-    SOURCES += [
-        "TimeStamp_posix.cpp",
-    ]
-elif CONFIG["COMPILE_ENVIRONMENT"]:
-    error("No TimeStamp implementation on this platform.  Build will not succeed")
 
 if CONFIG["OS_ARCH"] == "WINNT":
     SOURCES += [
@@ -159,3 +141,5 @@ if CONFIG["CC_TYPE"] in ("clang", "clang-cl"):
 
 for var in ("MOZ_APP_BASENAME", "MOZ_APP_VENDOR"):
     DEFINES[var] = '"%s"' % CONFIG[var]
+
+include("/mozglue/misc/timestamp.mozbuild")

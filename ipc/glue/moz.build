@@ -17,7 +17,6 @@ EXPORTS.mozilla.ipc += [
     "BackgroundStarterParent.h",
     "BackgroundUtils.h",
     "BigBuffer.h",
-    "BrowserProcessSubThread.h",
     "ByteBuf.h",
     "ByteBufUtils.h",
     "CrashReporterClient.h",
@@ -34,12 +33,11 @@ EXPORTS.mozilla.ipc += [
     "IdleSchedulerChild.h",
     "IdleSchedulerParent.h",
     "InputStreamUtils.h",
-    "IOThreadChild.h",
+    "IOThread.h",
     "IPCCore.h",
     "IPCForwards.h",
     "IPCStreamUtils.h",
     "IPCTypes.h",
-    "IPDLParamTraits.h",
     "IPDLStructMember.h",
     "LaunchError.h",
     "MessageChannel.h",
@@ -53,21 +51,23 @@ EXPORTS.mozilla.ipc += [
     "ProtocolMessageUtils.h",
     "ProtocolUtils.h",
     "RandomAccessStreamUtils.h",
-    "RawShmem.h",
+    "RustMessageUtils.h",
     "ScopedPort.h",
     "SerializedStructuredCloneBuffer.h",
-    "SharedMemory.h",
+    "SerializeToBytesUtil.h",
+    "SharedMemoryCursor.h",
+    "SharedMemoryHandle.h",
+    "SharedMemoryMapping.h",
     "Shmem.h",
     "ShmemMessageUtils.h",
     "SideVariant.h",
     "TaintingIPCUtils.h",
     "TaskFactory.h",
-    "ToplevelActorHolder.h",
     "TransportSecurityInfoUtils.h",
     "URIUtils.h",
-    "UtilityAudioDecoder.h",
-    "UtilityAudioDecoderChild.h",
-    "UtilityAudioDecoderParent.h",
+    "UtilityMediaService.h",
+    "UtilityMediaServiceChild.h",
+    "UtilityMediaServiceParent.h",
     "UtilityProcessChild.h",
     "UtilityProcessHost.h",
     "UtilityProcessImpl.h",
@@ -78,14 +78,7 @@ EXPORTS.mozilla.ipc += [
 ]
 
 if CONFIG["OS_ARCH"] == "WINNT":
-    SOURCES += [
-        "SharedMemory_windows.cpp",
-        "WindowsMessageLoop.cpp",
-    ]
-else:
-    UNIFIED_SOURCES += [
-        "SharedMemory_posix.cpp",
-    ]
+    SOURCES += ["WindowsMessageLoop.cpp"]
 
 if CONFIG["OS_ARCH"] == "WINNT":
     SOURCES += [
@@ -114,11 +107,14 @@ else:
     ]
 
 if CONFIG["OS_ARCH"] == "Darwin":
-    EXPORTS.mozilla.ipc += ["SharedMemoryImpl_mach.h"]
-    SOURCES += ["SharedMemoryImpl_mach.cpp"]
+    UNIFIED_SOURCES += ["SharedMemoryPlatform_mach.cpp"]
+elif CONFIG["OS_ARCH"] == "WINNT":
+    UNIFIED_SOURCES += ["SharedMemoryPlatform_windows.cpp"]
+elif CONFIG["OS_TARGET"] == "Android":
+    UNIFIED_SOURCES += ["SharedMemoryPlatform_android.cpp"]
 else:
-    EXPORTS.mozilla.ipc += ["SharedMemoryImpl_chromium.h"]
-    SOURCES += ["SharedMemoryImpl_chromium.cpp"]
+    UNIFIED_SOURCES += ["SharedMemoryPlatform_posix.cpp"]
+
 
 if CONFIG["OS_ARCH"] == "Linux":
     UNIFIED_SOURCES += [
@@ -169,7 +165,6 @@ UNIFIED_SOURCES += [
     "BackgroundImpl.cpp",
     "BackgroundUtils.cpp",
     "BigBuffer.cpp",
-    "BrowserProcessSubThread.cpp",
     "CrashReporterClient.cpp",
     "CrashReporterHost.cpp",
     "DataPipe.cpp",
@@ -179,6 +174,7 @@ UNIFIED_SOURCES += [
     "IdleSchedulerChild.cpp",
     "IdleSchedulerParent.cpp",
     "InputStreamUtils.cpp",
+    "IOThread.cpp",
     "IPCMessageUtilsSpecializations.cpp",
     "IPCStreamUtils.cpp",
     "MessageChannel.cpp",
@@ -190,17 +186,18 @@ UNIFIED_SOURCES += [
     "ProcessUtils_common.cpp",
     "ProtocolUtils.cpp",
     "RandomAccessStreamUtils.cpp",
-    "RawShmem.cpp",
     "ScopedPort.cpp",
     "SerializedStructuredCloneBuffer.cpp",
-    "SharedMemory.cpp",
+    "SharedMemoryCursor.cpp",
+    "SharedMemoryHandle.cpp",
+    "SharedMemoryMapping.cpp",
     "Shmem.cpp",
     "StringUtil.cpp",
     "TransportSecurityInfoUtils.cpp",
     "URIUtils.cpp",
-    "UtilityAudioDecoder.cpp",
-    "UtilityAudioDecoderChild.cpp",
-    "UtilityAudioDecoderParent.cpp",
+    "UtilityMediaService.cpp",
+    "UtilityMediaServiceChild.cpp",
+    "UtilityMediaServiceParent.cpp",
     "UtilityProcessChild.cpp",
     "UtilityProcessHost.cpp",
     "UtilityProcessImpl.cpp",
@@ -233,19 +230,20 @@ elif CONFIG["OS_TARGET"] == "Android":
     UNIFIED_SOURCES += ["MessagePump_android.cpp"]
 
 LOCAL_INCLUDES += [
+    "!/dist/include/libwebrtc_overrides",
     "/caps",
     "/dom/broadcastchannel",
     "/dom/indexedDB",
     "/dom/storage",
     "/netwerk/base",
+    "/third_party/abseil-cpp",
     "/third_party/libwebrtc",
-    "/third_party/libwebrtc/third_party/abseil-cpp",
     "/tools/fuzzing/ipc",
     "/xpcom/build",
 ]
 
 PREPROCESSED_IPDL_SOURCES = [
-    "PUtilityAudioDecoder.ipdl",
+    "PUtilityMediaService.ipdl",
     "PUtilityProcess.ipdl",
 ]
 
@@ -293,12 +291,16 @@ if CONFIG["TARGET_OS"] == "OSX":
     OS_LIBS += ["bsm"]  # for audit_token_to_pid
 elif CONFIG["TARGET_OS"] == "iOS":
     OS_LIBS += ["-framework BrowserEngineKit"]
+elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "android":
+    OS_LIBS += ["android"]
 
 for var in (
     "MOZ_CHILD_PROCESS_NAME",
     "MOZ_CHILD_PROCESS_BUNDLENAME",
     "MOZ_EME_PROCESS_NAME_BRANDED",
     "MOZ_EME_PROCESS_BUNDLENAME",
+    "MOZ_GPU_PROCESS_NAME_BRANDED",
+    "MOZ_GPU_PROCESS_BUNDLENAME",
 ):
     DEFINES[var] = '"%s"' % CONFIG[var]
 
@@ -309,12 +311,11 @@ if CONFIG["MOZ_SANDBOX"] and CONFIG["OS_ARCH"] == "WINNT":
         "/security/sandbox/win/src/sandboxbroker",
     ]
 
-if CONFIG["ENABLE_TESTS"]:
-    DIRS += [
-        "test/gtest",
-        "test/utility_process_xpcom",
-        "test/browser",
-    ]
+TEST_DIRS += [
+    "test/gtest",
+    "test/utility_process_xpcom",
+    "test/browser",
+]
 
 # Add libFuzzer configuration directives
 include("/tools/fuzzing/libfuzzer-config.mozbuild")

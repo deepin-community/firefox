@@ -6,27 +6,26 @@
 //!
 //! [ff]: https://drafts.csswg.org/css-fonts/#at-font-face-rule
 
+use crate::derives::*;
 use crate::error_reporting::ContextualParseError;
 use crate::parser::{Parse, ParserContext};
 use crate::properties::longhands::font_language_override;
 use crate::shared_lock::{SharedRwLockReadGuard, ToCssWithGuard};
-use crate::str::CssStringWriter;
 use crate::values::computed::font::{FamilyName, FontStretch};
 use crate::values::generics::font::FontStyle as GenericFontStyle;
 use crate::values::specified::font::{
-    AbsoluteFontWeight, FontStretch as SpecifiedFontStretch, FontFeatureSettings,
+    AbsoluteFontWeight, FontFeatureSettings, FontStretch as SpecifiedFontStretch,
     FontVariationSettings, MetricsOverride, SpecifiedFontStyle,
 };
 use crate::values::specified::url::SpecifiedUrl;
 use crate::values::specified::{Angle, NonNegativePercentage};
-use cssparser::UnicodeRange;
 use cssparser::{
-    AtRuleParser, CowRcStr, DeclarationParser, Parser, QualifiedRuleParser, RuleBodyItemParser,
-    RuleBodyParser, SourceLocation,
+    match_ignore_ascii_case, AtRuleParser, CowRcStr, DeclarationParser, Parser, ParserState,
+    QualifiedRuleParser, RuleBodyItemParser, RuleBodyParser, SourceLocation, UnicodeRange,
 };
 use selectors::parser::SelectorParseErrorKind;
 use std::fmt::{self, Write};
-use style_traits::{CssWriter, ParseError};
+use style_traits::{CssStringWriter, CssWriter, ParseError};
 use style_traits::{StyleParseErrorKind, ToCss};
 
 /// A source for a font-face rule.
@@ -379,7 +378,6 @@ impl FontStretchRange {
 #[derive(Clone, Debug, PartialEq, ToShmem)]
 #[allow(missing_docs)]
 pub enum FontStyle {
-    Normal,
     Italic,
     Oblique(Angle, Angle),
 }
@@ -389,7 +387,6 @@ pub enum FontStyle {
 #[repr(u8)]
 #[allow(missing_docs)]
 pub enum ComputedFontStyleDescriptor {
-    Normal,
     Italic,
     Oblique(f32, f32),
 }
@@ -399,9 +396,17 @@ impl Parse for FontStyle {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
+        // We parse 'normal' explicitly here to distinguish it from 'oblique 0deg',
+        // because we must not accept a following angle.
+        if input
+            .try_parse(|i| i.expect_ident_matching("normal"))
+            .is_ok()
+        {
+            return Ok(FontStyle::Oblique(Angle::zero(), Angle::zero()));
+        }
+
         let style = SpecifiedFontStyle::parse(context, input)?;
         Ok(match style {
-            GenericFontStyle::Normal => FontStyle::Normal,
             GenericFontStyle::Italic => FontStyle::Italic,
             GenericFontStyle::Oblique(angle) => {
                 let second_angle = input
@@ -420,9 +425,13 @@ impl ToCss for FontStyle {
         W: fmt::Write,
     {
         match *self {
-            FontStyle::Normal => dest.write_str("normal"),
             FontStyle::Italic => dest.write_str("italic"),
             FontStyle::Oblique(ref first, ref second) => {
+                // Not first.is_zero() because we don't want to serialize
+                // `oblique calc(0deg)` as `normal`.
+                if *first == Angle::zero() && first == second {
+                    return dest.write_str("normal");
+                }
                 dest.write_str("oblique")?;
                 if *first != SpecifiedFontStyle::default_angle() || first != second {
                     dest.write_char(' ')?;
@@ -442,7 +451,6 @@ impl FontStyle {
     /// Returns a computed font-style descriptor.
     pub fn compute(&self) -> ComputedFontStyleDescriptor {
         match *self {
-            FontStyle::Normal => ComputedFontStyleDescriptor::Normal,
             FontStyle::Italic => ComputedFontStyleDescriptor::Italic,
             FontStyle::Oblique(ref first, ref second) => {
                 let (min, max) = sort_range(
@@ -484,18 +492,6 @@ pub fn parse_font_face_block(
 /// A @font-face rule that is known to have font-family and src declarations.
 #[cfg(feature = "servo")]
 pub struct FontFace<'a>(&'a FontFaceRuleData);
-
-#[cfg(feature = "servo")]
-impl Iterator for EffectiveSources {
-    type Item = Source;
-    fn next(&mut self) -> Option<Source> {
-        self.0.pop()
-    }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.0.len(), Some(self.0.len()))
-    }
-}
 
 struct FontFaceRuleParser<'a, 'b: 'a> {
     context: &'a ParserContext<'b>,
@@ -560,8 +556,8 @@ impl Parse for Source {
         };
 
         // Parse optional tech()
-        let tech_flags = if static_prefs::pref!("layout.css.font-tech.enabled") &&
-            input
+        let tech_flags = if static_prefs::pref!("layout.css.font-tech.enabled")
+            && input
                 .try_parse(|input| input.expect_function_matching("tech"))
                 .is_ok()
         {
@@ -583,7 +579,7 @@ macro_rules! is_descriptor_enabled {
         static_prefs::pref!("layout.css.font-variations.enabled")
     };
     ("size-adjust") => {
-        static_prefs::pref!("layout.css.size-adjust.enabled")
+        cfg!(feature = "gecko")
     };
     ($name:tt) => {
         true
@@ -639,6 +635,7 @@ macro_rules! font_face_descriptors_common {
                &mut self,
                name: CowRcStr<'i>,
                input: &mut Parser<'i, 't>,
+               _declaration_start: &ParserState,
             ) -> Result<(), ParseError<'i>> {
                 match_ignore_ascii_case! { &*name,
                     $(
@@ -689,7 +686,7 @@ macro_rules! font_face_descriptors {
             ///
             /// However both are required for the rule to represent an actual font face.
             #[cfg(feature = "servo")]
-            pub fn font_face(&self) -> Option<FontFace> {
+            pub fn font_face(&self) -> Option<FontFace<'_>> {
                 if $( self.$m_ident.is_some() )&&* {
                     Some(FontFace(self))
                 } else {

@@ -17,7 +17,7 @@ let { UIState } = ChromeUtils.importESModule(
 );
 
 ChromeUtils.defineESModuleGetters(this, {
-  UITour: "resource:///modules/UITour.sys.mjs",
+  UITour: "moz-src:///browser/components/uitour/UITour.sys.mjs",
 });
 
 const DECKINDEX_TABS = 0;
@@ -57,12 +57,27 @@ let mockedInternal = {
 
 add_setup(async function () {
   const getSignedInUser = FxAccounts.config.getSignedInUser;
+
   FxAccounts.config.getSignedInUser = async () =>
     Promise.resolve({ uid: "uid", email: "foo@bar.com" });
+
   Services.prefs.setCharPref(
     "identity.fxaccounts.remote.root",
     "https://example.com/"
   );
+
+  // Mock the global fxAccounts object used by gSync
+  const origWindowFxAccounts = window.fxAccounts;
+  window.fxAccounts = {
+    getSignedInUser: async () => ({ uid: "uid", email: "foo@bar.com" }),
+    hasLocalSession: async () => true,
+    keys: {
+      canGetKeyForScope: async () => true,
+    },
+    device: {
+      recentDeviceList: null,
+    },
+  };
 
   let oldInternal = SyncedTabs._internal;
   SyncedTabs._internal = mockedInternal;
@@ -78,6 +93,7 @@ add_setup(async function () {
     FxAccounts.config.getSignedInUser = getSignedInUser;
     Services.prefs.clearUserPref("identity.fxaccounts.remote.root");
     UIState._internal.notifyStateUpdated = origNotifyStateUpdated;
+    window.fxAccounts = origWindowFxAccounts;
     SyncedTabs._internal = oldInternal;
   });
 });
@@ -227,10 +243,12 @@ add_task(async function () {
   );
   await shown;
 
-  let expectedUrl =
-    "https://example.com/connect_another_device?context=" +
-    "fx_desktop_v3&entrypoint=synced-tabs&service=sync&uid=uid&email=foo%40bar.com";
-  let promiseTabOpened = BrowserTestUtils.waitForNewTab(gBrowser, expectedUrl);
+  let promiseTabOpened = BrowserTestUtils.waitForNewTab(
+    gBrowser,
+    url =>
+      url.startsWith("https://example.com/connect_another_device") &&
+      url.includes("entrypoint=synced-tabs")
+  );
   button.click();
   // the panel should have been closed.
   ok(!isOverflowOpen(), "click closed the panel");
@@ -241,6 +259,10 @@ add_task(async function () {
 
 // Test the "Sync Now" button
 add_task(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.tabs.remoteSVGIconDecoding", true]],
+  });
+
   gSync.updateAllUI({
     status: UIState.STATUS_SIGNED_IN,
     syncEnabled: true,
@@ -318,6 +340,7 @@ add_task(async function () {
         tabs: [
           {
             title: "http://example.com/6",
+            icon: "http://example.com/favicon.ico",
             lastUsed: 6,
           },
         ],
@@ -380,6 +403,14 @@ add_task(async function () {
   childNode = node.firstElementChild;
   is(childNode.getAttribute("itemtype"), "tab", "node is a tab");
   is(childNode.getAttribute("label"), "http://example.com/6");
+  // Check the favicon image.
+  let image = new URL(childNode.getAttribute("image"));
+  is(image.protocol, "moz-remote-image:", "image protocol is correct");
+  is(
+    image.searchParams.get("url"),
+    "http://example.com/favicon.ico",
+    "image url is correct"
+  );
   node = node.nextElementSibling;
   is(node, null, "no more siblings");
 
@@ -433,6 +464,8 @@ add_task(async function () {
   ok(didSync, "clicking the button called the correct function");
 
   await hideOverflow();
+
+  await SpecialPowers.popPrefEnv();
 });
 
 // Test the pagination capabilities (Show More/All tabs)

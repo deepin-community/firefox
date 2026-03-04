@@ -25,6 +25,8 @@ return-to-amo-subtitle = Wulkotnje, maće { -brand-short-name }
 return-to-amo-addon-title = Wobstarajće sej nětko <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Rozšěrjenje přidać
 return-to-amo-add-theme-label = Drastu přidać
+return-to-amo-theme-install-complete-label = Drasta je instalowana
+return-to-amo-extension-install-complete-label = Rozšěrjenje je instalowane
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Z { $previous } importo
 mr1-onboarding-theme-header = Přiswojće sej jón
 mr1-onboarding-theme-subtitle = Personalizujće { -brand-short-name } z drastu.
 mr1-onboarding-theme-secondary-button-label = Nic nětko
-newtab-wallpaper-onboarding-title = Wupruwujće barbowy woplusk
-newtab-wallpaper-onboarding-subtitle = Wubjerće pozadkowy wobraz, zo byšće swojemu nowemu rajtarkej nowy napohlad dał.
-newtab-wallpaper-onboarding-primary-button-label = Pozadkowy wobraz nastajić
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Systemowa drasta
 mr1-onboarding-theme-label-light = Swětły
@@ -134,7 +133,7 @@ onboarding-live-language-button-label-downloading = Rěčny pakćik za { $negoti
 onboarding-live-language-waiting-button = K dispoziciji stejace rěče so wobstaruja …
 onboarding-live-language-installing = Rěčny pakćik za { $negotiatedLanguage } so instaluje …
 mr2022-onboarding-live-language-switch-to = { $negotiatedLanguage } wužiwać
-mr2022-onboarding-live-language-continue-in = Z { $appLanguage } pokročować
+mr2022-onboarding-live-language-continue-in = Z rěču { $appLanguage } pokročować
 onboarding-live-language-secondary-cancel-download = Přetorhnyć
 onboarding-live-language-skip-button-label = Přeskočić
 
@@ -226,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Wužiwajće wobhladowak, kotryž so wot
 mr2022-onboarding-get-started-primary-subtitle = Naša najnowša wersija je wokoło was natwarjena, kotraž wam lóšo hdy do toho čini, web přehladować. Je połny funkcijow, wo kotrychž sej myslimy, zo so wam spodobaja.
 mr2022-onboarding-get-started-primary-button-label = Instalacija za sekundy
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Błyskospěšna instalacija
 mr2022-onboarding-import-subtitle = Zarjadujće { -brand-short-name }, kak so wam spodoba. Přidajće swoje zapołožki, hesła a wjace ze swojeho stareho wobhladowaka.
@@ -357,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Hdyž sće synchroniz
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } za wami steji
 onboarding-gratitude-security-and-privacy-subtitle = Wulki dźak, zo { -brand-short-name } wužiwaće, kotryž so wot załožby Mozilla Foundation spěchuje. Z wašej pomocu dźěłamy na tym, internet wěsćiši a přistupniši za kóždeho činić.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Waše daty mjez gratami synchronizować
+onboarding-sign-up-description = Registrujće so za konto a wšě waše wažne informacije – hesła, zapołožki a wjace – so wěsće składuja a su k dispoziciji, hdyž so w někajkim graće přizjewjeće.
+onboarding-sign-up-button = Registrować abo přizjewić
+onboarding-sign-up-secondary-button = Přehladowanje započeć
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +382,208 @@ onboarding-new-user-survey-familiarity-based-option-1 = Sym cyle nowy
 onboarding-new-user-survey-familiarity-based-option-2 = Sym jón hižo něštokróć wužiwał
 onboarding-new-user-survey-familiarity-based-option-3 = Znaju jón jara derje
 onboarding-new-user-survey-familiarity-based-option-4 = Sym jón w zańdźenosći wužiwał, ale je tomu hižo chwila
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Zdźělće nam, hdźež chceće swoje rajtarki měć
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Přepinajće w nastajenjach bóčnicy, hdyžkuli chceće.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Waše rajtarki, waša móžnosć
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Maće wjele rajtarkow wočinjene? Rjadujće swoje rajtarki na boku za racionelniši napohlad. Abo wužiwajće klasiski napohlad z rajtarkami horjeka. Přeměńće kóždy čas.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Wubjerće swoje wuhotowanje rajtarkow
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Za racionelny napohlad, kotryž móže wam pomhać, koncentrowany wostać, wupruwujće swoje rajtarki na boku. Abo wužiwajće klasiski napohlad z rajtarkami horjeka. Přeměńće kóždy čas.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Rajtarki naboku
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Rajtarki horjeka
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Wertikalne rajtarki su tu
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Wertikalne rajtarki předstajić
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Spytajće swoje rajtarki naboku. Přepinajće w nastajenjach bóčnicy, hdyžkuli chceće.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Wupruwujće wertikalne rajtarki
+onboarding-flair-text = Nowy!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Horicontalne rajtarki wobchować
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Wokno wobhladowaka, kotrež rajtarki podłu boka wobrazowki jako dźěl bóčnicy { -brand-shorter-name } pokazuje.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Wokno wobhladowaka, kotrež rajtarki podłu boka wobrazowki jako dźěl bóčnicy { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Wokno wobhladowaka, kotrež rajtarki horjeka pokazuje.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Wokno wobhladowaka, kotrež rajtarki horjeka pokazuje.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Wupruwujće chatowy bot KI w bóčnicy.
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Zjimajće webwobsah, ideje namakanja idejow, naćiski powěsćow – wšitko, hdyž přehladujeće. Wubjerće z wjacorych poskićowarjow. Móžeće jeho kóždy raz změnić. <a data-l10n-name="learn-more">Dalše informacije</a>
+onboarding-genai-sidebar-primary-button = Wubjerće chatowy bot
+onboarding-genai-sidebar-secondary-button = Přehladowanje započeć
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Konfiguraciju { -brand-short-name } skónčić
+onboarding-checklist-subtitle = Dokónčće tute kroki, zo byšće najwjace ze swojeho dožiwjenja přehladowanja wućahnyć.
+onboarding-checklist-set-default = Nastajće { -brand-short-name } jako standardny wobhladowak
+onboarding-checklist-pin = Připniće { -brand-short-name } k nadawkowej lajsće
+onboarding-checklist-import = Z předchadneho wobhladowaka importować
+onboarding-checklist-extension = Rozšěrjenje přidać
+onboarding-checklist-sign-up = Registrujće so abo přizjewće so pola swojeho konta
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Wupruwujće skupiny rajtarkow za mjenje njeporjada a wjace fokusa
+tab-groups-onboarding-feature-callout-subtitle = Organizujće so, ćehńće jedyn rajtark horjeka na druhi, zo byšće wašu prěnju skupinu wutworił.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Namakajće kóždy čas swoje skupiny rajtarkow w meniju Wšě rajtarki nalistować.
+tab-groups-onboarding-create-group-title-2 = Namakajće swoje skupiny rajtarkow tu kóždy čas.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Pytajće za swojimi skupinami, zo byšće je w adresowym polu namakał.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Hdyž skupinu rajtarkow začinjeće, wočińće ju zaso kóždy čas z menija Wšě rajtarki nalistować.
+tab-groups-onboarding-saved-groups-title-2 = Hdyž skupinu rajtarkow začinjeće, móžeće ju tu kóždy čas zaso wočinić.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Pytajće za swojimi začinjenymi skupinami, zo byšće je w adresowym polu namakał.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Wočińće zaso kóždy čas swoje skupiny rajtarkow z menija Wšě rajtarki nalistować.
+tab-groups-onboarding-session-restore-title = Wočińće zaso swoje skupiny rajtarkow tu kóždy čas.
+tab-groups-onboarding-dismiss = W porjadku
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Witajće profile { -brand-product-name }
+multi-profile-spotlight-body = Přeměńće lochko mjez přehladowanjom za dźěło a zabawu. Profile waše přehladowanske informacije, mjez nimi pytansku historiju a hesła, dospołnje separatne wobchowuja, zo byšće organizowany wostał.
+multi-profile-spotlight-cta = Profil załožić
+multi-profile-callout-title = Załožće rozdźělne profile za dźěło a zabawu
+multi-profile-callout-subtitle = Profile wam zmóžnjeja, waše přehladowanske informacije kaž pytansku historiju a hesła dospołnje separatnje wobchować.
+multi-profile-callout-cta = Profil załožić
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Sćehńće, synchronizujće, běh!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Skenujće QR-kod, zo byšće { -brand-product-name } za mobilne graty sćahnył. Hdyž sće jón instalował, wubjerće „Z mobilnym gratom synchronizować“, zo byšće po puću přistup k swojim hesłam, zapołožkam a wjace dóstał.
+dismiss-button-label = Zaćisnyć
+sync-to-mobile-button-label = Z mobilnym gratom synchronizować
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-kod za sćehnjenje { -brand-product-name } za mobilny grat
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Aktualizujeće na Windows 11?
+    Dajće nam waše daty { -brand-product-name } zawěsćić.
+create-backup-screen-1-subtitle = Škitajće awtomatisce waše hesła, zapołožki a wjace za 1 mjeńšinu abo 2 mjeńšinje.
+create-backup-screen-1-flair = Doporučeny
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Dalše informacije</a>
+create-backup-screen-1-sync-label = Z { -brand-product-name } synchronizować
+create-backup-screen-1-sync-body = Zawěsćuje wšě přizjewjene graty
+create-backup-screen-1-backup-label = Na PC zawěsćić
+create-backup-screen-1-backup-body = Składuje na wašim graće abo OneDrive
+create-backup-select-tile-button-label = Wubrać
+create-backup-back-button-label = Wróćo
+create-backup-show-fewer =
+    .label = Mjenje wot nich pokazać
+create-backup-screen-2-title = Wubjerće daty { -brand-product-name }, kotrež so maja zawěsćić
+create-backup-screen-2-subtitle = Traje jenož mjeńšinu. Waše daty so jónu wob dźeń zawěsćuja.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Lochka konfiguracija
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Zapołožki, historija, nastajenja a wjace
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Njewobsahuje hesła a płaćenja
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Njezaklučowany
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Wšě daty
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Wobsahuje hesła a płaćenja
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Z hesłom zaklučowany
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Hdźe chceće swoje zawěsćenje składować?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Hesło za zawěsćensku dataju wutworić
+create-backup-screen-3-subtitle = Trěbne za zaklučowanje wašich datow. Składujće je na městnje, na kotrež so dopominaće.
+fx-backup-opt-in-header = Městno dataje wubrać
+fx-backup-opt-in-filepath-label = Wubjerće městno, kotrež chceće do noweho grata přenošować, na přikład OneDrive.
+fx-backup-opt-in-create-password-label = Hesło zapodać
+fx-backup-opt-in-confirm-btn-label = Dale
+fx-backup-opt-in-cancel-btn-label = Wróćo
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Waše zawěsćenje je planowane
+fx-backup-confirmation-screen-close-button = Začinić
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Wšě přehladowanske daty wobsahowane
+fx-backup-confirmation-screen-all-data-item-text-2 = Na wašim graće składowane
+fx-backup-confirmation-screen-all-data-item-text-3 = Zaklučowane a přez hesło škitane
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Zapołožki, historija, nastajenja a druhe daty wobsahowane
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Na wašim graće składowane
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Hesła a płaćenja njewobsahowane
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Dźiće k <a data-l10n-name="settings">nastajenjam</a>, zo byšće sensibelne daty zapřijał.
+fx-backup-confirmation-screen-item-subtext-1 = Waše zawěsćenje budźe za mało mjeńšin započinać a wuwjedźe so jónu wob dźeń. Móžeće procesej w <a data-l10n-name="settings">nastajenjach</a> slědować.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } budźe waše zawěsćenje pytać, jeli dyrbiće znowa instalować.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Ze zawěsćenja wobnowić
+restore-from-backup-title = Dóstańmy { -brand-short-name } wróćo, kaž so wam spodoba
+restore-from-backup-subtitle = Wobnowće wšě waše zapołožki, historiju a druhe daty, zo byšće so k přehladowanju wróćił.
+restore-from-backup-secondary-button = Njewobnowić
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Smy wróćo! Waše daty { -brand-short-name } su so wobnowili.
+restored-from-backup-success-with-checklist-subtitle = Chceće swój najlubši wobhladowak z fokusom na priwatnosć jenož jedyn klik preč wobchować?
+restored-from-backup-success-no-checklist-subtitle = Móžeće zawěsćenje za tutón grat w <a data-l10n-name="settings">nastajenjach</a> zmóžnić.
+restored-from-backup-success-with-checklist-primary-button = Składować a pokročować
+restored-from-backup-success-with-checklist-secondary-button = Tutón krok přeskočić
+restored-from-backup-success-no-checklist-primary-button = Dale
+restored-from-backup-error-title = Hmm, je problem z wašej zawěsćenskej dataju.
+restored-from-backup-error-subtitle = Jeli druhu zawěsćensku dataju { -brand-short-name } maće, spytajće z njeje wobnowić. <a data-l10n-name="restore-problems">Maće hišće problemy?</a>
+restored-from-backup-error-primary-button = Začinić
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Přiměrće swoje dožiwjenje { -brand-short-name }
+onboarding-personalization-subtitle = Wotmołwće na někotre prašenja a poručamy funkcije a rozšěrjenja, zo bychmy waše wužiće { -brand-short-name } polěpšili.
+onboarding-personalization-use-case-title = Za čo budźeće { -brand-short-name } wužiwać?
+onboarding-personalization-use-case-personal-option = Wosobinski
+onboarding-personalization-use-case-school-option = Šula
+onboarding-personalization-use-case-work-option = Słužbny
+onboarding-personalization-motivation-title = Kotre funkcije { -brand-short-name } su najwažniše za was?
+onboarding-personalization-motivation-privacy-option = Priwatnosć a wěstota
+onboarding-personalization-motivation-productivity-option = Produktiwita
+onboarding-personalization-motivation-other-option = Druhe
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Škitamy waše daty a haćimy předewzaća při wuskušowanju, hdyž klikaće – awtomatisce.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Sće we wěstych rukach
+onboarding-refresh-import-subtitle = Přenošujće swoje hesła, zapołožki, historiju a wjace.
+onboarding-refresh-import-title = Dajće { -brand-short-name } so wjace doma čuć
+onboarding-refresh-onboarding-addons-subtitle = Rozšěrjenja su małe nałoženja, kotrež wam zmóžnjeja, { -brand-short-name } přiměrić. Móža wašu priwatnosć powyšić, produktiwitu polěpšić, napohlad { -brand-short-name } změnić a wjele wjace.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Dajće swojemu přehladowanju stork
+onboarding-refresh-sync-subtitle = Zběrajće zapołožki, hesła wjace wšudźe, hdźež sće pola { -brand-short-name } přizjewjeny. Nimo toho so waše daty zaklučuja, zo byšće jenož wy móhł je widźeć.
+onboarding-refresh-sync-title = Dźiće wšudźe. Synchronizujće wšitko.
+onboarding-refresh-gratitude-subtitle = Wulki dźak, zo { -brand-short-name } wužiwaće, kotryž so wot powšitkownosći wužitneje organizacije spěchuje. Z wašej pomocu dźěłamy na tym, internet wěsćiši a přistupniši za kóždeho činić.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } za wami steji

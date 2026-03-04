@@ -7,7 +7,6 @@
 
 #include "nsDirIndexParser.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Encoding.h"
 #include "mozilla/StaticPtr.h"
@@ -92,7 +91,7 @@ void nsDirIndexParser::ParseFormat(const char* aFormatStr) {
       }
     }
 
-  } while (*aFormatStr && (formatNum < (ArrayLength(mFormat) - 1)));
+  } while (*aFormatStr && (formatNum < (std::size(mFormat) - 1)));
 }
 
 void nsDirIndexParser::ParseData(nsIDirIndex* aIdx, char* aDataStr,

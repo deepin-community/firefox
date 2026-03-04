@@ -7,7 +7,7 @@
 #ifndef nsMathMLmspaceFrame_h___
 #define nsMathMLmspaceFrame_h___
 
-#include "mozilla/Attributes.h"
+#include "nsCSSValue.h"
 #include "nsMathMLContainerFrame.h"
 
 namespace mozilla {
@@ -29,33 +29,36 @@ class nsMathMLmspaceFrame final : public nsMathMLContainerFrame {
   TransmitAutomaticData() override {
     // The REC defines the following elements to be space-like:
     // * an mtext, mspace, maligngroup, or malignmark element;
-    mPresentationData.flags |= NS_MATHML_SPACE_LIKE;
+    mPresentationData.flags += MathMLPresentationFlag::SpaceLike;
     return NS_OK;
   }
-
-  virtual void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
-                      const ReflowInput& aReflowInput,
-                      nsReflowStatus& aStatus) override;
 
  protected:
   explicit nsMathMLmspaceFrame(ComputedStyle* aStyle,
                                nsPresContext* aPresContext)
-      : nsMathMLContainerFrame(aStyle, aPresContext, kClassID),
-        mWidth(0),
-        mHeight(0),
-        mDepth(0) {}
+      : nsMathMLContainerFrame(aStyle, aPresContext, kClassID) {}
   virtual ~nsMathMLmspaceFrame();
 
-  virtual nsresult MeasureForWidth(DrawTarget* aDrawTarget,
-                                   ReflowOutput& aDesiredSize) override;
-
  private:
-  nscoord mWidth;
-  nscoord mHeight;
-  nscoord mDepth;
+  struct Attribute {
+    nsCSSValue mValue;
+    enum class ParsingState : uint8_t {
+      Valid,
+      Invalid,
+      Dirty,
+    };
+    ParsingState mState = ParsingState::Dirty;
+  };
+  Attribute mWidth;
+  Attribute mHeight;
+  Attribute mDepth;
 
-  // helper method to initialize our member data
-  void ProcessAttributes(nsPresContext* aPresContext);
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) final;
+  nscoord CalculateAttributeValue(nsAtom* aAtom, Attribute& aAttribute,
+                                  uint32_t aFlags, float aFontSizeInflation);
+  void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+             ReflowOutput& aDesiredSize) final;
 };
 
 #endif /* nsMathMLmspaceFrame_h___ */

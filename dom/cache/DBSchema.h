@@ -7,7 +7,6 @@
 #ifndef mozilla_dom_cache_DBSchema_h
 #define mozilla_dom_cache_DBSchema_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/cache/Types.h"
 #include "nsError.h"
 #include "nsString.h"
@@ -44,7 +43,8 @@ Result<int64_t, nsresult> FindOverallPaddingSize(mozIStorageConnection& aConn);
 
 Result<int64_t, nsresult> GetTotalDiskUsage(mozIStorageConnection& aConn);
 
-Result<nsTArray<nsID>, nsresult> GetKnownBodyIds(mozIStorageConnection& aConn);
+Result<nsTHashSet<nsID>, nsresult> GetKnownBodyIds(
+    mozIStorageConnection& aConn);
 
 Result<Maybe<SavedResponse>, nsresult> CacheMatch(
     mozIStorageConnection& aConn, CacheId aCacheId,

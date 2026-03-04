@@ -59,10 +59,7 @@ history-section-label = Historija
 item-history-and-downloads =
     .label = Přehladowanska a sćehnjenska historija
     .accesskey = P
-item-history-form-data-downloads =
-    .label = Historija
-    .accesskey = H
-item-history-form-data-downloads-description = Zhaša historiju sydłow a sćehnjenjow, składowane formularowe informacije a pytanja
+item-history-and-downloads-description2 = Zhaša sydłowu a sćehnjensku historiju
 item-cookies =
     .label = Placki
     .accesskey = c
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Sydłowe nastajenja
     .accesskey = d
+item-formdata-prefs =
+    .label = Składowane formularowe informacije
+    .accesskey = f
+item-formdata-description = Zhaša wěcy kaž mjena, e-mejlowe adresy a druhe zapiski, kotrež do formularow zapodawaće
 item-site-prefs-description = Staja waše prawa a nastajenja sydła na prěnjotne nastajenja wróćo
 data-section-label = Daty
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Wša historija so wuprózdni.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Wšě wubrane zapiski so wotstronja.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Wobličuje so…

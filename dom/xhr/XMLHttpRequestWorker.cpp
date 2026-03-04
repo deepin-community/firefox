@@ -6,20 +6,20 @@
 
 #include "XMLHttpRequestWorker.h"
 
-#include "nsIDOMEventListener.h"
-
 #include "GeckoProfiler.h"
-#include "jsfriendapi.h"
+#include "XMLHttpRequestMainThread.h"
+#include "XMLHttpRequestUpload.h"
 #include "js/ArrayBuffer.h"  // JS::Is{,Detached}ArrayBufferObject
 #include "js/GCPolicyAPI.h"
 #include "js/JSON.h"
 #include "js/RootingAPI.h"  // JS::{Handle,Heap,PersistentRooted}
 #include "js/TracingAPI.h"
 #include "js/Value.h"  // JS::{Undefined,}Value
-#include "mozilla/ArrayUtils.h"
+#include "jsfriendapi.h"
 #include "mozilla/HoldDropJSObjects.h"
-#include "mozilla/dom/Exceptions.h"
+#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/Event.h"
+#include "mozilla/dom/Exceptions.h"
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/FormData.h"
 #include "mozilla/dom/ProgressEvent.h"
@@ -27,20 +27,15 @@
 #include "mozilla/dom/StreamBlobImpl.h"
 #include "mozilla/dom/StructuredCloneHolder.h"
 #include "mozilla/dom/URLSearchParams.h"
-#include "mozilla/dom/WorkerScope.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
+#include "mozilla/dom/WorkerScope.h"
 #include "mozilla/dom/XMLHttpRequestBinding.h"
-#include "mozilla/Telemetry.h"
 #include "nsComponentManagerUtils.h"
 #include "nsContentUtils.h"
+#include "nsIDOMEventListener.h"
 #include "nsJSUtils.h"
 #include "nsThreadUtils.h"
-
-#include "XMLHttpRequestMainThread.h"
-#include "XMLHttpRequestUpload.h"
-
-#include "mozilla/UniquePtr.h"
 
 extern mozilla::LazyLogModule gXMLHttpRequestLog;
 
@@ -415,7 +410,7 @@ class LoadStartDetectionRunnable final : public Runnable,
 class EventRunnable final : public MainThreadProxyRunnable {
   const EventType& mType;
   UniquePtr<XMLHttpRequestWorker::ResponseData> mResponseData;
-  nsString mResponseURL;
+  nsCString mResponseURL;
   nsCString mStatusText;
   uint64_t mLoaded;
   uint64_t mTotal;
@@ -610,11 +605,11 @@ class GetResponseHeaderRunnable final : public WorkerThreadProxySyncRunnable {
 
 class OpenRunnable final : public WorkerThreadProxySyncRunnable {
   nsCString mMethod;
-  nsString mURL;
-  Optional<nsAString> mUser;
-  nsString mUserStr;
-  Optional<nsAString> mPassword;
-  nsString mPasswordStr;
+  nsCString mURL;
+  Optional<nsACString> mUser;
+  nsCString mUserStr;
+  Optional<nsACString> mPassword;
+  nsCString mPasswordStr;
   bool mBackgroundRequest;
   bool mWithCredentials;
   uint32_t mTimeout;
@@ -631,9 +626,9 @@ class OpenRunnable final : public WorkerThreadProxySyncRunnable {
 
  public:
   OpenRunnable(WorkerPrivate* aWorkerPrivate, Proxy* aProxy,
-               const nsACString& aMethod, const nsAString& aURL,
-               const Optional<nsAString>& aUser,
-               const Optional<nsAString>& aPassword, bool aBackgroundRequest,
+               const nsACString& aMethod, const nsACString& aURL,
+               const Optional<nsACString>& aUser,
+               const Optional<nsACString>& aPassword, bool aBackgroundRequest,
                bool aWithCredentials, uint32_t aTimeout,
                XMLHttpRequestResponseType aResponseType,
                const nsString& aMimeTypeOverride,
@@ -1254,8 +1249,8 @@ void OpenRunnable::MainThreadRunInternal(ErrorResult& aRv) {
   mProxy->mInOpen = true;
 
   mProxy->mXHR->Open(
-      mMethod, mURL, true, mUser.WasPassed() ? mUser.Value() : VoidString(),
-      mPassword.WasPassed() ? mPassword.Value() : VoidString(), aRv);
+      mMethod, mURL, true, mUser.WasPassed() ? mUser.Value() : VoidCString(),
+      mPassword.WasPassed() ? mPassword.Value() : VoidCString(), aRv);
 
   MOZ_ASSERT(mProxy->mInOpen);
   mProxy->mInOpen = false;
@@ -1816,15 +1811,15 @@ void XMLHttpRequestWorker::SendInternal(const BodyExtractorBase* aBody,
 }
 
 void XMLHttpRequestWorker::Open(const nsACString& aMethod,
-                                const nsAString& aUrl, bool aAsync,
-                                const Optional<nsAString>& aUser,
-                                const Optional<nsAString>& aPassword,
+                                const nsACString& aUrl, bool aAsync,
+                                const Optional<nsACString>& aUser,
+                                const Optional<nsACString>& aPassword,
                                 ErrorResult& aRv) {
   MOZ_ASSERT_DEBUG_OR_FUZZING(IsCurrentThreadRunningWorker());
 
   MOZ_LOG(gXMLHttpRequestLog, LogLevel::Debug,
-          ("%p Open(%s,%s,%d)", this, nsAutoCString(aMethod).get(),
-           NS_ConvertUTF16toUTF8(aUrl).get(), aAsync));
+          ("%p Open(%s,%s,%d)", this, PromiseFlatCString(aMethod).get(),
+           PromiseFlatCString(aUrl).get(), aAsync));
 
   if (mCanceled) {
     aRv.ThrowUncatchableException();

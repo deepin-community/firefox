@@ -17,7 +17,6 @@ rtc_source_set("send_queue") {
     "../packet:data",
     "../public:socket",
     "../public:types",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [ "send_queue.h" ]
 }
@@ -27,6 +26,8 @@ rtc_library("rr_send_queue") {
     ":send_queue",
     ":stream_scheduler",
     "../../../api:array_view",
+    "../../../api/units:time_delta",
+    "../../../api/units:timestamp",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../../../rtc_base:stringutils",
@@ -37,7 +38,6 @@ rtc_library("rr_send_queue") {
     "../public:types",
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "rr_send_queue.cc",
@@ -49,6 +49,7 @@ rtc_library("stream_scheduler") {
   deps = [
     ":send_queue",
     "../../../api:array_view",
+    "../../../api/units:timestamp",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../../../rtc_base:stringutils",
@@ -62,7 +63,6 @@ rtc_library("stream_scheduler") {
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "stream_scheduler.cc",
@@ -114,7 +114,6 @@ rtc_library("outstanding_data") {
     "../public:socket",
     "../public:types",
     "../timer",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "outstanding_data.cc",
@@ -128,9 +127,12 @@ rtc_library("retransmission_queue") {
     ":retransmission_timeout",
     ":send_queue",
     "../../../api:array_view",
+    "../../../api/units:time_delta",
+    "../../../api/units:timestamp",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../../../rtc_base:stringutils",
+    "../common:internal_types",
     "../common:math",
     "../common:sequence_numbers",
     "../packet:chunk",
@@ -140,7 +142,6 @@ rtc_library("retransmission_queue") {
     "../timer",
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "retransmission_queue.cc",
@@ -156,7 +157,8 @@ if (rtc_include_tests) {
       "../../../api:array_view",
       "../../../api/units:timestamp",
       "../../../test:test_support",
-      "//third_party/abseil-cpp/absl/types:optional",
+      "../common:internal_types",
+      "../public:types",
     ]
     sources = [ "mock_send_queue.h" ]
   }
@@ -174,7 +176,9 @@ if (rtc_include_tests) {
       ":send_queue",
       ":stream_scheduler",
       "../../../api:array_view",
-      "../../../api/task_queue:task_queue",
+      "../../../api/task_queue",
+      "../../../api/units:time_delta",
+      "../../../api/units:timestamp",
       "../../../rtc_base:checks",
       "../../../rtc_base:gunit_helpers",
       "../../../test:test_support",
@@ -192,7 +196,6 @@ if (rtc_include_tests) {
       "../testing:data_generator",
       "../testing:testing_macros",
       "../timer",
-      "//third_party/abseil-cpp/absl/types:optional",
     ]
     sources = [
       "outstanding_data_test.cc",

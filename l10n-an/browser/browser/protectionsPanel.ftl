@@ -23,12 +23,6 @@ protections-panel-etp-more-info =
     .aria-label = Mas información sobre la protección contra seguimiento amillorada
 protections-panel-etp-on-header = La protección contra seguimiento amillorada ye habilitada pa este puesto
 protections-panel-etp-off-header = La protección contra seguimiento amillorada ye deshabilitada pa este puesto
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Lo puesto no funciona?
 # The heading/title of the sub-panel view
@@ -67,7 +61,6 @@ protections-panel-not-found-label = Garra detectau
 ##
 
 protections-panel-settings-label = Achustes de protección
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Panel de proteccions
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -100,7 +93,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Informar de problemas con un puesto
 protections-panel-content-blocking-breakage-report-view-description = Si blocas bell elementos de seguimiento, puede que qualques puestos deixen de funcionar. Si nos informas d'estes problemas, nos aduyarás a amillorar { -brand-short-name }. En ninviar este informe, Mozilla recibirá una URL y información sobre la configuración d'o tuyo navegador. <label data-l10n-name="learn-more">Saber mas</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Si blocas bell elementos de seguimiento, puede que qualques puestos deixen de funcionar. Si nos informas d'estes problemas, nos aduyarás a amillorar { -brand-short-name }. En ninviar este informe, { -vendor-short-name } recibirá una URL y información sobre la configuración d'o tuyo navegador.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

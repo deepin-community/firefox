@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = Riwayat
 menu-view-synced-tabs-sidebar =
     .label = Tab yang Disinkronkan
-menu-view-megalist-sidebar =
-    .label = Sandi
 menu-view-full-zoom =
     .label = Perbesaran
     .accesskey = b
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Markah Seluler
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profil
+menu-profiles-manage-profiles =
+    .label = Kelola profil
+menu-profiles-new-profile =
+    .label = Profil baru
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (kini)
+menu-profiles-menu =
+    .label = Profil
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Unduhan
     .accesskey = U
+menu-tools-extensions-and-themes =
+    .label = Ekstensi dan Tema
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Pengaya dan Tema
     .accesskey = P

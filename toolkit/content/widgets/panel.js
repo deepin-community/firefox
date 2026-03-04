@@ -9,13 +9,12 @@
 {
   class MozPanel extends MozElements.MozElementMixin(XULPopupElement) {
     static get markup() {
-      return `<html:slot part="content" style="display: none !important"/>`;
+      return `<html:slot part="content"/>`;
     }
     constructor() {
       super();
 
       this._prevFocus = 0;
-      this._fadeTimer = null;
 
       this.attachShadow({ mode: "open" });
 
@@ -59,10 +58,12 @@
         return;
       }
 
-      this.shadowRoot.appendChild(this.constructor.fragment);
-      if (this.hasAttribute("neverhidden")) {
-        this.panelContent.style.display = "";
+      let fragment = this.constructor.fragment;
+      if (!this.hasAttribute("neverhidden")) {
+        let slot = fragment.querySelector("[part=content]");
+        slot.style.setProperty("display", "none", "important");
       }
+      this.shadowRoot.appendChild(fragment);
     }
 
     get panelContent() {
@@ -144,23 +145,6 @@
           // it is removed when popupshown fires
           this.setAttribute("animating", "true");
         }
-
-        // set fading
-        var fade = this.getAttribute("fade");
-        var fadeDelay = 0;
-        if (fade == "fast") {
-          fadeDelay = 1;
-        } else if (fade == "slow") {
-          fadeDelay = 4000;
-        }
-
-        if (fadeDelay != 0) {
-          this._fadeTimer = setTimeout(
-            () => this.hidePopup(true),
-            fadeDelay,
-            this
-          );
-        }
       }
 
       // Capture the previous focus before has a chance to get set inside the panel
@@ -190,14 +174,7 @@
 
     on_popuphiding(event) {
       if (this.isArrowPanel && event.target == this) {
-        let animate = this.getAttribute("animate") != "false";
-
-        if (this._fadeTimer) {
-          clearTimeout(this._fadeTimer);
-          if (animate) {
-            this.setAttribute("animate", "fade");
-          }
-        } else if (animate) {
+        if (this.getAttribute("animate") != "false") {
           this.setAttribute("animate", "cancel");
         }
 

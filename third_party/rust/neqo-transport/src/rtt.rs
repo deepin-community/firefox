@@ -11,25 +11,32 @@ use std::{
     time::{Duration, Instant},
 };
 
-use neqo_common::{qlog::NeqoQlog, qtrace};
+use neqo_common::{qlog::Qlog, qtrace, Buffer};
 
 use crate::{
     ackrate::{AckRate, PeerAckDelay},
-    packet::PacketBuilder,
-    qlog::{self, QlogMetric},
-    recovery::RecoveryToken,
+    packet, qlog, recovery,
     stats::FrameStats,
-    tracking::PacketNumberSpace,
 };
 
 /// The smallest time that the system timer (via `sleep()`, `nanosleep()`,
 /// `select()`, or similar) can reliably deliver; see `neqo_common::hrtime`.
 pub const GRANULARITY: Duration = Duration::from_millis(1);
 // Defined in -recovery 6.2 as 333ms but using lower value.
-pub const INITIAL_RTT: Duration = Duration::from_millis(100);
+pub const DEFAULT_INITIAL_RTT: Duration = Duration::from_millis(100);
+
+/// The source of the RTT measurement.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum RttSource {
+    /// RTT guess from a retry or dropping a packet number space.
+    Guesstimate,
+    /// Ack on an unconfirmed connection.
+    Ack,
+    /// Ack on a confirmed connection.
+    AckConfirmed,
+}
 
 #[derive(Debug)]
-#[allow(clippy::module_name_repetitions)]
 pub struct RttEstimate {
     first_sample_time: Option<Instant>,
     latest_rtt: Duration,
@@ -37,9 +44,22 @@ pub struct RttEstimate {
     rttvar: Duration,
     min_rtt: Duration,
     ack_delay: PeerAckDelay,
+    best_source: RttSource,
 }
 
 impl RttEstimate {
+    pub fn new(initial_rtt: Duration) -> Self {
+        Self {
+            first_sample_time: None,
+            latest_rtt: initial_rtt,
+            smoothed_rtt: initial_rtt,
+            rttvar: initial_rtt / 2,
+            min_rtt: initial_rtt,
+            ack_delay: PeerAckDelay::default(),
+            best_source: RttSource::Guesstimate,
+        }
+    }
+
     fn init(&mut self, rtt: Duration) {
         // Only allow this when there are no samples.
         debug_assert!(self.first_sample_time.is_none());
@@ -49,20 +69,8 @@ impl RttEstimate {
         self.rttvar = rtt / 2;
     }
 
-    #[cfg(test)]
-    pub const fn from_duration(rtt: Duration) -> Self {
-        Self {
-            first_sample_time: None,
-            latest_rtt: rtt,
-            smoothed_rtt: rtt,
-            rttvar: Duration::from_millis(0),
-            min_rtt: rtt,
-            ack_delay: PeerAckDelay::Fixed(Duration::from_millis(25)),
-        }
-    }
-
     pub fn set_initial(&mut self, rtt: Duration) {
-        qtrace!("initial RTT={:?}", rtt);
+        qtrace!("initial RTT={rtt:?}");
         if rtt >= GRANULARITY {
             // Ignore if the value is too small.
             self.init(rtt);
@@ -83,17 +91,24 @@ impl RttEstimate {
         self.ack_delay.update(cwnd, mtu, self.smoothed_rtt);
     }
 
+    pub fn is_guesstimate(&self) -> bool {
+        self.best_source == RttSource::Guesstimate
+    }
+
     pub fn update(
         &mut self,
-        qlog: &NeqoQlog,
+        qlog: &mut Qlog,
         mut rtt_sample: Duration,
         ack_delay: Duration,
-        confirmed: bool,
+        source: RttSource,
         now: Instant,
     ) {
+        debug_assert!(source >= self.best_source);
+        self.best_source = max(self.best_source, source);
+
         // Limit ack delay by max_ack_delay if confirmed.
         let mad = self.ack_delay.max();
-        let ack_delay = if confirmed && ack_delay > mad {
+        let ack_delay = if self.best_source == RttSource::AckConfirmed && ack_delay > mad {
             mad
         } else {
             ack_delay
@@ -102,7 +117,7 @@ impl RttEstimate {
         // min_rtt ignores ack delay.
         self.min_rtt = min(self.min_rtt, rtt_sample);
         // Adjust for ack delay unless it goes below `min_rtt`.
-        if rtt_sample - self.min_rtt >= ack_delay {
+        if rtt_sample >= ack_delay + self.min_rtt {
             rtt_sample -= ack_delay;
         }
 
@@ -111,11 +126,7 @@ impl RttEstimate {
             self.first_sample_time = Some(now);
         } else {
             // Calculate EWMA RTT (based on {{?RFC6298}}).
-            let rttvar_sample = if self.smoothed_rtt > rtt_sample {
-                self.smoothed_rtt - rtt_sample
-            } else {
-                rtt_sample - self.smoothed_rtt
-            };
+            let rttvar_sample = self.smoothed_rtt.abs_diff(rtt_sample);
 
             self.latest_rtt = rtt_sample;
             self.rttvar = (self.rttvar * 3 + rttvar_sample) / 4;
@@ -130,11 +141,12 @@ impl RttEstimate {
         qlog::metrics_updated(
             qlog,
             &[
-                QlogMetric::LatestRtt(self.latest_rtt),
-                QlogMetric::MinRtt(self.min_rtt),
-                QlogMetric::SmoothedRtt(self.smoothed_rtt),
-                QlogMetric::RttVariance(self.rttvar),
+                qlog::Metric::LatestRtt(self.latest_rtt),
+                qlog::Metric::MinRtt(self.min_rtt),
+                qlog::Metric::SmoothedRtt(self.smoothed_rtt),
+                qlog::Metric::RttVariance(self.rttvar),
             ],
+            now,
         );
     }
 
@@ -143,9 +155,9 @@ impl RttEstimate {
         self.smoothed_rtt
     }
 
-    pub fn pto(&self, pn_space: PacketNumberSpace) -> Duration {
+    pub fn pto(&self, confirmed: bool) -> Duration {
         let mut t = self.estimate() + max(4 * self.rttvar, GRANULARITY);
-        if pn_space == PacketNumberSpace::ApplicationData {
+        if confirmed {
             t += self.ack_delay.max();
         }
         t
@@ -178,10 +190,10 @@ impl RttEstimate {
         self.min_rtt
     }
 
-    pub fn write_frames(
+    pub fn write_frames<B: Buffer>(
         &mut self,
-        builder: &mut PacketBuilder,
-        tokens: &mut Vec<RecoveryToken>,
+        builder: &mut packet::Builder<B>,
+        tokens: &mut recovery::Tokens,
         stats: &mut FrameStats,
     ) {
         self.ack_delay.write_frames(builder, tokens, stats);
@@ -193,18 +205,5 @@ impl RttEstimate {
 
     pub fn frame_acked(&mut self, acked: &AckRate) {
         self.ack_delay.frame_acked(acked);
-    }
-}
-
-impl Default for RttEstimate {
-    fn default() -> Self {
-        Self {
-            first_sample_time: None,
-            latest_rtt: INITIAL_RTT,
-            smoothed_rtt: INITIAL_RTT,
-            rttvar: INITIAL_RTT / 2,
-            min_rtt: INITIAL_RTT,
-            ack_delay: PeerAckDelay::default(),
-        }
     }
 }

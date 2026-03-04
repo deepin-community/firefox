@@ -7,8 +7,6 @@
 #ifndef XREChildData_h
 #define XREChildData_h
 
-#include "mozilla/UniquePtr.h"
-
 #if defined(XP_WIN) && defined(MOZ_SANDBOX)
 #  include "mozilla/sandboxing/loggingTypes.h"
 
@@ -32,12 +30,6 @@ struct XREChildData {
    * Function to provide a logging function to the chromium sandbox code.
    */
   mozilla::sandboxing::ProvideLogFunctionCb ProvideLogFunction = nullptr;
-
-  /**
-   * Chromium sandbox broker services; needed by the remote sandbox
-   * launcher process.
-   */
-  sandbox::BrokerServices* sandboxBrokerServices = nullptr;
 #endif
 };
 

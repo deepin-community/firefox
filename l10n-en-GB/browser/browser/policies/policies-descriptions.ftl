@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Enable autofill for addresses.
 policy-AutofillCreditCardEnabled = Enable autofill for payment methods.
 policy-AutoLaunchProtocolsFromOrigins = Define a list of external protocols that can be used from listed origins without prompting the user.
 policy-BackgroundAppUpdate2 = Enable or disable the background updater.
+policy-Backup = Disable backup or restore of profile data.
 policy-BlockAboutAddons = Block access to the Add-ons Manager (about:addons).
 policy-BlockAboutConfig = Block access to the about:config page.
 policy-BlockAboutProfiles = Block access to the about:profiles page.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Disable the feature to save web pages to { -pocket-brand
 policy-DisablePrivateBrowsing = Disable Private Browsing.
 policy-DisableProfileImport = Disable the menu command to Import data from another browser.
 policy-DisableProfileRefresh = Disable the Refresh { -brand-short-name } button in the about:support page.
+policy-DisableRemoteImprovements = Prevent { -brand-short-name } from applying performance, stability and feature changes between updates.
 policy-DisableSafeMode = Disable the feature to restart in Safe Mode. Note: the Shift key to enter Safe Mode can only be disabled on Windows using Group Policy.
 policy-DisableSecurityBypass = Prevent the user from bypassing certain security warnings.
 policy-DisableSetAsDesktopBackground = Disable the menu command Set as Desktop Background for images.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Manage all aspects of extension installation.
 policy-ExtensionUpdate = Enable or disable automatic extension updates.
 policy-FirefoxHome2 = Configure { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configure { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configure generative AI features.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Force direct intranet site navigation instead of searching when typing single word entries in the address bar.
 policy-Handlers = Configure default application handlers.
 policy-HardwareAcceleration = If false, turn off hardware acceleration.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Revert to legacy SameS
 ##
 
 policy-LocalFileLinks = Allow specific web sites to link to local files.
+policy-LocalNetworkAccess = Enable or disable local network access checks.
 policy-ManagedBookmarks = Configures a list of bookmarks managed by an administrator that cannot be changed by the user.
 policy-ManualAppUpdateOnly = Allow manual updates only and do not notify the user about updates.
 policy-PrimaryPassword = Require or prevent using a Primary Password.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Enable post-quantum key agreement for TL
 policy-PDFjs = Disable or configure PDF.js, the built-in PDF viewer in { -brand-short-name }.
 policy-Permissions2 = Configure permissions for camera, microphone, location, notifications, and autoplay.
 policy-PictureInPicture = Enable or disable Picture-in-Picture.
+policy-PopupBlocking2 = Allow certain web sites to display popups and be redirected by third-party frames.
 policy-PopupBlocking = Allow certain web sites to display popups by default.
 policy-Preferences = Set and lock the value for a subset of preferences.
 policy-PrivateBrowsingModeAvailability = Set availability of private browsing mode.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Enable or disable search suggestions.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Add or delete PKCS #11 modules.
 policy-ShowHomeButton = Show the home button on the toolbar.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Do not display the Terms of Use and Privacy Notice upon startup. You represent that you accept and have the authority to accept the Terms of Use on behalf of all individuals to whom you provide access to this browser.
 policy-SSLVersionMax = Set the maximum SSL version.
 policy-SSLVersionMin = Set the minimum SSL version.
 policy-StartDownloadsInTempDirectory = Force downloads to start off in a local, temporary location rather than the default download directory.
@@ -137,6 +144,9 @@ policy-SupportMenu = Add a custom support menu item to the help menu.
 policy-TranslateEnabled = Enable or disable web page translation.
 policy-UserMessaging = Don’t show certain messages to the user.
 policy-UseSystemPrintDialog = Print using the system print dialogue.
+policy-VisualSearchEnabled = Enable or disable visual search.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Block web sites from being visited. See documentation for more details on the format.
 policy-Windows10SSO = Allow Windows single sign-on for Microsoft, work, and school accounts.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Allow single sign-on for Microsoft Entra accounts.

@@ -36,6 +36,9 @@ certificate-viewer-key-size = Ukuran Kunci
 certificate-viewer-inc-locality = Lokalitas Perusahaan
 certificate-viewer-locality = Daerah
 certificate-viewer-location = Lokasi
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Nama Log
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID Log
 certificate-viewer-method = Metode
 certificate-viewer-modulus = Modulus
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Info Otoritas (AIA)
 certificate-viewer-certificate-policies = Kebijakan Sertifikat
 certificate-viewer-embedded-scts = SCT Tersemat
 certificate-viewer-crl-endpoints = Titik Akhir CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Unduh
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Ekstensi ini telah ditandai sebagai kritis, artinya klien harus menolak sertifikat jika mereka tidak memahaminya.
@@ -112,6 +113,8 @@ certificate-viewer-export = Ekspor
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (tidak diketahui)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = sertifikat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

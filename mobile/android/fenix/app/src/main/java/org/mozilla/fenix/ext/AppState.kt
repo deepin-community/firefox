@@ -8,56 +8,87 @@ import androidx.annotation.VisibleForTesting
 import mozilla.components.service.pocket.PocketStory
 import mozilla.components.service.pocket.PocketStory.PocketRecommendedStory
 import mozilla.components.service.pocket.PocketStory.PocketSponsoredStory
+import mozilla.components.service.pocket.PocketStory.SponsoredContent
 import mozilla.components.service.pocket.ext.hasFlightImpressionsLimitReached
 import mozilla.components.service.pocket.ext.hasLifetimeImpressionsLimitReached
 import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.home.blocklist.BlocklistHandler
 import org.mozilla.fenix.home.pocket.POCKET_STORIES_DEFAULT_CATEGORY_NAME
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStory
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabState
 import org.mozilla.fenix.utils.Settings
 
 /**
- * Total count of all stories to show irrespective of their type.
+ * Total count of content recommendations to show.
  * This is an optimistic value taking into account that fewer than this stories may actually be available.
  */
 @VisibleForTesting
-internal const val POCKET_STORIES_TO_SHOW_COUNT = 8
+internal const val TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT = 30
+
+/**
+ * The indexes to add sponsored stories.
+ */
+internal val SPONSORED_STORIES_INDEXES = listOf(1, 8)
 
 /**
  * Total count of all sponsored Pocket stories to show.
  * This is an optimistic value taking into account that fewer than this stories may actually be available.
  */
 @VisibleForTesting
-internal const val POCKET_SPONSORED_STORIES_TO_SHOW_COUNT = 2
+internal val SPONSORED_STORIES_TO_SHOW_COUNT = SPONSORED_STORIES_INDEXES.size
 
 /**
  * Get the list of stories to be displayed based on the user selected categories.
  *
+ * @param useSponsoredStoriesState Whether or not to pull sponsored stories from
+ * [recommendationState.pocketSponsoredStories] or [recommendationState.sponsoredContents] state.
  * @return a list of [PocketStory]es from the currently selected categories.
  */
-fun AppState.getFilteredStories(): List<PocketStory> {
-    val recommendedStories = when (pocketStoriesCategoriesSelections.isEmpty()) {
+fun AppState.getFilteredStories(useSponsoredStoriesState: Boolean = true): List<PocketStory> {
+    val recommendedStories = getFilteredRecommendedStories()
+    val sponsoredStories = if (useSponsoredStoriesState) {
+        getFilteredSponsoredStories(
+            stories = recommendationState.pocketSponsoredStories,
+            limit = SPONSORED_STORIES_TO_SHOW_COUNT,
+        )
+    } else {
+        getFilteredSponsoredContents(
+            sponsoredContents = recommendationState.sponsoredContents,
+            limit = SPONSORED_STORIES_TO_SHOW_COUNT,
+        )
+    }
+
+    return combineRecommendationsAndSponsoredContents(
+        recommendations = recommendedStories,
+        sponsoredStories = sponsoredStories,
+    )
+}
+
+/**
+ * Returns a filtered list of [PocketRecommendedStory]s based on the pocket stories categories
+ * selections, impressions and numbers of stories to show.
+ */
+private fun AppState.getFilteredRecommendedStories(): List<PocketRecommendedStory> {
+    return when (recommendationState.pocketStoriesCategoriesSelections.isEmpty()) {
         true -> {
-            pocketStoriesCategories
+            recommendationState.pocketStoriesCategories
                 .find { it.name == POCKET_STORIES_DEFAULT_CATEGORY_NAME }
                 ?.stories
                 ?.sortedBy { it.timesShown }
-                ?.take(POCKET_STORIES_TO_SHOW_COUNT) ?: emptyList()
+                ?.take(TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT) ?: emptyList()
         }
         false -> {
-            val oldestSortedCategories = pocketStoriesCategoriesSelections
+            val oldestSortedCategories = recommendationState.pocketStoriesCategoriesSelections
                 .sortedByDescending { it.selectionTimestamp }
                 .mapNotNull { selectedCategory ->
-                    pocketStoriesCategories.find {
+                    recommendationState.pocketStoriesCategories.find {
                         it.name == selectedCategory.name
                     }
                 }
 
             val filteredStoriesCount = getFilteredStoriesCount(
                 oldestSortedCategories,
-                POCKET_STORIES_TO_SHOW_COUNT,
+                TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT,
             )
 
             oldestSortedCategories
@@ -65,40 +96,75 @@ fun AppState.getFilteredStories(): List<PocketStory> {
                     category.stories
                         .sortedBy { it.timesShown }
                         .take(filteredStoriesCount[category.name]!!)
-                }.take(POCKET_STORIES_TO_SHOW_COUNT)
+                }.take(TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT)
         }
     }
+}
 
-    val sponsoredStories = getFilteredSponsoredStories(
-        stories = pocketSponsoredStories,
-        limit = POCKET_SPONSORED_STORIES_TO_SHOW_COUNT,
-    )
+/**
+ * Get the list of stories to be displayed based on the content recommendations and sponsored
+ * stories state.
+ *
+ * @param useSponsoredStoriesState Whether or not to pull sponsored stories from
+ * [recommendationState.pocketSponsoredStories] or [recommendationState.sponsoredContents] state.
+ * @return A list of [PocketStory]s containing the content recommendations and sponsored stories
+ * to display.
+ */
+fun AppState.getStories(useSponsoredStoriesState: Boolean = true): List<PocketStory> {
+    val recommendations = recommendationState.contentRecommendations
+        .sortedBy { it.impressions }
+        .take(TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT)
+    val sponsoredStories = if (useSponsoredStoriesState) {
+        getFilteredSponsoredStories(
+            stories = recommendationState.pocketSponsoredStories,
+            limit = SPONSORED_STORIES_TO_SHOW_COUNT,
+        )
+    } else {
+        getFilteredSponsoredContents(
+            sponsoredContents = recommendationState.sponsoredContents,
+            limit = SPONSORED_STORIES_TO_SHOW_COUNT,
+        )
+    }
 
-    return combineRecommendedAndSponsoredStories(
-        recommendedStories = recommendedStories,
+    return combineRecommendationsAndSponsoredContents(
+        recommendations = recommendations,
         sponsoredStories = sponsoredStories,
     )
 }
 
 /**
- * Combine all available Pocket recommended and sponsored stories to show at max [POCKET_STORIES_TO_SHOW_COUNT]
- * stories of both types but based on a specific split.
+ * Combine the available content recommendations and sponsored content to display a number
+ * of [PocketStory]s specified by [TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT] with a number of
+ * sponsored content specified by [SPONSORED_STORIES_TO_SHOW_COUNT].
+ *
+ * @param recommendations A list of content recommendations to display.
+ * @param sponsoredStories A list of sponsored content to display.
+ * @return A list of [PocketStory] to display combining both [recommendations] and
+ * [sponsoredStories].
  */
 @VisibleForTesting
-internal fun combineRecommendedAndSponsoredStories(
-    recommendedStories: List<PocketRecommendedStory>,
-    sponsoredStories: List<PocketSponsoredStory>,
+internal fun combineRecommendationsAndSponsoredContents(
+    recommendations: List<PocketStory>,
+    sponsoredStories: List<PocketStory>,
 ): List<PocketStory> {
-    val recommendedStoriesToShow =
-        POCKET_STORIES_TO_SHOW_COUNT - sponsoredStories.size.coerceAtMost(
-            POCKET_SPONSORED_STORIES_TO_SHOW_COUNT,
-        )
+    val sponsoredStoriesToShow = sponsoredStories
+        .take(SPONSORED_STORIES_TO_SHOW_COUNT).toMutableList()
+    val allStoriesToShow = recommendations
+        .take(TOTAL_CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT - sponsoredStoriesToShow.size)
+        .toMutableList()
 
-    // Sponsored stories should be shown at position 2 and 8. If possible.
-    return recommendedStories.take(1) +
-        sponsoredStories.take(1) +
-        recommendedStories.take(recommendedStoriesToShow).drop(1) +
-        sponsoredStories.take(2).drop(1)
+    for (index in SPONSORED_STORIES_INDEXES.sorted()) {
+        if (sponsoredStoriesToShow.isEmpty()) {
+            break
+        }
+
+        allStoriesToShow.add(
+            index.coerceAtMost(allStoriesToShow.size),
+            sponsoredStoriesToShow.removeAt(0),
+        )
+    }
+
+    return allStoriesToShow
 }
 
 /**
@@ -156,6 +222,25 @@ internal fun getFilteredSponsoredStories(
 ): List<PocketSponsoredStory> {
     return stories.asSequence()
         .filterNot { it.hasLifetimeImpressionsLimitReached() }
+        .sortedByDescending { it.priority }
+        .filterNot { it.hasFlightImpressionsLimitReached() }
+        .take(limit)
+        .toList()
+}
+
+/**
+ * Handle pacing and rotation of sponsored contents.
+ *
+ * @param sponsoredContents The list of [SponsoredContent]s to filter and sort.
+ * @param limit Maximum number of [SponsoredContent]s to return.
+ * @return A sorted and filtered list of [SponsoredContent]s to display.
+ */
+@VisibleForTesting
+internal fun getFilteredSponsoredContents(
+    sponsoredContents: List<SponsoredContent>,
+    limit: Int,
+): List<SponsoredContent> {
+    return sponsoredContents.asSequence()
         .sortedByDescending { it.priority }
         .filterNot { it.hasFlightImpressionsLimitReached() }
         .take(limit)

@@ -21,9 +21,9 @@
 #include "Http2Stream.h"
 
 #include "mozilla/BasePrincipal.h"
+#include "mozilla/Components.h"
 #include "mozilla/StaticPrefs_network.h"
-#include "mozilla/Telemetry.h"
-#include "nsAlgorithm.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "nsHttp.h"
 #include "nsHttpHandler.h"
 #include "nsHttpRequestHead.h"
@@ -31,6 +31,51 @@
 #include "prnetdb.h"
 
 namespace mozilla::net {
+
+NS_IMPL_ADDREF(Http2StreamBase)
+NS_IMETHODIMP_(MozExternalRefCountType)
+Http2StreamBase::Release() {
+  nsrefcnt count;
+  MOZ_ASSERT(0 != mRefCnt, "dup release");
+  count = --mRefCnt;
+  NS_LOG_RELEASE(this, count, "Http2StreamBase");
+  if (0 == count) {
+    mRefCnt = 1; /* stablize */
+    // it is essential that the stream be destroyed on the socket thread.
+    DeleteSelfOnSocketThread();
+    return 0;
+  }
+  return count;
+}
+
+NS_IMPL_QUERY_INTERFACE0(Http2StreamBase)
+
+class DeleteHttp2StreamBase : public Runnable {
+ public:
+  explicit DeleteHttp2StreamBase(Http2StreamBase* aStream)
+      : Runnable("net::DeleteHttp2StreamBase"), mStream(aStream) {}
+
+  NS_IMETHOD Run() override {
+    delete mStream;
+    return NS_OK;
+  }
+
+ private:
+  Http2StreamBase* mStream;
+};
+
+void Http2StreamBase::DeleteSelfOnSocketThread() {
+  if (OnSocketThread()) {
+    delete this;
+    return;
+  }
+
+  nsCOMPtr<nsIEventTarget> sts =
+      mozilla::components::SocketTransport::Service();
+  nsCOMPtr<nsIRunnable> event = new DeleteHttp2StreamBase(this);
+  (void)NS_WARN_IF(
+      NS_FAILED(sts->Dispatch(event.forget(), NS_DISPATCH_NORMAL)));
+}
 
 Http2StreamBase::Http2StreamBase(uint64_t aTransactionBrowserId,
                                  Http2Session* session, int32_t priority,
@@ -41,6 +86,8 @@ Http2StreamBase::Http2StreamBase(uint64_t aTransactionBrowserId,
       mOpenGenerated(0),
       mAllHeadersReceived(0),
       mQueued(0),
+      mInWriteQueue(0),
+      mInReadQueue(0),
       mSocketTransport(session->SocketTransport()),
       mCurrentBrowserId(currentBrowserId),
       mTransactionBrowserId(aTransactionBrowserId),
@@ -354,12 +401,6 @@ nsresult Http2StreamBase::ParseHttpRequestHeaders(const char* buf,
   mFlatHttpRequestHeaders.SetLength(endHeader + 2);
   *countUsed = avail - (oldLen - endHeader) + 4;
   mRequestHeadersDone = 1;
-
-  Http2Stream* selfRegularStream = this->GetHttp2Stream();
-  if (selfRegularStream) {
-    return selfRegularStream->CheckPushCache();
-  }
-
   return NS_OK;
 }
 
@@ -486,8 +527,6 @@ nsresult Http2StreamBase::GenerateOpen() {
     compressedDataOffset += frameLen;
     outputOffset += frameLen;
   }
-
-  Telemetry::Accumulate(Telemetry::SPDY_SYN_SIZE, compressedData.Length());
 
   mFlatHttpRequestHeaders.Truncate();
 
@@ -796,12 +835,6 @@ nsresult Http2StreamBase::ConvertResponseHeaders(
     session->Received421(ConnectionInfo());
   }
 
-  if (aHeadersIn.Length() && aHeadersOut.Length()) {
-    Telemetry::Accumulate(Telemetry::SPDY_SYN_REPLY_SIZE, aHeadersIn.Length());
-    uint32_t ratio = aHeadersIn.Length() * 100 / aHeadersOut.Length();
-    Telemetry::Accumulate(Telemetry::SPDY_SYN_REPLY_RATIO, ratio);
-  }
-
   // The decoding went ok. Now we can customize and clean up.
 
   aHeadersIn.Truncate();
@@ -960,7 +993,7 @@ void Http2StreamBase::UpdatePriorityDependency() {
 
   mPriorityDependency = GetPriorityDependencyFromTransaction(trans);
 
-  if (gHttpHandler->ActiveTabPriority() &&
+  if (StaticPrefs::network_http_active_tab_priority() &&
       mTransactionBrowserId != mCurrentBrowserId &&
       mPriorityDependency != Http2Session::kUrgentStartGroupID) {
     LOG3(
@@ -990,7 +1023,7 @@ void Http2StreamBase::CurrentBrowserIdChanged(uint64_t id) {
 }
 
 void Http2StreamBase::CurrentBrowserIdChangedInternal(uint64_t id) {
-  MOZ_ASSERT(gHttpHandler->ActiveTabPriority());
+  MOZ_ASSERT(StaticPrefs::network_http_active_tab_priority());
   RefPtr<Http2Session> session = Session();
   LOG3(
       ("Http2StreamBase::CurrentBrowserIdChangedInternal "
@@ -1025,13 +1058,17 @@ void Http2StreamBase::UpdatePriority(Http2Session* session) {
     nsHttp::NotifyActiveTabLoadOptimization();
   }
 
+  if (!StaticPrefs::network_http_http2_priority_updates()) {
+    return;
+  }
+
   nsHttpTransaction* trans = HttpTransaction();
   if (!trans) {
     return;
   }
 
-  uint8_t urgency =
-      nsHttpHandler::UrgencyFromCoSFlags(trans->GetClassOfService().Flags());
+  uint8_t urgency = nsHttpHandler::UrgencyFromCoSFlags(
+      trans->GetClassOfService().Flags(), trans->Priority());
   bool incremental = trans->GetClassOfService().Incremental();
   uint32_t streamID = GetWireStreamId();
 
@@ -1257,8 +1294,7 @@ nsresult Http2StreamBase::OnReadSegment(const char* buf, uint32_t count,
       break;
 
     case UPSTREAM_COMPLETE: {
-      MOZ_ASSERT(this->GetHttp2Stream() &&
-                 this->GetHttp2Stream()->IsReadingFromPushStream());
+      MOZ_ASSERT(this->GetHttp2Stream());
       rv = TransmitFrame(nullptr, nullptr, true);
       break;
     }

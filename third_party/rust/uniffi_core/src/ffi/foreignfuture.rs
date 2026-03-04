@@ -40,9 +40,7 @@ pub struct ForeignFutureResult<T> {
     call_status: RustCallStatus,
 }
 
-/// Perform a call to a foreign async method
-
-/// C struct that represents the foreign future.
+/// C struct that represents a foreign future, used to perform a call to a foreign async method.
 ///
 /// This is what's returned by the async scaffolding functions.
 #[repr(C)]
@@ -147,7 +145,7 @@ mod test {
                 *data,
                 ForeignFutureResult {
                     return_value: <String as Lower<crate::UniFfiTag>>::lower(value),
-                    call_status: RustCallStatus::new(),
+                    call_status: RustCallStatus::default(),
                 },
             );
         }

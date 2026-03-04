@@ -5,6 +5,7 @@
 //! Specified values for font properties
 
 use crate::context::QuirksMode;
+use crate::derives::*;
 use crate::parser::{Parse, ParserContext};
 use crate::values::computed::font::{FamilyName, FontFamilyList, SingleFontFamily};
 use crate::values::computed::Percentage as ComputedPercentage;
@@ -22,7 +23,7 @@ use crate::values::specified::{
 };
 use crate::values::{serialize_atom_identifier, CustomIdent, SelectorParseErrorKind};
 use crate::Atom;
-use cssparser::{Parser, Token};
+use cssparser::{match_ignore_ascii_case, Parser, Token};
 #[cfg(feature = "gecko")]
 use malloc_size_of::{MallocSizeOf, MallocSizeOfOps, MallocUnconditionalSizeOf};
 use std::fmt::{self, Write};
@@ -105,7 +106,7 @@ pub enum SystemFont {
 // we have a dummy system font module that does nothing
 
 #[derive(
-    Clone, Copy, Debug, Eq, Hash, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToCss, ToShmem
+    Clone, Copy, Debug, Eq, Hash, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
 )]
 #[allow(missing_docs)]
 #[cfg(feature = "servo")]
@@ -137,7 +138,7 @@ pub const MAX_FONT_WEIGHT: f32 = 1000.;
 ///
 /// https://drafts.csswg.org/css-fonts-4/#propdef-font-weight
 #[derive(
-    Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem, ToTyped,
 )]
 pub enum FontWeight {
     /// `<font-weight-absolute>`
@@ -232,8 +233,8 @@ impl Parse for AbsoluteFontWeight {
             // We could add another AllowedNumericType value, but it doesn't
             // seem worth it just for a single property with such a weird range,
             // so we do the clamping here manually.
-            if !number.was_calc() &&
-                (number.get() < MIN_FONT_WEIGHT || number.get() > MAX_FONT_WEIGHT)
+            if !number.was_calc()
+                && (number.get() < MIN_FONT_WEIGHT || number.get() > MAX_FONT_WEIGHT)
             {
                 return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
             }
@@ -257,13 +258,18 @@ impl ToCss for SpecifiedFontStyle {
         W: Write,
     {
         match *self {
-            generics::FontStyle::Normal => dest.write_str("normal"),
             generics::FontStyle::Italic => dest.write_str("italic"),
             generics::FontStyle::Oblique(ref angle) => {
-                dest.write_str("oblique")?;
-                if *angle != Self::default_angle() {
-                    dest.write_char(' ')?;
-                    angle.to_css(dest)?;
+                // Not angle.is_zero() because we don't want to serialize
+                // `oblique calc(0deg)` as `normal`.
+                if *angle == Angle::zero() {
+                    dest.write_str("normal")?;
+                } else {
+                    dest.write_str("oblique")?;
+                    if *angle != Self::default_angle() {
+                        dest.write_char(' ')?;
+                        angle.to_css(dest)?;
+                    }
                 }
                 Ok(())
             },
@@ -277,7 +283,7 @@ impl Parse for SpecifiedFontStyle {
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         Ok(try_match_ident_ignore_ascii_case! { input,
-            "normal" => generics::FontStyle::Normal,
+            "normal" => generics::FontStyle::normal(),
             "italic" => generics::FontStyle::Italic,
             "oblique" => {
                 let angle = input.try_parse(|input| Self::parse_angle(context, input))
@@ -294,16 +300,12 @@ impl ToComputedValue for SpecifiedFontStyle {
 
     fn to_computed_value(&self, _: &Context) -> Self::ComputedValue {
         match *self {
-            Self::Normal => computed::FontStyle::NORMAL,
             Self::Italic => computed::FontStyle::ITALIC,
             Self::Oblique(ref angle) => computed::FontStyle::oblique(angle.degrees()),
         }
     }
 
     fn from_computed_value(computed: &Self::ComputedValue) -> Self {
-        if *computed == computed::FontStyle::NORMAL {
-            return Self::Normal;
-        }
         if *computed == computed::FontStyle::ITALIC {
             return Self::Italic;
         }
@@ -343,8 +345,8 @@ impl SpecifiedFontStyle {
         }
 
         let degrees = angle.degrees();
-        if degrees < FONT_STYLE_OBLIQUE_MIN_ANGLE_DEGREES ||
-            degrees > FONT_STYLE_OBLIQUE_MAX_ANGLE_DEGREES
+        if degrees < FONT_STYLE_OBLIQUE_MIN_ANGLE_DEGREES
+            || degrees > FONT_STYLE_OBLIQUE_MAX_ANGLE_DEGREES
         {
             return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
         }
@@ -362,7 +364,7 @@ impl SpecifiedFontStyle {
 
 /// The specified value of the `font-style` property.
 #[derive(
-    Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem, ToTyped,
 )]
 #[allow(missing_docs)]
 pub enum FontStyle {
@@ -375,7 +377,7 @@ impl FontStyle {
     /// Return the `normal` value.
     #[inline]
     pub fn normal() -> Self {
-        FontStyle::Specified(generics::FontStyle::Normal)
+        FontStyle::Specified(generics::FontStyle::normal())
     }
 
     system_font_methods!(FontStyle, font_style);
@@ -401,7 +403,7 @@ impl ToComputedValue for FontStyle {
 /// https://drafts.csswg.org/css-fonts-4/#font-stretch-prop
 #[allow(missing_docs)]
 #[derive(
-    Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem,
+    Clone, Copy, Debug, MallocSizeOf, Parse, PartialEq, SpecifiedValueInfo, ToCss, ToShmem, ToTyped,
 )]
 pub enum FontStretch {
     Stretch(NonNegativePercentage),
@@ -518,6 +520,18 @@ impl FontSizeKeyword {
     pub fn html_size(self) -> u8 {
         self as u8
     }
+
+    /// Returns true if the font size is the math keyword
+    #[cfg(feature = "gecko")]
+    pub fn is_math(self) -> bool {
+        matches!(self, Self::Math)
+    }
+
+    /// Returns true if the font size is the math keyword
+    #[cfg(feature = "servo")]
+    pub fn is_math(self) -> bool {
+        false
+    }
 }
 
 impl Default for FontSizeKeyword {
@@ -578,10 +592,12 @@ impl KeywordInfo {
     /// text-zoom.
     fn to_computed_value(&self, context: &Context) -> CSSPixelLength {
         debug_assert_ne!(self.kw, FontSizeKeyword::None);
-        #[cfg(feature="gecko")]
+        #[cfg(feature = "gecko")]
         debug_assert_ne!(self.kw, FontSizeKeyword::Math);
         let base = context.maybe_zoom_text(self.kw.to_length(context).0);
-        base * self.factor + context.maybe_zoom_text(self.offset)
+        let zoom_factor = context.style().effective_zoom.value();
+        CSSPixelLength::new(base.px() * self.factor * zoom_factor)
+            + context.maybe_zoom_text(self.offset)
     }
 
     /// Given a parent keyword info (self), apply an additional factor/offset to
@@ -604,7 +620,7 @@ impl SpecifiedValueInfo for KeywordInfo {
     }
 }
 
-#[derive(Clone, Debug, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToCss, ToShmem)]
+#[derive(Clone, Debug, MallocSizeOf, PartialEq, SpecifiedValueInfo, ToCss, ToShmem, ToTyped)]
 /// A specified font-size value
 pub enum FontSize {
     /// A length; e.g. 10px.
@@ -630,7 +646,7 @@ pub enum FontSize {
 }
 
 /// Specifies a prioritized list of font family names or generic family names.
-#[derive(Clone, Debug, Eq, PartialEq, ToCss, ToShmem)]
+#[derive(Clone, Debug, Eq, PartialEq, ToCss, ToShmem, ToTyped)]
 #[cfg_attr(feature = "servo", derive(Hash))]
 pub enum FontFamily {
     /// List of `font-family`
@@ -769,50 +785,53 @@ const LARGER_FONT_SIZE_RATIO: f32 = 1.2;
 pub const FONT_MEDIUM_PX: f32 = 16.0;
 /// The default line height.
 pub const FONT_MEDIUM_LINE_HEIGHT_PX: f32 = FONT_MEDIUM_PX * 1.2;
+/// The default ex height -- https://drafts.csswg.org/css-values/#ex
+/// > In the cases where it is impossible or impractical to determine the x-height, a value of 0.5em must be assumed
+pub const FONT_MEDIUM_EX_PX: f32 = FONT_MEDIUM_PX * 0.5;
+/// The default cap height -- https://drafts.csswg.org/css-values/#cap
+/// > In the cases where it is impossible or impractical to determine the cap-height, the font’s ascent must be used
+pub const FONT_MEDIUM_CAP_PX: f32 = FONT_MEDIUM_PX;
+/// The default advance measure -- https://drafts.csswg.org/css-values/#ch
+/// > Thus, the ch unit falls back to 0.5em in the general case
+pub const FONT_MEDIUM_CH_PX: f32 = FONT_MEDIUM_PX * 0.5;
+/// The default idographic advance measure -- https://drafts.csswg.org/css-values/#ic
+/// > In the cases where it is impossible or impractical to determine the ideographic advance measure, it must be assumed to be 1em
+pub const FONT_MEDIUM_IC_PX: f32 = FONT_MEDIUM_PX;
 
 impl FontSizeKeyword {
     #[inline]
-    #[cfg(feature = "servo")]
-    fn to_length(&self, _: &Context) -> NonNegativeLength {
-        let medium = Length::new(FONT_MEDIUM_PX);
-        // https://drafts.csswg.org/css-fonts-3/#font-size-prop
-        NonNegative(match *self {
-            FontSizeKeyword::XXSmall => medium * 3.0 / 5.0,
-            FontSizeKeyword::XSmall => medium * 3.0 / 4.0,
-            FontSizeKeyword::Small => medium * 8.0 / 9.0,
-            FontSizeKeyword::Medium => medium,
-            FontSizeKeyword::Large => medium * 6.0 / 5.0,
-            FontSizeKeyword::XLarge => medium * 3.0 / 2.0,
-            FontSizeKeyword::XXLarge => medium * 2.0,
-            FontSizeKeyword::XXXLarge => medium * 3.0,
-            FontSizeKeyword::Math | FontSizeKeyword::None => unreachable!(),
-        })
-    }
-
-    #[cfg(feature = "gecko")]
-    #[inline]
     fn to_length(&self, cx: &Context) -> NonNegativeLength {
         let font = cx.style().get_font();
+
+        #[cfg(feature = "servo")]
+        let family = &font.font_family.families;
+        #[cfg(feature = "gecko")]
         let family = &font.mFont.family.families;
+
         let generic = family
             .single_generic()
             .unwrap_or(computed::GenericFontFamily::None);
+
+        #[cfg(feature = "gecko")]
         let base_size = unsafe {
             Atom::with(font.mLanguage.mRawPtr, |language| {
                 cx.device().base_size_for_generic(language, generic)
             })
         };
+        #[cfg(feature = "servo")]
+        let base_size = cx.device().base_size_for_generic(generic);
+
         self.to_length_without_context(cx.quirks_mode, base_size)
     }
 
     /// Resolve a keyword length without any context, with explicit arguments.
-    #[cfg(feature = "gecko")]
     #[inline]
     pub fn to_length_without_context(
         &self,
         quirks_mode: QuirksMode,
         base_size: Length,
     ) -> NonNegativeLength {
+        #[cfg(feature = "gecko")]
         debug_assert_ne!(*self, FontSizeKeyword::Math);
         // The tables in this function are originally from
         // nsRuleNode::CalcFontPointSize in Gecko:
@@ -932,10 +951,12 @@ impl FontSize {
                 calc.resolve(base_size.resolve(context).computed_size())
             },
             FontSize::Keyword(i) => {
-                if i.kw == FontSizeKeyword::Math {
+                if i.kw.is_math() {
                     // Scaling is done in recompute_math_font_size_if_needed().
                     info = compose_keyword(1.);
-                    info.kw = FontSizeKeyword::Math;
+                    // i.kw will always be FontSizeKeyword::Math here. But writing it this
+                    // allows this code to compile for servo where the Math variant is cfg'd out.
+                    info.kw = i.kw;
                     FontRelativeLength::Em(1.).to_computed_value(
                         context,
                         base_size,
@@ -1120,6 +1141,7 @@ pub enum VariantAlternates {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(transparent)]
 /// List of Variant Alternates
@@ -1131,12 +1153,12 @@ impl FontVariantAlternates {
     /// Returns the length of all variant alternates.
     pub fn len(&self) -> usize {
         self.0.iter().fold(0, |acc, alternate| match *alternate {
-            VariantAlternates::Swash(_) |
-            VariantAlternates::Stylistic(_) |
-            VariantAlternates::Ornaments(_) |
-            VariantAlternates::Annotation(_) => acc + 1,
-            VariantAlternates::Styleset(ref slice) |
-            VariantAlternates::CharacterVariant(ref slice) => acc + slice.len(),
+            VariantAlternates::Swash(_)
+            | VariantAlternates::Stylistic(_)
+            | VariantAlternates::Ornaments(_)
+            | VariantAlternates::Annotation(_) => acc + 1,
+            VariantAlternates::Styleset(ref slice)
+            | VariantAlternates::CharacterVariant(ref slice) => acc + slice.len(),
             _ => acc,
         })
     }
@@ -1283,6 +1305,7 @@ impl Parse for FontVariantAlternates {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[css(bitflags(
     single = "normal",
@@ -1351,6 +1374,7 @@ impl FontVariantEastAsian {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[css(bitflags(
     single = "normal,none",
@@ -1391,10 +1415,10 @@ impl FontVariantLigatures {
 
     fn validate_mixed_flags(&self) -> bool {
         // Mixing a value and its disabling value is forbidden.
-        if self.contains(Self::COMMON_LIGATURES | Self::NO_COMMON_LIGATURES) ||
-            self.contains(Self::DISCRETIONARY_LIGATURES | Self::NO_DISCRETIONARY_LIGATURES) ||
-            self.contains(Self::HISTORICAL_LIGATURES | Self::NO_HISTORICAL_LIGATURES) ||
-            self.contains(Self::CONTEXTUAL | Self::NO_CONTEXTUAL)
+        if self.contains(Self::COMMON_LIGATURES | Self::NO_COMMON_LIGATURES)
+            || self.contains(Self::DISCRETIONARY_LIGATURES | Self::NO_DISCRETIONARY_LIGATURES)
+            || self.contains(Self::HISTORICAL_LIGATURES | Self::NO_HISTORICAL_LIGATURES)
+            || self.contains(Self::CONTEXTUAL | Self::NO_CONTEXTUAL)
         {
             return false;
         }
@@ -1416,6 +1440,7 @@ impl FontVariantLigatures {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[css(bitflags(
     single = "normal",
@@ -1461,9 +1486,9 @@ impl FontVariantNumeric {
     /// <numeric-spacing-values>  = [ proportional-nums | tabular-nums ]
     /// <numeric-fraction-values> = [ diagonal-fractions | stacked-fractions ]
     fn validate_mixed_flags(&self) -> bool {
-        if self.contains(Self::LINING_NUMS | Self::OLDSTYLE_NUMS) ||
-            self.contains(Self::PROPORTIONAL_NUMS | Self::TABULAR_NUMS) ||
-            self.contains(Self::DIAGONAL_FRACTIONS | Self::STACKED_FRACTIONS)
+        if self.contains(Self::LINING_NUMS | Self::OLDSTYLE_NUMS)
+            || self.contains(Self::PROPORTIONAL_NUMS | Self::TABULAR_NUMS)
+            || self.contains(Self::DIAGONAL_FRACTIONS | Self::STACKED_FRACTIONS)
         {
             return false;
         }
@@ -1507,7 +1532,33 @@ impl Parse for FontLanguageOverride {
     }
 }
 
-/// A value for any of the font-synthesis-{weight,style,small-caps} properties.
+/// A value for any of the font-synthesis-{weight,small-caps,position} properties.
+#[repr(u8)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    MallocSizeOf,
+    Parse,
+    PartialEq,
+    SpecifiedValueInfo,
+    ToComputedValue,
+    ToCss,
+    ToResolvedValue,
+    ToShmem,
+    ToTyped,
+)]
+#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
+pub enum FontSynthesis {
+    /// This attribute may be synthesized if not supported by a face.
+    Auto,
+    /// Do not attempt to synthesis this style attribute.
+    None,
+}
+
+/// A value for the font-synthesis-style property.
 #[repr(u8)]
 #[derive(
     Clone,
@@ -1522,12 +1573,15 @@ impl Parse for FontLanguageOverride {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
-pub enum FontSynthesis {
+pub enum FontSynthesisStyle {
     /// This attribute may be synthesized if not supported by a face.
     Auto,
     /// Do not attempt to synthesis this style attribute.
     None,
+    /// Allow synthesis for oblique, but not for italic.
+    ObliqueOnly,
 }
 
 #[derive(
@@ -1540,6 +1594,7 @@ pub enum FontSynthesis {
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(C)]
 /// Allows authors to choose a palette from those supported by a color font
@@ -1680,6 +1735,7 @@ impl MetricsOverride {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[repr(u8)]
 /// How to do font-size scaling.
@@ -1710,6 +1766,7 @@ impl XTextScale {
     ToCss,
     ToResolvedValue,
     ToShmem,
+    ToTyped,
 )]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 /// Internal property that reflects the lang attribute
@@ -1766,7 +1823,7 @@ impl Parse for MozScriptMinSize {
 /// A value for the `math-depth` property.
 /// https://mathml-refresh.github.io/mathml-core/#the-math-script-level-property
 #[cfg_attr(feature = "gecko", derive(MallocSizeOf))]
-#[derive(Clone, Copy, Debug, PartialEq, SpecifiedValueInfo, ToCss, ToShmem)]
+#[derive(Clone, Copy, Debug, PartialEq, SpecifiedValueInfo, ToCss, ToShmem, ToTyped)]
 pub enum MathDepth {
     /// Increment math-depth if math-style is compact.
     AutoAdd,
@@ -1916,5 +1973,22 @@ impl ToComputedValue for LineHeight {
                 GenericLineHeight::Length(NoCalcLength::from_computed_value(&length.0).into())
             },
         }
+    }
+}
+
+/// Flags for the query_font_metrics() function.
+#[repr(C)]
+pub struct QueryFontMetricsFlags(u8);
+
+bitflags! {
+    impl QueryFontMetricsFlags: u8 {
+        /// Should we use the user font set?
+        const USE_USER_FONT_SET = 1 << 0;
+        /// Does the caller need the `ch` unit (width of the ZERO glyph)?
+        const NEEDS_CH = 1 << 1;
+        /// Does the caller need the `ic` unit (width of the WATER ideograph)?
+        const NEEDS_IC = 1 << 2;
+        /// Does the caller need math scales to be retrieved?
+        const NEEDS_MATH_SCALES = 1 << 3;
     }
 }

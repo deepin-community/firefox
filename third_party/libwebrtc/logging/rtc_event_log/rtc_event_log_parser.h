@@ -40,7 +40,6 @@
 #include "logging/rtc_event_log/events/rtc_event_dtls_writable_state.h"
 #include "logging/rtc_event_log/events/rtc_event_end_log.h"
 #include "logging/rtc_event_log/events/rtc_event_frame_decoded.h"
-#include "logging/rtc_event_log/events/rtc_event_generic_ack_received.h"
 #include "logging/rtc_event_log/events/rtc_event_generic_packet_received.h"
 #include "logging/rtc_event_log/events/rtc_event_generic_packet_sent.h"
 #include "logging/rtc_event_log/events/rtc_event_ice_candidate_pair.h"
@@ -383,6 +382,9 @@ class ParsedRtcEventLog {
           UnconfiguredHeaderExtensions::kDontParse,
       bool allow_incomplete_log = false);
 
+  ParsedRtcEventLog(const ParsedRtcEventLog&) = delete;
+  ParsedRtcEventLog& operator=(const ParsedRtcEventLog&) = delete;
+
   ~ParsedRtcEventLog();
 
   // Clears previously parsed events and resets the ParsedRtcEventLogNew to an
@@ -390,7 +392,7 @@ class ParsedRtcEventLog {
   void Clear();
 
   // Reads an RtcEventLog file and returns success if parsing was successful.
-  ParseStatus ParseFile(absl::string_view file_name);
+  ParseStatus ParseFile(absl::string_view filename);
 
   // Reads an RtcEventLog from a string and returns success if successful.
   ParseStatus ParseString(absl::string_view s);
@@ -632,6 +634,15 @@ class ParsedRtcEventLog {
     }
   }
 
+  const std::vector<LoggedRtcpCongestionControlFeedback>& congestion_feedback(
+      PacketDirection direction) const {
+    if (direction == kIncomingPacket) {
+      return incoming_congestion_feedback_;
+    } else {
+      return outgoing_congestion_feedback_;
+    }
+  }
+
   const std::vector<LoggedRtcpPacketLossNotification>& loss_notifications(
       PacketDirection direction) {
     if (direction == kIncomingPacket) {
@@ -647,10 +658,6 @@ class ParsedRtcEventLog {
   }
   const std::vector<LoggedGenericPacketSent>& generic_packets_sent() const {
     return generic_packets_sent_;
-  }
-
-  const std::vector<LoggedGenericAckReceived>& generic_acks_received() const {
-    return generic_acks_received_;
   }
 
   // Media
@@ -765,8 +772,6 @@ class ParsedRtcEventLog {
   ParseStatus StoreDtlsWritableState(const rtclog2::DtlsWritableState& proto);
   ParsedRtcEventLog::ParseStatus StoreFrameDecodedEvents(
       const rtclog2::FrameDecodedEvents& proto);
-  ParseStatus StoreGenericAckReceivedEvent(
-      const rtclog2::GenericAckReceived& proto);
   ParseStatus StoreGenericPacketReceivedEvent(
       const rtclog2::GenericPacketReceived& proto);
   ParseStatus StoreGenericPacketSentEvent(
@@ -783,7 +788,7 @@ class ParsedRtcEventLog {
   ParseStatus StoreOutgoingRtcpPackets(
       const rtclog2::OutgoingRtcpPackets& proto);
   ParseStatus StoreOutgoingRtpPackets(const rtclog2::OutgoingRtpPackets& proto);
-  ParseStatus StoreParsedNewFormatEvent(const rtclog2::EventStream& event);
+  ParseStatus StoreParsedNewFormatEvent(const rtclog2::EventStream& stream);
   ParseStatus StoreRouteChangeEvent(const rtclog2::RouteChange& proto);
   ParseStatus StoreRemoteEstimateEvent(const rtclog2::RemoteEstimates& proto);
   ParseStatus StoreStartEvent(const rtclog2::BeginLogEvent& proto);
@@ -865,6 +870,10 @@ class ParsedRtcEventLog {
   std::vector<LoggedRtcpPacketBye> outgoing_bye_;
   std::vector<LoggedRtcpPacketTransportFeedback> incoming_transport_feedback_;
   std::vector<LoggedRtcpPacketTransportFeedback> outgoing_transport_feedback_;
+  std::vector<LoggedRtcpCongestionControlFeedback>
+      incoming_congestion_feedback_;
+  std::vector<LoggedRtcpCongestionControlFeedback>
+      outgoing_congestion_feedback_;
   std::vector<LoggedRtcpPacketLossNotification> incoming_loss_notification_;
   std::vector<LoggedRtcpPacketLossNotification> outgoing_loss_notification_;
 
@@ -905,7 +914,6 @@ class ParsedRtcEventLog {
 
   std::vector<LoggedGenericPacketReceived> generic_packets_received_;
   std::vector<LoggedGenericPacketSent> generic_packets_sent_;
-  std::vector<LoggedGenericAckReceived> generic_acks_received_;
 
   std::vector<LoggedRouteChangeEvent> route_change_events_;
   std::vector<LoggedRemoteEstimateEvent> remote_estimate_events_;
@@ -942,7 +950,8 @@ struct MatchedSendArrivalTimes {
   int64_t arrival_time_ms;  // kNotReceived for lost packets.
   int64_t payload_size;
 };
-const std::vector<MatchedSendArrivalTimes> GetNetworkTrace(
+
+std::vector<MatchedSendArrivalTimes> GetNetworkTrace(
     const ParsedRtcEventLog& parsed_log);
 
 }  // namespace webrtc

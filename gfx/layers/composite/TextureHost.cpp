@@ -35,7 +35,6 @@
 #include "mozilla/RefPtr.h"   // for nsRefPtr
 #include "nsPrintfCString.h"  // for nsPrintfCString
 #include "mozilla/layers/PTextureParent.h"
-#include "mozilla/Unused.h"
 #include <limits>
 #include "../opengl/CompositorOGL.h"
 
@@ -543,7 +542,8 @@ void BufferTextureHost::PushResourceUpdates(
         GetSize(),
         ImageDataSerializer::ComputeRGBStride(GetFormat(), GetSize().width),
         GetFormat());
-    (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+    (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                         /* aNormalizedUvs */ false);
   } else {
     MOZ_ASSERT(aImageKeys.length() == 3);
 
@@ -555,9 +555,12 @@ void BufferTextureHost::PushResourceUpdates(
     wr::ImageDescriptor cbcrDescriptor(
         cbcrSize, desc.cbCrStride(),
         SurfaceFormatForColorDepth(desc.colorDepth()));
-    (aResources.*method)(aImageKeys[0], yDescriptor, aExtID, imageType, 0);
-    (aResources.*method)(aImageKeys[1], cbcrDescriptor, aExtID, imageType, 1);
-    (aResources.*method)(aImageKeys[2], cbcrDescriptor, aExtID, imageType, 2);
+    (aResources.*method)(aImageKeys[0], yDescriptor, aExtID, imageType, 0,
+                         /* aNormalizedUvs */ false);
+    (aResources.*method)(aImageKeys[1], cbcrDescriptor, aExtID, imageType, 1,
+                         /* aNormalizedUvs */ false);
+    (aResources.*method)(aImageKeys[2], cbcrDescriptor, aExtID, imageType, 2,
+                         /* aNormalizedUvs */ false);
   }
 }
 
@@ -768,11 +771,11 @@ void ShmemTextureHost::ForgetSharedData() {
 
 void ShmemTextureHost::OnShutdown() { mShmem = nullptr; }
 
-uint8_t* ShmemTextureHost::GetBuffer() {
+uint8_t* ShmemTextureHost::GetBuffer() const {
   return mShmem ? mShmem->get<uint8_t>() : nullptr;
 }
 
-size_t ShmemTextureHost::GetBufferSize() {
+size_t ShmemTextureHost::GetBufferSize() const {
   return mShmem ? mShmem->Size<uint8_t>() : 0;
 }
 
@@ -800,9 +803,9 @@ void MemoryTextureHost::DeallocateSharedData() {
 
 void MemoryTextureHost::ForgetSharedData() { mBuffer = nullptr; }
 
-uint8_t* MemoryTextureHost::GetBuffer() { return mBuffer; }
+uint8_t* MemoryTextureHost::GetBuffer() const { return mBuffer; }
 
-size_t MemoryTextureHost::GetBufferSize() {
+size_t MemoryTextureHost::GetBufferSize() const {
   // MemoryTextureHost just trusts that the buffer size is large enough to read
   // anything we need to. That's because MemoryTextureHost has to trust the
   // buffer pointer anyway, so the security model here is just that

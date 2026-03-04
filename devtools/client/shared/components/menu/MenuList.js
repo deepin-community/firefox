@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env browser */
 "use strict";
 
 // A list of menu items.
@@ -13,13 +12,15 @@
 const {
   Children,
   PureComponent,
-} = require("resource://devtools/client/shared/vendor/react.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
 const { div } = dom;
-const {
-  focusableSelector,
-} = require("resource://devtools/client/shared/focus.js");
+
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  focusableSelector: "resource://devtools/client/shared/focus.mjs",
+});
 
 class MenuList extends PureComponent {
   static get propTypes() {
@@ -78,7 +79,7 @@ class MenuList extends PureComponent {
     }
 
     const getTabList = () =>
-      Array.from(this.wrapperRef.querySelectorAll(focusableSelector));
+      Array.from(this.wrapperRef.querySelectorAll(lazy.focusableSelector));
 
     switch (e.key) {
       case "Tab":
@@ -105,7 +106,9 @@ class MenuList extends PureComponent {
 
       case "Home":
         {
-          const firstItem = this.wrapperRef.querySelector(focusableSelector);
+          const firstItem = this.wrapperRef.querySelector(
+            lazy.focusableSelector
+          );
           if (firstItem) {
             firstItem.focus();
             e.preventDefault();

@@ -12,14 +12,13 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.spyk
 import io.mockk.verify
+import mozilla.components.browser.state.state.BrowserState
+import mozilla.components.browser.state.store.BrowserStore
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.mozilla.fenix.FenixApplication
-import org.mozilla.fenix.ext.settings
-import org.mozilla.fenix.utils.Settings
 
 internal class FirstSessionPingTest {
 
@@ -34,9 +33,11 @@ internal class FirstSessionPingTest {
         val mockedContext: Context = mockk(relaxed = true)
         every { mockedContext.applicationContext } returns mockedApplication
 
-        val mockedSettings: Settings = mockk(relaxed = true)
-        mockkStatic("org.mozilla.fenix.ext.ContextKt")
-        every { mockedContext.settings() } returns mockedSettings
+        val mockedState: BrowserState = mockk(relaxed = true)
+        every { mockedState.distributionId } returns null
+
+        val mockedStore: BrowserStore = mockk(relaxed = true)
+        every { mockedStore.state } returns mockedState
 
         val mockAp = spyk(FirstSessionPing(mockedContext), recordPrivateCalls = true)
         every { mockAp.wasAlreadyTriggered() } returns false

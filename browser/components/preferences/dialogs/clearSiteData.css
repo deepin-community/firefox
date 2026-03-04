@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 .options-container {
-  background-color: var(--in-content-box-background);
-  border: 1px solid var(--in-content-box-border-color);
+  background-color: var(--background-color-box);
+  border: 1px solid var(--border-color);
   border-radius: 2px;
-  color: var(--in-content-text-color);
+  color: var(--text-color);
   padding: 0.5em;
 }
 

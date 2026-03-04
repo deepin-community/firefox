@@ -6,9 +6,15 @@
 
 #include "FetchUtil.h"
 
-#include "zlib.h"
-
+#include "js/BuildId.h"
 #include "js/friend/ErrorMessages.h"  // JSMSG_*
+#include "mozilla/ClearOnShutdown.h"
+#include "mozilla/dom/DOMException.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/InternalRequest.h"
+#include "mozilla/dom/ReferrerInfo.h"
+#include "mozilla/dom/Response.h"
+#include "mozilla/dom/WorkerRef.h"
 #include "nsCRT.h"
 #include "nsError.h"
 #include "nsIAsyncInputStream.h"
@@ -17,15 +23,7 @@
 #include "nsNetUtil.h"
 #include "nsStreamUtils.h"
 #include "nsString.h"
-#include "js/BuildId.h"
-#include "mozilla/dom/Document.h"
-
-#include "mozilla/ClearOnShutdown.h"
-#include "mozilla/dom/DOMException.h"
-#include "mozilla/dom/InternalRequest.h"
-#include "mozilla/dom/Response.h"
-#include "mozilla/dom/ReferrerInfo.h"
-#include "mozilla/dom/WorkerRef.h"
+#include "zlib.h"
 
 namespace mozilla::dom {
 
@@ -203,7 +201,7 @@ nsresult FetchUtil::SetRequestReferrer(nsIPrincipal* aPrincipal, Document* aDoc,
   nsAutoCString computedReferrerSpec;
   referrerInfo = aChannel->GetReferrerInfo();
   if (referrerInfo) {
-    Unused << referrerInfo->GetComputedReferrerSpec(computedReferrerSpec);
+    (void)referrerInfo->GetComputedReferrerSpec(computedReferrerSpec);
   }
 
   // Step 8 https://fetch.spec.whatwg.org/#main-fetch
@@ -230,7 +228,7 @@ class StoreOptimizedEncodingRunnable final : public Runnable {
     nsresult rv;
 
     nsCOMPtr<nsIAsyncOutputStream> stream;
-    rv = mCache->OpenAlternativeOutputStream(FetchUtil::WasmAltDataType,
+    rv = mCache->OpenAlternativeOutputStream(FetchUtil::GetWasmAltDataType(),
                                              int64_t(mBytes.length()),
                                              getter_AddRefs(stream));
     if (NS_FAILED(rv)) {
@@ -655,26 +653,25 @@ class JSStreamConsumer final : public nsIInputStreamCallback,
 NS_IMPL_ISUPPORTS(JSStreamConsumer, nsIInputStreamCallback)
 
 // static
-const nsCString FetchUtil::WasmAltDataType;
+constinit nsCString FetchUtil::WasmAltDataType;
 
 // static
 void FetchUtil::InitWasmAltDataType() {
-  nsCString& type = const_cast<nsCString&>(WasmAltDataType);
-  MOZ_ASSERT(type.IsEmpty());
+  MOZ_ASSERT(WasmAltDataType.IsEmpty());
 
   RunOnShutdown([]() {
     // Avoid StringBuffer leak tests failures.
-    const_cast<nsCString&>(WasmAltDataType).Truncate();
+    WasmAltDataType.Truncate();
   });
 
-  type.Append(nsLiteralCString("wasm-"));
+  WasmAltDataType.Append(nsLiteralCString("wasm-"));
 
   JS::BuildIdCharVector buildId;
   if (!JS::GetOptimizedEncodingBuildId(&buildId)) {
     MOZ_CRASH("build id oom");
   }
 
-  type.Append(buildId.begin(), buildId.length());
+  WasmAltDataType.Append(buildId.begin(), buildId.length());
 }
 
 static bool ThrowException(JSContext* aCx, unsigned errorNumber) {
@@ -703,9 +700,13 @@ bool FetchUtil::StreamResponseToJS(JSContext* aCx, JS::Handle<JSObject*> aObj,
       break;
   }
 
+  // For WASM, the Content-Type must be exactly "application/wasm" with no
+  // parameters. Check the raw header value before parsing normalizes it.
+  ErrorResult result;
   nsAutoCString mimeType;
-  nsAutoCString mixedCaseMimeType;  // unused
-  response->GetMimeType(mimeType, mixedCaseMimeType);
+  response->GetInternalHeaders()->Get("Content-Type"_ns, mimeType, result);
+  MOZ_ALWAYS_TRUE(!result.Failed());
+  ToLowerCase(mimeType);
 
   if (!mimeType.EqualsASCII(requiredMimeType)) {
     JS_ReportErrorNumberASCII(aCx, js::GetErrorMessage, nullptr,

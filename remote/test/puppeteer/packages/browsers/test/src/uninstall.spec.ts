@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import assert from 'assert';
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import assert from 'node:assert';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   install,
@@ -38,7 +38,7 @@ describe('common', () => {
     const expectedOutputPath = path.join(
       tmpDir,
       'chrome',
-      `${BrowserPlatform.LINUX}-${testChromeBuildId}`
+      `${BrowserPlatform.LINUX}-${testChromeBuildId}`,
     );
     assert.strictEqual(fs.existsSync(expectedOutputPath), false);
     const browser = await install({

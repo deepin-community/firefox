@@ -5,10 +5,8 @@
 Transform the beetmover task into an actual task description.
 """
 
-
-from copy import deepcopy
-
 from taskgraph.transforms.base import TransformSequence
+from taskgraph.util.copy import deepcopy
 from taskgraph.util.dependencies import get_primary_dependency
 from taskgraph.util.schema import Schema, optionally_keyed_by, resolve_keyed_by
 from voluptuous import Optional, Required
@@ -27,22 +25,21 @@ from gecko_taskgraph.util.declarative_artifacts import (
     get_geckoview_upstream_artifacts,
 )
 
-beetmover_description_schema = Schema(
-    {
-        Required("label"): str,
-        Required("dependencies"): task_description_schema["dependencies"],
-        Optional("treeherder"): task_description_schema["treeherder"],
-        Required("run-on-projects"): task_description_schema["run-on-projects"],
-        Required("run-on-hg-branches"): task_description_schema["run-on-hg-branches"],
-        Optional("bucket-scope"): optionally_keyed_by("release-level", str),
-        Optional("shipping-phase"): optionally_keyed_by(
-            "project", task_description_schema["shipping-phase"]
-        ),
-        Optional("shipping-product"): task_description_schema["shipping-product"],
-        Optional("attributes"): task_description_schema["attributes"],
-        Optional("task-from"): task_description_schema["task-from"],
-    }
-)
+beetmover_description_schema = Schema({
+    Required("label"): str,
+    Required("dependencies"): task_description_schema["dependencies"],
+    Optional("treeherder"): task_description_schema["treeherder"],
+    Required("run-on-projects"): task_description_schema["run-on-projects"],
+    Required("run-on-hg-branches"): task_description_schema["run-on-hg-branches"],
+    Optional("bucket-scope"): optionally_keyed_by("release-level", str),
+    Optional("shipping-phase"): optionally_keyed_by(
+        "project", task_description_schema["shipping-phase"]
+    ),
+    Optional("shipping-product"): task_description_schema["shipping-product"],
+    Optional("attributes"): task_description_schema["attributes"],
+    Optional("task-from"): task_description_schema["task-from"],
+    Optional("run-on-repo-type"): task_description_schema["run-on-repo-type"],
+})
 
 transforms = TransformSequence()
 
@@ -77,7 +74,7 @@ def resolve_keys(config, jobs):
             job,
             "bucket-scope",
             item_name=job["label"],
-            **{"release-level": release_level(config.params["project"])},
+            **{"release-level": release_level(config.params)},
         )
         yield job
 
@@ -111,15 +108,19 @@ def make_task_description(config, jobs):
             .get("machine", {})
             .get("platform", "")
         )
+        dep_symbol = dep_job.task.get("extra", {}).get("treeherder", {}).get("symbol")
+        assert not dep_symbol or (
+            dep_symbol.startswith("B") and dep_symbol.endswith("s")
+        )
+        symbol_suffix = f"-{dep_symbol[1:-1]}" if dep_symbol[1:-1] else ""
         treeherder.setdefault("platform", f"{dep_th_platform}/opt")
         treeherder.setdefault("tier", 2)
         treeherder.setdefault("kind", "build")
         package = job["maven-package"]
-        treeherder.setdefault("symbol", f"BM-{package}")
+        treeherder.setdefault("symbol", f"BM-{package}{symbol_suffix}")
         label = job["label"]
         description = (
-            "Beetmover submission for geckoview"
-            "{build_platform}/{build_type}'".format(
+            "Beetmover submission for geckoview{build_platform}/{build_type}'".format(
                 build_platform=attributes.get("build_platform"),
                 build_type=attributes.get("build_type"),
             )
@@ -143,6 +144,7 @@ def make_task_description(config, jobs):
             "dependencies": job["dependencies"],
             "attributes": attributes,
             "run-on-projects": job["run-on-projects"],
+            "run-on-repo-type": job.get("run-on-repo-type", ["git", "hg"]),
             "treeherder": treeherder,
             "shipping-phase": job["shipping-phase"],
             "maven-package": package,

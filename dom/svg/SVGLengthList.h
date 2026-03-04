@@ -7,15 +7,14 @@
 #ifndef DOM_SVG_SVGLENGTHLIST_H_
 #define DOM_SVG_SVGLENGTHLIST_H_
 
+#include "SVGElement.h"
+#include "SVGLength.h"
 #include "nsCOMPtr.h"
 #include "nsDebug.h"
 #include "nsIContent.h"
 #include "nsINode.h"
 #include "nsIWeakReferenceUtils.h"
-#include "SVGElement.h"
 #include "nsTArray.h"
-#include "SVGLength.h"
-#include "mozilla/dom/SVGLengthBinding.h"
 
 namespace mozilla {
 
@@ -45,7 +44,7 @@ class SVGLengthList {
   SVGLengthList& operator=(const SVGLengthList& aOther) {
     mLengths.ClearAndRetainStorage();
     // Best-effort, really.
-    Unused << mLengths.AppendElements(aOther.mLengths, fallible);
+    (void)mLengths.AppendElements(aOther.mLengths, fallible);
     return *this;
   }
 
@@ -196,7 +195,7 @@ class SVGLengthListAndInfo : public SVGLengthList {
   /**
    * Returns true if this object is an "identity" value, from the perspective
    * of SMIL. In other words, returns true until the initial value set up in
-   * SVGLengthListSMILType::Init() has been changed with a SetInfo() call.
+   * SVGLengthListSMILType::InitValue() has been changed with a SetInfo() call.
    */
   bool IsIdentity() const {
     if (!mElement) {
@@ -310,21 +309,17 @@ class MOZ_STACK_CLASS SVGUserUnitList {
     mAxis = aAxis;
   }
 
-  void Clear() { mList = nullptr; }
+  bool IsEmpty() const { return mList->IsEmpty(); }
 
-  bool IsEmpty() const { return !mList || mList->IsEmpty(); }
-
-  uint32_t Length() const { return mList ? mList->Length() : 0; }
+  uint32_t Length() const { return mList->Length(); }
 
   /// This may return a non-finite value
   float operator[](uint32_t aIndex) const {
-    return (*mList)[aIndex].GetValueInPixels(mElement, mAxis);
+    return (*mList)[aIndex].GetValueInPixelsWithZoom(mElement, mAxis);
   }
 
   bool HasPercentageValueAt(uint32_t aIndex) const {
-    const SVGLength& length = (*mList)[aIndex];
-    return length.GetUnit() ==
-           dom::SVGLength_Binding::SVG_LENGTHTYPE_PERCENTAGE;
+    return (*mList)[aIndex].IsPercentage();
   }
 
  private:

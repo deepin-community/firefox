@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = Clauder le scheda
 tabbrowser-menuitem-close =
     .label = Clauder
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -32,6 +45,8 @@ tabbrowser-close-tabs-tooltip =
             [one] Clauder scheda
            *[other] Clauder { $tabCount } schedas
         }
+tab-splitview-splitter =
+    .aria-label = Redimensionar schedas de visualisation scisse
 
 ## Tooltips for tab audio control
 ## Variables:
@@ -72,6 +87,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Reproducer { $tabCount } schedas
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Non plus silentiar scheda
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Silentiar scheda
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Reproducer scheda
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +105,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Clauder { $tabCount } schedas?
 tabbrowser-confirm-close-tabs-button = Clauder le schedas
+tabbrowser-ask-close-tabs-checkbox = Demandar ante clauder plure schedas
 tabbrowser-confirm-close-tabs-checkbox = Confirmar ante clauder plure schedas
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +128,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Clauder le fenestra e quitar { -b
 tabbrowser-confirm-close-tabs-with-key-button = Quitar { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Demandar ante quitar con { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Confirmar ante quitar con { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Quitar { -brand-short-name } o clauder le scheda actual?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Exir de { -brand-short-name }
+       *[other] Quitar { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Clauder le scheda actual
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -124,8 +164,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Non monstrar me plus iste fenestra d
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Attention
-tabbrowser-confirm-close-duplicate-tabs-text = Nos mantenera aperte le ultime scheda active
 tabbrowser-confirm-close-all-duplicate-tabs-title = Clauder schedas duplicate?
 tabbrowser-confirm-close-all-duplicate-tabs-text = Nos claudera le schedas duple i iste fenestra. Le ultime scheda active restara aperte.
 tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Clauder schedas
@@ -165,6 +203,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Listar tote le { $tabCount } schedas
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Tacer le scheda
@@ -172,3 +213,230 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Non plus tacer le scheda
 tabbrowser-manager-close-tab =
     .tooltiptext = Clauder le scheda
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Claudite
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Fenestra actual
+
+##
+
+tab-group-editor-title-create = Crear gruppo de schedas
+tab-group-editor-title-edit = Gerer gruppo de schedas
+tab-group-editor-name-label = Nomine
+tab-group-editor-name-field =
+    .placeholder = Exemplo: compras
+tab-group-editor-cancel =
+    .label = Cancellar
+    .accesskey = C
+tab-group-editor-color-selector =
+    .aria-label = Color del gruppo de schedas
+tab-group-editor-color-selector2-blue = Blau
+    .title = Blau
+tab-group-editor-color-selector2-purple = Purpuree
+    .title = Purpuree
+tab-group-editor-color-selector2-cyan = Cyano
+    .title = Cyano
+tab-group-editor-color-selector2-orange = Orange
+    .title = Orange
+tab-group-editor-color-selector2-yellow = Jalne
+    .title = Jalne
+tab-group-editor-color-selector2-pink = Rosate
+    .title = Rosate
+tab-group-editor-color-selector2-green = Verde
+    .title = Verde
+tab-group-editor-color-selector2-gray = Gris
+    .title = Gris
+tab-group-editor-color-selector2-red = Rubie
+    .title = Rubie
+tab-group-description = { $tabGroupName } — Gruppo de schedas
+tab-group-label-tooltip-collapsed = { $tabGroupName } — Collabeva
+tab-group-label-tooltip-expanded = { $tabGroupName } – Expandite
+tab-group-preview-name =
+    .aria-label = Schedas in un gruppo contrahite
+tab-context-unnamed-group =
+    .label = Gruppo sin nomine
+tab-group-name-default = Gruppo sin nomine
+
+## When collapsed, the tab group label's aria-description will indicate
+## whether the hover menu is open or closed.
+
+tab-group-preview-open-description = Lista de schedas aperte
+tab-group-preview-closed-description = Lista de schedas clause
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Adder scheda a un nove gruppo
+           *[other] Adder schedas a un nove gruppo
+        }
+    .accesskey = g
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Adder scheda al gruppo
+           *[other] Adder schedas al gruppo
+        }
+    .accesskey = g
+tab-context-move-split-view-to-new-group =
+    .label =
+        { $splitViewCount ->
+            [1] Adder vista fisse a nove gruppo
+            [one] Adder vista fisse a nove gruppo
+           *[other] Adder vistas fisse a Nove Gruppo
+        }
+    .accesskey = A
+tab-context-move-split-view-to-group =
+    .label =
+        { $splitViewCount ->
+            [1] Adder vista fisse a gruppo
+            [one] Adder vista fisse a gruppo
+           *[other] Adder vistas fisse a gruppo
+        }
+    .accesskey = g
+tab-context-move-tab-to-group-saved-groups =
+    .label = Gruppos claudite
+tab-group-editor-action-new-tab =
+    .label = Nove scheda in gruppo
+tab-group-editor-action-new-window =
+    .label = Mover gruppo a nove fenestra
+tab-group-editor-action-save =
+    .label = Salvar e clauder gruppo
+tab-group-editor-action-ungroup =
+    .label = Separar schedas
+tab-group-editor-action-delete =
+    .label = Deler gruppo
+tab-group-editor-done =
+    .label = Facite
+    .accessKey = F
+tab-context-reopen-tab-group =
+    .label = Reaperir le gruppo de schedas
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Remover del gruppo
+            [one] Remover del gruppo
+           *[other] Remover del gruppos
+        }
+    .accesskey = R
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = +{ $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] { $tabCount } altere scheda
+       *[other] { $tabCount } altere schedas
+    }
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Mover gruppo a nove fenestra
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Mover gruppo a iste fenestra
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Deler gruppo
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Aperir gruppo in iste fenestra
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Aperir gruppo in nove fenestra
+
+## Tab Notes
+
+tab-context-add-note =
+    .label = Adder nota
+    .accesskey = A
+tab-context-update-note =
+    .label = Actualisar nota
+    .accesskey = A
+tab-context-edit-note =
+    .label = Rediger nota
+    .accesskey = R
+tab-context-delete-note =
+    .label = Deler nota
+    .accesskey = D
+tab-note-editor-title-create = Adder nota
+tab-note-editor-title-edit = Rediger nota
+tab-note-editor-text-field =
+    .placeholder = Que vole tu memorar re iste scheda?
+tab-note-editor-button-cancel =
+    .label = Cancellar
+    .accesskey = C
+tab-note-editor-button-save =
+    .label = Salvar
+    .accesskey = S
+# Link to show the full tab note in case it was truncated.
+tab-note-preview-expand = Leger plus
+# Displayed within the tab note edit dialog box when the user has entered more
+# characters than are allowed.
+# Variables:
+#   $totalCharacters (Number): the number of characters the user has entered.
+#   $maxAllowedCharacters (Number): the maximum number of characters allowed for a tab note.
+tab-note-editor-character-limit =
+    { $maxAllowedCharacters ->
+        [one] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } character
+       *[other] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } characteres
+    }
+
+## Split View
+
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on tabs inside of a tab split view
+tabbrowser-tab-label-tab-split-view = Vista scindite
+# Open a new tab next to the current tab and display their contents side by side
+tab-context-add-split-view =
+    .label = Adder vista scindite
+    .accesskey = s
+# Display the two selected tabs' contents side by side
+tab-context-open-in-split-view =
+    .label = Aperir vista scindite
+    .accesskey = t
+# Separate the two split view tabs and display the tabs and their contents as normal
+tab-context-separate-split-view =
+    .label = Separar vista scindite
+    .accesskey = t
+tab-context-badge-new = Nove
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the left tab inside of a tab split view
+# "left" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-left = { $label }, Parte sinistra dello schermo
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the right tab inside of a tab split view
+# "right" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-right = { $label }, Parte destra dello schermo
+
+## Manage Split View (icon in the address bar & three-dot menu in the footer)
+
+# "Separate" is a verb, as in "separate the split view tabs and display them normally".
+split-view-menuitem-separate-tabs =
+    .label = Schedas separate
+# "Reverse" is a verb, as in "reverse the order of split view tabs".
+split-view-menuitem-reverse-tabs =
+    .label = Reverter schedas
+split-view-menuitem-close-both-tabs =
+    .label = Clauder ambe schedas

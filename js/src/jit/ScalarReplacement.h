@@ -14,7 +14,8 @@ namespace jit {
 class MIRGenerator;
 class MIRGraph;
 
-[[nodiscard]] bool ScalarReplacement(MIRGenerator* mir, MIRGraph& graph);
+[[nodiscard]] bool ScalarReplacement(const MIRGenerator* mir, MIRGraph& graph);
+[[nodiscard]] bool ReplaceObjectKeys(const MIRGenerator* mir, MIRGraph& graph);
 
 }  // namespace jit
 }  // namespace js

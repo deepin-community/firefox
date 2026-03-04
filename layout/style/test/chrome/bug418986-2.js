@@ -30,17 +30,17 @@ var expected_values = [
     null,
     window.innerWidth > window.innerHeight ? "landscape" : "portrait",
   ],
-  ["resolution", null, "96dpi"],
+  ["resolution", null, "192dpi"],
   [
     "resolution",
     [
       0.999 * window.devicePixelRatio + "dppx",
       1.001 * window.devicePixelRatio + "dppx",
     ],
-    "1dppx",
+    "2dppx",
   ],
   ["width", window.innerWidth + "px", window.innerWidth + "px"],
-  ["-moz-device-pixel-ratio", window.devicePixelRatio, 1],
+  ["-moz-device-pixel-ratio", window.devicePixelRatio, 2],
   [
     "-moz-device-orientation",
     screen.width > screen.height ? "landscape" : "portrait",
@@ -51,11 +51,6 @@ var expected_values = [
 // These media queries return value 0 or 1 when the pref is off.
 // When the pref is on, they should not match.
 var suppressed_toggles = [
-  // Not available on most OSs.
-  "-moz-scrollbar-end-backward",
-  "-moz-scrollbar-end-forward",
-  "-moz-scrollbar-start-backward",
-  "-moz-scrollbar-start-forward",
   "-moz-gtk-csd-available",
   "-moz-gtk-csd-minimize-button",
   "-moz-gtk-csd-maximize-button",

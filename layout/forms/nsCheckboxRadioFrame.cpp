@@ -6,9 +6,9 @@
 
 #include "nsCheckboxRadioFrame.h"
 
-#include "nsLayoutUtils.h"
 #include "mozilla/PresShell.h"
 #include "nsIContent.h"
+#include "nsLayoutUtils.h"
 
 using namespace mozilla;
 
@@ -30,10 +30,10 @@ NS_QUERYFRAME_HEAD(nsCheckboxRadioFrame)
 NS_QUERYFRAME_TAIL_INHERITING(nsAtomicContainerFrame)
 
 nscoord nsCheckboxRadioFrame::DefaultSize() {
-  if (StyleDisplay()->HasAppearance()) {
-    return PresContext()->Theme()->GetCheckboxRadioPrefSize();
-  }
-  return CSSPixel::ToAppUnits(13);
+  const CSSCoord size = StyleDisplay()->HasAppearance()
+                            ? PresContext()->Theme()->GetCheckboxRadioPrefSize()
+                            : CSSCoord(13.0f);
+  return CSSPixel::ToAppUnits(Style()->EffectiveZoom().Zoom(size));
 }
 
 /* virtual */
@@ -43,23 +43,23 @@ void nsCheckboxRadioFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
   DisplayBorderBackgroundOutline(aBuilder, aLists);
 }
 
-nscoord nsCheckboxRadioFrame::IntrinsicISize(gfxContext* aContext,
+nscoord nsCheckboxRadioFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                              IntrinsicISizeType aType) {
   return StyleDisplay()->HasAppearance() ? DefaultSize() : 0;
 }
 
 /* virtual */
 LogicalSize nsCheckboxRadioFrame::ComputeAutoSize(
-    gfxContext* aRC, WritingMode aWM, const LogicalSize& aCBSize,
-    nscoord aAvailableISize, const LogicalSize& aMargin,
-    const LogicalSize& aBorderPadding, const StyleSizeOverrides& aSizeOverrides,
-    ComputeSizeFlags aFlags) {
+    const SizeComputationInput& aSizingInput, WritingMode aWM,
+    const LogicalSize& aCBSize, nscoord aAvailableISize,
+    const LogicalSize& aMargin, const LogicalSize& aBorderPadding,
+    const StyleSizeOverrides& aSizeOverrides, ComputeSizeFlags aFlags) {
   LogicalSize size(aWM, 0, 0);
   if (!StyleDisplay()->HasAppearance()) {
     return size;
   }
   return nsAtomicContainerFrame::ComputeAutoSize(
-      aRC, aWM, aCBSize, aAvailableISize, aMargin, aBorderPadding,
+      aSizingInput, aWM, aCBSize, aAvailableISize, aMargin, aBorderPadding,
       aSizeOverrides, aFlags);
 }
 
@@ -92,7 +92,9 @@ Maybe<nscoord> nsCheckboxRadioFrame::GetNaturalBaselineBOffset(
   // than the margin edge).
   // For "inverted" lines (typically in writing-mode:vertical-lr), use the
   // block-start end instead.
-  auto bp = CSSPixel::ToAppUnits(2);  // See kCheckboxRadioBorderWidth in Theme
+  // See kCheckboxRadioBorderWidth in Theme.cpp
+  CSSCoord border = PresContext()->Theme()->GetCheckboxRadioBorderWidth();
+  auto bp = CSSPixel::ToAppUnits(Style()->EffectiveZoom().Zoom(border));
   return Some(aWM.IsLineInverted() ? std::min(bp, BSize(aWM))
                                    : std::max(0, BSize(aWM) - bp));
 }

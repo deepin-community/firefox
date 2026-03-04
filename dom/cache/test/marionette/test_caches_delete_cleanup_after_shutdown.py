@@ -23,7 +23,6 @@ CACHE_ID = "data"
 
 
 class CachesDeleteCleanupAtShutdownTestCase(MarionetteTestCase):
-
     """
     Bug1784700: This test ensures that cache body files get cleaned up
     properly after cache has been deleted. Note that body files gets
@@ -34,31 +33,40 @@ class CachesDeleteCleanupAtShutdownTestCase(MarionetteTestCase):
     """
 
     def setUp(self):
-        super(CachesDeleteCleanupAtShutdownTestCase, self).setUp()
+        super().setUp()
         self.marionette.restart(in_app=False, clean=True)
         self.marionette.set_pref(QM_TESTING_PREF, True)
 
     def tearDown(self):
         self.marionette.restart(in_app=False, clean=True)
-        super(CachesDeleteCleanupAtShutdownTestCase, self).tearDown()
+        super().tearDown()
         self.marionette.set_pref(QM_TESTING_PREF, False)
 
     def getUsage(self):
-        return self.marionette.execute_script(
+        usage = self.marionette.execute_async_script(
             """
-                return window.wrappedJSObject.getStorageEstimate();
+                const [resolve] = arguments;
+                window.wrappedJSObject.getStorageEstimate()
+                    .then(resolve)
+                    .catch(()=>resolve(-1));
             """,
             new_sandbox=False,
         )
+        assert (
+            usage != -1
+        )  # usage should not be an invalid number which gets sets in catch handler above.
+        return usage
 
     def doCacheWork(self, n):
         # max timeout for this script to execute is 5 minutes
         maxTimeout = 5 * 60 * 1000
 
-        return self.marionette.execute_script(
+        assert self.marionette.execute_async_script(
             """
-                const [cacheId, n] = arguments;
-                return window.wrappedJSObject.doCacheWork(cacheId, n);
+                const [cacheId, n, resolve] = arguments;
+                window.wrappedJSObject.doCacheWork(cacheId, n)
+                    .then(()=>resolve(true))
+                    .catch(()=>resolve(false));
             """,
             script_args=(
                 CACHE_ID,
@@ -69,10 +77,12 @@ class CachesDeleteCleanupAtShutdownTestCase(MarionetteTestCase):
         )
 
     def openCache(self):
-        return self.marionette.execute_async_script(
+        assert self.marionette.execute_async_script(
             """
                 const [cacheId, resolve] = arguments;
-                window.wrappedJSObject.openCache(cacheId).then(resolve("success"));
+                window.wrappedJSObject.openCache(cacheId)
+                    .then(()=>resolve(true))
+                    .catch(()=>resolve(false));
             """,
             new_sandbox=False,
             script_args=(CACHE_ID,),

@@ -30,13 +30,13 @@ add_task(
       "The button is available."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(runInPage);
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(runInPage);
 
     await FullPageTranslationsTestUtils.openPanel({
       win: window1,
       expectedFromLanguage: "es",
       expectedToLanguage: "en",
-      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
     });
 
     await FullPageTranslationsTestUtils.changeSelectedToLanguage({
@@ -50,10 +50,12 @@ add_task(
       downloadHandler: resolveDownloads,
     });
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "uk",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "uk",
+        runInPage,
+      }
     );
 
     await FullPageTranslationsTestUtils.openPanel({
@@ -63,7 +65,7 @@ add_task(
 
     await focusWindow(window2);
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       testPage2.runInPage
     );
 
@@ -92,10 +94,12 @@ add_task(
 
     await focusWindow(window1);
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "uk",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "uk",
+        runInPage,
+      }
     );
 
     await FullPageTranslationsTestUtils.openPanel({
@@ -108,10 +112,12 @@ add_task(
       win: window1,
     });
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage,
+      }
     );
 
     await testPage2.cleanup();

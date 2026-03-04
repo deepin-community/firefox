@@ -40,7 +40,7 @@ screenshots-login-error-details = Мо акси шуморо нигоҳ дошт
 screenshots-unshootable-page-error-title = Акси ин саҳифа гирифта намешавад.
 screenshots-unshootable-page-error-details = Зеро ки ин саҳифаи сомона стандартӣ намебошад, мо акси экрани онро гирифта наметавонем.
 screenshots-empty-selection-error-title = Интихоби шумо хеле хурд аст
-screenshots-private-window-error-title = { -screenshots-brand-name } дар реҷаи тамошокунии хусусӣ ғайрифаъол аст
+screenshots-private-window-error-title = { -screenshots-brand-name } дар реҷаи тамошобинии хусусӣ ғайрифаъол аст
 screenshots-private-window-error-details = Барои нороҳатӣ узр мепурсем. Мо дар ин хусусият барои релизҳои оянда кор карда истодаем.
 screenshots-generic-error-title = Ваҳ! { -screenshots-brand-name } вайрон шуд.
 screenshots-generic-error-details = Мо мутмаин нестем, ки чӣ мушкилӣ ба миён омад. Шумо мехоҳед, ки аз нав кӯшиш кунед ё акси саҳифаи дигарро гиред?
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = Нусха бардоштан
 screenshots-component-download-button-2 = Боргирӣ кардан
     .title = Боргирӣ кардан (тугмаи «{ $shortcut }»)
     .aria-label = Боргирӣ кардан
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Акси экран
+    .tooltiptext = Гирифтани акси экран ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

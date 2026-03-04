@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = Cronologjie
 menu-view-synced-tabs-sidebar =
     .label = Schedis sincronizadis
-menu-view-megalist-sidebar =
-    .label = Passwords
 menu-view-full-zoom =
     .label = Ingrandiment
     .accesskey = I
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Segnelibris dispositîfs mobii
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profîi
+menu-profiles-manage-profiles =
+    .label = Gjestìs profîi
+menu-profiles-new-profile =
+    .label = Gnûf profîl
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (corint)
+menu-profiles-menu =
+    .label = Profîi
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Discjamâts
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Estensions e temis
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Components adizionâi e temis
     .accesskey = C

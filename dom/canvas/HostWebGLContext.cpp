@@ -6,8 +6,6 @@
 #include "HostWebGLContext.h"
 
 #include "CompositableHost.h"
-#include "mozilla/layers/LayersSurfaces.h"
-
 #include "MozFramebuffer.h"
 #include "TexUnpackBlob.h"
 #include "WebGL2Context.h"
@@ -17,6 +15,7 @@
 #include "WebGLMemoryTracker.h"
 #include "WebGLParent.h"
 #include "WebGLProgram.h"
+#include "WebGLQuery.h"
 #include "WebGLRenderbuffer.h"
 #include "WebGLSampler.h"
 #include "WebGLShader.h"
@@ -24,9 +23,8 @@
 #include "WebGLTexture.h"
 #include "WebGLTransformFeedback.h"
 #include "WebGLVertexArray.h"
-#include "WebGLQuery.h"
-
 #include "mozilla/StaticMutex.h"
+#include "mozilla/layers/LayersSurfaces.h"
 
 namespace mozilla {
 
@@ -51,10 +49,11 @@ LockedOutstandingContexts::~LockedOutstandingContexts() {
 // -
 
 /*static*/
-UniquePtr<HostWebGLContext> HostWebGLContext::Create(
+std::unique_ptr<HostWebGLContext> HostWebGLContext::Create(
     const OwnerData& ownerData, const webgl::InitContextDesc& desc,
     webgl::InitContextResult* const out) {
-  auto host = WrapUnique(new HostWebGLContext(ownerData));
+  auto host =
+      std::unique_ptr<HostWebGLContext>(new HostWebGLContext(ownerData));
   auto webgl = WebGLContext::Create(host.get(), desc, out);
   if (!webgl) return nullptr;
   return host;

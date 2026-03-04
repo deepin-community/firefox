@@ -6,14 +6,11 @@ package org.mozilla.fenix.components
 
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
-import android.os.StrictMode
-import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mozilla.components.browser.domains.autocomplete.BaseDomainAutocompleteProvider
@@ -27,9 +24,8 @@ import mozilla.components.browser.icons.BrowserIcons
 import mozilla.components.browser.session.storage.SessionStorage
 import mozilla.components.browser.state.engine.EngineMiddleware
 import mozilla.components.browser.state.engine.middleware.SessionPrioritizationMiddleware
-import mozilla.components.browser.state.search.SearchEngine
+import mozilla.components.browser.state.engine.middleware.TranslationsMiddleware
 import mozilla.components.browser.state.state.BrowserState
-import mozilla.components.browser.state.state.SearchState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.browser.storage.sync.PlacesBookmarksStorage
 import mozilla.components.browser.storage.sync.PlacesHistoryStorage
@@ -39,11 +35,17 @@ import mozilla.components.browser.thumbnails.storage.ThumbnailStorage
 import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.concept.engine.DefaultSettings
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.fission.WebContentIsolationStrategy
 import mozilla.components.concept.engine.mediaquery.PreferredColorScheme
 import mozilla.components.concept.fetch.Client
 import mozilla.components.feature.awesomebar.provider.SessionAutocompleteProvider
 import mozilla.components.feature.customtabs.store.CustomTabsServiceStore
+import mozilla.components.feature.downloads.DateTimeProvider
+import mozilla.components.feature.downloads.DefaultDateTimeProvider
+import mozilla.components.feature.downloads.DefaultFileSizeFormatter
+import mozilla.components.feature.downloads.DownloadEstimator
 import mozilla.components.feature.downloads.DownloadMiddleware
+import mozilla.components.feature.downloads.FileSizeFormatter
 import mozilla.components.feature.fxsuggest.facts.FxSuggestFactsMiddleware
 import mozilla.components.feature.logins.exceptions.LoginExceptionStorage
 import mozilla.components.feature.media.MediaSessionFeature
@@ -57,11 +59,14 @@ import mozilla.components.feature.pwa.WebAppShortcutManager
 import mozilla.components.feature.readerview.ReaderViewMiddleware
 import mozilla.components.feature.recentlyclosed.RecentlyClosedMiddleware
 import mozilla.components.feature.recentlyclosed.RecentlyClosedTabsStorage
-import mozilla.components.feature.search.ext.createApplicationSearchEngine
+import mozilla.components.feature.search.SearchApplicationName
+import mozilla.components.feature.search.SearchDeviceType
+import mozilla.components.feature.search.SearchUpdateChannel
 import mozilla.components.feature.search.middleware.AdsTelemetryMiddleware
 import mozilla.components.feature.search.middleware.SearchExtraParams
 import mozilla.components.feature.search.middleware.SearchMiddleware
 import mozilla.components.feature.search.region.RegionMiddleware
+import mozilla.components.feature.search.storage.SearchEngineSelectorConfig
 import mozilla.components.feature.search.telemetry.SerpTelemetryRepository
 import mozilla.components.feature.search.telemetry.ads.AdsTelemetry
 import mozilla.components.feature.search.telemetry.incontent.InContentTelemetry
@@ -72,33 +77,46 @@ import mozilla.components.feature.sitepermissions.OnDiskSitePermissionsStorage
 import mozilla.components.feature.top.sites.DefaultTopSitesStorage
 import mozilla.components.feature.top.sites.PinnedSiteStorage
 import mozilla.components.feature.webcompat.WebCompatFeature
-import mozilla.components.feature.webcompat.reporter.WebCompatReporterFeature
 import mozilla.components.feature.webnotifications.WebNotificationFeature
 import mozilla.components.lib.dataprotect.SecureAbove22Preferences
-import mozilla.components.service.contile.ContileTopSitesProvider
-import mozilla.components.service.contile.ContileTopSitesUpdater
 import mozilla.components.service.digitalassetlinks.RelationChecker
 import mozilla.components.service.digitalassetlinks.local.StatementApi
 import mozilla.components.service.digitalassetlinks.local.StatementRelationChecker
 import mozilla.components.service.location.LocationService
 import mozilla.components.service.location.MozillaLocationService
+import mozilla.components.service.mars.MarsTopSitesProvider
+import mozilla.components.service.mars.MarsTopSitesRequestConfig
+import mozilla.components.service.mars.NEW_TAB_TILE_1_PLACEMENT_KEY
+import mozilla.components.service.mars.NEW_TAB_TILE_2_PLACEMENT_KEY
+import mozilla.components.service.mars.Placement
+import mozilla.components.service.mars.contile.ContileTopSitesUpdater
+import mozilla.components.service.pocket.ContentRecommendationsRequestConfig
 import mozilla.components.service.pocket.PocketStoriesConfig
 import mozilla.components.service.pocket.PocketStoriesRequestConfig
 import mozilla.components.service.pocket.PocketStoriesService
 import mozilla.components.service.pocket.Profile
+import mozilla.components.service.pocket.mars.api.MarsSpocsRequestConfig
+import mozilla.components.service.pocket.mars.api.NEW_TAB_SPOCS_PLACEMENT_KEY
 import mozilla.components.service.sync.autofill.AutofillCreditCardsAddressesStorage
 import mozilla.components.service.sync.logins.SyncableLoginsStorage
 import mozilla.components.support.base.worker.Frequency
+import mozilla.components.support.ktx.android.content.appVersionName
 import mozilla.components.support.ktx.android.content.res.readJSONObject
 import mozilla.components.support.locale.LocaleManager
+import mozilla.components.support.utils.RunWhenReadyQueue
 import org.mozilla.fenix.AppRequestInterceptor
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.IntentReceiverActivity
 import org.mozilla.fenix.R
+import org.mozilla.fenix.ReleaseChannel
+import org.mozilla.fenix.browser.desktopmode.DefaultDesktopModeRepository
+import org.mozilla.fenix.browser.desktopmode.DesktopModeMiddleware
+import org.mozilla.fenix.components.search.ApplicationSearchMiddleware
 import org.mozilla.fenix.components.search.SearchMigration
 import org.mozilla.fenix.downloads.DownloadService
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.isLargeWindow
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.gecko.GeckoProvider
 import org.mozilla.fenix.historymetadata.DefaultHistoryMetadataService
@@ -108,14 +126,16 @@ import org.mozilla.fenix.media.MediaSessionService
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.perf.StrictModeManager
 import org.mozilla.fenix.perf.lazyMonitored
-import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.advanced.getSelectedLocale
+import org.mozilla.fenix.share.DefaultSentFromFirefoxManager
+import org.mozilla.fenix.share.DefaultSentFromStorage
 import org.mozilla.fenix.share.SaveToPDFMiddleware
 import org.mozilla.fenix.telemetry.TelemetryMiddleware
 import org.mozilla.fenix.utils.getUndoDelay
 import org.mozilla.geckoview.GeckoRuntime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import mozilla.components.service.pocket.mars.api.Placement as MarsSpocsPlacement
 
 /**
  * Component group for all core browser functionality.
@@ -125,6 +145,7 @@ class Core(
     private val context: Context,
     private val crashReporter: CrashReporting,
     strictMode: StrictModeManager,
+    visualCompletenessQueue: RunWhenReadyQueue,
 ) {
     /**
      * The browser engine component initialized based on the build
@@ -133,8 +154,7 @@ class Core(
     val engine: Engine by lazyMonitored {
         val defaultSettings = DefaultSettings(
             requestInterceptor = requestInterceptor,
-            remoteDebuggingEnabled = context.settings().isRemoteDebuggingEnabled &&
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
+            remoteDebuggingEnabled = context.settings().isRemoteDebuggingEnabled,
             testingModeEnabled = false,
             trackingProtectionPolicy = trackingProtectionPolicyFactory.createTrackingProtectionPolicy(),
             historyTrackingDelegate = HistoryDelegate(lazyHistoryStorage),
@@ -147,28 +167,14 @@ class Core(
             enterpriseRootsEnabled = context.settings().allowThirdPartyRootCerts,
             clearColor = ContextCompat.getColor(
                 context,
-                R.color.fx_mobile_layer_color_1,
+                R.color.fx_mobile_surface,
             ),
             httpsOnlyMode = context.settings().getHttpsOnlyMode(),
+            dohSettingsMode = context.settings().getDohSettingsMode(),
+            dohProviderUrl = context.settings().dohProviderUrl,
+            dohDefaultProviderUrl = context.settings().dohDefaultProviderUrl,
+            dohExceptionsList = context.settings().dohExceptionsList.toList(),
             globalPrivacyControlEnabled = context.settings().shouldEnableGlobalPrivacyControl,
-            fingerprintingProtection =
-            if (FxNimbus.features.fingerprintingProtection.value().enabled) {
-                FxNimbus.features.fingerprintingProtection.value().enabledNormal
-            } else {
-                context.settings().blockSuspectedFingerprinters
-            },
-            fingerprintingProtectionPrivateBrowsing =
-            if (FxNimbus.features.fingerprintingProtection.value().enabled) {
-                FxNimbus.features.fingerprintingProtection.value().enabledPrivate
-            } else {
-                context.settings().blockSuspectedFingerprintersPrivateBrowsing
-            },
-            fingerprintingProtectionOverrides =
-            if (FxNimbus.features.fingerprintingProtection.value().enabled) {
-                FxNimbus.features.fingerprintingProtection.value().overrides
-            } else {
-                ""
-            },
             fdlibmMathEnabled = FxNimbus.features.fingerprintingProtection.value().fdlibmMath,
             cookieBannerHandlingMode = context.settings().getCookieBannerHandling(),
             cookieBannerHandlingModePrivateBrowsing = context.settings().getCookieBannerHandlingPrivateMode(),
@@ -177,7 +183,54 @@ class Core(
             cookieBannerHandlingGlobalRulesSubFrames = context.settings().shouldEnableCookieBannerGlobalRulesSubFrame,
             emailTrackerBlockingPrivateBrowsing = true,
             userCharacteristicPingCurrentVersion = FxNimbus.features.userCharacteristics.value().currentVersion,
+            getDesktopMode = {
+                store.state.desktopMode
+            },
+            webContentIsolationStrategy =
+                WebContentIsolationStrategy.fromValue(FxNimbus.features.fission.value().isolationStrategy),
+            fetchPriorityEnabled = true,
+            parallelMarkingEnabled = FxNimbus.features.javascript.value().parallelMarkingEnabled,
+            certificateTransparencyMode = FxNimbus.features.pki.value().certificateTransparencyMode,
+            postQuantumKeyExchangeEnabled = FxNimbus.features.pqcrypto.value().postQuantumKeyExchangeEnabled,
+            dohAutoselectEnabled = FxNimbus.features.doh.value().autoselectEnabled,
+            bannedPorts = FxNimbus.features.networkingBannedPorts.value().bannedPortList,
+            lnaBlockingEnabled = context.settings().isLnaBlockingEnabled,
+            lnaFeatureEnabled = context.settings().isLnaFeatureEnabled,
+            lnaTrackerBlockingEnabled = context.settings().isLnaTrackerBlockingEnabled,
+            crliteChannel = FxNimbus.features.pki.value().crliteChannel,
         )
+
+        // Apply fingerprinting protection overrides if the feature is enabled in Nimbus
+        if (FxNimbus.features.fingerprintingProtection.value().enabled) {
+            defaultSettings.fingerprintingProtectionOverrides =
+                FxNimbus.features.fingerprintingProtection.value().overrides
+            defaultSettings.fingerprintingProtection =
+                FxNimbus.features.fingerprintingProtection.value().enabledNormal
+            defaultSettings.fingerprintingProtectionPrivateBrowsing =
+                FxNimbus.features.fingerprintingProtection.value().enabledPrivate
+        }
+
+        if (FxNimbus.features.baselineFpp.value().featEnabled) {
+            defaultSettings.baselineFingerprintingProtection =
+                FxNimbus.features.baselineFpp.value().enabled
+            defaultSettings.baselineFingerprintingProtectionOverrides =
+                FxNimbus.features.baselineFpp.value().overrides
+        }
+
+        // Apply third-party cookie blocking settings if the Nimbus feature is
+        // enabled.
+        if (FxNimbus.features.thirdPartyCookieBlocking.value().enabled) {
+            defaultSettings.cookieBehaviorOptInPartitioning =
+                FxNimbus.features.thirdPartyCookieBlocking.value().enabledNormal
+            defaultSettings.cookieBehaviorOptInPartitioningPBM =
+                FxNimbus.features.thirdPartyCookieBlocking.value().enabledPrivate
+        }
+
+        // Apply Safe Browsing V5 settings if the Nimbus feature is enabled.
+        if (FxNimbus.features.safeBrowsingV5.value().featureEnabled) {
+            defaultSettings.safeBrowsingV5Enabled =
+                FxNimbus.features.safeBrowsingV5.value().enableV5
+        }
 
         GeckoEngine(
             context,
@@ -185,16 +238,6 @@ class Core(
             geckoRuntime,
         ).also {
             WebCompatFeature.install(it)
-
-            /**
-             * There are some issues around localization to be resolved, as well as questions around
-             * the capacity of the WebCompat team, so the "Report site issue" feature should stay
-             * disabled in Fenix Release builds for now.
-             * This is consistent with both Fennec and Firefox Desktop.
-             */
-            if (Config.channel.isNightlyOrDebug || Config.channel.isBeta) {
-                WebCompatReporterFeature.install(it, "fenix")
-            }
         }
     }
 
@@ -257,29 +300,6 @@ class Core(
         }
     }
 
-    val applicationSearchEngines: List<SearchEngine> by lazyMonitored {
-        listOf(
-            createApplicationSearchEngine(
-                id = BOOKMARKS_SEARCH_ENGINE_ID,
-                name = context.getString(R.string.library_bookmarks),
-                url = "",
-                icon = getDrawable(context, R.drawable.ic_bookmarks_search)?.toBitmap()!!,
-            ),
-            createApplicationSearchEngine(
-                id = TABS_SEARCH_ENGINE_ID,
-                name = context.getString(R.string.preferences_tabs),
-                url = "",
-                icon = getDrawable(context, R.drawable.ic_tabs_search)?.toBitmap()!!,
-            ),
-            createApplicationSearchEngine(
-                id = HISTORY_SEARCH_ENGINE_ID,
-                name = context.getString(R.string.library_history),
-                url = "",
-                icon = getDrawable(context, R.drawable.ic_history_search)?.toBitmap()!!,
-            ),
-        )
-    }
-
     /**
      * The [BrowserStore] holds the global [BrowserState].
      */
@@ -294,11 +314,20 @@ class Core(
                 channelId.values.first(),
             )
         }
+
         val middlewareList =
-            mutableListOf(
+            listOf(
+                ProfileMarkerMiddleware(markerName = "BrowserStore", profiler = engine.profiler),
+                LogMiddleware(tag = "BrowserStore", shouldIncludeDetailedData = { Config.channel.isDebug }),
                 LastAccessMiddleware(),
                 RecentlyClosedMiddleware(recentlyClosedTabsStorage, RECENTLY_CLOSED_MAX),
-                DownloadMiddleware(context, DownloadService::class.java),
+                DownloadMiddleware(
+                    applicationContext = context,
+                    downloadServiceClass = DownloadService::class.java,
+                    deleteFileFromStorage = {
+                       context.settings().shouldCleanUpDownloadsAutomatically()
+                    },
+                ),
                 ReaderViewMiddleware(),
                 TelemetryMiddleware(context, context.settings(), metrics, crashReporter),
                 ThumbnailsMiddleware(thumbnailStorage),
@@ -309,6 +338,7 @@ class Core(
                     additionalBundledSearchEngineIds = listOf("reddit", "youtube"),
                     migration = SearchMigration(context),
                     searchExtraParams = searchExtraParams,
+                    searchEngineSelectorConfig = getSearchEngineSelectorConfig(),
                 ),
                 RecordingDevicesMiddleware(context, context.components.notificationsDelegate),
                 PromptMiddleware(),
@@ -319,14 +349,27 @@ class Core(
                 SaveToPDFMiddleware(context),
                 FxSuggestFactsMiddleware(),
                 FileUploadsDirCleanerMiddleware(fileUploadsDirCleaner),
+                DesktopModeMiddleware(
+                    repository = DefaultDesktopModeRepository(
+                        context = context,
+                    ),
+                ),
+                ApplicationSearchMiddleware(context),
+                // We are disabling automatically initializing translations so that we can control when
+                // we start this process. For details, see:
+                // https://bugzilla.mozilla.org/show_bug.cgi?id=1958042
+                TranslationsMiddleware(engine, MainScope(), false),
+                StartupMiddleware(
+                    applicationContext = context,
+                    repository = DefaultHomepageAsANewTabPreferenceRepository(context.settings()),
+                ),
+                AboutHomeMiddleware(
+                    homepageTitle = context.getString(R.string.tab_tray_homepage_tab),
+                ),
+                BrowserVisualCompletenessMiddleware(visualCompletenessQueue),
             )
 
         BrowserStore(
-            initialState = BrowserState(
-                search = SearchState(
-                    applicationSearchEngines = applicationSearchEngines,
-                ),
-            ),
             middleware = middlewareList + EngineMiddleware.create(
                 engine,
                 // We are disabling automatic suspending of engine sessions under memory pressure.
@@ -382,6 +425,21 @@ class Core(
     val customTabsStore by lazyMonitored { CustomTabsServiceStore() }
 
     /**
+     * [FileSizeFormatter] used to format the size of the file items.
+     */
+    val fileSizeFormatter: FileSizeFormatter by lazyMonitored { DefaultFileSizeFormatter(context.applicationContext) }
+
+    /**
+     * [DateTimeProvider] used to provide date and time information.
+     */
+    val dateTimeProvider: DateTimeProvider by lazyMonitored { DefaultDateTimeProvider() }
+
+    /**
+     * [DateTimeProvider] used to provide date and time information.
+     */
+    val downloadEstimator: DownloadEstimator by lazyMonitored { DownloadEstimator(dateTimeProvider = dateTimeProvider) }
+
+    /**
      * The [RelationChecker] checks Digital Asset Links relationships for Trusted Web Activities.
      */
     val relationChecker: RelationChecker by lazyMonitored {
@@ -425,6 +483,21 @@ class Core(
         )
     }
 
+    /**
+     * A component for managing `sent from firefox` feature.
+     */
+    val sentFromFirefoxManager by lazyMonitored {
+        with(FxNimbus.features.sentFromFirefox.value()) {
+            DefaultSentFromFirefoxManager(
+                snackbarEnabled = showSnackbar,
+                templateMessage = templateMessage,
+                appName = context.getString(R.string.firefox),
+                downloadLink = downloadLink,
+                storage = DefaultSentFromStorage(context.settings()),
+            )
+        }
+    }
+
     // Lazy wrappers around storage components are used to pass references to these components without
     // initializing them until they're accessed.
     // Use these for startup-path code, where we don't want to do any work that's not strictly necessary.
@@ -449,7 +522,7 @@ class Core(
     /**
      * The storage component to sync and persist tabs in a Firefox Sync account.
      */
-    val lazyRemoteTabsStorage = lazyMonitored { RemoteTabsStorage(context) }
+    val lazyRemoteTabsStorage = lazyMonitored { RemoteTabsStorage(context, crashReporter) }
 
     val recentlyClosedTabsStorage =
         lazyMonitored { RecentlyClosedTabsStorage(context, engine, crashReporter) }
@@ -499,15 +572,42 @@ class Core(
             } else {
                 PocketStoriesRequestConfig()
             },
+            contentRecommendationsParams = ContentRecommendationsRequestConfig(
+                locale = LocaleManager.getSelectedLocale(context).toLanguageTag(),
+            ),
+            marsSponsoredContentsParams = MarsSpocsRequestConfig(
+                contextId = context.settings().contileContextId,
+                userAgent = engine.settings.userAgentString,
+                placements = listOf(
+                    MarsSpocsPlacement(
+                        placement = NEW_TAB_SPOCS_PLACEMENT_KEY,
+                        count = 10,
+                    ),
+                ),
+            ),
         )
     }
     val pocketStoriesService by lazyMonitored { PocketStoriesService(context, pocketStoriesConfig) }
 
-    val contileTopSitesProvider by lazyMonitored {
-        ContileTopSitesProvider(
+    val marsTopSitesProvider by lazyMonitored {
+        MarsTopSitesProvider(
             context = context,
             client = client,
-            maxCacheAgeInSeconds = CONTILE_MAX_CACHE_AGE,
+            requestConfig = MarsTopSitesRequestConfig(
+                contextId = context.settings().contileContextId,
+                userAgent = engine.settings.userAgentString,
+                placements = listOf(
+                    Placement(
+                        placement = NEW_TAB_TILE_1_PLACEMENT_KEY,
+                        count = 1,
+                    ),
+                    Placement(
+                        placement = NEW_TAB_TILE_2_PLACEMENT_KEY,
+                        count = 1,
+                    ),
+                ),
+            ),
+            maxCacheAgeInSeconds = MARS_TOP_SITES_MAX_CACHE_AGE,
         )
     }
 
@@ -515,85 +615,16 @@ class Core(
     val contileTopSitesUpdater by lazyMonitored {
         ContileTopSitesUpdater(
             context = context,
-            provider = contileTopSitesProvider,
+            provider = marsTopSitesProvider,
             frequency = Frequency(3, TimeUnit.HOURS),
         )
     }
 
     val topSitesStorage by lazyMonitored {
-        val defaultTopSites = mutableListOf<Pair<String, String>>()
-
-        strictMode.resetAfter(StrictMode.allowThreadDiskReads()) {
-            if (!context.settings().defaultTopSitesAdded) {
-                if (Config.channel.isMozillaOnline) {
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_baidu),
-                            SupportUtils.BAIDU_URL,
-                        ),
-                    )
-
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_jd),
-                            SupportUtils.JD_URL,
-                        ),
-                    )
-
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_pdd),
-                            SupportUtils.PDD_URL,
-                        ),
-                    )
-
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_tc),
-                            SupportUtils.TC_URL,
-                        ),
-                    )
-
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_meituan),
-                            SupportUtils.MEITUAN_URL,
-                        ),
-                    )
-                } else {
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_google),
-                            SupportUtils.GOOGLE_URL,
-                        ),
-                    )
-
-                    if (LocaleManager.getSelectedLocale(context).language == "en") {
-                        defaultTopSites.add(
-                            Pair(
-                                context.getString(R.string.pocket_pinned_top_articles),
-                                SupportUtils.POCKET_TRENDING_URL,
-                            ),
-                        )
-                    }
-
-                    defaultTopSites.add(
-                        Pair(
-                            context.getString(R.string.default_top_site_wikipedia),
-                            SupportUtils.WIKIPEDIA_URL,
-                        ),
-                    )
-                }
-
-                context.settings().defaultTopSitesAdded = true
-            }
-        }
-
         DefaultTopSitesStorage(
             pinnedSitesStorage = pinnedSiteStorage,
             historyStorage = historyStorage,
-            topSitesProvider = contileTopSitesProvider,
-            defaultTopSites = defaultTopSites,
+            topSitesProvider = marsTopSitesProvider,
         )
     }
 
@@ -636,14 +667,42 @@ class Core(
         }
     }
 
+    /**
+     * Gets a [SearchEngineSelectorConfig] for the app and device.
+     */
+    private fun getSearchEngineSelectorConfig(): SearchEngineSelectorConfig? {
+        if (!context.settings().useRemoteSearchConfiguration) {
+            return null
+        }
+
+        val updateChannel = when (Config.channel) {
+            ReleaseChannel.Debug -> SearchUpdateChannel.DEFAULT
+            ReleaseChannel.Nightly -> SearchUpdateChannel.NIGHTLY
+            ReleaseChannel.Beta -> SearchUpdateChannel.BETA
+            ReleaseChannel.Release -> SearchUpdateChannel.RELEASE
+        }
+
+        val deviceType = if (context.isLargeWindow()) {
+            SearchDeviceType.TABLET
+        } else {
+            SearchDeviceType.SMARTPHONE
+        }
+
+        return SearchEngineSelectorConfig(
+            appName = SearchApplicationName.FIREFOX_ANDROID,
+            appVersion = context.appVersionName,
+            deviceType = deviceType,
+            experiment = "",
+            updateChannel = updateChannel,
+            service = context.components.remoteSettingsService.value,
+        )
+    }
+
     companion object {
         private const val KEY_STORAGE_NAME = "core_prefs"
         private const val RECENTLY_CLOSED_MAX = 10
         const val HISTORY_METADATA_MAX_AGE_IN_MS = 14 * 24 * 60 * 60 * 1000 // 14 days
-        private const val CONTILE_MAX_CACHE_AGE = 3600L // 60 minutes
-        const val HISTORY_SEARCH_ENGINE_ID = "history_search_engine_id"
-        const val BOOKMARKS_SEARCH_ENGINE_ID = "bookmarks_search_engine_id"
-        const val TABS_SEARCH_ENGINE_ID = "tabs_search_engine_id"
+        private const val MARS_TOP_SITES_MAX_CACHE_AGE = 1800L // 30 minutes
 
         // Maximum number of suggestions returned from the history search engine source.
         const val METADATA_HISTORY_SUGGESTION_LIMIT = 100

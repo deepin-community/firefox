@@ -41,6 +41,14 @@ class SHistoryListener {
       return null;
     }
 
+    // In a private session, when the first loaded uri is one of the about pages, the
+    // browsingContext.currentURI is null which causes a crash (see Bug 1928295).
+    // TODO: Remove this if check when Bug 1915362 gets implemented where the partial
+    // state update will be fixing this issue. See Bug 1933630.
+    if (!browsingContext.currentURI?.spec) {
+      return null;
+    }
+
     const fromIndex = collectFull ? -1 : this._fromIndex;
     this._fromIndex = kNoIndex;
 
@@ -125,7 +133,7 @@ export var GeckoViewSessionStore = {
         }
         break;
       }
-      case "browsing-context-discarded":
+      case "browsing-context-discarded": {
         const permanentKey = aSubject?.embedderElement?.permanentKey;
         if (permanentKey) {
           this._browserSHistoryListener
@@ -133,6 +141,7 @@ export var GeckoViewSessionStore = {
             ?.unregister(permanentKey);
         }
         break;
+      }
     }
   },
 
@@ -216,7 +225,9 @@ export var GeckoViewSessionStore = {
             browsingContext
           )) ||
         listener.collect(permanentKey, browsingContext, {
-          collectFull: !!update.sHistoryNeeded,
+          // TODO: See Bug 1915362 where partial history collection will be implemented for better
+          // performance and uncomment the line below. See Bug 1933630.
+          // collectFull: !!update.sHistoryNeeded,
           writeToCache: false,
         });
 

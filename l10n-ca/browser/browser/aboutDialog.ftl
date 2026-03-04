@@ -51,6 +51,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = El { -brand-short-name } està dissenyat per <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, una <label data-l10n-name="community-creditsLink">comunitat global</label> que treballa conjuntament per mantenir el web obert, públic i accessible per a tothom.
 helpus = Voleu ajudar? <label data-l10n-name="helpus-donateLink">Feu una donació</label>, o bé <label data-l10n-name="helpus-getInvolvedLink">col·laboreu-hi!</label>
 bottomLinks-license = Informació de la llicència
+bottom-links-terms = Condicions d’ús
+bottom-links-privacy = Avís de privadesa
 bottomLinks-rights = Drets dels usuaris finals
 bottomLinks-privacy = Política de privadesa
 # Example of resulting string: 66.0.1 (64-bit)
@@ -64,3 +66,14 @@ aboutDialog-version = { $version } ({ $bits } bits)
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits } bits)
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch = { $version } ({ $arch })
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

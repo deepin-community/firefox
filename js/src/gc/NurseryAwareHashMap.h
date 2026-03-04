@@ -109,8 +109,7 @@ class NurseryAwareHashMap {
            nurseryEntries.sizeOfExcludingThis(mallocSizeOf);
   }
   size_t sizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const {
-    return map.shallowSizeOfIncludingThis(mallocSizeOf) +
-           nurseryEntries.sizeOfIncludingThis(mallocSizeOf);
+    return mallocSizeOf(this) + sizeOfExcludingThis(mallocSizeOf);
   }
 
   [[nodiscard]] bool put(const Key& key, const Value& value) {
@@ -225,7 +224,8 @@ class NurseryAwareHashMap {
 namespace JS {
 
 template <typename T>
-struct GCPolicy<js::detail::UnsafeBareWeakHeapPtr<T>> {
+struct GCPolicy<js::detail::UnsafeBareWeakHeapPtr<T>>
+    : public GCPolicyBase<js::detail::UnsafeBareWeakHeapPtr<T>> {
   static void trace(JSTracer* trc, js::detail::UnsafeBareWeakHeapPtr<T>* thingp,
                     const char* name) {
     js::TraceEdge(trc, thingp, name);

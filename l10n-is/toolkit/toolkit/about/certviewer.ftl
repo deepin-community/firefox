@@ -36,6 +36,7 @@ certificate-viewer-key-size = Stærð lykils
 certificate-viewer-inc-locality = Staður lögþings
 certificate-viewer-locality = Bær/Sveitarfélag
 certificate-viewer-location = Staðsetning
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Log-auðkenni
 certificate-viewer-method = Aðferð
 certificate-viewer-modulus = Stuðull
@@ -110,6 +111,8 @@ certificate-viewer-export = Flytja út
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (óþekkt)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = skilríki
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

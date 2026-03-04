@@ -88,9 +88,19 @@ elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "cocoa":
         "../components/printingui",
     ]
 elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "uikit":
+    EXPORTS.GeckoView += [
+        "IOSBootstrap.h",
+    ]
+    EXPORTS.mozilla += [
+        "UIKitDirProvider.h",
+    ]
     UNIFIED_SOURCES += [
+        "IOSBootstrap.mm",
         "nsNativeAppSupportDefault.cpp",
         "UIKitDirProvider.mm",
+    ]
+    LOCAL_INCLUDES += [
+        "!/build",
     ]
 elif CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
     UNIFIED_SOURCES += [
@@ -122,11 +132,6 @@ if CONFIG["MOZ_X11"]:
         "nsX11ErrorHandler.cpp",
     ]
 
-if CONFIG["MOZ_WIDGET_TOOLKIT"] == "android":
-    UNIFIED_SOURCES += [
-        "nsAndroidStartup.cpp",
-    ]
-
 if CONFIG["MOZ_WIDGET_TOOLKIT"] != "android":
     UNIFIED_SOURCES += [
         "MultiInstanceLock.cpp",
@@ -138,6 +143,7 @@ UNIFIED_SOURCES += [
     "Bootstrap.cpp",
     "CmdLineAndEnvUtils.cpp",
     "CreateAppData.cpp",
+    "GeckoArgs.cpp",
     "nsConsoleWriter.cpp",
     "nsNativeAppSupportBase.cpp",
     "nsSigHandlers.cpp",
@@ -158,6 +164,7 @@ if CONFIG["MOZ_UPDATER"]:
     if CONFIG["MOZ_WIDGET_TOOLKIT"] != "android":
         UNIFIED_SOURCES += [
             "nsUpdateDriver.cpp",
+            "nsUpdateMutex.cpp",
             "nsUpdateSyncManager.cpp",
         ]
 
@@ -201,8 +208,6 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "windows":
     DEFINES["UNICODE"] = True
     DEFINES["_UNICODE"] = True
 
-if CONFIG["MOZ_WIDGET_TOOLKIT"] == "android":
-    DEFINES["ANDROID_PACKAGE_NAME"] = '"%s"' % CONFIG["ANDROID_PACKAGE_NAME"]
 
 DEFINES["MOZ_DISTRIBUTION_ID"] = '"%s"' % CONFIG["MOZ_DISTRIBUTION_ID"]
 
@@ -241,6 +246,7 @@ LOCAL_INCLUDES += [
     "/dom/webbrowserpersist",
     "/js/xpconnect/loader",
     "/testing/gtest/mozilla",
+    "/third_party/sqlite3/ext/",
     "/toolkit/crashreporter",
     "/xpcom/build",
 ]
@@ -272,5 +278,4 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "gtk":
 DEFINES["TOPOBJDIR"] = TOPOBJDIR
 FINAL_TARGET_PP_FILES += ["platform.ini"]
 
-if CONFIG["ENABLE_TESTS"]:
-    DIRS += ["test/gtest"]
+TEST_DIRS += ["test/gtest"]

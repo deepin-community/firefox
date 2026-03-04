@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Descartar
     .secondarybuttonaccesskey = c
 appmenu-update-restart-message2 = Obtén la versión más reciente de { -brand-shorter-name }. Las pestañas y ventanas abiertas serán restauradas.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Deshacer
+    .secondarybuttonaccesskey = U
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } no puede actualizarse automáticamente a la última versión.
     .buttonlabel = Actualizar { -brand-shorter-name } de todas formas
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ahora no
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Hay una nueva actualización de { -brand-shorter-name } disponible, pero no se puede instalar porque se está ejecutando otra copia de { -brand-shorter-name }. Ciérrala para continuar con la actualización o elige actualizar de todas formas (es posible que la otra copia no funcione correctamente hasta que la reinicies).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Aceptar
     .buttonaccesskey = A
 appmenu-addon-post-install-message3 = Administra tus complementos y temas a través del menú de la aplicación.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Actualiza los permisos y las preferencias de datos en cualquier momento en los <a data-l10n-name="settings-link">ajustes de la extensión</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Fijar extensión en la barra de herramientas
+    .accesskey = P
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permitir que esta extensión funcione en ventanas privadas
     .accesskey = P
-    
 appmenu-new-tab-controlled-changes =
     .label = Tu página de nueva pestaña ha cambiado.
     .buttonlabel = Mantener los cambios

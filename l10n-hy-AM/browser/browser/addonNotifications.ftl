@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-xpinstall-prompt = { -brand-short-name } կասեցրել է ձեր համակարգչում ծրագրի տեղակայման հարցումը այս կայքից:
+xpinstall-prompt = { -brand-short-name }-ը կանխել է այս կայքին Ձեր համակարգչում ծրագրային ապահովման տեղադրումը հարցնելուց։
 
 ## Variables:
 ##   $host (String): The hostname of the site the add-on is being installed from.
@@ -37,7 +37,7 @@ xpinstall-prompt-install =
 
 ##
 
-xpinstall-disabled-locked = Ծրագրերի տեղակայումը պասիվացվել է ձեր համակարգի վարիչի կողմից։
+xpinstall-disabled-locked = Ծրագրերի տեղադրումը անջատված է ձեր համակարգի վարիչի կողմից։
 xpinstall-disabled-by-policy = Ծրագրային ապահովման տեղադրումն անջատված է Ձեր կազմակերպության կողմից:
 xpinstall-disabled = Ծրագրերի տեղադրումը ժամանակավորապես պասիվացված է: Սեղմեք Ակտիվացնել և կրկին փորձեք:
 xpinstall-disabled-button =
@@ -112,17 +112,21 @@ addon-confirm-install-some-unsigned-message = Ուշադրություն. Այս
 ##   $addonName (String): the add-on name.
 
 addon-install-error-network-failure = Հավելումը չի կարող ներբեռնվել, քանի որ տեղի է ունեցել կապի խափանում:
-addon-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համապատասխանում ակնկալվող { -brand-short-name } հավելմանը:
+addon-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համընկնում ակնկալվող { -brand-short-name } հավելմանը:
 addon-install-error-corrupt-file = Այս կայքից ներբեռնած հավելումը չի տեղադրվել, քանի որ այն վնասված է:
-addon-install-error-file-access = { $addonName }-ը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ նիշքը։
+addon-install-error-file-access = { $addonName }-ը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը։
 addon-install-error-not-signed = { -brand-short-name }-ը կանխել է այս կայքից չստուգված հավելումների տեղադրումը:
 addon-install-error-invalid-domain = { $addonName }-ը հավելումը այս վայրից չի կարող տեղադրվել։
+addon-install-error-no-addon-name-file-access = Հավելումը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը։
 addon-local-install-error-network-failure = Հետևյալ հավելումը չի տեղադրվել ֆայլերի համակարգի սխալի պատճառով:
-addon-local-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համապատասխանում ակնկալվող { -brand-short-name } հավելմանը:
+addon-local-install-error-incorrect-hash = Այս հավելումը չի կարող տեղադրվել, քանի որ այն չի համընկնում ակնկալվող { -brand-short-name } հավելմանը:
 addon-local-install-error-corrupt-file = Այս հավելումը չի կարող տեղադրվել, քանի որ այն վնասված է:
 addon-local-install-error-file-access = { $addonName }-ը չի կարող տեղակայվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը:
 addon-local-install-error-not-signed = Այս հավելումը չի կարող տեղադրվել, քանի որ այն ստուգված չէ:
+addon-local-install-no-addon-name-error-file-access = Հավելումը չի կարող տեղադրվել, քանի որ { -brand-short-name }-ը չի կարող ձևափոխել անհրաժեշտ ֆայլը։
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName }-ը չի կարող տեղադրվել, քանի որ համատեղելի չէ { -brand-short-name } { $appVersion }-ի հետ:
+addon-install-error-hard-blocked = { $addonName }-ը խախտում է Mozilla-ի քաղաքականությունը և չի կարող տեղադրվել { -brand-short-name }-ում։
 addon-install-error-blocklisted = { $addonName }-ը չի կարող տեղադրվել, քանի որ այն պարունակում է անվտանգության խնդիրներ:
+addon-install-error-soft-blocked = { $addonName }-ը խախտում է Mozilla-ի քաղաքականությունը և չի կարող տեղադրվել { -brand-short-name }-ում։

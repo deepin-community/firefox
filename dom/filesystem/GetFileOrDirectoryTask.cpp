@@ -10,9 +10,9 @@
 #include "mozilla/dom/FileBlobImpl.h"
 #include "mozilla/dom/FileSystemBase.h"
 #include "mozilla/dom/FileSystemUtils.h"
+#include "mozilla/dom/IPCBlobUtils.h"
 #include "mozilla/dom/PFileSystemParams.h"
 #include "mozilla/dom/Promise.h"
-#include "mozilla/dom/IPCBlobUtils.h"
 #include "mozilla/ipc/BackgroundParent.h"
 #include "nsIFile.h"
 #include "nsString.h"
@@ -103,7 +103,7 @@ void GetFileOrDirectoryTaskChild::SetSuccessRequestResult(
       FileSystemDirectoryResponse r = aValue;
 
       nsCOMPtr<nsIFile> file;
-      aRv = NS_NewLocalFile(r.realPath(), true, getter_AddRefs(file));
+      aRv = NS_NewLocalFile(r.realPath(), getter_AddRefs(file));
       if (NS_WARN_IF(aRv.Failed())) {
         return;
       }
@@ -163,8 +163,7 @@ GetFileOrDirectoryTaskParent::Create(
   RefPtr<GetFileOrDirectoryTaskParent> task =
       new GetFileOrDirectoryTaskParent(aFileSystem, aParam, aParent);
 
-  aRv = NS_NewLocalFile(aParam.realPath(), true,
-                        getter_AddRefs(task->mTargetPath));
+  aRv = NS_NewLocalFile(aParam.realPath(), getter_AddRefs(task->mTargetPath));
   if (NS_WARN_IF(aRv.Failed())) {
     return nullptr;
   }

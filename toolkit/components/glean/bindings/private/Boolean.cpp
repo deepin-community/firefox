@@ -7,10 +7,12 @@
 #include "mozilla/glean/bindings/Boolean.h"
 
 #include "nsString.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/glean/bindings/ScalarGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -19,12 +21,12 @@ namespace impl {
 void BooleanMetric::Set(bool aValue) const {
   auto scalarId = ScalarIdForMetric(mId);
   if (scalarId) {
-    Telemetry::ScalarSet(scalarId.extract(), aValue);
+    TelemetryScalar::Set(scalarId.extract(), aValue);
   } else if (IsSubmetricId(mId)) {
     GetLabeledMirrorLock().apply([&](const auto& lock) {
       auto tuple = lock.ref()->MaybeGet(mId);
       if (tuple) {
-        Telemetry::ScalarSet(std::get<0>(tuple.ref()), std::get<1>(tuple.ref()),
+        TelemetryScalar::Set(std::get<0>(tuple.ref()), std::get<1>(tuple.ref()),
                              aValue);
       }
     });

@@ -13,7 +13,7 @@ function canRunHugeMemoryTests() {
     // blocklist of properties that can't be true is great.  But the latter is
     // probably better.
     let blocked = ['rooting-analysis','simulator',
-                   'android','wasi','asan','tsan','ubsan','dtrace','valgrind'];
+                   'android','wasi','asan','tsan','ubsan','valgrind'];
     for ( let b of blocked ) {
         if (getBuildConfiguration(b)) {
             print("Failing canRunHugeMemoryTests() because '" + b + "' is true");
@@ -74,7 +74,7 @@ function wasmValidateBinary(binary) {
 
 function wasmFailValidateBinary(binary, pattern) {
     assertEq(WebAssembly.validate(binary), false, "module passed WebAssembly.validate when it should not have");
-    assertErrorMessage(() => new WebAssembly.Module(binary), WebAssembly.CompileError, pattern, "module failed WebAssembly.validate but did not fail to compile as expected");
+    assertErrorMessage(() => new WebAssembly.Module(binary), WebAssembly.CompileError, pattern, "module failed WebAssembly.validate but did not fail to compile in the expected way");
 }
 
 function wasmValidateText(str) {
@@ -286,7 +286,8 @@ WasmHelpers._normalizeStack = (stack, preciseStacks) => {
         {re:/^(fast|slow) exit trampoline (?:to native )?\(in wasm\)$/,   sub:"<"},
         {re:/^call to(?: asm.js)? native (.*?)(?: builtin)? \(in wasm\)$/, sub:"$1"},
         {re:/^call to native (.*)$/,                                      sub:"#$1"},
-        {re:/ \(in wasm\)$/,                                              sub:""}
+        {re:/^tier-up request \(in wasm\)$/,                              sub: ""},
+        {re:/ \(in wasm\)$/,                                              sub:""},
     ];
 
     let entryRegexps;
@@ -437,21 +438,19 @@ let WasmFuncrefValues = [
 // Valid values for structref/arrayref
 let WasmStructrefValues = [];
 let WasmArrayrefValues = [];
-if (wasmGcEnabled()) {
-    let { newStruct, newArray } = wasmEvalText(`
-      (module
-        (type $s (sub (struct)))
-        (type $a (sub (array i32)))
-        (func (export "newStruct") (result anyref)
-            struct.new $s)
-        (func (export "newArray") (result anyref)
-            i32.const 0
-            i32.const 0
-            array.new $a)
-      )`).exports;
-    WasmStructrefValues.push(newStruct());
-    WasmArrayrefValues.push(newArray());
-}
+let { newStruct, newArray } = wasmEvalText(`
+    (module
+    (type $s (sub (struct)))
+    (type $a (sub (array i32)))
+    (func (export "newStruct") (result anyref)
+        struct.new $s)
+    (func (export "newArray") (result anyref)
+        i32.const 0
+        i32.const 0
+        array.new $a)
+    )`).exports;
+WasmStructrefValues.push(newStruct());
+WasmArrayrefValues.push(newArray());
 
 let WasmGcObjectValues = WasmStructrefValues.concat(WasmArrayrefValues);
 
@@ -489,7 +488,6 @@ let WasmNonAnyrefValues = [
     {x:1337},
     ["abracadabra"],
     13.37,
-    -0,
     0x7fffffff + 0.1,
     -0x7fffffff - 0.1,
     0x80000000 + 0.1,
@@ -517,6 +515,15 @@ let WasmNonNullExternrefValues = [
     ...WasmAnyrefValues
 ];
 let WasmExternrefValues = [null, ...WasmNonNullExternrefValues];
+
+// Max number of memories in a single wasm module.
+let MaxMemories = 100
+
+// Constants related to memory sizes.
+const MaxMemory64PagesValidation = BigInt(Math.pow(2, 37) - 1); // from spec
+const MaxTable64ElemsValidation = 0xFFFF_FFFF_FFFF_FFFFn; // from spec
+const MaxTableElemsRuntime = 10000000; // from WasmConstants.h
+const MaxUint32 = 0xFFFF_FFFF;
 
 // Common array utilities
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2020, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -110,7 +110,7 @@ void av1_filter_intra_predictor_neon(uint8_t *dst, ptrdiff_t stride,
       uint8x8_t s6 = vld1_dup_u8(&buffer[r + 1][c - 1]);
 
       do {
-        uint8x8_t s1234 = load_u8_4x1(&buffer[r - 1][c - 1] + 1);
+        uint8x8_t s1234 = load_unaligned_u8_4x1(&buffer[r - 1][c - 1] + 1);
         uint8x8_t s1 = vdup_lane_u8(s1234, 0);
         uint8x8_t s2 = vdup_lane_u8(s1234, 1);
         uint8x8_t s3 = vdup_lane_u8(s1234, 2);

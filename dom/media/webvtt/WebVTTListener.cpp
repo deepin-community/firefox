@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebVTTListener.h"
+
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/HTMLTrackElement.h"
@@ -114,7 +115,8 @@ WebVTTListener::OnStopRequest(nsIRequest* aRequest, nsresult aStatus) {
     mElement->SetReadyState(TextTrackReadyState::Loaded);
   }
 
-  mElement->CancelChannelAndListener();
+  // Prevent canceling the channel and listener if RFP is enabled.
+  mElement->CancelChannelAndListener(true);
 
   return aStatus;
 }

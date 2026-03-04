@@ -131,7 +131,7 @@ main-context-menu-open-link-new-tab =
     .label = Otvori poveznicu u novoj kartici
     .accesskey = t
 main-context-menu-open-link-container-tab =
-    .label = Otvori poveznicu u kontejnerskoj kartici
+    .label = Otvori poveznicu u novoj kontejnerskoj kartici
     .accesskey = k
 main-context-menu-open-link-new-window =
     .label = Otvori poveznicu u novom prozoru
@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Spremi poveznicu u { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopiraj adresu e-pošte
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopiraj poveznicu (L)
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopiraj poveznicu bez praćenja web stranice
-    .accesskey = u
+main-context-menu-preview-link =
+    .label = Pregled poveznice
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopiraj čistu poveznicu
+    .accesskey = K
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Prikaži opis
     .accesskey = o
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Traži sliku pomoću { $engine }
+    .accesskey = s
 main-context-menu-video-save-as =
     .label = Spremi video kao …
     .accesskey = v
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Pošalji zvuk e-poštom…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Pošalji na uređaj
+    .accesskey = n
 main-context-menu-save-to-pocket =
     .label = Spremi stranicu u { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Pošalji stranicu na uređaj
     .accesskey = u
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Koristi spremljenu prijavu
@@ -305,7 +313,7 @@ main-context-menu-use-saved-password =
 ##
 
 main-context-menu-use-relay-mask =
-    .label = Koristi { -relay-brand-short-name } e-mail masku
+    .label = Koristi { -relay-brand-short-name } masku za e-mail adresu
     .accesskey = e
 main-context-menu-suggest-strong-password =
     .label = Predloži snažnu lozinku …
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Dodaj ključnu riječ za ovu pretragu …
     .accesskey = k
+main-context-menu-add-engine =
+    .label = Dodaj tražilicu
+    .accesskey = t
 main-context-menu-link-send-to-device =
     .label = Pošalji poveznicu na uređaj
     .accesskey = u
@@ -356,8 +367,8 @@ main-context-menu-print-selection-2 =
     .label = Ispiši odabir …
     .accesskey = r
 main-context-menu-view-selection-source =
-    .label = Prikaži izvorni kod odabranog
-    .accesskey = e
+    .label = Prikaži izvorni kod odabira
+    .accesskey = o
 main-context-menu-take-screenshot =
     .label = Snimi ekran
     .accesskey = e
@@ -366,7 +377,7 @@ main-context-menu-take-frame-screenshot =
     .accesskey = e
 main-context-menu-view-page-source =
     .label = Prikaži izvorni kod stranice
-    .accesskey = v
+    .accesskey = s
 main-context-menu-bidi-switch-text =
     .label = Promijeni smjer teksta
     .accesskey = t
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Prikaži lozinku
     .accesskey = k
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Novo

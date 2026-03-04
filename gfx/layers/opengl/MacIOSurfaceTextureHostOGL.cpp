@@ -7,6 +7,7 @@
 #include "MacIOSurfaceTextureHostOGL.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/MacIOSurface.h"
+#include "mozilla/layers/GpuFence.h"
 #include "mozilla/webrender/RenderMacIOSurfaceTextureHost.h"
 #include "mozilla/webrender/RenderThread.h"
 #include "mozilla/webrender/WebRenderAPI.h"
@@ -16,11 +17,12 @@ namespace layers {
 
 MacIOSurfaceTextureHostOGL::MacIOSurfaceTextureHostOGL(
     TextureFlags aFlags, const SurfaceDescriptorMacIOSurface& aDescriptor)
-    : TextureHost(TextureHostType::MacIOSurface, aFlags) {
+    : TextureHost(TextureHostType::MacIOSurface, aFlags),
+      mSurface(MacIOSurface::LookupSurface(aDescriptor.surfaceId(),
+                                           !aDescriptor.isOpaque(),
+                                           aDescriptor.yUVColorSpace())),
+      mGpuFence(aDescriptor.gpuFence()) {
   MOZ_COUNT_CTOR(MacIOSurfaceTextureHostOGL);
-  mSurface = MacIOSurface::LookupSurface(aDescriptor.surfaceId(),
-                                         !aDescriptor.isOpaque(),
-                                         aDescriptor.yUVColorSpace());
   if (!mSurface) {
     gfxCriticalNote << "Failed to look up MacIOSurface";
   }
@@ -74,7 +76,7 @@ void MacIOSurfaceTextureHostOGL::CreateRenderTexture(
   MOZ_ASSERT(mExternalImageId.isSome());
 
   RefPtr<wr::RenderTextureHost> texture =
-      new wr::RenderMacIOSurfaceTextureHost(GetMacIOSurface());
+      new wr::RenderMacIOSurfaceTextureHost(GetMacIOSurface(), mGpuFence);
 
   bool isDRM = (bool)(mFlags & TextureFlags::DRM_SOURCE);
   texture->SetIsFromDRMSource(isDRM);
@@ -130,7 +132,8 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
                         ? gfx::SurfaceFormat::B8G8R8A8
                         : gfx::SurfaceFormat::B8G8R8X8;
       wr::ImageDescriptor descriptor(GetSize(), format);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::YUY2: {
@@ -141,7 +144,8 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
       MOZ_ASSERT(aImageKeys.length() == 1);
       MOZ_ASSERT(mSurface->GetPlaneCount() == 0);
       wr::ImageDescriptor descriptor(GetSize(), gfx::SurfaceFormat::B8G8R8X8);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::NV12: {
@@ -155,11 +159,14 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
           gfx::IntSize(mSurface->GetDevicePixelWidth(1),
                        mSurface->GetDevicePixelHeight(1)),
           gfx::SurfaceFormat::R8G8);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
-    case gfx::SurfaceFormat::P010: {
+    case gfx::SurfaceFormat::P010:
+    case gfx::SurfaceFormat::P016: {
       MOZ_ASSERT(aImageKeys.length() == 2);
       MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
       wr::ImageDescriptor descriptor0(
@@ -170,8 +177,10 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
           gfx::IntSize(mSurface->GetDevicePixelWidth(1),
                        mSurface->GetDevicePixelHeight(1)),
           gfx::SurfaceFormat::R16G16);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::NV16: {
@@ -185,8 +194,10 @@ void MacIOSurfaceTextureHostOGL::PushResourceUpdates(
           gfx::IntSize(mSurface->GetDevicePixelWidth(1),
                        mSurface->GetDevicePixelHeight(1)),
           gfx::SurfaceFormat::R16G16);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     default: {
@@ -237,7 +248,8 @@ void MacIOSurfaceTextureHostOGL::PushDisplayItems(
           /* aSupportsExternalCompositing */ true);
       break;
     }
-    case gfx::SurfaceFormat::P010: {
+    case gfx::SurfaceFormat::P010:
+    case gfx::SurfaceFormat::P016: {
       MOZ_ASSERT(aImageKeys.length() == 2);
       MOZ_ASSERT(mSurface->GetPlaneCount() == 2);
       aBuilder.PushP010Image(

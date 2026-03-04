@@ -7,10 +7,10 @@
 #ifndef mozilla_dom_DocumentOrShadowRoot_h__
 #define mozilla_dom_DocumentOrShadowRoot_h__
 
-#include "mozilla/dom/NameSpaceConstants.h"
 #include "mozilla/IdentifierMapEntry.h"
 #include "mozilla/RelativeTo.h"
 #include "mozilla/ReverseIterator.h"
+#include "mozilla/dom/NameSpaceConstants.h"
 #include "nsClassHashtable.h"
 #include "nsContentListDeclarations.h"
 #include "nsTArray.h"
@@ -78,6 +78,8 @@ class DocumentOrShadowRoot {
     return mAdoptedStyleSheets;
   }
 
+  size_t FindSheetInsertionPointInTree(const StyleSheet&) const;
+
   /**
    * Returns an index for the sheet in relative style order.
    * If there are non-applicable sheets, then this index may
@@ -85,7 +87,7 @@ class DocumentOrShadowRoot {
    *
    * Handles sheets from both mStyleSheets and mAdoptedStyleSheets
    */
-  int32_t StyleOrderIndexOfSheet(const StyleSheet& aSheet) const;
+  size_t StyleOrderIndexOfSheet(const StyleSheet& aSheet) const;
 
   StyleSheetList* StyleSheets();
 
@@ -100,10 +102,12 @@ class DocumentOrShadowRoot {
    *
    * This is useful for stuff like QuerySelector optimization and such.
    */
-  const nsTArray<Element*>* GetAllElementsForId(
+  Span<Element* const> GetAllElementsForId(
       const IdentifierMapEntry::DependentAtomOrString& aElementId) const {
-    IdentifierMapEntry* entry = mIdentifierMap.GetEntry(aElementId);
-    return entry ? &entry->GetIdElements() : nullptr;
+    if (IdentifierMapEntry* entry = mIdentifierMap.GetEntry(aElementId)) {
+      return entry->GetIdElements();
+    }
+    return {};
   }
 
   already_AddRefed<nsContentList> GetElementsByTagName(
@@ -140,8 +144,8 @@ class DocumentOrShadowRoot {
    */
   Element* ElementFromPointHelper(float aX, float aY,
                                   bool aIgnoreRootScrollFrame,
-                                  bool aFlushLayout,
-                                  ViewportType aViewportType);
+                                  bool aFlushLayout, ViewportType aViewportType,
+                                  bool aPerformRetargeting = true);
 
   void NodesFromRect(float aX, float aY, float aTopSize, float aRightSize,
                      float aBottomSize, float aLeftSize,
@@ -188,7 +192,7 @@ class DocumentOrShadowRoot {
    * @param aId the ID associated the element we want to lookup
    * @return the element associated with |aId|
    */
-  Element* LookupImageElement(const nsAString& aElementId);
+  Element* LookupImageElement(nsAtom* aId);
 
   /**
    * Check that aId is not empty and log a message to the console

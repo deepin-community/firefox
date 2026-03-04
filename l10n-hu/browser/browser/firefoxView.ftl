@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Bezárás
     .aria-label = Bezárás
-firefoxview-empty-state-icon =
-    .alt = Figyelem:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Épp most
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,23 +30,22 @@ firefoxview-tabpickup-progress-label = { $percentValue }% kész
 firefoxview-tabpickup-step-signin-header = Váltson zökkenőmentesen az eszközök között
 firefoxview-tabpickup-step-signin-description = Ha itt szeretné átvenni a telefonja lapjait, először jelentkezzen be, vagy hozzon létre egy fiókot.
 firefoxview-tabpickup-step-signin-primarybutton = Folytatás
-firefoxview-syncedtabs-signin-header = Vegye át a lapokat bárhonnan
-firefoxview-syncedtabs-signin-description = Hogy mindenhol lássa a lapjait, ahol a { -brand-product-name(case: "accusative") } használja. Ha nincs még fiókja, akkor végigvezetjük a regisztráció lépésein.
-firefoxview-syncedtabs-signin-primarybutton = Jelentkezzen be vagy regisztráljon
-firefoxview-tabpickup-adddevice-header = Szinkronizálja a telefonján vagy a táblagépén lévő { -brand-product-name(case: "accusative") }
-firefoxview-tabpickup-adddevice-description = Töltse le a mobilos { -brand-product-name(case: "accusative") }, és jelentkezzen be.
+firefoxview-syncedtabs-signin-header-2 = A { -brand-product-name } az összes eszközén
+firefoxview-syncedtabs-signin-description-2 = Ha szeretné megtekinteni a telefonján és más eszközein megnyitott lapokat, jelentkezzen be, vagy hozzon létre egy fiókot. Egy fiókkal a jelszavait, előzményeit és egyebeket is szinkronizálhatja.
+firefoxview-syncedtabs-signin-primarybutton-2 = Bejelentkezés
+firefoxview-tabpickup-adddevice-header = Szinkronizálja a telefonján vagy a táblagépén lévő { -brand-product-name }ot
+firefoxview-tabpickup-adddevice-description = Töltse le a mobilos { -brand-product-name }ot, és jelentkezzen be.
 firefoxview-tabpickup-adddevice-learn-how = Tudja meg hogyan
-firefoxview-tabpickup-adddevice-primarybutton = Szerezze be a mobilos { -brand-product-name(case: "accusative") }
-firefoxview-syncedtabs-adddevice-header = Jelentkezzen be a { -brand-product-name }ba a többi eszközén
-firefoxview-syncedtabs-adddevice-description = Hogy lássa a lapjait, bárhol is használja a { -brand-product-name(case: "accusative") }, jelentkezzen be az összes eszközén. Ismerje meg, hogyan <a data-l10n-name="url">további eszközöket csatlakoztatni</a>.
-firefoxview-syncedtabs-adddevice-primarybutton = Próbálja ki a mobilos { -brand-product-name(case: "accusative") }
+firefoxview-tabpickup-adddevice-primarybutton = Szerezze be a mobilos { -brand-product-name }ot
+firefoxview-syncedtabs-adddevice-header-2 = Vegye át a lapokat bárhonnan
+firefoxview-syncedtabs-adddevice-description-2 = Jelentkezzen be a { -brand-product-name }be a telefonján vagy egy másik számítógépén, hogy itt jelenjenek meg a lapok. Ismerje meg, hogyan <a data-l10n-name="url">csatlakoztasson további eszközöket</a>.
+firefoxview-syncedtabs-adddevice-primarybutton = Próbálja ki a mobilos { -brand-product-name }ot
 firefoxview-tabpickup-synctabs-header = Lapszinkronizálás bekapcsolása
 firefoxview-tabpickup-synctabs-description = Engedélyezés, hogy a { -brand-short-name } lapokat osszon meg az eszközök között
 firefoxview-tabpickup-synctabs-learn-how = Tudja meg hogyan
 firefoxview-tabpickup-synctabs-primarybutton = Nyitott lapok szinkronizálása
 firefoxview-syncedtabs-synctabs-header = Frissítse a szinkronizálási beállításait
 firefoxview-syncedtabs-synctabs-description = A más eszközökről származó lapok megtekintéséhez szinkronizálnia kell a nyitott lapjait.
-firefoxview-syncedtabs-synctabs-checkbox = A megnyitott lapok szinkronizálásának engedélyezése
 firefoxview-syncedtabs-loading-header = Szinkronizáció folyamatban
 firefoxview-syncedtabs-loading-description = Ha elkészül, akkor látni fogja a más eszközökön megnyitott lapokat. Nézzen vissza később.
 firefoxview-tabpickup-fxa-admin-disabled-header = A szervezete letiltotta a szinkronizálást
@@ -75,14 +72,13 @@ firefoxview-tabpickup-signed-out-primarybutton = Bejelentkezés
 firefoxview-tabpickup-syncing = Várjon amíg a lapjai szinkronizálódnak. Csak egy pillanat lesz.
 firefoxview-mobile-promo-header = Vegye át a lapjait a telefonjáról vagy táblagépéről
 firefoxview-mobile-promo-description = A legújabb mobillapok megtekintéséhez jelentkezzen be a { -brand-product-name }be iOS-en vagy Androidon.
-firefoxview-mobile-promo-primarybutton = Szerezze be a mobilos { -brand-product-name }t
+firefoxview-mobile-promo-primarybutton = Szerezze be a mobilos { -brand-product-name }ot
 firefoxview-mobile-confirmation-header = 🎉 Kész is van.
 firefoxview-mobile-confirmation-description = Most már átveheti a { -brand-product-name } lapjait a táblagépéről vagy telefonjáról.
 firefoxview-closed-tabs-title = Nemrég bezárt
 firefoxview-closed-tabs-description2 = Az ebben az ablakban bezárt oldalak újranyitása.
 firefoxview-closed-tabs-placeholder-header = Nincsenek nemrég bezárt lapok
 firefoxview-closed-tabs-placeholder-body = Ha bezár egy lapot ebben az ablakban, innen kérheti le.
-firefoxview-closed-tabs-placeholder-body2 = Ha bezár egy lapot, innen kérheti le.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -136,6 +132,14 @@ firefoxview-synced-tabs-nav = Lapok más eszközökről
     .title = Lapok más eszközökről
 firefoxview-synced-tabs-header = Lapok más eszközökről
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = Csevegések
+    .title = Csevegések
+firefoxview-chats-header = Csevegések
+firefoxview-chat-context-delete = Törlés a csevegésekből
+    .accesskey = T
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -148,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = { $winID }. ablak (jelenlegi)
-firefoxview-opentabs-focus-tab =
-    .title = Váltás erre a lapra
 firefoxview-show-more = Több megjelenítése
 firefoxview-show-less = Kevesebb megjelenítése
 firefoxview-show-all = Összes megjelenítése
@@ -165,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Nemrég bezárt lapok keresése
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Szinkronizált lapok keresése
+firefoxview-search-text-box-tabs =
+    .placeholder = Lapok keresése
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Nyitott lapok keresése
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = Csevegések keresése
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -189,10 +194,6 @@ firefoxview-sort-history-by-date-label = Rendezés dátum szerint
 firefoxview-sort-history-by-site-label = Rendezés webhely szerint
 firefoxview-sort-open-tabs-by-recency-label = Rendezés a legutóbbi tevékenység szerint
 firefoxview-sort-open-tabs-by-order-label = Rendezés lapsorrend szerint
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Váltás erre: { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -205,11 +206,14 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (helyi fájlok)
+firefoxview-chat-date-today = Ma – { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = Tegnap – { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = Összes előzmény megjelenítése
-firefoxview-view-more-browsing-history = További böngészési előzmények megtekintése
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +229,8 @@ firefoxview-choose-browser-button = Válasszon böngészőt
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Nincs megjeleníthető elem
-firefoxview-dont-remember-history-empty-description = Az adatvédelme áll tevékenységünk középpontjában. Ezért szabályozhatja, hogy mely tevékenységekre emlékezzen a { -brand-short-name }.
-firefoxview-dont-remember-history-empty-description-two = A jelenlegi beállítások alapján a { -brand-short-name } nem jegyzi meg a tevékenységét böngészés közben. Hogy ezt megváltoztassa, <a data-l10n-name="history-settings-url-two">módosítsa az előzménybeállításokat, hogy megjegyezze az előzményeit</a>.
+firefoxview-dont-remember-history-empty-header-2 = Ön irányítja, hogy a { -brand-short-name } mire emlékszik
+firefoxview-dont-remember-history-empty-description-one = Jelenleg a { -brand-short-name } nem jegyzi meg a böngészési tevékenységét. Hogy ezt módosítsa, <a data-l10n-name="history-settings-url-two">frissítse az előzménybeállításokat</a>.
 
 ##
 

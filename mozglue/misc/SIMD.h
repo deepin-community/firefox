@@ -8,6 +8,7 @@
 #define mozilla_SIMD_h
 
 #include "mozilla/Types.h"
+#include <cstdint>
 
 namespace mozilla {
 // A collection of SIMD-implemented algorithms. Some of these exist in the CRT.
@@ -53,6 +54,15 @@ class SIMD {
   // This function just restricts our execution to the AVX2 path
   static MFBT_API const char16_t* memchr16AVX2(const char16_t* ptr,
                                                char16_t value, size_t length);
+
+  // Search through `ptr[0..length]` for the first occurrence of `value` and
+  // return the pointer to it, or nullptr if it cannot be found.
+  static MFBT_API const uint32_t* memchr32(const uint32_t* ptr, uint32_t value,
+                                           size_t length);
+
+  // This function just restricts our execution to the AVX2 path
+  static MFBT_API const uint32_t* memchr32AVX2(const uint32_t* ptr,
+                                               uint32_t value, size_t length);
 
   // Search through `ptr[0..length]` for the first occurrence of `value` and
   // return the pointer to it, or nullptr if it cannot be found.

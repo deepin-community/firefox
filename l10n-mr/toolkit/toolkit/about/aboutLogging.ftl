@@ -8,10 +8,3 @@ about-logging-set-log-file = लॉग फाईल ठरवा
 about-logging-set-log-modules = लॉग मॉड्यूल्स ठरवा
 about-logging-start-logging = लॉगिंग सुरु करा
 about-logging-stop-logging = लॉगिंग बंद करा
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

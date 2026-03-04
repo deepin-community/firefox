@@ -8,11 +8,15 @@
 newtab-page-title = نواں ٹیب
 newtab-settings-button =
     .title = اپݨے نویں ٹیب دے صفحہ دی تخصیص کرو
+newtab-settings-dialog-label =
+    .aria-label = ترتیباں
 newtab-personalize-icon-label =
     .title = نویں ٹیب کوں ذاتی بݨاؤ
     .aria-label = نویں ٹیب کوں ذاتی بݨاؤ
 newtab-personalize-dialog-label =
     .aria-label = ‏‏تخصیص کرو
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -46,6 +50,9 @@ newtab-topsites-add-shortcut-header = نواں شارٹ کٹ
 newtab-topsites-edit-topsites-header = بہترین سائٹ دی تدوین کرو
 newtab-topsites-edit-shortcut-header = شارٹ کٹ وِچ ترمیم کرو
 newtab-topsites-add-shortcut-label = شارٹ کٹ شامل کرو
+newtab-topsites-add-shortcut-title =
+    .title = شارٹ کٹ شامل کرو
+    .aria-label = شارٹ کٹ شامل کرو
 newtab-topsites-title-label = عنوان
 newtab-topsites-title-input =
     .placeholder = ہک عنوان درج کرو
@@ -109,6 +116,7 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } تے ہتھیکڑا کرو
 newtab-menu-delete-pocket = { -pocket-brand-name } کنوں مٹاؤ
 newtab-menu-archive-pocket = { -pocket-brand-name } وِچ سوگھا کرو
 newtab-menu-show-privacy-info = ساݙے سپانسر تے تہاݙی رازداری
+newtab-menu-about-fakespot = { -fakespot-brand-name } بارے
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -232,7 +240,6 @@ newtab-pocket-learn-more = ٻیا سِکھو
 newtab-pocket-cta-button = { -pocket-brand-name } گھنو
 newtab-pocket-cta-text = اپݨیاں من بھاندیاں کہانیاں { -pocket-brand-name } اِچ ہتھیکڑیاں کرو، تے شاندار پڑھݨ نال اپݨے چیتے کوں تکڑا کرو۔
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } حصہ ہے { -brand-product-name } ٹٻر دا
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = محفوظ
 newtab-pocket-saved = محفوظ تھیا
 
@@ -244,7 +251,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = میݙے کیتے کائنی
-newtab-toast-thumbs-up-or-down = شکریہ،  تہاݙی فیڈبیک تہاݙی فیڈ کوں چنگا بݨاوݨ کیتے ساݙی مدد کریسی۔
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = شکریہ،  تہاݙی فیڈبیک تہاݙی فیڈ کوں چنگا بݨاوݨ کیتے ساݙی مدد کریسی۔
 newtab-toast-dismiss-button =
     .title = فارغ کرو
     .aria-label = فارغ کرو
@@ -284,9 +293,6 @@ newtab-custom-pocket-sponsored = سپانسر تھیاں کہاݨیاں
 newtab-custom-pocket-show-recent-saves = حالیہ ہتھیکڑیاں ظاہر کرو
 newtab-custom-recent-title = حالیہ سرگرمی
 newtab-custom-recent-subtitle = حالیہ سائٹاں تے مواد دی ہک چوݨ
-newtab-custom-recent-toggle =
-    .label = حالیہ سرگرمی
-    .description = حالیہ سائٹاں تے مواد دی ہک چوݨ
 newtab-custom-weather-toggle =
     .label = موسم
     .description = اڄ دی پیش گوئی تے ہک نظر
@@ -339,7 +345,7 @@ newtab-wallpaper-abstract-orange = مالٹا شکلاں
 newtab-wallpaper-gradient-orange = میلان نارنجی تے غلابی
 newtab-wallpaper-abstract-blue-purple = نیلے تے جامنی رنگ دیاں شکلاں
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = فوٹو
 newtab-wallpaper-beach-at-sunrise = ݙین٘ہ ابھرݨ ویلے ساحل
@@ -373,7 +379,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙سپانسر تھیا
 newtab-weather-menu-change-location = مقام وٹاؤ
-newtab-weather-change-location-search-input = مقام ڳولو
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = مقام ڳولو
+    .aria-label = مقام ڳولو
 newtab-weather-menu-weather-display = موسم دا ڈسپلے
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
@@ -391,6 +399,11 @@ newtab-weather-menu-hide-weather = نویں ٹیب تے موسم لکاؤ
 newtab-weather-menu-learn-more = ٻیا سِکھو
 # This message is shown if user is working offline
 newtab-weather-error-not-available = عیں ایں ویلے موسم ڈیٹا دستیاب کائنی۔
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = { $provider } وچ پیش گوئی ݙیکھو
+    .aria-description = { $provider } ∙سپانسر تھیا
 
 ## Topic Labels
 

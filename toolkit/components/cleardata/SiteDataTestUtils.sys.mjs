@@ -4,6 +4,7 @@
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { BrowserTestUtils } from "resource://testing-common/BrowserTestUtils.sys.mjs";
+import { ContentTaskUtils } from "resource://testing-common/ContentTaskUtils.sys.mjs";
 
 const lazy = {};
 
@@ -11,7 +12,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "swm",
   "@mozilla.org/serviceworkers/manager;1",
-  "nsIServiceWorkerManager"
+  Ci.nsIServiceWorkerManager
 );
 
 /**
@@ -25,7 +26,7 @@ export var SiteDataTestUtils = {
   /**
    * Makes an origin have persistent data storage.
    *
-   * @param {String} origin - the origin of the site to give persistent storage
+   * @param {string} origin - the origin of the site to give persistent storage
    *
    * @returns a Promise that resolves when storage was persisted
    */
@@ -41,8 +42,8 @@ export var SiteDataTestUtils = {
   /**
    * Adds a new blob entry to a dummy indexedDB database for the specified origin.
    *
-   * @param {String} origin - the origin of the site to add test data for
-   * @param {Number} size [optional] - the size of the entry in bytes
+   * @param {string} origin - the origin of the site to add test data for
+   * @param {number} size [optional] - the size of the entry in bytes
    *
    * @returns a Promise that resolves when the data was added successfully.
    */
@@ -62,7 +63,7 @@ export var SiteDataTestUtils = {
         tx.oncomplete = resolve;
         let buffer = new ArrayBuffer(size);
         let blob = new Blob([buffer]);
-        store.add(blob, Cu.now());
+        store.add(blob, ChromeUtils.now());
       };
     });
   },
@@ -70,15 +71,16 @@ export var SiteDataTestUtils = {
   /**
    * Adds a new cookie for the specified origin or host + path + oa, with the
    * specified contents. The cookie will be valid for one day.
+   *
    * @param {object} options
-   * @param {String} [options.origin] - Origin of the site to add test data for.
+   * @param {string} [options.origin] - Origin of the site to add test data for.
    * If set, overrides host, path and originAttributes args.
-   * @param {String} [options.host] - Host of the site to add test data for.
-   * @param {String} [options.path] - Path to set cookie for.
-   * @param {Object} [options.originAttributes] - Object of origin attributes to
+   * @param {string} [options.host] - Host of the site to add test data for.
+   * @param {string} [options.path] - Path to set cookie for.
+   * @param {object} [options.originAttributes] - Object of origin attributes to
    * set cookie for.
-   * @param {String} [options.name] - Cookie name
-   * @param {String} [options.value] - Cookie value
+   * @param {string} [options.name] - Cookie name
+   * @param {string} [options.value] - Cookie value
    */
   addToCookies({
     origin,
@@ -98,7 +100,7 @@ export var SiteDataTestUtils = {
         : principal.originAttributes;
     }
 
-    Services.cookies.add(
+    const cv = Services.cookies.add(
       host,
       path,
       name,
@@ -106,11 +108,14 @@ export var SiteDataTestUtils = {
       false,
       false,
       false,
-      Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+      Date.now() + 24 * 60 * 60 * 1000,
       originAttributes,
-      Ci.nsICookie.SAMESITE_NONE,
+      Ci.nsICookie.SAMESITE_UNSET,
       Ci.nsICookie.SCHEME_UNSET
     );
+    if (cv.result !== Ci.nsICookieValidation.eOK) {
+      throw new Error(`Invalid cookie: ${cv.result}`);
+    }
   },
 
   /**
@@ -120,9 +125,9 @@ export var SiteDataTestUtils = {
    * This method requires the pref dom.storage.client_validation=false in order
    * to access LS without a window.
    *
-   * @param {String} origin - the origin of the site to add test data for
-   * @param {String} [key] - the localStorage key
-   * @param {String} [value] - the localStorage value
+   * @param {string} origin - the origin of the site to add test data for
+   * @param {string} [key] - the localStorage key
+   * @param {string} [value] - the localStorage value
    */
   addToLocalStorage(origin, key = "foo", value = "bar") {
     let principal =
@@ -139,14 +144,14 @@ export var SiteDataTestUtils = {
   /**
    * Checks whether the given origin is storing data in localStorage
    *
-   * @param {String} origin - the origin of the site to check
-   * @param {{key: String, value: String}[]} [testEntries] - An array of entries
+   * @param {string} origin - the origin of the site to check
+   * @param {{key: string, value: string}[]} [testEntries] - An array of entries
    * to test for.
    *
    * This method requires the pref dom.storage.client_validation=false in order
    * to access LS without a window.
    *
-   * @returns {Boolean} whether the origin has localStorage data
+   * @returns {boolean} whether the origin has localStorage data
    */
   hasLocalStorage(origin, testEntries) {
     let principal =
@@ -170,38 +175,94 @@ export var SiteDataTestUtils = {
   },
 
   /**
-   * Adds a new serviceworker with the specified path. Note that this
-   * method will open a new tab at the domain of the SW path to that effect.
+   * Adds a new serviceworker with the specified path. Note that this method
+   * will open a new tab at the domain of the SW path to that effect.
    *
-   * @param {String} path - the path to the service worker to add.
+   * @param {object} options
+   * @param {Window} options.win - The window to open the tab in where the SW is
+   * registered.
+   * @param {string} options.path - the path to the service worker to add.
+   * @param {string} [options.topLevelPath] - If specified this path will be
+   * used for the top level and the service worker will be registered in a frame
+   * with 'path'. If omitted the service worker gets registered in the top level
+   * (tab).
+   * @param {number} [options.userContextId] - User context to register the
+   * service worker in. By default this targets the default user context (no
+   * container).
    *
-   * @returns a Promise that resolves when the service worker was registered
+   * @returns a Promise that resolves when the service worker has been
+   * registered
    */
-  addServiceWorker(path) {
-    let uri = Services.io.newURI(path);
-    // Register a dummy ServiceWorker.
-    return BrowserTestUtils.withNewTab(uri.prePath, async function (browser) {
-      return browser.ownerGlobal.SpecialPowers.spawn(
+  async addServiceWorker({
+    win,
+    path,
+    topLevelPath = null,
+    userContextId = undefined,
+  }) {
+    let uriTopLevel = Services.io.newURI(topLevelPath ?? path);
+
+    // Open a new tab to load the page with the service worker.
+    let tab = win.gBrowser.addTab(uriTopLevel.prePath, {
+      triggeringPrincipal: Services.scriptSecurityManager.getSystemPrincipal(),
+      userContextId,
+    });
+    win.gBrowser.selectedTab = tab;
+    let browser = tab.linkedBrowser;
+    await BrowserTestUtils.browserLoaded(
+      browser,
+      false,
+      uriTopLevel.prePath + "/"
+    );
+
+    let registrationBrowsingContext = browser.browsingContext;
+
+    let { SpecialPowers } = browser.ownerGlobal;
+
+    // If caller requested a partitioned service worker create an iframe to
+    // register the SW in.
+    if (topLevelPath) {
+      let uriIframe = topLevelPath ? Services.io.newURI(path) : null;
+      registrationBrowsingContext = await SpecialPowers.spawn(
         browser,
-        [{ path }],
-        async ({ path: p }) => {
+        [uriIframe.prePath],
+        async uriPrePath => {
           // eslint-disable-next-line no-undef
-          let r = await content.navigator.serviceWorker.register(p);
-          return new Promise(resolve => {
-            let worker = r.installing || r.waiting || r.active;
-            if (worker.state == "activated") {
-              resolve();
-            } else {
-              worker.addEventListener("statechange", () => {
-                if (worker.state == "activated") {
-                  resolve();
-                }
-              });
-            }
-          });
+          let iframe = content.document.createElement("iframe");
+          iframe.src = uriPrePath;
+          // eslint-disable-next-line no-undef
+          content.document.body.appendChild(iframe);
+          // Wait for it to load.
+          await ContentTaskUtils.waitForEvent(iframe, "load");
+
+          return iframe.browsingContext;
         }
       );
-    });
+    }
+
+    // SW registration call.
+    await SpecialPowers.spawn(
+      registrationBrowsingContext,
+      [{ path }],
+      async ({ path: p }) => {
+        // eslint-disable-next-line no-undef
+        let r = await content.navigator.serviceWorker.register(p);
+        return new Promise(resolve => {
+          let worker = r.installing || r.waiting || r.active;
+          if (worker.state == "activated") {
+            resolve();
+          } else {
+            worker.addEventListener("statechange", () => {
+              if (worker.state == "activated") {
+                resolve();
+              }
+            });
+          }
+        });
+      }
+    );
+
+    // Clean up the temporary tab.
+    BrowserTestUtils.removeTab(tab);
   },
 
   hasCookies(origin, testEntries = null, testPBMCookies = false) {
@@ -305,9 +366,10 @@ export var SiteDataTestUtils = {
   /**
    * Checks whether the specified origin has registered ServiceWorkers.
    *
-   * @param {String} origin - the origin of the site to check
+   * @param {string} origin - the origin of the site to check, excluding the
+   * OriginAttributes suffix.
    *
-   * @returns {Boolean} whether or not the site has ServiceWorkers.
+   * @returns {boolean} whether or not the site has ServiceWorkers.
    */
   hasServiceWorkers(origin) {
     let serviceWorkers = lazy.swm.getAllRegistrations();
@@ -316,7 +378,7 @@ export var SiteDataTestUtils = {
         i,
         Ci.nsIServiceWorkerRegistrationInfo
       );
-      if (sw.principal.origin == origin) {
+      if (sw.principal.originNoSuffix == origin) {
         return true;
       }
     }
@@ -326,7 +388,7 @@ export var SiteDataTestUtils = {
   /**
    * Waits for a ServiceWorker to be registered.
    *
-   * @param {String} the url of the ServiceWorker to wait for
+   * @param {string} the url of the ServiceWorker to wait for
    *
    * @returns a Promise that resolves when a ServiceWorker at the
    *          specified location has been registered.
@@ -353,7 +415,7 @@ export var SiteDataTestUtils = {
   /**
    * Waits for a ServiceWorker to be unregistered.
    *
-   * @param {String} the url of the ServiceWorker to wait for
+   * @param {string} the url of the ServiceWorker to wait for
    *
    * @returns a Promise that resolves when a ServiceWorker at the
    *          specified location has been unregistered.
@@ -403,7 +465,6 @@ export var SiteDataTestUtils = {
           Ci.nsIClearDataService.CLEAR_ALL_CACHES |
           Ci.nsIClearDataService.CLEAR_MEDIA_DEVICES |
           Ci.nsIClearDataService.CLEAR_DOM_STORAGES |
-          Ci.nsIClearDataService.CLEAR_PREDICTOR_NETWORK_DATA |
           Ci.nsIClearDataService.CLEAR_CLIENT_AUTH_REMEMBER_SERVICE |
           Ci.nsIClearDataService.CLEAR_EME |
           Ci.nsIClearDataService.CLEAR_STORAGE_ACCESS |

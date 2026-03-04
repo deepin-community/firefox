@@ -207,6 +207,16 @@ namespace IOUtils {
   [NewObject]
   Promise<long long> setModificationTime(DOMString path, optional long long modification);
   /**
+   * Checks whether the directory at |path| has any immediate children.
+   *
+   * @param path An absolute file path.
+   *
+   * @return Resolves with a boolean indicating whether the directory at |path|
+   *         has any immediate children, otherwise rejects with a DOMException.
+   */
+  [NewObject]
+  Promise<boolean> hasChildren(DOMString path, optional HasChildrenOptions options = {});
+  /**
    * Retrieves a (possibly empty) list of immediate children of the directory at
    * |path|.
    *
@@ -302,11 +312,15 @@ namespace IOUtils {
    * @param attrs The attributes to set. Attributes will only be set if they are
    *              |true| or |false| (i.e., |undefined| attributes are not
    *              changed).
+   * @param recursive  Whether or not to apply the changes to folder contents
+   *                   recursively.
    *
    * @return A promise that resolves is the attributes were set successfully.
    */
   [NewObject]
-  Promise<undefined> setWindowsAttributes(DOMString path, optional WindowsFileAttributes attrs = {});
+  Promise<undefined> setWindowsAttributes(DOMString path,
+      optional WindowsFileAttributes attrs = {},
+      optional boolean recursive = false);
 #elif defined(XP_MACOSX)
   /**
    * Return whether or not the file has a specific extended attribute.
@@ -623,6 +637,16 @@ dictionary CopyOptions {
    * If true, copy the source recursively.
    */
   boolean recursive = false;
+};
+
+/**
+ * Options to be passed to the |IOUtils.hasChildren| method.
+ */
+dictionary HasChildrenOptions {
+  /**
+   * If true, no error will be reported if the target file is missing.
+   */
+  boolean ignoreAbsent = false;
 };
 
 /**

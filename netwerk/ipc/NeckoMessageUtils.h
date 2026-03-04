@@ -6,19 +6,20 @@
 #ifndef mozilla_net_NeckoMessageUtils_h
 #define mozilla_net_NeckoMessageUtils_h
 
-#include "mozilla/DebugOnly.h"
-
 #include "ipc/EnumSerializer.h"
 #include "ipc/IPCMessageUtils.h"
 #include "ipc/IPCMessageUtilsSpecializations.h"
+#include "mozilla/net/ClassOfService.h"
 #include "mozilla/net/DNS.h"
 #include "nsExceptionHandler.h"
+#include "nsICacheInfoChannel.h"
 #include "nsIDNSService.h"
 #include "nsIHttpChannel.h"
 #include "nsITRRSkipReason.h"
 #include "nsPrintfCString.h"
 #include "nsString.h"
 #include "prio.h"
+#include "mozilla/net/HttpTransactionShell.h"
 
 namespace IPC {
 
@@ -152,6 +153,64 @@ struct ParamTraits<nsIDNSService::ResolverMode>
           nsIDNSService::ResolverMode,
           nsIDNSService::ResolverMode::MODE_NATIVEONLY,
           nsIDNSService::ResolverMode::MODE_TRROFF> {};
+
+template <>
+struct ParamTraits<nsIClassOfService::FetchPriority>
+    : public ContiguousEnumSerializerInclusive<
+          nsIClassOfService::FetchPriority,
+          nsIClassOfService::FETCHPRIORITY_UNSET,
+          nsIClassOfService::FETCHPRIORITY_HIGH> {};
+
+template <>
+struct ParamTraits<mozilla::net::ClassOfService> {
+  typedef mozilla::net::ClassOfService paramType;
+
+  static void Write(MessageWriter* aWriter, const paramType& aParam) {
+    WriteParam(aWriter, aParam.mClassFlags);
+    WriteParam(aWriter, aParam.mIncremental);
+    WriteParam(aWriter, aParam.mFetchPriority);
+  }
+
+  static bool Read(MessageReader* aReader, paramType* aResult) {
+    if (!ReadParam(aReader, &aResult->mClassFlags) ||
+        !ReadParam(aReader, &aResult->mIncremental) ||
+        !ReadParam(aReader, &aResult->mFetchPriority))
+      return false;
+
+    return true;
+  }
+};
+
+template <>
+struct ParamTraits<struct mozilla::net::LNAPerms> {
+  typedef struct mozilla::net::LNAPerms paramType;
+
+  static void Write(MessageWriter* aWriter, const paramType& aParam) {
+    WriteParam(aWriter, aParam.mLocalHostPermission);
+    WriteParam(aWriter, aParam.mLocalNetworkPermission);
+  }
+
+  static bool Read(MessageReader* aReader, paramType* aResult) {
+    if (!ReadParam(aReader, &aResult->mLocalHostPermission) ||
+        !ReadParam(aReader, &aResult->mLocalNetworkPermission))
+      return false;
+
+    return true;
+  }
+};
+
+template <>
+struct ParamTraits<mozilla::net::LNAPermission>
+    : public ContiguousEnumSerializerInclusive<
+          mozilla::net::LNAPermission, mozilla::net::LNAPermission::Granted,
+          mozilla::net::LNAPermission::Pending> {};
+
+template <>
+struct ParamTraits<nsICacheInfoChannel::CacheDisposition>
+    : public ContiguousEnumSerializer<
+          nsICacheInfoChannel::CacheDisposition,
+          nsICacheInfoChannel::kCacheUnresolved,
+          nsICacheInfoChannel::kCacheDispositionEnd> {};
 
 }  // namespace IPC
 

@@ -8,7 +8,6 @@ import androidx.navigation.NavController
 import io.mockk.mockk
 import io.mockk.verifyAll
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -17,16 +16,17 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.Logins
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.logins.controller.LoginsListController
 import org.mozilla.fenix.settings.logins.fragment.SavedLoginsFragmentDirections
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class LoginsListControllerTest {
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     private val store: LoginsFragmentStore = mockk(relaxed = true)
     private val settings: Settings = mockk(relaxed = true)

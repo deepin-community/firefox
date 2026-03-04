@@ -5,18 +5,17 @@
 
 ### These strings are used inside the Application panel which is available
 ### by setting the preference `devtools-application-enabled` to true.
-
-
+###
 ### The correct localization of this file might be to keep it in English, or another
 ### language commonly spoken among web developers. You want to make that choice consistent
 ### across the developer tools. A good criteria is the language in which you'd find the
 ### best documentation on web development on the web.
 
 # Header for the list of Service Workers displayed in the application panel for the current page.
-serviceworker-list-header = Service Workers
+serviceworker-list-header = Service workeri
 # Text displayed next to the list of Service Workers to encourage users to check out
 # about:debugging to see all registered Service Workers.
-serviceworker-list-aboutdebugging = Otvori <a>about:debugging</a> za Service Workers s drugih domena
+serviceworker-list-aboutdebugging = Otvori <a>about:debugging</a> za service workere s drugih domena
 # Text for the button to unregister a Service Worker. Displayed for active Service Workers.
 serviceworker-worker-unregister = Odjavi
 # Text for the debug link displayed for an already started Service Worker. Clicking on the
@@ -48,10 +47,6 @@ serviceworker-worker-status-stopped = Zaustavljeno
 serviceworker-empty-intro2 = Nije pronađen nijedan service worker
 # Link will open https://developer.mozilla.org/docs/Web/API/Service_Worker_API/Using_Service_Workers
 serviceworker-empty-intro-link = Saznaj više
-# Text displayed when there are no Service Workers to display for the current page,
-# introducing hints to debug Service Worker issues.
-# <a> and <span> are links that will open the webconsole and the debugger, respectively.
-serviceworker-empty-suggestions2 = Ako bi trenutna stranica trebala imati service worker, možeš potražiti greške u <a>konzoli</a> ili prelistati svoju registraciju service workera u <span>programu za pronalaženje grešaka</span>.
 # Suggestion to go to about:debugging in order to see Service Workers for all domains.
 # Link will open about:debugging in a new tab.
 serviceworker-empty-suggestions-aboutdebugging2 = Pregledaj service workere s drugih domena
@@ -78,7 +73,7 @@ manifest-loaded-ok = Manifest učitan.
 manifest-loaded-error = Došlo je do greške prilikom učitavanja manifesta:
 # Text displayed as an error when there has been a Firefox DevTools error while
 # trying to load the manifest
-manifest-loaded-devtools-error = Greška Firefoxovih razvojnih alata
+manifest-loaded-devtools-error = Greška Firefox programerskih alata
 # Text displayed when the page has no manifest available
 manifest-non-existing = Nije pronađen nijedan manifest za provjeru.
 # Text displayed when the page has a manifest embedded in a Data URL and
@@ -108,9 +103,9 @@ sidebar-item-manifest = Manifest
     .alt = Ikona za manifest
     .title = Manifest
 # Sidebar navigation item for Service Workers sidebar item section
-sidebar-item-service-workers = Radni procesi usluge
-    .alt = Ikona za radne procese usluge
-    .title = Radni procesi usluge
+sidebar-item-service-workers = Service workeri
+    .alt = Ikona service workera
+    .title = Service workeri
 # Text for the ALT and TITLE attributes of the warning icon
 icon-warning =
     .alt = Ikona za upozorenje

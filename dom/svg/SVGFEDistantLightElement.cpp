@@ -5,8 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFEDistantLightElement.h"
-#include "mozilla/dom/SVGFEDistantLightElementBinding.h"
+
 #include "mozilla/SVGFilterInstance.h"
+#include "mozilla/dom/SVGFEDistantLightElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEDistantLight)
 
@@ -61,7 +62,7 @@ already_AddRefed<DOMSVGAnimatedNumber> SVGFEDistantLightElement::Elevation() {
 
 SVGElement::NumberAttributesInfo SVGFEDistantLightElement::GetNumberInfo() {
   return NumberAttributesInfo(mNumberAttributes, sNumberInfo,
-                              ArrayLength(sNumberInfo));
+                              std::size(sNumberInfo));
 }
 
 }  // namespace mozilla::dom

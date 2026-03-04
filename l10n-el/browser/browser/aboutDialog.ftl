@@ -24,8 +24,8 @@ aboutdialog-update-downloading = Λήψη ενημέρωσης — <label data-l
 update-applying = Εφαρμογή ενημέρωσης…
 update-failed = Αποτυχία ενημέρωσης. <label data-l10n-name="failed-link">Λήψη της πιο πρόσφατης έκδοσης</label>
 update-failed-main = Αποτυχία ενημέρωσης. <a data-l10n-name="failed-link-main">Λήψη της πιο πρόσφατης έκδοσης</a>
-update-adminDisabled = Οι ενημερώσεις έχουν απενεργοποιηθεί από τον διαχειριστή του συστήματος σας
-update-policy-disabled = Οι ενημερώσεις έχουν απενεργοποιηθεί από τον οργανισμό σας.
+update-adminDisabled = Οι ενημερώσεις έχουν απενεργοποιηθεί από τον διαχειριστή του συστήματός σας
+update-policy-disabled = Οι ενημερώσεις έχουν απενεργοποιηθεί από τον οργανισμό σας
 update-noUpdatesFound = Το { -brand-short-name } είναι ενημερωμένο
 aboutdialog-update-checking-failed = Ο έλεγχος για ενημερώσεις απέτυχε.
 update-otherInstanceHandlingUpdates = Το { -brand-short-name } ενημερώνεται από μια άλλη διεργασία
@@ -51,6 +51,8 @@ community-exp = Η <label data-l10n-name="community-exp-mozillaLink">{ -vendor-s
 community-2 = Το { -brand-short-name } έχει σχεδιαστεί από τη <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, μια <label data-l10n-name="community-creditsLink">παγκόσμια κοινότητα</label> που συνεργάζεται για να κάνει το διαδίκτυο ανοικτό, ελεύθερο και προσβάσιμο από όλους χωρίς κανένα περιορισμό.
 helpus = Θέλετε να βοηθήσετε; <label data-l10n-name="helpus-donateLink">Κάντε μια δωρεά</label> ή <label data-l10n-name="helpus-getInvolvedLink">συμμετέχετε εθελοντικά!</label>
 bottomLinks-license = Πληροφορίες άδειας
+bottom-links-terms = Όροι χρήσης
+bottom-links-privacy = Σημείωση απορρήτου
 bottomLinks-rights = Δικαιώματα χρήστη
 bottomLinks-privacy = Πολιτική απορρήτου
 # Example of resulting string: 66.0.1 (64-bit)

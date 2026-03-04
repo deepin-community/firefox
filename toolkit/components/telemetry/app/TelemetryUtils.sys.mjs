@@ -103,6 +103,10 @@ export var TelemetryUtils = {
     return "decafdec-afde-cafd-ecaf-decafdecafde";
   },
 
+  get knownUsageProfileID() {
+    return "beefbeef-beef-beef-beef-beeefbeefbee";
+  },
+
   /**
    * True if this is a content process.
    */
@@ -152,10 +156,11 @@ export var TelemetryUtils = {
 
   /**
    * Check if the difference between the times is within the provided tolerance.
-   * @param {Number} t1 A time in milliseconds.
-   * @param {Number} t2 A time in milliseconds.
-   * @param {Number} tolerance The tolerance, in milliseconds.
-   * @return {Boolean} True if the absolute time difference is within the tolerance, false
+   *
+   * @param {number} t1 A time in milliseconds.
+   * @param {number} t2 A time in milliseconds.
+   * @param {number} tolerance The tolerance, in milliseconds.
+   * @return {boolean} True if the absolute time difference is within the tolerance, false
    *                   otherwise.
    */
   areTimesClose(t1, t2, tolerance) {
@@ -164,8 +169,9 @@ export var TelemetryUtils = {
 
   /**
    * Get the next midnight for a date.
-   * @param {Object} date The date object to check.
-   * @return {Object} The Date object representing the next midnight.
+   *
+   * @param {object} date The date object to check.
+   * @return {object} The Date object representing the next midnight.
    */
   getNextMidnight(date) {
     let nextMidnight = new Date(this.truncateToDays(date));
@@ -175,9 +181,10 @@ export var TelemetryUtils = {
 
   /**
    * Get the midnight which is closer to the provided date.
-   * @param {Object} date The date object to check.
-   * @param {Number} tolerance The tolerance within we find the closest midnight.
-   * @return {Object} The Date object representing the closes midnight, or null if midnight
+   *
+   * @param {object} date The date object to check.
+   * @param {number} tolerance The tolerance within we find the closest midnight.
+   * @return {object} The Date object representing the closes midnight, or null if midnight
    *                  is not within the midnight tolerance.
    */
   getNearestMidnight(date, tolerance) {
@@ -203,8 +210,9 @@ export var TelemetryUtils = {
 
   /**
    * Find how many months passed between two dates.
-   * @param {Object} aStartDate The starting date.
-   * @param {Object} aEndDate The ending date.
+   *
+   * @param {object} aStartDate The starting date.
+   * @param {object} aEndDate The ending date.
    * @return {Integer} The number of months between the two dates.
    */
   getElapsedTimeInMonths(aStartDate, aEndDate) {
@@ -218,8 +226,9 @@ export var TelemetryUtils = {
   /**
    * Date.toISOString() gives us UTC times, this gives us local times in
    * the ISO date format. See http://www.w3.org/TR/NOTE-datetime
-   * @param {Object} date The input date.
-   * @return {String} The local time ISO string.
+   *
+   * @param {object} date The input date.
+   * @return {string} The local time ISO string.
    */
   toLocalTimeISOString(date) {
     function padNumber(number, length) {

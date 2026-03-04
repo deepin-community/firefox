@@ -35,6 +35,11 @@ INLINE = LINE_PARTICIPANT | {"BidiInlineContainer"}
 RUBY_CONTENT = LINE_PARTICIPANT
 # FIXME(bug 713387): Shouldn't be Replaced, probably.
 TEXT = COMMON | LINE_PARTICIPANT | {"Replaced"} | LEAF
+# ::backdrop should be created by any top layer element. However, some frames
+# don't deal super well with having a placeholder thrown around inside.
+# Use this flag to exempt them from this.
+# FIXME(emilio): Generally this list should be kept small / go away entirely.
+BACKDROP_UNSUPPORTED = {"BackdropUnsupported"}
 
 # See FrameClass.py and GenerateFrameLists.py for implementation details.
 # The following is a list of all the frame classes, followed by the frame type,
@@ -48,10 +53,12 @@ TEXT = COMMON | LINE_PARTICIPANT | {"Replaced"} | LEAF
 FRAME_CLASSES = [
     Frame("BRFrame", "Br", REPLACED | LINE_PARTICIPANT | LEAF),
     Frame("nsBCTableCellFrame", "TableCell", TABLE_CELL),
-    Frame("nsBackdropFrame", "Backdrop", COMMON | LEAF),
     Frame("nsBlockFrame", "Block", BLOCK),
     Frame("nsCanvasFrame", "Canvas", BLOCK),
-    Frame("nsCheckboxRadioFrame", "CheckboxRadio", REPLACED | LEAF),
+    Frame(
+        "nsCheckboxRadioFrame", "CheckboxRadio", REPLACED | LEAF | BACKDROP_UNSUPPORTED
+    ),
+    Frame("InputButtonControlFrame", "InputButtonControl", REPLACED | LEAF),
     Frame("nsColorControlFrame", "ColorControl", REPLACED | LEAF),
     Frame("nsColumnSetFrame", "ColumnSet", COMMON),
     Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK | BFC),
@@ -67,9 +74,7 @@ FRAME_CLASSES = [
     Frame("nsFirstLineFrame", "Line", INLINE),
     Frame("nsFlexContainerFrame", "FlexContainer", BLOCK),
     Frame("nsIFrame", "None", COMMON),
-    Frame("nsGfxButtonControlFrame", "GfxButtonControl", REPLACED | LEAF),
     Frame("nsGridContainerFrame", "GridContainer", BLOCK),
-    Frame("nsHTMLButtonControlFrame", "HTMLButtonControl", REPLACED),
     Frame("nsHTMLCanvasFrame", "HTMLCanvas", REPLACED_SIZING),
     Frame("nsHTMLFramesetBlankFrame", "None", COMMON | LEAF),
     Frame("nsHTMLFramesetBorderFrame", "None", COMMON | LEAF),
@@ -88,7 +93,6 @@ FRAME_CLASSES = [
     Frame("nsMathMLmrootFrame", "None", MATHML_CONTAINER),
     Frame("nsMathMLmrowFrame", "None", MATHML_CONTAINER),
     Frame("nsMathMLmspaceFrame", "None", MATHML_CONTAINER | LEAF),
-    Frame("nsMathMLmsqrtFrame", "None", MATHML_CONTAINER),
     Frame("nsMathMLmtableFrame", "Table", TABLE | MATHML),
     Frame("nsMathMLmtableWrapperFrame", "TableWrapper", BLOCK | MATHML),
     Frame("nsMathMLmtdFrame", "TableCell", TABLE_CELL | MATHML),
@@ -97,14 +101,13 @@ FRAME_CLASSES = [
     Frame("nsMathMLmunderoverFrame", "None", MATHML_CONTAINER),
     Frame("nsMathMLTokenFrame", "None", MATHML_CONTAINER),
     Frame("nsMenuPopupFrame", "MenuPopup", BLOCK),
-    Frame("nsMeterFrame", "Meter", REPLACED | LEAF),
-    Frame("nsNumberControlFrame", "TextInput", REPLACED | LEAF),
+    Frame("nsNumberControlFrame", "TextInput", REPLACED | LEAF | BACKDROP_UNSUPPORTED),
     Frame("nsPageBreakFrame", "PageBreak", COMMON | LEAF),
     Frame("nsPageContentFrame", "PageContent", BLOCK),
     Frame("nsPageFrame", "Page", COMMON),
     Frame("nsPlaceholderFrame", "Placeholder", COMMON | LEAF),
-    Frame("nsProgressFrame", "Progress", REPLACED | LEAF),
-    Frame("nsRangeFrame", "Range", REPLACED | LEAF),
+    Frame("nsProgressFrame", "Progress", REPLACED | LEAF | BACKDROP_UNSUPPORTED),
+    Frame("nsRangeFrame", "Range", REPLACED | LEAF | BACKDROP_UNSUPPORTED),
     Frame("nsRubyBaseContainerFrame", "RubyBaseContainer", RUBY_CONTENT),
     Frame("nsRubyBaseFrame", "RubyBase", RUBY_CONTENT),
     Frame("nsRubyFrame", "Ruby", RUBY_CONTENT),
@@ -114,7 +117,7 @@ FRAME_CLASSES = [
     Frame("SimpleXULLeafFrame", "SimpleXULLeaf", COMMON | LEAF),
     Frame("nsScrollbarButtonFrame", "SimpleXULLeaf", COMMON | LEAF),
     Frame("nsScrollbarFrame", "Scrollbar", COMMON),
-    Frame("nsSearchControlFrame", "TextInput", LEAF),
+    Frame("nsSearchControlFrame", "TextInput", REPLACED | LEAF | BACKDROP_UNSUPPORTED),
     Frame("nsSelectsAreaFrame", "Block", BLOCK | BFC),
     Frame("nsPageSequenceFrame", "PageSequence", COMMON),
     Frame("nsSliderFrame", "Slider", COMMON),
@@ -169,7 +172,7 @@ FRAME_CLASSES = [
     Frame("nsTableWrapperFrame", "TableWrapper", BLOCK),
     Frame("nsTableRowFrame", "TableRow", TABLE_PART),
     Frame("nsTableRowGroupFrame", "TableRowGroup", TABLE_PART),
-    Frame("nsTextControlFrame", "TextInput", REPLACED | LEAF),
+    Frame("nsTextControlFrame", "TextInput", REPLACED | LEAF | BACKDROP_UNSUPPORTED),
     Frame("nsTextFrame", "Text", TEXT),
     Frame("nsTreeBodyFrame", "SimpleXULLeaf", COMMON | LEAF),
     Frame("nsVideoFrame", "HTMLVideo", REPLACED_SIZING),
@@ -177,6 +180,7 @@ FRAME_CLASSES = [
     Frame("ViewportFrame", "Viewport", COMMON),
     Frame("WBRFrame", "Wbr", COMMON | LEAF),
     # Non-concrete classes (for FrameIID use)
+    AbstractFrame("ButtonControlFrame"),
     AbstractFrame("MiddleCroppingBlockFrame"),
     AbstractFrame("nsContainerFrame"),
     AbstractFrame("nsLeafFrame"),

@@ -7,93 +7,100 @@
 
 autofill-manage-addresses-title = Adrezas alzadas
 autofill-manage-addresses-list-header = Adrezas
-
 autofill-manage-credit-cards-title = Tarchetas de credito alzadas
 autofill-manage-credit-cards-list-header = Tarchetas de credito
-
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Eliminar
 autofill-manage-add-button = Anyader…
 autofill-manage-edit-button = Editar…
 
-##
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Anyader nueva adreza
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Editar adreza
-
 autofill-address-given-name = Nombre
 autofill-address-additional-name = Segundo nombre
 autofill-address-family-name = Apellius
 autofill-address-organization = Organización
 autofill-address-street = Adreza postal
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Barrio
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Lugar u villa
 autofill-address-island = Isla
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Municipio
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Ciudat
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Distrito
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Localidat
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Suburbio
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Provincia
 autofill-address-state = Estau
 autofill-address-county = Condau
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Parroquia
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefectura
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Aria
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Department
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirato
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblast
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Codigo postal
+# Postal code field.
 autofill-address-zip = Codigo postal (Estaus Unius)
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Codigo postal (Eircode)
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Anyader nueva adreza
 autofill-address-country = País u rechión
 autofill-address-tel = Telefono
 autofill-address-email = Correu-e
-
 autofill-cancel-button = Cancelar
 autofill-save-button = Alzar
 autofill-country-warning-message = L'autorreplenau de formularios nomás ye disponible per agora en bells países.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Anyader una nueva tarcheta de credito
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Editar tarcheta de credito
-
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -102,7 +109,6 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } ye mirando d'amostrar la información d'a tarcheta. Confirma contino l'acceso a esta cuenta de Windows.
        *[other] { -brand-short-name } ye mirando d'amostrar la información d'a tarcheta de credito.
     }
-
 autofill-card-number = Numero de tarcheta
 autofill-card-invalid-number = Escribe un numero de tarcheta valido
 autofill-card-name-on-card = Nombre d'o titular en a tarcheta

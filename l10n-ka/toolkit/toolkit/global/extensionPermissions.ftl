@@ -20,7 +20,7 @@ webext-perms-description-downloads-open = თქვენს კომპიუ�
 webext-perms-description-find = ტექსტის წაკითხვა ყველა გახსნილი ჩანართიდან
 webext-perms-description-geolocation = მდებარეობის მონაცემებთან წვდომა
 webext-perms-description-history = მონახულებული გვერდების ისტორიასთან წვდომა
-webext-perms-description-management = გაფართოების მოხმარების შესახებ მონაცემების შეგროვება და თემების მართვა
+webext-perms-description-management = გაფართოების მოხმარების აღრიცხვა და თემების მართვა
 webext-perms-description-nativeMessaging = შეტყობინებებს გაუცვლის სხვა პროგრამებიც, არამხოლოდ { -brand-short-name }
 webext-perms-description-notifications = შეტყობინებების ჩვენება
 webext-perms-description-pkcs11 = ანგარიშზე დაშიფრულად შესვლის მომსახურებების გამოყენება
@@ -30,4 +30,46 @@ webext-perms-description-sessions = ბოლოს დახურულ ჩა
 webext-perms-description-tabs = ბრაუზერის ჩანართებთან წვდომა
 webext-perms-description-tabHide = ბრაუზერის ჩანართების დამალვა და გამოჩენა
 webext-perms-description-topSites = მონახულებული გვერდების ისტორიასთან წვდომა
+webext-perms-description-trialML = ხელოვნური გონის მოდელების მოწყობილობაზე ჩამოტვირთვა და გაშვება
+webext-perms-description-userScripts = დაუმოწმებელი გარეშე მხარის სკრიპტებისთვის თქვენს მონაცემებთან წვდომის ნებართვა
 webext-perms-description-webNavigation = გვერდებზე გადაადგილებისას ბრაუზერის მოქმედებებთან წვდომა
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = გადაუმოწმებელ სკრიპტებს შეუძლია საფრთხე შეუქმნას უსაფრთხოებასა და პირადულობას, სახიფათო კოდის გაშვებით ან ვებსაიტზე მოქმედებების თვალის დევნებით. სკრიპტების გაშვების ნება დართეთ მხოლოდ იმ გაფართოებებსა თუ წყაროებს, რომელთაც ენდობით.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = გადაუმოწმებელ სკრიპტებს შეუძლია საფრთხე შეუქმნას უსაფრთხოებასა და პირადულობას. სკრიპტების გაშვების ნება დართეთ მხოლოდ იმ გაფართოებებსა თუ წყაროებს, რომელთაც ენდობით.
+
+## Short form to be used in lists or in a string (`webext-perms-description-data-some`)
+## that formats some of the data collection permissions below using `Intl.ListFormat`.
+##
+## This is used when the data collection permissions are required.
+
+webext-perms-description-data-short-authenticationInfo = ანგარიშის დამოწმების მონაცემები
+webext-perms-description-data-short-bookmarksInfo = სანიშნები
+webext-perms-description-data-short-browsingActivity = მონახულებული გვერდები
+webext-perms-description-data-short-financialAndPaymentInfo = ფინანსური და საგადასახადო მონაცემები
+webext-perms-description-data-short-healthInfo = ჯანმრთელობის მონაცემები
+webext-perms-description-data-short-locationInfo = ადგილმდებარეობა
+webext-perms-description-data-short-personalCommunications = პირადი კავშირები
+webext-perms-description-data-short-personallyIdentifyingInfo = პირის ამოსაცნობი მონაცემები
+webext-perms-description-data-short-searchTerms = საძიებო ფრაზები
+webext-perms-description-data-short-technicalAndInteraction = ტექნიკური და გამოყენების მონაცემები
+webext-perms-description-data-short-websiteActivity = ვებსაიტზე მოქმედებები
+webext-perms-description-data-short-websiteContent = ვებშიგთავსი
+
+## Long form to be used in `about:addons` when these data collection permissions are optional.
+
+webext-perms-description-data-long-authenticationInfo = ტექნიკური და ურთიერთქმედების მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-bookmarksInfo = სანიშნების მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-browsingActivity = მონახულებული გვერდების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-financialAndPaymentInfo = ფინანსური და გადახდის მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-healthInfo = ჯანმრთელობის მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-locationInfo = ადგილმდებარეობის მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-personalCommunications = პირადი კავშირების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-personallyIdentifyingInfo = პირის ამოსაცნობი მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-searchTerms = საძიებო ფრაზების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-technicalAndInteraction = ტექნიკური და ურთიერთქმედების მონაცემების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-websiteActivity = ვებსაიტზე მოქმედებების გაზიარება გაფართოების შემმუშავებლისთვის
+webext-perms-description-data-long-websiteContent = ვებსაიტის შიგთავსის გაზიარება გაფართოების შემმუშავებლისთვის

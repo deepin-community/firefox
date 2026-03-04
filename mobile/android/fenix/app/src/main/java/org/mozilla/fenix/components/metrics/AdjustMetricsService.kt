@@ -4,10 +4,8 @@
 
 package org.mozilla.fenix.components.metrics
 
-import android.app.Activity
 import android.app.Application
-import android.os.Bundle
-import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.adjust.sdk.Adjust
 import com.adjust.sdk.AdjustConfig
 import com.adjust.sdk.AdjustEvent
@@ -18,12 +16,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import mozilla.components.lib.crash.CrashReporter
+import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
-import org.mozilla.fenix.GleanMetrics.FirstSession
-import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.GleanMetrics.AdjustAttribution
+import org.mozilla.fenix.GleanMetrics.Pings
+import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.utils.Settings
 
-@Deprecated("Adjust is disabled", level = DeprecationLevel.ERROR)
 class AdjustMetricsService(
     private val application: Application,
     private val storage: MetricsStorage,
@@ -31,15 +31,26 @@ class AdjustMetricsService(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : MetricsService {
     override val type = MetricServiceType.Marketing
+    private val logger = Logger("AdjustMetricsService")
 
+    @Suppress("CognitiveComplexMethod")
     override fun start() {
+        logger.info("Started")
+
+        val settings = application.components.settings
+
         if ((BuildConfig.ADJUST_TOKEN.isNullOrBlank())) {
-            Log.i(LOGTAG, "No adjust token defined")
+            logger.info("No adjust token defined")
 
             if (Config.channel.isReleased) {
                 throw IllegalStateException("No adjust token defined for release build")
             }
 
+            return
+        }
+
+        if (alreadyKnown(settings)) {
+            logger.info("Attribution already retrieved")
             return
         }
 
@@ -51,92 +62,97 @@ class AdjustMetricsService(
             AdjustConfig.ENVIRONMENT_PRODUCTION,
             true,
         )
-        config.setPreinstallTrackingEnabled(true)
+        config.enablePreinstallTracking()
 
-        val installationPing = FirstSessionPing(application)
+        val distributionIdManager = application.components.distributionIdManager
 
-        FirstSession.adjustAttributionTimespan.start()
-        val timerId = FirstSession.adjustAttributionTime.start()
-        config.setOnAttributionChangedListener {
-            if (!installationPing.wasAlreadyTriggered()) {
-                FirstSession.adjustAttributionTimespan.stop()
-            }
-
-            FirstSession.adjustAttributionTime.stopAndAccumulate(timerId)
-            if (!it.network.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustNetwork =
-                    it.network
-            }
-            if (!it.adgroup.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustAdGroup =
-                    it.adgroup
-            }
-            if (!it.creative.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustCreative =
-                    it.creative
-            }
-            if (!it.campaign.isNullOrEmpty()) {
-                application.applicationContext.settings().adjustCampaignId =
-                    it.campaign
-            }
-
-            installationPing.checkAndSend()
+        // If we skipped the marketing consent screen, enable COPPA compliance to prevent
+        // personal identifiers from being shared with Adjust.
+        if (distributionIdManager.shouldSkipMarketingConsentScreen()) {
+            config.enableCoppaCompliance()
         }
 
-        config.setLogLevel(LogLevel.SUPRESS)
-        Adjust.onCreate(config)
-        Adjust.setEnabled(true)
-        application.registerActivityLifecycleCallbacks(AdjustLifecycleCallbacks())
+        val timerId = AdjustAttribution.adjustAttributionTime.start()
+        config.setOnAttributionChangedListener {
+            AdjustAttribution.adjustAttributionTime.stopAndAccumulate(timerId)
+
+            if (!it.network.isNullOrEmpty()) {
+                settings.adjustNetwork = it.network
+                AdjustAttribution.network.set(it.network)
+            }
+            if (!it.adgroup.isNullOrEmpty()) {
+                settings.adjustAdGroup = it.adgroup
+                AdjustAttribution.adgroup.set(it.adgroup)
+            }
+            if (!it.creative.isNullOrEmpty()) {
+                settings.adjustCreative = it.creative
+                AdjustAttribution.creative.set(it.creative)
+            }
+            if (!it.campaign.isNullOrEmpty()) {
+                settings.adjustCampaignId = it.campaign
+                AdjustAttribution.campaign.set(it.campaign)
+            }
+
+            triggerPing()
+            logger.info("Trigger ping")
+        }
+
+        config.setLogLevel(LogLevel.SUPPRESS)
+
+        Adjust.initSdk(config)
+        Adjust.enable()
+        logger.info("Adjust SDK enabled")
     }
 
     override fun stop() {
-        FirstSession.adjustAttributionTimespan.cancel()
-        Adjust.setEnabled(false)
+        logger.info("Stopped")
+
+        Adjust.disable()
         Adjust.gdprForgetMe(application.applicationContext)
     }
 
     @Suppress("TooGenericExceptionCaught")
     override fun track(event: Event) {
+        logger.info("Track")
+
         CoroutineScope(dispatcher).launch {
             try {
-                if (event is Event.GrowthData) {
+                val tokenName = when (event) {
+                    is Event.GrowthData -> event.tokenName
+                    is Event.FirstWeekPostInstall -> event.tokenName
+                }
+
+                if (event is Event.GrowthData || event is Event.FirstWeekPostInstall) {
                     if (storage.shouldTrack(event)) {
-                        Adjust.trackEvent(AdjustEvent(event.tokenName))
+                        Adjust.trackEvent(AdjustEvent(tokenName))
                         storage.updateSentState(event)
+                        logger.info("Update sent state $event")
                     } else {
                         storage.updatePersistentState(event)
+                        logger.info("Update persistent state $event")
                     }
                 }
             } catch (e: Exception) {
                 crashReporter.submitCaughtException(e)
+                logger.info("Track threw an exception for $event")
             }
         }
     }
 
     override fun shouldTrack(event: Event): Boolean =
-        event is Event.GrowthData
+        event is Event.GrowthData || event is Event.FirstWeekPostInstall
 
     companion object {
-        private const val LOGTAG = "AdjustMetricsService"
-    }
-
-    private class AdjustLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
-        override fun onActivityResumed(activity: Activity) {
-            Adjust.onResume()
+        @VisibleForTesting
+        internal fun alreadyKnown(settings: Settings): Boolean {
+            return settings.adjustCampaignId.isNotEmpty() || settings.adjustNetwork.isNotEmpty() ||
+                settings.adjustCreative.isNotEmpty() || settings.adjustAdGroup.isNotEmpty()
         }
 
-        override fun onActivityPaused(activity: Activity) {
-            Adjust.onPause()
+        private fun triggerPing() {
+            CoroutineScope(Dispatchers.IO).launch {
+                Pings.adjustAttribution.submit()
+            }
         }
-
-        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) { /* noop */ }
-
-        override fun onActivityStarted(activity: Activity) { /* noop */ }
-
-        override fun onActivityStopped(activity: Activity) { /* noop */ }
-
-        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) { /* noop */ }
-
-        override fun onActivityDestroyed(activity: Activity) { /* noop */ }
     }
 }

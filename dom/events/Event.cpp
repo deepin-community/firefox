@@ -4,44 +4,44 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "Event.h"
+
 #include "AccessCheck.h"
 #include "base/basictypes.h"
 #include "ipc/IPCMessageUtils.h"
 #include "ipc/IPCMessageUtilsSpecializations.h"
-#include "mozilla/EventDispatcher.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ContentEvents.h"
 #include "mozilla/DOMEventTargetHelper.h"
+#include "mozilla/EventDispatcher.h"
 #include "mozilla/EventStateManager.h"
-#include "mozilla/InternalMutationEvent.h"
-#include "mozilla/dom/Performance.h"
-#include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/MiscEvents.h"
 #include "mozilla/MouseEvents.h"
 #include "mozilla/PointerLockManager.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/SVGOuterSVGFrame.h"
+#include "mozilla/SVGUtils.h"
+#include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/TextEvents.h"
 #include "mozilla/TouchEvents.h"
 #include "mozilla/ViewportUtils.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
-#include "mozilla/dom/Event.h"
+#include "mozilla/dom/FragmentOrElement.h"
+#include "mozilla/dom/Performance.h"
 #include "mozilla/dom/ShadowRoot.h"
+#include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerScope.h"
-#include "mozilla/ScrollContainerFrame.h"
-#include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/SVGUtils.h"
-#include "mozilla/SVGOuterSVGFrame.h"
-#include "nsContentUtils.h"
 #include "nsCOMPtr.h"
+#include "nsContentUtils.h"
 #include "nsDeviceContext.h"
 #include "nsError.h"
 #include "nsGlobalWindowInner.h"
-#include "nsIFrame.h"
 #include "nsIContent.h"
 #include "nsIContentInlines.h"
+#include "nsIFrame.h"
 #include "nsJSEnvironment.h"
 #include "nsLayoutUtils.h"
 #include "nsPIWindowRoot.h"
@@ -108,9 +108,9 @@ void Event::InitPresContextData(nsPresContext* aPresContext) {
   mPresContext = aPresContext;
   // Get the explicit original target (if it's anonymous make it null)
   {
-    nsCOMPtr<nsIContent> content = GetTargetFromFrame();
+    nsIContent* content = GetTargetFromFrame();
     if (content && !content->IsInNativeAnonymousSubtree()) {
-      mExplicitOriginalTarget = std::move(content);
+      mExplicitOriginalTarget = content;
     } else {
       mExplicitOriginalTarget = nullptr;
     }
@@ -132,7 +132,7 @@ NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(Event)
 NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(Event)
-NS_IMPL_CYCLE_COLLECTING_RELEASE(Event)
+NS_IMPL_CYCLE_COLLECTING_RELEASE_WITH_LAST_RELEASE(Event, LastRelease())
 
 NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(Event)
 
@@ -159,18 +159,15 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Event)
         inputEvent->mTargetRanges.Clear();
         break;
       }
-      case eMutationEventClass:
-        tmp->mEvent->AsMutationEvent()->mRelatedNode = nullptr;
-        break;
       default:
         break;
     }
 
     if (WidgetMouseEvent* mouseEvent = tmp->mEvent->AsMouseEvent()) {
       mouseEvent->mClickTarget = nullptr;
+      mouseEvent->mTriggerEvent = nullptr;
     }
   }
-  NS_IMPL_CYCLE_COLLECTION_UNLINK(mPresContext);
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mExplicitOriginalTarget);
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mOwner);
   NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
@@ -200,10 +197,6 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Event)
         NS_IMPL_CYCLE_COLLECTION_TRAVERSE(
             mEvent->AsEditorInputEvent()->mTargetRanges);
         break;
-      case eMutationEventClass:
-        NS_CYCLE_COLLECTION_NOTE_EDGE_NAME(cb, "mEvent->mRelatedNode");
-        cb.NoteXPCOMChild(tmp->mEvent->AsMutationEvent()->mRelatedNode);
-        break;
       default:
         break;
     }
@@ -211,12 +204,58 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Event)
     if (WidgetMouseEvent* mouseEvent = tmp->mEvent->AsMouseEvent()) {
       NS_CYCLE_COLLECTION_NOTE_EDGE_NAME(cb, "mEvent->mClickTarget");
       cb.NoteXPCOMChild(mouseEvent->mClickTarget);
+      NS_CYCLE_COLLECTION_NOTE_EDGE_NAME(cb, "mEvent->mTriggerEvent");
+      cb.NoteXPCOMChild(mouseEvent->mTriggerEvent);
     }
   }
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPresContext)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mExplicitOriginalTarget)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mOwner)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
+
+NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_BEGIN(Event)
+  if (tmp->HasKnownLiveWrapper()) {
+    if (tmp->mEventIsInternal) {
+      if (WidgetEvent* event = tmp->mEvent) {
+        auto mark = [](EventTarget* aTarget) {
+          if (!aTarget) {
+            return;
+          }
+          if (nsINode* node = aTarget->GetAsNode()) {
+            FragmentOrElement::MarkNodeChildren(node);
+            if (node->HasKnownLiveWrapper()) {
+              // Use CanSkip to possibly mark more nodes to be certainly alive.
+              FragmentOrElement::CanSkip(node, true);
+            }
+          }
+        };
+
+        mark(event->mTarget);
+        mark(event->mCurrentTarget);
+        mark(event->mOriginalTarget);
+        mark(event->mRelatedTarget);
+        mark(event->mOriginalRelatedTarget);
+      }
+    }
+    return true;
+  }
+NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_END
+
+NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_IN_CC_BEGIN(Event)
+  return tmp->HasKnownLiveWrapperAndDoesNotNeedTracing(tmp);
+NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_IN_CC_END
+
+NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_THIS_BEGIN(Event)
+  return tmp->HasKnownLiveWrapper();
+NS_IMPL_CYCLE_COLLECTION_CAN_SKIP_THIS_END
+
+void Event::LastRelease() {
+  nsISupports* supports = nullptr;
+  QueryInterface(NS_GET_IID(nsCycleCollectionISupports),
+                 reinterpret_cast<void**>(&supports));
+  nsXPCOMCycleCollectionParticipant* p = nullptr;
+  CallQueryInterface(this, &p);
+  p->Unlink(supports);
+}
 
 JSObject* Event::WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto) {
   return WrapObjectInternal(aCx, aGivenProto);
@@ -267,7 +306,7 @@ void Event::ComposedPath(nsTArray<RefPtr<EventTarget>>& aPath) {
 //
 // Get the actual event target node (may have been retargeted for mouse events)
 //
-already_AddRefed<nsIContent> Event::GetTargetFromFrame() {
+nsIContent* Event::GetTargetFromFrame() {
   if (!mPresContext) {
     return nullptr;
   }
@@ -279,9 +318,7 @@ already_AddRefed<nsIContent> Event::GetTargetFromFrame() {
   }
 
   // get the real content
-  nsCOMPtr<nsIContent> realEventContent;
-  targetFrame->GetContentForEvent(mEvent, getter_AddRefs(realEventContent));
-  return realEventContent.forget();
+  return targetFrame->GetContentForEvent(mEvent);
 }
 
 EventTarget* Event::GetExplicitOriginalTarget() const {
@@ -293,6 +330,19 @@ EventTarget* Event::GetExplicitOriginalTarget() const {
 
 EventTarget* Event::GetOriginalTarget() const {
   return mEvent->GetOriginalDOMEventTarget();
+}
+
+EventTarget* Event::GetOriginalTarget(CallerType aCallerType) const {
+  if (aCallerType == CallerType::System || nsContentUtils::IsCallerUAWidget()) {
+    return GetOriginalTarget();
+  }
+
+  EventTarget* et = mEvent->GetOriginalDOMEventTarget();
+  nsIContent* content = nsIContent::FromEventTargetOrNull(et);
+  if (!content) {
+    return et;
+  }
+  return content->FindFirstNonChromeOnlyAccessContent();
 }
 
 EventTarget* Event::GetComposedTarget() const {
@@ -418,21 +468,23 @@ void Event::PreventDefault(JSContext* aCx, CallerType aCallerType) {
 
 void Event::PreventDefaultInternal(bool aCalledByDefaultHandler,
                                    nsIPrincipal* aPrincipal) {
-  if (!mEvent->mFlags.mCancelable) {
-    return;
-  }
   if (mEvent->mFlags.mInPassiveListener) {
-    if (nsPIDOMWindowInner* win = mOwner->GetAsInnerWindow()) {
-      if (Document* doc = win->GetExtantDoc()) {
-        if (!doc->HasWarnedAbout(
-                Document::ePreventDefaultFromPassiveListener)) {
-          AutoTArray<nsString, 1> params;
-          GetType(*params.AppendElement());
-          doc->WarnOnceAbout(Document::ePreventDefaultFromPassiveListener,
-                             false, params);
+    if (mOwner) {
+      if (nsPIDOMWindowInner* win = mOwner->GetAsInnerWindow()) {
+        if (Document* doc = win->GetExtantDoc()) {
+          if (!doc->HasWarnedAbout(
+                  Document::ePreventDefaultFromPassiveListener)) {
+            AutoTArray<nsString, 1> params;
+            GetType(*params.AppendElement());
+            doc->WarnOnceAbout(Document::ePreventDefaultFromPassiveListener,
+                               false, params);
+          }
         }
       }
     }
+    return;
+  }
+  if (!mEvent->mFlags.mCancelable) {
     return;
   }
 
@@ -573,28 +625,25 @@ bool Event::IsDispatchStopped() { return mEvent->PropagationStopped(); }
 WidgetEvent* Event::WidgetEventPtr() { return mEvent; }
 
 // static
-Maybe<CSSIntPoint> Event::GetScreenCoords(nsPresContext* aPresContext,
-                                          WidgetEvent* aEvent,
-                                          LayoutDeviceIntPoint aPoint) {
+Maybe<CSSDoublePoint> Event::GetScreenCoords(
+    nsPresContext* aPresContext, WidgetEvent* aEvent,
+    const LayoutDeviceDoublePoint& aWidgetOrScreenRelativePoint) {
   if (PointerLockManager::IsLocked()) {
     return Some(EventStateManager::sLastScreenPoint);
   }
 
-  if (!aEvent || (aEvent->mClass != eMouseEventClass &&
-                  aEvent->mClass != eMouseScrollEventClass &&
-                  aEvent->mClass != eWheelEventClass &&
-                  aEvent->mClass != ePointerEventClass &&
-                  aEvent->mClass != eTouchEventClass &&
-                  aEvent->mClass != eDragEventClass &&
-                  aEvent->mClass != eSimpleGestureEventClass)) {
+  if (!aEvent || !aEvent->DOMEventSupportsCoords()) {
     return Nothing();
   }
 
-  // Doing a straight conversion from LayoutDeviceIntPoint to CSSIntPoint
+  // Doing a straight conversion from LayoutDeviceDoublePoint to CSSDoublePoint
   // seem incorrect, but it is needed to maintain legacy functionality.
-  WidgetGUIEvent* guiEvent = aEvent->AsGUIEvent();
-  if (!aPresContext || !(guiEvent && guiEvent->mWidget)) {
-    return Some(CSSIntPoint(aPoint.x, aPoint.y));
+  const WidgetGUIEvent* guiEvent = aEvent->AsGUIEvent();
+  if (MOZ_UNLIKELY(!aPresContext) || !(guiEvent && guiEvent->mWidget)) {
+    // XXX aPresContext is usually available.  Then, we can know the latest
+    // scale of the document.  Should we apply it?
+    return Some(CSSDoublePoint(aWidgetOrScreenRelativePoint.x,
+                               aWidgetOrScreenRelativePoint.y));
   }
 
   // (Potentially) transform the point from the coordinate space of an
@@ -602,120 +651,126 @@ Maybe<CSSIntPoint> Event::GetScreenCoords(nsPresContext* aPresContext,
   // window. The transform can only be applied to a point whose components
   // are floating-point values, so convert the integer point first, then
   // transform, and then round the result back to an integer point.
-  LayoutDevicePoint floatPoint(aPoint);
-  LayoutDevicePoint topLevelPoint =
+  const LayoutDeviceIntPoint topLevelPoint = LayoutDeviceIntPoint::Round(
       guiEvent->mWidget->WidgetToTopLevelWidgetTransform().TransformPoint(
-          floatPoint);
-  LayoutDeviceIntPoint rounded = RoundedToInt(topLevelPoint);
-
-  nsPoint pt = LayoutDevicePixel::ToAppUnits(
-      rounded, aPresContext->DeviceContext()->AppUnitsPerDevPixel());
-
-  pt += LayoutDevicePixel::ToAppUnits(
-      guiEvent->mWidget->TopLevelWidgetToScreenOffset(),
-      aPresContext->DeviceContext()->AppUnitsPerDevPixel());
-
-  return Some(CSSPixel::FromAppUnitsRounded(pt));
+          aWidgetOrScreenRelativePoint));
+  const CSSPoint pt = CSSPixel::FromAppUnits(
+      LayoutDevicePixel::ToAppUnits(
+          topLevelPoint, aPresContext->DeviceContext()->AppUnitsPerDevPixel()) +
+      LayoutDevicePixel::ToAppUnits(
+          guiEvent->mWidget->TopLevelWidgetToScreenOffset(),
+          aPresContext->DeviceContext()->AppUnitsPerDevPixel()));
+  return Some(CSSDoublePoint(pt.x, pt.y));
 }
 
 // static
-CSSIntPoint Event::GetPageCoords(nsPresContext* aPresContext,
-                                 WidgetEvent* aEvent,
-                                 LayoutDeviceIntPoint aPoint,
-                                 CSSIntPoint aDefaultPoint) {
-  CSSIntPoint pagePoint =
-      Event::GetClientCoords(aPresContext, aEvent, aPoint, aDefaultPoint);
+CSSDoublePoint Event::GetPageCoords(
+    nsPresContext* aPresContext, WidgetEvent* aEvent,
+    const LayoutDeviceDoublePoint& aWidgetOrScreenRelativePoint,
+    const CSSDoublePoint& aDefaultClientPoint) {
+  const CSSDoublePoint clientCoords = Event::GetClientCoords(
+      aPresContext, aEvent, aWidgetOrScreenRelativePoint, aDefaultClientPoint);
 
   // If there is some scrolling, add scroll info to client point.
-  if (aPresContext && aPresContext->GetPresShell()) {
-    PresShell* presShell = aPresContext->PresShell();
-    if (ScrollContainerFrame* sf = presShell->GetRootScrollContainerFrame()) {
-      pagePoint += CSSIntPoint::FromAppUnitsRounded(sf->GetScrollPosition());
+  const CSSPoint scrollPoint = CSSPixel::FromAppUnits([&]() {
+    if (aPresContext && aPresContext->GetPresShell()) {
+      if (const ScrollContainerFrame* const sf =
+              aPresContext->PresShell()->GetRootScrollContainerFrame()) {
+        return sf->GetScrollPosition();
+      }
     }
-  }
-
-  return pagePoint;
+    return nsPoint{};
+  }());
+  return clientCoords + CSSDoublePoint(scrollPoint.x, scrollPoint.y);
 }
 
 // static
-CSSIntPoint Event::GetClientCoords(nsPresContext* aPresContext,
-                                   WidgetEvent* aEvent,
-                                   LayoutDeviceIntPoint aPoint,
-                                   CSSIntPoint aDefaultPoint) {
+CSSDoublePoint Event::GetClientCoords(
+    nsPresContext* aPresContext, WidgetEvent* aEvent,
+    const LayoutDeviceDoublePoint& aWidgetOrScreenRelativePoint,
+    const CSSDoublePoint& aDefaultClientPoint) {
   if (PointerLockManager::IsLocked()) {
     return EventStateManager::sLastClientPoint;
   }
 
-  if (!aEvent ||
-      (aEvent->mClass != eMouseEventClass &&
-       aEvent->mClass != eMouseScrollEventClass &&
-       aEvent->mClass != eWheelEventClass &&
-       aEvent->mClass != eTouchEventClass &&
-       aEvent->mClass != eDragEventClass &&
-       aEvent->mClass != ePointerEventClass &&
-       aEvent->mClass != eSimpleGestureEventClass) ||
-      !aPresContext || !aEvent->AsGUIEvent()->mWidget) {
-    return aDefaultPoint;
+  if (MOZ_UNLIKELY(!aPresContext) || MOZ_UNLIKELY(!aEvent) ||
+      !aEvent->DOMEventSupportsCoords() ||
+      MOZ_UNLIKELY(!aEvent->AsGUIEvent()->mWidget)) {
+    return aDefaultClientPoint;
   }
 
-  PresShell* presShell = aPresContext->GetPresShell();
-  if (!presShell) {
-    return CSSIntPoint(0, 0);
+  const PresShell* const presShell = aPresContext->GetPresShell();
+  if (MOZ_UNLIKELY(!presShell)) {
+    return CSSDoublePoint(0, 0);
   }
-  nsIFrame* rootFrame = presShell->GetRootFrame();
-  if (!rootFrame) {
-    return CSSIntPoint(0, 0);
+  // XXX Why don't we flush pending notifications before computing the offset
+  // from the root frame?
+  const nsIFrame* const rootFrame = presShell->GetRootFrame();
+  if (MOZ_UNLIKELY(!rootFrame)) {
+    return CSSDoublePoint(0, 0);
   }
-  nsPoint pt = nsLayoutUtils::GetEventCoordinatesRelativeTo(
-      aEvent, aPoint, RelativeTo{rootFrame});
-
-  return CSSIntPoint::FromAppUnitsRounded(pt);
+  const CSSPoint pt =
+      CSSPixel::FromAppUnits(nsLayoutUtils::GetEventCoordinatesRelativeTo(
+          aEvent, LayoutDeviceIntPoint::Round(aWidgetOrScreenRelativePoint),
+          RelativeTo{rootFrame}));
+  return CSSDoublePoint(pt.x, pt.y);
 }
 
 // static
-CSSIntPoint Event::GetOffsetCoords(nsPresContext* aPresContext,
-                                   WidgetEvent* aEvent,
-                                   LayoutDeviceIntPoint aPoint,
-                                   CSSIntPoint aDefaultPoint) {
-  if (!aEvent->mTarget) {
-    return GetPageCoords(aPresContext, aEvent, aPoint, aDefaultPoint);
+nsIFrame* Event::GetPrimaryFrameOfEventTarget(const nsPresContext& aPresContext,
+                                              const WidgetEvent& aEvent) {
+  const nsCOMPtr<nsIContent> content =
+      nsIContent::FromEventTargetOrNull(aEvent.mTarget);
+  if (!content) {
+    return nullptr;
   }
-  nsCOMPtr<nsIContent> content = nsIContent::FromEventTarget(aEvent->mTarget);
-  if (!content || !aPresContext) {
-    return CSSIntPoint();
+  // XXX Even after the event target content is moved to different document, we
+  // may get its primary frame.  In this case, should we return nullptr here?
+  nsIFrame* const frame = content->GetPrimaryFrame(FlushType::Layout);
+  if (MOZ_UNLIKELY(!frame || frame->PresContext() != &aPresContext)) {
+    return nullptr;
   }
-  RefPtr<PresShell> presShell = aPresContext->GetPresShell();
-  if (!presShell) {
-    return CSSIntPoint();
-  }
-  presShell->FlushPendingNotifications(FlushType::Layout);
-  nsIFrame* frame = content->GetPrimaryFrame();
-  if (!frame) {
-    return CSSIntPoint();
-  }
-  // For compat, see https://github.com/w3c/csswg-drafts/issues/1508. In SVG we
-  // just return the coordinates of the outer SVG box. This is all kinda
+  // For compat, see https://github.com/w3c/csswg-drafts/issues/1508. In SVG
+  // we just return the coordinates of the outer SVG box. This is all kinda
   // unfortunate.
   if (frame->HasAnyStateBits(NS_FRAME_SVG_LAYOUT) &&
       StaticPrefs::dom_events_offset_in_svg_relative_to_svg_root()) {
-    frame = SVGUtils::GetOuterSVGFrame(frame);
-    if (!frame) {
-      return CSSIntPoint();
-    }
+    return SVGUtils::GetOuterSVGFrame(frame);
   }
-  nsIFrame* rootFrame = presShell->GetRootFrame();
-  if (!rootFrame) {
-    return CSSIntPoint();
+  return frame;
+}
+
+// static
+CSSDoublePoint Event::GetOffsetCoords(
+    nsPresContext* aPresContext, WidgetEvent* aEvent,
+    const LayoutDeviceDoublePoint& aWidgetOrScreenRelativePoint,
+    const CSSDoublePoint& aDefaultClientPoint) {
+  if (!aEvent->mTarget) {
+    return GetPageCoords(aPresContext, aEvent, aWidgetOrScreenRelativePoint,
+                         aDefaultClientPoint);
   }
-  CSSIntPoint clientCoords =
-      GetClientCoords(aPresContext, aEvent, aPoint, aDefaultPoint);
-  nsPoint pt = CSSPixel::ToAppUnits(clientCoords);
-  if (nsLayoutUtils::TransformPoint(RelativeTo{rootFrame}, RelativeTo{frame},
-                                    pt) == nsLayoutUtils::TRANSFORM_SUCCEEDED) {
-    pt -= frame->GetPaddingRectRelativeToSelf().TopLeft();
-    return CSSPixel::FromAppUnitsRounded(pt);
+  if (!nsIContent::FromEventTarget(aEvent->mTarget) || !aPresContext) {
+    return CSSDoublePoint();
   }
-  return CSSIntPoint();
+  const nsIFrame* const frame =
+      GetPrimaryFrameOfEventTarget(*aPresContext, *aEvent);
+  if (MOZ_UNLIKELY(!frame)) {
+    return CSSDoublePoint();
+  }
+  MOZ_ASSERT(aPresContext->PresShell()->GetRootFrame());
+  const CSSDoublePoint clientCoords = GetClientCoords(
+      aPresContext, aEvent, aWidgetOrScreenRelativePoint, aDefaultClientPoint);
+  nsPoint ptInAppUnits = CSSPixel::ToAppUnits(CSSPoint(
+      static_cast<float>(clientCoords.x), static_cast<float>(clientCoords.y)));
+  if (nsLayoutUtils::TransformPoint(
+          RelativeTo{aPresContext->PresShell()->GetRootFrame()},
+          RelativeTo{frame},
+          ptInAppUnits) != nsLayoutUtils::TRANSFORM_SUCCEEDED) {
+    return CSSDoublePoint();
+  }
+  ptInAppUnits -= frame->GetPaddingRectRelativeToSelf().TopLeft();
+  const CSSPoint pt = CSSPixel::FromAppUnits(ptInAppUnits);
+  return CSSDoublePoint(pt.x, pt.y);
 }
 
 // To be called ONLY by Event::GetType (which has the additional

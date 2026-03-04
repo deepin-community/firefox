@@ -14,6 +14,8 @@ about-webrtc-save-page-dialog-title = gorde about:webrtc honela
 
 ## These labels are for a disclosure which contains the information for closed PeerConnection sections
 
+about-webrtc-closed-peerconnection-disclosure-show-msg = Erakutsi itxitako PeerConnection-ak
+about-webrtc-closed-peerconnection-disclosure-hide-msg = Ezkutatu itxitako PeerConnection-ak
 
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
@@ -22,6 +24,7 @@ about-webrtc-aec-logging-off-state-label = Hasi AEC erregistroa
 about-webrtc-aec-logging-on-state-label = Gelditu AEC erregistroa
 about-webrtc-aec-logging-on-state-msg = AEC erregistroa aktibo (hitz egin denbora batez deitu duenarekin eta gelditu kaptura gero)
 about-webrtc-aec-logging-toggled-on-state-msg = AEC erregistroa aktibo (hitz egin denbora batez deitu duenarekin eta gelditu kaptura gero)
+about-webrtc-aec-logging-unavailable-sandbox = Beharrezkoa da MOZ_DISABLE_CONTENT_SANDBOX=1 ingurune-aldagaia AEC log-fitxategiak esportatzeko. Ezarri aldagai hau soilik arrisku posibleak ulertzen badituzu.
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
 about-webrtc-aec-logging-toggled-off-state-msg = Kapturatutako erregistro-fitxategiak hemen aurki daitezke: { $path }
@@ -30,14 +33,16 @@ about-webrtc-aec-logging-toggled-off-state-msg = Kapturatutako erregistro-fitxat
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = Automatikoki berritu
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = Berritu automatikoki lehenespenez
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = Berritu
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
 # and is used as a data label.
 about-webrtc-peerconnection-id-label = PeerConnection IDa:
+# The number of DataChannels that a PeerConnection has opened
+about-webrtc-data-channels-opened-label = Irekitako datu-kanalak:
+# The number of once open DataChannels that a PeerConnection has closed
+about-webrtc-data-channels-closed-label = Itxitako datu-kanalak:
 
 ## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
@@ -92,6 +97,10 @@ about-webrtc-debug-mode-msg-label = Arazketa-modua
 about-webrtc-debug-mode-off-state-label = Hasi arazketa modua
 about-webrtc-debug-mode-on-state-label = Gelditu arazketa modua
 about-webrtc-stats-heading = Saioaren estatistikak
+about-webrtc-enable-logging-label = Gaitu WebRTC erregistrorako aurrezarpena
+about-webrtc-peerconnections-section-heading = RTCPeerConnection estatistikak
+about-webrtc-peerconnections-section-show-msg = Erakutsi RTCPeerConnection estatistikak
+about-webrtc-peerconnections-section-hide-msg = Ezkutatu RTCPeerConnection estatistikak
 about-webrtc-stats-clear = Garbitu historia
 about-webrtc-log-heading = Konexioaren erregistroa
 about-webrtc-log-clear = Garbitu erregistroa
@@ -103,6 +112,8 @@ about-webrtc-log-section-show-msg = Erakutsi erregistroa
     .title = Egin klik atal hau zabaltzeko
 about-webrtc-log-section-hide-msg = Ezkutatu erregistroa
     .title = Egin klik atal hau tolesteko
+about-webrtc-copy-report-button = Kopiatu txostena
+about-webrtc-copy-report-history-button = Kopiatu txostenaren historia
 
 ## These are used to display a header for a PeerConnection.
 ## Variables:
@@ -184,6 +195,17 @@ about-webrtc-configuration-element-provided = Hornitua
 about-webrtc-configuration-element-not-provided = Ez hornitua
 # The options set by the user in about:config that could impact a WebRTC call
 about-webrtc-custom-webrtc-configuration-heading = Erabiltzaileak ezarritako WebRTC hobespenak
+# The options set by the user in about:config that could impact a WebRTC call
+about-webrtc-user-modified-configuration-heading = Erabiltzaileak aldatutako WebRTC konfigurazioa
+
+## These are displayed on the button that shows or hides the
+## user modified configuration disclosure
+
+about-webrtc-user-modified-configuration-show-msg = Erakutsi erabiltzaileak aldatutako konfigurazioa
+about-webrtc-user-modified-configuration-hide-msg = Ezkutatu erabiltzaileak aldatutako konfigurazioa
+
+##
+
 # Section header for estimated bandwidths of WebRTC media flows
 about-webrtc-bandwidth-stats-heading = Zenbatetsitako banda zabalera
 # The ID of the MediaStreamTrack
@@ -205,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Bideoko markoen estatistikak - MediaStreamTrack IDa: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = orria hona gordeta: { $path }
 about-webrtc-debug-mode-off-state-msg = trazaren erregistroa hemen aurki daiteke: { $path }
@@ -291,13 +310,10 @@ about-webrtc-sdp-set-timestamp = Denbora-marka { NUMBER($timestamp, useGrouping:
 about-webrtc-show-msg-sdp = Erakutsi SDPa
 about-webrtc-hide-msg-sdp = Ezkutatu SDPa
 
-##
-
-
 ## These are displayed on the button that shows or hides the Media Context information disclosure.
 ## The Media Context is the set of preferences and detected capabilities that informs
 ## the negotiated CODEC settings.
 
-
-##
-
+about-webrtc-media-context-show-msg = Erakutsi multimedia-testuingurua
+about-webrtc-media-context-hide-msg = Ezkutatu multimedia-testuingurua
+about-webrtc-media-context-heading = Multimedia-testuingurua

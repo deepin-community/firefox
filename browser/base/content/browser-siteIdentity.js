@@ -2,7 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/browser-window */
+ChromeUtils.defineESModuleGetters(this, {
+  ExtensionUtils: "resource://gre/modules/ExtensionUtils.sys.mjs",
+  QWACs: "resource://gre/modules/psm/QWACs.sys.mjs",
+});
 
 /**
  * Utility object to handle manipulations of the identity indicators in the UI
@@ -47,6 +50,18 @@ var gIdentityHandler = {
    * time the identity UI was updated, or null if the connection is not secure.
    */
   _secInfo: null,
+
+  /**
+   * If the document is using a QWAC, this may eventually be an nsIX509Cert
+   * corresponding to it.
+   */
+  _qwac: null,
+
+  /**
+   * Promise that will resolve when determining if the document is using a QWAC
+   * has resolved.
+   */
+  _qwacStatusPromise: null,
 
   /**
    * Bitmask provided by nsIWebProgressListener.onSecurityChange.
@@ -150,6 +165,18 @@ var gIdentityHandler = {
     );
   },
 
+  get _isSecurelyConnectedAboutNetErrorPage() {
+    let { documentURI } = gBrowser.selectedBrowser;
+    if (documentURI?.scheme != "about" || documentURI.filePath != "neterror") {
+      return false;
+    }
+
+    let error = new URLSearchParams(documentURI.query).get("e");
+
+    // Bug 1944993 - A list of neterrors without connection issues
+    return error === "httpErrorPage" || error === "serverError";
+  },
+
   get _isAboutNetErrorPage() {
     let { documentURI } = gBrowser.selectedBrowser;
     return documentURI?.scheme == "about" && documentURI.filePath == "neterror";
@@ -181,6 +208,39 @@ var gIdentityHandler = {
       let wrapper = document.getElementById("template-identity-popup");
       wrapper.replaceWith(wrapper.content);
       this._popupInitialized = true;
+      this._initializePopupListeners();
+    }
+  },
+
+  _initializePopupListeners() {
+    let popup = this._identityPopup;
+    popup.addEventListener("popupshown", event => {
+      this.onPopupShown(event);
+    });
+    popup.addEventListener("popuphidden", event => {
+      this.onPopupHidden(event);
+    });
+
+    const COMMANDS = {
+      "identity-popup-security-button": () => {
+        this.showSecuritySubView();
+      },
+      "identity-popup-security-httpsonlymode-menulist": () => {
+        this.changeHttpsOnlyPermission();
+      },
+      "identity-popup-clear-sitedata-button": event => {
+        this.clearSiteData(event);
+      },
+      "identity-popup-remove-cert-exception": () => {
+        this.removeCertException();
+      },
+      "identity-popup-more-info": event => {
+        this.handleMoreInfoClick(event);
+      },
+    };
+
+    for (let [id, handler] of Object.entries(COMMANDS)) {
+      document.getElementById(id).addEventListener("command", handler);
     }
   },
 
@@ -439,50 +499,6 @@ var gIdentityHandler = {
     Services.focus.clearFocus(window);
   },
 
-  disableMixedContentProtection() {
-    // Use telemetry to measure how often unblocking happens
-    const kMIXED_CONTENT_UNBLOCK_EVENT = 2;
-    let histogram = Services.telemetry.getHistogramById(
-      "MIXED_CONTENT_UNBLOCK_COUNTER"
-    );
-    histogram.add(kMIXED_CONTENT_UNBLOCK_EVENT);
-
-    SitePermissions.setForPrincipal(
-      gBrowser.contentPrincipal,
-      "mixed-content",
-      SitePermissions.ALLOW,
-      SitePermissions.SCOPE_SESSION
-    );
-
-    // Reload the page with the content unblocked
-    BrowserCommands.reloadWithFlags(
-      Ci.nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE
-    );
-    if (this._popupInitialized) {
-      PanelMultiView.hidePopup(this._identityPopup);
-    }
-  },
-
-  // This is needed for some tests which need the permission reset, but which
-  // then reuse the browser and would race between the reload and the next
-  // load.
-  enableMixedContentProtectionNoReload() {
-    this.enableMixedContentProtection(false);
-  },
-
-  enableMixedContentProtection(reload = true) {
-    SitePermissions.removeFromPrincipal(
-      gBrowser.contentPrincipal,
-      "mixed-content"
-    );
-    if (reload) {
-      BrowserCommands.reload();
-    }
-    if (this._popupInitialized) {
-      PanelMultiView.hidePopup(this._identityPopup);
-    }
-  },
-
   removeCertException() {
     if (!this._uriHasHost) {
       console.error(
@@ -616,6 +632,9 @@ var gIdentityHandler = {
       if (this._popupInitialized) {
         PanelMultiView.hidePopup(this._identityPopup);
       }
+      // Ensure the browser is focused again, otherwise we may not trigger the
+      // security delay on a potential error page following this reload.
+      gBrowser.selectedBrowser.focus();
       return;
     }
     // Otherwise we just refresh the interface
@@ -623,12 +642,11 @@ var gIdentityHandler = {
   },
 
   /**
-   * Helper to parse out the important parts of _secInfo (of the SSL cert in
-   * particular) for use in constructing identity UI strings
+   * Helper to parse out the important parts of the given certificate for use
+   * in constructing identity UI strings.
    */
-  getIdentityData() {
+  getIdentityData(cert = this._secInfo.serverCert) {
     var result = {};
-    var cert = this._secInfo.serverCert;
 
     // Human readable name of Subject
     result.subjectOrg = cert.organization;
@@ -693,7 +711,7 @@ var gIdentityHandler = {
    *        processed by createExposableURI.
    */
   updateIdentity(state, uri) {
-    let shouldHidePopup = this._uri && this._uri.spec != uri.spec;
+    let locationChanged = this._uri && this._uri.spec != uri.spec;
     this._state = state;
 
     // Firstly, populate the state properties required to display the UI. See
@@ -701,12 +719,15 @@ var gIdentityHandler = {
     this.setURI(uri);
     this._secInfo = gBrowser.securityUI.secInfo;
     this._isSecureContext = this._getIsSecureContext();
-
+    if (locationChanged) {
+      this._qwac = null;
+      this._qwacStatusPromise = null;
+    }
     // Then, update the user interface with the available data.
     this.refreshIdentityBlock();
     // Handle a location change while the Control Center is focused
     // by closing the popup (bug 1207542)
-    if (shouldHidePopup) {
+    if (locationChanged) {
       this.hidePopup();
       gPermissionPanel.hidePopup();
     }
@@ -806,7 +827,7 @@ var gIdentityHandler = {
       !this._uriHasHost &&
       this._uri &&
       isBlankPageURL(this._uri.spec) &&
-      !this._uri.schemeIs("moz-extension")
+      !ExtensionUtils.isExtensionUrl(this._uri)
     );
   },
 
@@ -859,6 +880,7 @@ var gIdentityHandler = {
           warnTextOnInsecure
         ) {
           icon_label = gNavigatorBundle.getString("identity.notSecure.label");
+          tooltip = gNavigatorBundle.getString("identity.notSecure.tooltip");
           this._identityBox.classList.add("notSecureText");
         }
       } else if (this._isMixedActiveContentBlocked) {
@@ -953,6 +975,43 @@ var gIdentityHandler = {
   },
 
   /**
+   * Determines the string used to describe the connection security
+   * information.
+   */
+  getConnectionSecurityInformation() {
+    if (this._isSecureInternalUI) {
+      return "chrome";
+    } else if (this._pageExtensionPolicy) {
+      return "extension";
+    } else if (this._isURILoadedFromFile) {
+      return "file";
+    } else if (this._qwac) {
+      return "secure-etsi";
+    } else if (this._isEV) {
+      return "secure-ev";
+    } else if (this._isCertUserOverridden) {
+      return "secure-cert-user-overridden";
+    } else if (this._isSecureConnection) {
+      return "secure";
+    } else if (this._isCertErrorPage) {
+      return "cert-error-page";
+    } else if (this._isAboutHttpsOnlyErrorPage) {
+      return "https-only-error-page";
+    } else if (this._isAboutBlockedPage) {
+      return "not-secure";
+    } else if (this._isSecurelyConnectedAboutNetErrorPage) {
+      return "secure";
+    } else if (this._isAboutNetErrorPage) {
+      return "net-error-page";
+    } else if (this._isAssociatedIdentity) {
+      return "associated";
+    } else if (this._isPotentiallyTrustworthy) {
+      return "file";
+    }
+    return "not-secure";
+  },
+
+  /**
    * Set up the title and content messages for the identity message popup,
    * based on the specified mode, and the details of the SSL cert, where
    * applicable
@@ -966,7 +1025,12 @@ var gIdentityHandler = {
       "identity-popup-mainView"
     );
     identityPopupPanelView.removeAttribute("footerVisible");
-    if (this._uriHasHost && !this._pageExtensionPolicy) {
+    // Bug 1754172 - Only show the clear site data footer if we're not in private browsing.
+    if (
+      !PrivateBrowsingUtils.isWindowPrivate(window) &&
+      this._uriHasHost &&
+      !this._pageExtensionPolicy
+    ) {
       SiteDataManager.hasSiteData(this._uri.asciiHost).then(hasData => {
         this._clearSiteDataFooter.hidden = !hasData;
         identityPopupPanelView.setAttribute("footerVisible", hasData);
@@ -976,32 +1040,9 @@ var gIdentityHandler = {
     let customRoot = false;
 
     // Determine connection security information.
-    let connection = "not-secure";
-    if (this._isSecureInternalUI) {
-      connection = "chrome";
-    } else if (this._pageExtensionPolicy) {
-      connection = "extension";
-    } else if (this._isURILoadedFromFile) {
-      connection = "file";
-    } else if (this._isEV) {
-      connection = "secure-ev";
-    } else if (this._isCertUserOverridden) {
-      connection = "secure-cert-user-overridden";
-    } else if (this._isSecureConnection) {
-      connection = "secure";
+    let connection = this.getConnectionSecurityInformation();
+    if (this._isSecureConnection) {
       customRoot = this._hasCustomRoot();
-    } else if (this._isCertErrorPage) {
-      connection = "cert-error-page";
-    } else if (this._isAboutHttpsOnlyErrorPage) {
-      connection = "https-only-error-page";
-    } else if (this._isAboutBlockedPage) {
-      connection = "not-secure";
-    } else if (this._isAboutNetErrorPage) {
-      connection = "net-error-page";
-    } else if (this._isAssociatedIdentity) {
-      connection = "associated";
-    } else if (this._isPotentiallyTrustworthy) {
-      connection = "file";
     }
 
     let securityButtonNode = document.getElementById(
@@ -1011,6 +1052,7 @@ var gIdentityHandler = {
     let disableSecurityButton = ![
       "not-secure",
       "secure",
+      "secure-etsi",
       "secure-ev",
       "secure-cert-user-overridden",
       "cert-error-page",
@@ -1123,9 +1165,10 @@ var gIdentityHandler = {
       verifier = this._identityIconLabel.tooltipText;
     }
 
-    // Fill in organization information if we have a valid EV certificate.
-    if (this._isEV) {
-      let iData = this.getIdentityData();
+    // Fill in organization information if we have a valid EV certificate or
+    // QWAC.
+    if (this._isEV || this._qwac) {
+      let iData = this.getIdentityData(this._qwac || this._secInfo.serverCert);
       owner = iData.subjectOrg;
       verifier = this._identityIconLabel.tooltipText;
 
@@ -1181,8 +1224,12 @@ var gIdentityHandler = {
   },
 
   setURI(uri) {
-    if (uri instanceof Ci.nsINestedURI) {
-      uri = uri.QueryInterface(Ci.nsINestedURI).innermostURI;
+    // Unnest the URI, turning "view-source:https://example.com" into
+    // "https://example.com" for example. "about:" URIs are a special exception
+    // here, as some of them have a hidden moz-safe-about inner URI we do not
+    // want to unnest.
+    while (uri instanceof Ci.nsINestedURI && !uri.schemeIs("about")) {
+      uri = uri.QueryInterface(Ci.nsINestedURI).innerURI;
     }
     this._uri = uri;
 
@@ -1193,7 +1240,7 @@ var gIdentityHandler = {
       this._uriHasHost = false;
     }
 
-    if (uri.schemeIs("about") || uri.schemeIs("moz-safe-about")) {
+    if (uri.schemeIs("about")) {
       let module = E10SUtils.getAboutModule(uri);
       if (module) {
         let flags = module.getURIFlags(uri);
@@ -1234,6 +1281,23 @@ var gIdentityHandler = {
   _openPopup(event) {
     // Make the popup available.
     this._initializePopup();
+
+    // Kick off background determination of QWAC status.
+    if (this._isSecureContext && !this._qwacStatusPromise) {
+      let qwacStatusPromise = QWACs.determineQWACStatus(
+        this._secInfo,
+        this._uri,
+        gBrowser.selectedBrowser.browsingContext
+      ).then(result => {
+        // Check that when this promise resolves, we're still on the same
+        // document as when it was created.
+        if (qwacStatusPromise == this._qwacStatusPromise && result) {
+          this._qwac = result;
+          this.refreshIdentityPopup();
+        }
+      });
+      this._qwacStatusPromise = qwacStatusPromise;
+    }
 
     // Update the popup strings
     this.refreshIdentityPopup();

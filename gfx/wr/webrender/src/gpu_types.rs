@@ -2,25 +2,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use api::{AlphaType, PremultipliedColorF, YuvFormat, YuvRangedColorSpace};
+use api::{AlphaType, ExtendMode, PremultipliedColorF, YuvFormat, YuvRangedColorSpace};
 use api::units::*;
-use crate::composite::CompositeFeatures;
+use euclid::HomogeneousVector;
+use crate::composite::{CompositeFeatures, CompositorClip};
+use crate::pattern::PatternShaderInput;
+use crate::quad::LayoutOrDeviceRect;
 use crate::segment::EdgeAaSegmentMask;
 use crate::spatial_tree::{SpatialTree, SpatialNodeIndex};
-use crate::gpu_cache::{GpuCacheAddress, GpuDataRequest};
-use crate::internal_types::FastHashMap;
-use crate::prim_store::ClipData;
+use crate::internal_types::{FastHashMap, FrameVec, FrameMemory};
+use crate::prim_store::{ClipData, VECS_PER_SEGMENT};
 use crate::render_task::RenderTaskAddress;
 use crate::render_task_graph::RenderTaskId;
-use crate::renderer::{ShaderColorMode, GpuBufferAddress};
+use crate::renderer::{GpuBufferAddress, GpuBufferBuilderF, GpuBufferHandle, GpuBufferWriterF, GpuBufferDataF, GpuBufferDataI, GpuBufferWriterI, ShaderColorMode};
 use std::i32;
-use crate::util::{TransformedRectKind, MatrixHelpers};
+use crate::util::{MatrixHelpers, ScaleOffset, TransformedRectKind};
 use glyph_rasterizer::SubpixelDirection;
-use crate::util::{ScaleOffset, pack_as_float};
+use crate::util::pack_as_float;
+
 
 // Contains type that must exactly match the same structures declared in GLSL.
 
 pub const VECS_PER_TRANSFORM: usize = 8;
+pub const VECS_PER_SPECIFIC_BRUSH: usize = 3;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
@@ -104,6 +108,24 @@ impl BlurDirection {
     }
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, MallocSizeOf)]
+#[repr(C)]
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub enum BlurEdgeMode {
+    Duplicate = 0,
+    Mirror,
+}
+
+impl BlurEdgeMode {
+    pub fn as_int(self) -> i32 {
+        match self {
+            BlurEdgeMode::Duplicate => 0,
+            BlurEdgeMode::Mirror => 1,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 #[repr(C)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
@@ -112,6 +134,7 @@ pub struct BlurInstance {
     pub task_address: RenderTaskAddress,
     pub src_task_address: RenderTaskAddress,
     pub blur_direction: i32,
+    pub edge_mode: i32,
     pub blur_std_deviation: f32,
     pub blur_region: DeviceSize,
 }
@@ -123,21 +146,21 @@ pub struct BlurInstance {
 pub struct ScalingInstance {
     pub target_rect: DeviceRect,
     pub source_rect: DeviceRect,
+    source_rect_type: f32,
 }
 
-#[derive(Clone, Debug)]
-#[repr(C)]
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
-pub struct SvgFilterInstance {
-    pub task_address: RenderTaskAddress,
-    pub input_1_task_address: RenderTaskAddress,
-    pub input_2_task_address: RenderTaskAddress,
-    pub kind: u16,
-    pub input_count: u16,
-    pub generic_int: u16,
-    pub padding: u16,
-    pub extra_data_address: GpuCacheAddress,
+impl ScalingInstance {
+    pub fn new(target_rect: DeviceRect, source_rect: DeviceRect, source_rect_normalized: bool) -> Self {
+        let source_rect_type = match source_rect_normalized {
+            true => UV_TYPE_NORMALIZED,
+            false => UV_TYPE_UNNORMALIZED,
+        };
+        Self {
+            target_rect,
+            source_rect,
+            source_rect_type: pack_as_float(source_rect_type),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -152,7 +175,7 @@ pub struct SVGFEFilterInstance {
     pub input_2_task_address: RenderTaskAddress,
     pub kind: u16,
     pub input_count: u16,
-    pub extra_data_address: GpuCacheAddress,
+    pub extra_data_address: i32,
 }
 
 #[derive(Copy, Clone, Debug, Hash, MallocSizeOf, PartialEq, Eq)]
@@ -226,7 +249,7 @@ pub struct BoxShadowData {
 #[repr(C)]
 pub struct ClipMaskInstanceBoxShadow {
     pub common: ClipMaskInstanceCommon,
-    pub resource_address: GpuCacheAddress,
+    pub resource_address: i32,
     pub shadow_data: BoxShadowData,
 }
 
@@ -239,31 +262,11 @@ pub struct PrimitiveInstanceData {
     data: [i32; 4],
 }
 
-/// Specifies that an RGB CompositeInstance's UV coordinates are normalized.
+// Keep these in sync with the correspondong #defines in shared.glsl
+/// Specifies that an RGB CompositeInstance or ScalingInstance's UV coordinates are normalized.
 const UV_TYPE_NORMALIZED: u32 = 0;
-/// Specifies that an RGB CompositeInstance's UV coordinates are not normalized.
+/// Specifies that an RGB CompositeInstance or ScalingInstance's UV coordinates are not normalized.
 const UV_TYPE_UNNORMALIZED: u32 = 1;
-
-/// A GPU-friendly representation of the `ScaleOffset` type
-#[derive(Clone, Debug)]
-#[repr(C)]
-pub struct CompositorTransform {
-    pub sx: f32,
-    pub sy: f32,
-    pub tx: f32,
-    pub ty: f32,
-}
-
-impl From<ScaleOffset> for CompositorTransform {
-    fn from(scale_offset: ScaleOffset) -> Self {
-        CompositorTransform {
-            sx: scale_offset.scale.x,
-            sy: scale_offset.scale.y,
-            tx: scale_offset.offset.x,
-            ty: scale_offset.offset.y,
-        }
-    }
-}
 
 /// Vertex format for picture cache composite shader.
 /// When editing the members, update desc::COMPOSITE
@@ -290,6 +293,10 @@ pub struct CompositeInstance {
 
     // Whether to flip the x and y axis respectively, where 0.0 is no-flip and 1.0 is flip.
     flip: (f32, f32),
+
+    // Optional rounded rect clip to apply during compositing
+    rounded_clip_rect: DeviceRect,
+    rounded_clip_radii: [f32; 4],
 }
 
 impl CompositeInstance {
@@ -298,8 +305,12 @@ impl CompositeInstance {
         clip_rect: DeviceRect,
         color: PremultipliedColorF,
         flip: (bool, bool),
+        clip: Option<&CompositorClip>,
     ) -> Self {
         let uv = TexelRect::new(0.0, 0.0, 1.0, 1.0);
+
+        let (rounded_clip_rect, rounded_clip_radii) = Self::vertex_clip_params(clip, rect);
+
         CompositeInstance {
             rect,
             clip_rect,
@@ -310,6 +321,8 @@ impl CompositeInstance {
             yuv_channel_bit_depth: 0.0,
             uv_rects: [uv, uv, uv],
             flip: (flip.0.into(), flip.1.into()),
+            rounded_clip_rect,
+            rounded_clip_radii,
         }
     }
 
@@ -318,18 +331,28 @@ impl CompositeInstance {
         clip_rect: DeviceRect,
         color: PremultipliedColorF,
         uv_rect: TexelRect,
+        normalized_uvs: bool,
         flip: (bool, bool),
+        clip: Option<&CompositorClip>,
     ) -> Self {
+        let (rounded_clip_rect, rounded_clip_radii) = Self::vertex_clip_params(clip, rect);
+
+        let uv_type = match normalized_uvs {
+            true => UV_TYPE_NORMALIZED,
+            false => UV_TYPE_UNNORMALIZED,
+        };
         CompositeInstance {
             rect,
             clip_rect,
             color,
             _padding: 0.0,
-            color_space_or_uv_type: pack_as_float(UV_TYPE_UNNORMALIZED),
+            color_space_or_uv_type: pack_as_float(uv_type),
             yuv_format: 0.0,
             yuv_channel_bit_depth: 0.0,
             uv_rects: [uv_rect, uv_rect, uv_rect],
             flip: (flip.0.into(), flip.1.into()),
+            rounded_clip_rect,
+            rounded_clip_radii,
         }
     }
 
@@ -341,7 +364,11 @@ impl CompositeInstance {
         yuv_channel_bit_depth: u32,
         uv_rects: [TexelRect; 3],
         flip: (bool, bool),
+        clip: Option<&CompositorClip>,
     ) -> Self {
+
+        let (rounded_clip_rect, rounded_clip_radii) = Self::vertex_clip_params(clip, rect);
+
         CompositeInstance {
             rect,
             clip_rect,
@@ -352,6 +379,8 @@ impl CompositeInstance {
             yuv_channel_bit_depth: pack_as_float(yuv_channel_bit_depth),
             uv_rects,
             flip: (flip.0.into(), flip.1.into()),
+            rounded_clip_rect,
+            rounded_clip_radii,
         }
     }
 
@@ -372,7 +401,47 @@ impl CompositeInstance {
             features |= CompositeFeatures::NO_COLOR_MODULATION
         }
 
+        // If all the clip radii are <= 0.0, then we don't need clip masking
+        if self.rounded_clip_radii.iter().all(|r| *r <= 0.0) {
+            features |= CompositeFeatures::NO_CLIP_MASK
+        }
+
         features
+    }
+
+    // Returns the CompositeFeatures that can be used to composite
+    // this YUV instance.
+    pub fn get_yuv_features(&self) -> CompositeFeatures {
+        let mut features = CompositeFeatures::empty();
+
+        // If all the clip radii are <= 0.0, then we don't need clip masking
+        if self.rounded_clip_radii.iter().all(|r| *r <= 0.0) {
+            features |= CompositeFeatures::NO_CLIP_MASK
+        }
+
+        features
+    }
+
+    fn vertex_clip_params(
+        clip: Option<&CompositorClip>,
+        default_rect: DeviceRect,
+    ) -> (DeviceRect, [f32; 4]) {
+        match clip {
+            Some(clip) => {
+                (
+                    clip.rect.cast_unit(),
+                    [
+                        clip.radius.top_left.width,
+                        clip.radius.bottom_left.width,
+                        clip.radius.top_right.width,
+                        clip.radius.bottom_right.width,
+                    ],
+                )
+            }
+            None => {
+                (default_rect, [0.0; 4])
+            }
+        }
     }
 }
 
@@ -395,16 +464,16 @@ pub struct PrimitiveHeaderIndex(pub i32);
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct PrimitiveHeaders {
     // The integer-type headers for a primitive.
-    pub headers_int: Vec<PrimitiveHeaderI>,
+    pub headers_int: FrameVec<PrimitiveHeaderI>,
     // The float-type headers for a primitive.
-    pub headers_float: Vec<PrimitiveHeaderF>,
+    pub headers_float: FrameVec<PrimitiveHeaderF>,
 }
 
 impl PrimitiveHeaders {
-    pub fn new() -> PrimitiveHeaders {
+    pub fn new(memory: &FrameMemory) -> PrimitiveHeaders {
         PrimitiveHeaders {
-            headers_int: Vec::new(),
-            headers_float: Vec::new(),
+            headers_int: memory.new_vec(),
+            headers_float: memory.new_vec(),
         }
     }
 
@@ -412,9 +481,6 @@ impl PrimitiveHeaders {
     pub fn push(
         &mut self,
         prim_header: &PrimitiveHeader,
-        z: ZBufferId,
-        render_task_address: RenderTaskAddress,
-        user_data: [i32; 4],
     ) -> PrimitiveHeaderIndex {
         debug_assert_eq!(self.headers_int.len(), self.headers_float.len());
         let id = self.headers_float.len();
@@ -425,11 +491,11 @@ impl PrimitiveHeaders {
         });
 
         self.headers_int.push(PrimitiveHeaderI {
-            z,
-            render_task_address,
-            specific_prim_address: prim_header.specific_prim_address.as_int(),
+            z: prim_header.z,
+            render_task_address: prim_header.render_task_address,
+            specific_prim_address: prim_header.specific_prim_address,
             transform_id: prim_header.transform_id,
-            user_data,
+            user_data: prim_header.user_data,
         });
 
         PrimitiveHeaderIndex(id as i32)
@@ -442,8 +508,11 @@ impl PrimitiveHeaders {
 pub struct PrimitiveHeader {
     pub local_rect: LayoutRect,
     pub local_clip_rect: LayoutRect,
-    pub specific_prim_address: GpuCacheAddress,
+    pub specific_prim_address: i32,
     pub transform_id: TransformPaletteId,
+    pub z: ZBufferId,
+    pub render_task_address: RenderTaskAddress,
+    pub user_data: [i32; 4],
 }
 
 // f32 parts of a primitive header
@@ -490,16 +559,27 @@ impl GlyphInstance {
         clip_task: RenderTaskAddress,
         subpx_dir: SubpixelDirection,
         glyph_index_in_text_run: i32,
-        glyph_uv_rect: GpuCacheAddress,
+        glyph_uv_rect: GpuBufferAddress,
         color_mode: ShaderColorMode,
+        subpx_offset_x: u8,
+        subpx_offset_y: u8,
+        is_packed_glyph: bool,
     ) -> PrimitiveInstanceData {
+        // Pack subpixel offsets and multi-variant flag into upper 16 bits of data[2]
+        // After instance.flags extraction (>> 16), shader sees:
+        // bits 0-3: color_mode, bits 4-5: subpx_offset_x, bits 6-7: subpx_offset_y,
+        // bits 8-9: subpx_dir, bit 10: is_packed_glyph
+        let packed_flags = (((is_packed_glyph as u32) & 0x1) << 26)
+            | (((subpx_dir as u32) & 0x3) << 24)
+            | (((subpx_offset_y as u32) & 0x3) << 22)
+            | (((subpx_offset_x as u32) & 0x3) << 20)
+            | (((color_mode as u32) & 0xF) << 16);
+
         PrimitiveInstanceData {
             data: [
                 self.prim_header_index.0 as i32,
                 clip_task.0 as i32,
-                (subpx_dir as u32 as i32) << 24
-                | (color_mode as u32 as i32) << 16
-                | glyph_index_in_text_run,
+                packed_flags as i32 | glyph_index_in_text_run,
                 glyph_uv_rect.as_int(),
             ],
         }
@@ -531,8 +611,8 @@ impl From<SplitCompositeInstance> for PrimitiveInstanceData {
 #[cfg_attr(feature = "replay", derive(Deserialize))]
 pub struct QuadInstance {
     pub dst_task_address: RenderTaskAddress,
-    pub prim_address_i: GpuBufferAddress,
-    pub prim_address_f: GpuBufferAddress,
+    pub prim_address_i: i32,
+    pub prim_address_f: i32,
     pub quad_flags: u8,
     pub edge_flags: u8,
     pub part_index: u8,
@@ -550,8 +630,8 @@ impl From<QuadInstance> for PrimitiveInstanceData {
 
         PrimitiveInstanceData {
             data: [
-                instance.prim_address_i.as_int(),
-                instance.prim_address_f.as_int(),
+                instance.prim_address_i,
+                instance.prim_address_f,
 
                 ((instance.quad_flags as i32)    << 24) |
                 ((instance.edge_flags as i32)    << 16) |
@@ -564,11 +644,92 @@ impl From<QuadInstance> for PrimitiveInstanceData {
     }
 }
 
+/// Matches QuadHeader in ps_quad.glsl
+pub struct QuadHeader {
+    pub transform_id: TransformPaletteId,
+    pub z_id: ZBufferId,
+    pub pattern_input: PatternShaderInput,
+}
+
+impl GpuBufferDataI for QuadHeader {
+    const NUM_BLOCKS: usize = 1;
+    fn write(&self, writer: &mut GpuBufferWriterI) {
+        writer.push_one([
+            self.transform_id.0 as i32,
+            self.z_id.0,
+            self.pattern_input.0,
+            self.pattern_input.1,
+        ]);
+    }
+}
+
+/// Matches QuadPrimitive in ps_quad.glsl
+pub struct QuadPrimitive {
+    pub bounds: LayoutOrDeviceRect,
+    pub clip: LayoutOrDeviceRect,
+    // TODO: This gets translated into a Rect just before upload.
+    // It would be better to send the gpu buffer address to the shader.
+    pub input_task: RenderTaskId,
+    pub pattern_scale_offset: ScaleOffset,
+    /// Base color of the pattern.
+    pub color: PremultipliedColorF,
+}
+
+impl GpuBufferDataF for QuadPrimitive {
+    const NUM_BLOCKS: usize = 5;
+    fn write(&self, writer: &mut GpuBufferWriterF) {
+        writer.push_one(self.bounds);
+        writer.push_one(self.clip);
+        writer.push_render_task(self.input_task);
+        writer.push_one(self.pattern_scale_offset);
+        writer.push_one(self.color);
+    }
+}
+
+pub const VECS_PER_QUAD_SEGMENT: usize = 2;
+
+/// Matches QuadSegment in ps_quad.glsl
 #[derive(Debug)]
 #[cfg_attr(feature = "capture", derive(Serialize))]
 pub struct QuadSegment {
-    pub rect: LayoutRect,
+    pub rect: LayoutOrDeviceRect,
+    // TODO: This gets translated into a Rect just before upload.
+    // It would be better to send the gpu buffer address to the shader.
     pub task_id: RenderTaskId,
+}
+
+impl GpuBufferDataF for QuadSegment {
+    const NUM_BLOCKS: usize = VECS_PER_QUAD_SEGMENT;
+    fn write(&self, writer: &mut GpuBufferWriterF) {
+        writer.push_one(self.rect);
+        writer.push_render_task(self.task_id)
+    }
+}
+
+/// Matches LinearGradientBrushData in brush_linear_gradient.glsl
+pub struct LinearGradientBrushData {
+    pub start: LayoutPoint,
+    pub end: LayoutPoint,
+    pub extend_mode: ExtendMode,
+    pub stretch_size: LayoutSize,
+}
+
+impl GpuBufferDataF for LinearGradientBrushData {
+    const NUM_BLOCKS: usize = 2;
+    fn write(&self, writer: &mut GpuBufferWriterF) {
+        writer.push_one([
+            self.start.x,
+            self.start.y,
+            self.end.x,
+            self.end.y,
+        ]);
+        writer.push_one([
+            pack_as_float(self.extend_mode as u32),
+            self.stretch_size.width,
+            self.stretch_size.height,
+            0.0,
+        ]);
+    }
 }
 
 #[derive(Copy, Debug, Clone, PartialEq)]
@@ -640,6 +801,8 @@ bitflags! {
         /// Whether to force the anti-aliasing when the primitive
         /// is axis-aligned.
         const FORCE_AA = 1024;
+        /// Specifies UV coordinates are normalized
+        const NORMALIZED_UVS = 2048;
     }
 }
 
@@ -680,14 +843,14 @@ impl From<BrushInstance> for PrimitiveInstanceData {
 
 /// Convenience structure to encode into the image brush's user data.
 #[derive(Copy, Clone, Debug)]
-pub struct ImageBrushData {
+pub struct ImageBrushUserData {
     pub color_mode: ShaderColorMode,
     pub alpha_type: AlphaType,
     pub raster_space: RasterizationSpace,
     pub opacity: f32,
 }
 
-impl ImageBrushData {
+impl ImageBrushUserData {
     #[inline]
     pub fn encode(&self) -> [i32; 4] {
         [
@@ -780,7 +943,7 @@ struct RelativeTransformKey {
 //           specifying a coordinate system that the transform
 //           should be relative to.
 pub struct TransformPalette {
-    transforms: Vec<TransformData>,
+    transforms: FrameVec<TransformData>,
     metadata: Vec<TransformMetadata>,
     map: FastHashMap<RelativeTransformKey, usize>,
 }
@@ -788,10 +951,11 @@ pub struct TransformPalette {
 impl TransformPalette {
     pub fn new(
         count: usize,
+        memory: &FrameMemory,
     ) -> Self {
         let _ = VECS_PER_TRANSFORM;
 
-        let mut transforms = Vec::with_capacity(count);
+        let mut transforms = memory.new_vec_with_capacity(count);
         let mut metadata = Vec::with_capacity(count);
 
         transforms.push(TransformData::invalid());
@@ -804,7 +968,7 @@ impl TransformPalette {
         }
     }
 
-    pub fn finish(self) -> Vec<TransformData> {
+    pub fn finish(self) -> FrameVec<TransformData> {
         self.transforms
     }
 
@@ -922,26 +1086,90 @@ pub struct ImageSource {
 }
 
 impl ImageSource {
-    pub fn write_gpu_blocks(&self, request: &mut GpuDataRequest) {
+    pub fn write_gpu_blocks(&self, gpu_buffer: &mut GpuBufferBuilderF) -> GpuBufferHandle {
+        let mut writer = gpu_buffer.write_blocks(6);
+        self.push_gpu_blocks(&mut writer);
+        writer.finish_with_handle()
+    }
+
+    pub fn push_gpu_blocks(&self, writer: &mut GpuBufferWriterF) {
         // see fetch_image_resource in GLSL
         // has to be VECS_PER_IMAGE_RESOURCE vectors
-        request.push([
+        writer.push_one([
             self.p0.x,
             self.p0.y,
             self.p1.x,
             self.p1.y,
         ]);
-        request.push(self.user_data);
+        writer.push_one(self.user_data);
 
         // If this is a polygon uv kind, then upload the four vertices.
         if let UvRectKind::Quad { top_left, top_right, bottom_left, bottom_right } = self.uv_rect_kind {
             // see fetch_image_resource_extra in GLSL
             //Note: we really need only 3 components per point here: X, Y, and W
-            request.push(top_left);
-            request.push(top_right);
-            request.push(bottom_left);
-            request.push(bottom_right);
+            fn to_array(v: HomogeneousVector<f32, DevicePixel>) -> [f32; 4] {
+                [v.x, v.y, v.z, v.w]
+            }
+            writer.push_one(to_array(top_left));
+            writer.push_one(to_array(top_right));
+            writer.push_one(to_array(bottom_left));
+            writer.push_one(to_array(bottom_right));
         }
+    }
+}
+
+// Must correspond to ImageBrushPrimitiveData in brush_image.glsl
+// Images are drawn as a white color, modulated by the total
+// opacity coming from any collapsed property bindings.
+#[derive(Copy, Clone, Debug)]
+pub struct ImageBrushPrimitiveData {
+    pub color: PremultipliedColorF,
+    pub background_color: PremultipliedColorF,
+    pub stretch_size: LayoutSize,
+}
+
+impl GpuBufferDataF for ImageBrushPrimitiveData {
+    const NUM_BLOCKS: usize = VECS_PER_SPECIFIC_BRUSH;
+    fn write(&self, writer: &mut GpuBufferWriterF) {
+        writer.push_one(self.color);
+        writer.push_one(self.background_color);
+        writer.push_one([self.stretch_size.width, self.stretch_size.height, 0.0, 0.0]);
+    }
+}
+
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+#[derive(Debug, Clone, MallocSizeOf)]
+pub struct BrushSegmentGpuData {
+    pub local_rect: LayoutRect,
+    /// Each brush shader has its own interpretation of this field.
+    pub extra_data: [f32; 4],
+}
+
+impl GpuBufferDataF for BrushSegmentGpuData {
+    const NUM_BLOCKS: usize = VECS_PER_SEGMENT;
+    fn write(&self, writer: &mut GpuBufferWriterF) {
+        writer.push_one(self.local_rect);
+        writer.push_one(self.extra_data);
+    }
+}
+
+/// Matches YuvPrimitive in yuv.glsl
+pub struct YuvPrimitive {
+    pub channel_bit_depth: u32,
+    pub color_space: YuvRangedColorSpace,
+    pub yuv_format: YuvFormat,
+}
+
+impl GpuBufferDataF for YuvPrimitive {
+    const NUM_BLOCKS: usize = 1;
+    fn write(&self, writer: &mut GpuBufferWriterF) {
+        writer.push_one([
+            pack_as_float(self.channel_bit_depth),
+            pack_as_float(self.color_space as u32),
+            pack_as_float(self.yuv_format as u32),
+            0.0
+        ]);
     }
 }
 
@@ -949,7 +1177,7 @@ impl ImageSource {
 // node in the transform palette.
 fn register_transform(
     metadatas: &mut Vec<TransformMetadata>,
-    transforms: &mut Vec<TransformData>,
+    transforms: &mut FrameVec<TransformData>,
     transform: LayoutToPictureTransform,
 ) -> usize {
     // TODO: refactor the calling code to not even try

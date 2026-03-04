@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Частка гэтай старонкі пацярпела крах.</strong> Каб паведаміць { -brand-product-name } пра гэту праблему і паскорыць выпраўленне, адпраўце справаздачу.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -33,3 +32,22 @@ pending-crash-reports-send =
     .label = Адправіць
 pending-crash-reports-always-send =
     .label = Заўседы адпраўляць
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message-new =
+    { $reportCount ->
+        [one] У вас ёсць { $reportCount } неадпраўленая справаздача пра крахі, што тычацца збояў, якія расследуюцца. Адпраўка дапаможа нам палепшыць { -brand-product-name }. Па закрыцці гэтай абвесткі справаздача будзе ігнаравацца.
+        [few] У вас ёсць { $reportCount } неадпраўленыя справаздачы пра крахі, што тычацца збояў, якія расследуюцца. Адпраўка дапаможа нам палепшыць { -brand-product-name }. Па закрыцці гэтай абвесткі справаздачы будуць ігнаравацца.
+       *[many] У вас ёсць { $reportCount } неадпраўленых справаздач пра крахі, што тычацца збояў, якія расследуюцца. Адпраўка дапаможа нам палепшыць { -brand-product-name }. Па закрыцці гэтай абвесткі справаздачы будуць ігнаравацца.
+    }
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message =
+    { $reportCount ->
+        [one] У вас ёсць { $reportCount } неадпраўленая справаздача пра крахі, што адпавядаюць збоям, якія расследуюцца. Адпраўка дапаможа нам палепшыць { -brand-product-name }. Па закрыцці гэтай абвесткі справаздача будзе ігнаравацца.
+        [few] У вас ёсць { $reportCount } неадпраўленыя справаздачы пра крахі, што адпавядаюць збоям, якія расследуюцца. Адпраўка дапаможа нам палепшыць { -brand-product-name }. Па закрыцці гэтай абвесткі справаздачы будуць ігнаравацца.
+       *[many] У вас ёсць { $reportCount } неадпраўленых справаздач пра крахі, што адпавядаюць збоям, якія расследуюцца. Адпраўка дапаможа нам палепшыць { -brand-product-name }. Па закрыцці гэтай абвесткі справаздачы будуць ігнаравацца.
+    }
+requested-crash-reports-dont-show-again =
+    .label = Больш не паказваць
+    .accesskey = в

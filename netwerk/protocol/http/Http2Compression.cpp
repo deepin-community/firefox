@@ -17,6 +17,7 @@
 #include "Http2HuffmanIncoming.h"
 #include "Http2HuffmanOutgoing.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "nsCharSeparatedTokenizer.h"
 #include "nsIMemoryReporter.h"
 #include "nsHttpHandler.h"
@@ -245,12 +246,6 @@ Http2BaseCompressor::Http2BaseCompressor() {
 }
 
 Http2BaseCompressor::~Http2BaseCompressor() {
-  if (mPeakSize) {
-    Telemetry::Accumulate(mPeakSizeID, mPeakSize);
-  }
-  if (mPeakCount) {
-    Telemetry::Accumulate(mPeakCountID, mPeakCount);
-  }
   UnregisterStrongMemoryReporter(mDynamicReporter);
   {
     MutexAutoLock lock(mDynamicReporter->mMutex);
@@ -276,9 +271,6 @@ size_t Http2BaseCompressor::SizeOfExcludingThis(
 }
 
 void Http2BaseCompressor::MakeRoom(uint32_t amount, const char* direction) {
-  uint32_t countEvicted = 0;
-  uint32_t bytesEvicted = 0;
-
   // make room in the header table
   while (mHeaderTable.VariableLength() &&
          ((mHeaderTable.ByteCount() + amount) > mMaxBuffer)) {
@@ -287,27 +279,7 @@ void Http2BaseCompressor::MakeRoom(uint32_t amount, const char* direction) {
     LOG(("HTTP %s header table index %u %s %s removed for size.\n", direction,
          index, mHeaderTable[index]->mName.get(),
          mHeaderTable[index]->mValue.get()));
-    ++countEvicted;
-    bytesEvicted += mHeaderTable[index]->Size();
     mHeaderTable.RemoveElement();
-  }
-
-  if (!strcmp(direction, "decompressor")) {
-    Telemetry::Accumulate(Telemetry::HPACK_ELEMENTS_EVICTED_DECOMPRESSOR,
-                          countEvicted);
-    Telemetry::Accumulate(Telemetry::HPACK_BYTES_EVICTED_DECOMPRESSOR,
-                          bytesEvicted);
-    Telemetry::Accumulate(
-        Telemetry::HPACK_BYTES_EVICTED_RATIO_DECOMPRESSOR,
-        (uint32_t)((100.0 * (double)bytesEvicted) / (double)amount));
-  } else {
-    Telemetry::Accumulate(Telemetry::HPACK_ELEMENTS_EVICTED_COMPRESSOR,
-                          countEvicted);
-    Telemetry::Accumulate(Telemetry::HPACK_BYTES_EVICTED_COMPRESSOR,
-                          bytesEvicted);
-    Telemetry::Accumulate(
-        Telemetry::HPACK_BYTES_EVICTED_RATIO_COMPRESSOR,
-        (uint32_t)((100.0 * (double)bytesEvicted) / (double)amount));
   }
 }
 
@@ -363,6 +335,8 @@ nsresult Http2BaseCompressor::SetInitialMaxBufferSize(uint32_t maxBufferSize) {
 void Http2BaseCompressor::SetDumpTables(bool dumpTables) {
   mDumpTables = dumpTables;
 }
+
+Http2Decompressor::~Http2Decompressor() {}
 
 nsresult Http2Decompressor::DecodeHeaderBlock(const uint8_t* data,
                                               uint32_t datalen,
@@ -1053,10 +1027,13 @@ nsresult Http2Decompressor::DoContextUpdate() {
 
 /////////////////////////////////////////////////////////////////
 
+Http2Compressor::~Http2Compressor() = default;
+
 nsresult Http2Compressor::EncodeHeaderBlock(
     const nsCString& nvInput, const nsACString& method, const nsACString& path,
     const nsACString& host, const nsACString& scheme,
-    const nsACString& protocol, bool simpleConnectForm, nsACString& output) {
+    const nsACString& protocol, bool simpleConnectForm, nsACString& output,
+    bool addTEHeader) {
   mSetInitialMaxBufferSizeAllowed = false;
   mOutput = &output;
   output.Truncate();
@@ -1183,7 +1160,7 @@ nsresult Http2Compressor::EncodeHeaderBlock(
   // transaction) would require totally reworking how/when the transaction
   // creates its request stream, which is not worth the effort and risk of
   // breakage just to add one header only to h2 connections.
-  if (!simpleConnectForm && !isWebsocket) {
+  if (addTEHeader && !simpleConnectForm && !isWebsocket) {
     // Add in TE: trailers for regular requests
     nsAutoCString te("te");
     nsAutoCString trailers("trailers");

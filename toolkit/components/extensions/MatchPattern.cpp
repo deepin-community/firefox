@@ -10,7 +10,6 @@
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/HoldDropJSObjects.h"
-#include "mozilla/Unused.h"
 
 #include "nsGkAtoms.h"
 #include "nsIProtocolHandler.h"
@@ -30,7 +29,9 @@ template <typename Range, typename AsAtom>
 static AtomSet::ArrayType AtomSetFromRange(Range&& aRange,
                                            AsAtom&& aTransform) {
   AtomSet::ArrayType atoms;
-  atoms.SetCapacity(RangeSize(aRange));
+  if (auto estimate = RangeSizeEstimate(aRange)) {
+    atoms.SetCapacity(estimate);
+  }
   std::transform(aRange.begin(), aRange.end(), MakeBackInserter(atoms),
                  std::forward<AsAtom>(aTransform));
 
@@ -127,7 +128,7 @@ nsAtom* URLInfo::Scheme() const {
 
 const nsCString& URLInfo::Host() const {
   if (mHost.IsVoid()) {
-    Unused << mURI->GetHost(mHost);
+    (void)mURI->GetHost(mHost);
   }
   return mHost;
 }
@@ -160,7 +161,7 @@ const nsCString& URLInfo::Path() const {
 
 const nsCString& URLInfo::CSpec() const {
   if (mCSpec.IsEmpty()) {
-    Unused << URINoRef()->GetSpec(mCSpec);
+    (void)URINoRef()->GetSpec(mCSpec);
   }
   return mCSpec;
 }

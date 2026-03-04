@@ -169,8 +169,8 @@ addon-updates-view-updates = Ammustra atualizatziones reghentes
 # This menu item is a checkbox that toggles the default global behavior for
 # add-on update checking.
 
-addon-updates-update-addons-automatically = Agiorna is cumplementos in automàticu
-    .accesskey = g
+addon-updates-update-addons-automatically = Atualiza is cumplementos in automàticu
+    .accesskey = z
 
 ## Specific add-ons can have custom update checking behaviors ("Manually",
 ## "Automatically", "Use default global behavior"). These menu items reset the
@@ -178,7 +178,7 @@ addon-updates-update-addons-automatically = Agiorna is cumplementos in automàti
 ## (which itself is either "Automatically" or "Manually", controlled by the
 ## extensions-updates-update-addons-automatically.label menu item).
 
-addon-updates-reset-updates-to-automatic = Riprìstina totu is cumplementos pro chi s'atualizent in automàticu
+addon-updates-reset-updates-to-automatic = Riprìstina totu is cumplementos pro chi s’atualizent in automàticu
     .accesskey = R
 addon-updates-reset-updates-to-manual = Riprìstina totu is cumplementos pro chi s'atualizent in manera manuale
     .accesskey = R
@@ -192,7 +192,7 @@ addon-updates-manual-updates-found = Ammustra is atualizatziones a disponimentu
 
 ## Add-on install/debug strings for page options menu
 
-addon-install-from-file = Installa unu cumplementu dae un'archìviu…
+addon-install-from-file = Installa unu cumplementu dae un’archìviu…
     .accesskey = I
 addon-install-from-file-dialog-title = Seletziona unu cumplementu de installare
 addon-install-from-file-filter-name = Cumplementos
@@ -244,6 +244,24 @@ header-back-button =
 
 ## Recommended add-ons page
 
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro =
+    Is estensiones e is temas sunt comente aplicatziones pro su navigadore tuo, e ti permitint de
+    amparare craes, iscarrigare vìdeos, agatare ofertas, blocare publitzidade infadosa,
+    modificare s’aspetu de su navigadore e meda àteru. Custos programmas piticos
+    a s’ispissu sunt isvilupados dae àtere. Inoghe tenes una seletzione de estensiones
+    <a data-l10n-name="learn-more-trigger">cussigiada</a> dae { -brand-product-name }
+    pro otènnere unu livellu etzetzionale de seguresa, rendimentu e funtzionalidade.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations =
+    Unos cantos de custos cussìgios sunt personalizados. Sunt basados in
+    àteras estensiones chi as installadu, is preferèntzias de profilu e is istatìsticas de impreu.
+# Notice to make user aware that the recommendations are personalized.
+discopane-notice-recommendations2 =
+    .message =
+        Unos cantos de custos cussìgios sunt personalizados. Sunt basados in
+        àteras estensiones chi as installadu, is preferèntzias de profilu e is istatìsticas de impreu.
 discopane-notice-learn-more = Àteras informatziones
 privacy-policy = Polìtica de sa riservadesa
 # Refers to the author of an add-on, shown below the name of the add-on.
@@ -265,6 +283,16 @@ find-more-themes = Agata àteros temas
 # used for screen readers.
 addon-options-button =
     .aria-label = Àteras optziones
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Is estensiones e is temas ti permitint de personalizare { -brand-product-name }.
+    Podent garantire sa riservadesa, crèschere sa produtividade, megiorare is elementos multimediales, modificare s’aspetu de { -brand-product-name } e meda àteru.
+    Custos programmas piticos a s’ispissu sunt isvilupados dae àtere.
+    Inoghe tenes una seletzione de estensiones <a data-l10n-name="learn-more-trigger">cussigiada</a> dae Firefox
+    pro otènnere unu livellu etzetzionale de seguresa, rendimentu e funtzionalidade.
 
 ## Add-on actions
 
@@ -347,19 +375,15 @@ addon-detail-update-check-label = Controlla atualizatziones
 install-update-button = Agiorna
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permìtida in is ventanas privadas
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permìtida in is ventanas privadas
     .aria-label = { addon-badge-private-browsing-allowed2.title }
 addon-detail-private-browsing-allow = Permite
 addon-detail-private-browsing-disallow = Non permitas
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
 
 ##
 
@@ -409,12 +433,8 @@ details-notification-unsigned2 =
     .message = { $name } no est averiguadu pro s'impreu in { -brand-short-name }. Sighi cun atentzione.
 details-notification-unsigned-link = Àteras informatziones
 details-notification-blocked = { $name } est istadu disativadu pro more de problemas de seguresa o de istabilidade.
-details-notification-blocked2 =
-    .message = { $name } est istadu disativadu pro more de problemas de seguresa o de istabilidade.
 details-notification-blocked-link = Àteras informatziones
 details-notification-softblocked = { $name } podet generare problemas de seguresa e de istabilidade.
-details-notification-softblocked2 =
-    .message = { $name } podet generare problemas de seguresa e de istabilidade.
 details-notification-softblocked-link = Àteras informatziones
 details-notification-gmp-pending = { $name } at a èssere installadu de immoe a pagu.
 details-notification-gmp-pending2 =
@@ -425,6 +445,6 @@ details-notification-gmp-pending2 =
 plugins-gmp-license-info = Informatziones de sa lissèntzia
 plugins-gmp-privacy-info = Informatziones de sa riservadesa
 plugins-openh264-name = Codificadore vìdeu OpenH264 frunidu dae Cisco Systems, Inc.
-plugins-openh264-description = Mozilla installat in automàticu custu plugin pro respetare s'ispetzificatzione WebRTC e permìtere is tzerriadas WebRTC cun dispositivos chi abbisòngiant su codificadore vìdeu H.264. Bìsita https://www.openh264.org/ pro bìdere su còdighe de orìgine de su codificadore e pro nde ischire de prus subra de s'implementatzione.
+plugins-openh264-description = Mozilla installat in automàticu custu plugin pro respetare s’ispetzificatzione WebRTC e permìtere is tzerriadas WebRTC cun dispositivos chi abbisòngiant su codificadore vìdeu H.264. Bìsita https://www.openh264.org/ pro bìdere su còdighe de orìgine de su codificadore e pro nde ischire de prus subra de s’implementatzione.
 plugins-widevine-name = Mòdulu de detzifratzione de cuntenutu Widevine frunidu dae Google Inc.
 plugins-widevine-description = Custu plugin permitit sa riprodutzione de cuntenutos multimediales tzifrados in cumpatibilidade cun is ispetzificatziones Encrypted Media Extensions. A s'ispissu, is sitos impreant sa tzifradura pro amparare is cuntenutos multimediales a pagamentu contra de sa copiadura. Bìsita https://www.w3.org/TR/encrypted-media/ pro àteras informatziones subra de Encrypted Media Extension.

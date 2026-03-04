@@ -5,53 +5,40 @@
 permissions-window2 =
     .title = İstisnalar
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Sayt ünvanı
     .accesskey = S
-
 permissions-block =
     .label = Blokla
     .accesskey = B
-
 permissions-session =
     .label = Bu seans üçün icazə ver
     .accesskey = r
-
 permissions-allow =
     .label = İcazə ver
     .accesskey = a
-
 permissions-site-name =
     .label = Sayt
-
 permissions-status =
     .label = Durum
-
 permissions-remove =
     .label = Saytı sil
     .accesskey = S
-
 permissions-remove-all =
     .label = Bütün saytları sil
     .accesskey = s
-
 permission-dialog =
     .buttonlabelaccept = Dəyişiklikləri Yadda Saxla
     .buttonaccesskeyaccept = S
-
 permissions-searchbox =
     .placeholder = Saytda Axtar
-
 permissions-capabilities-allow =
     .label = İcazə ver
 permissions-capabilities-block =
     .label = Blokla
 permissions-capabilities-prompt =
     .label = Həmişə soruş
-
 permissions-capabilities-listitem-allow =
     .value = İcazə ver
 permissions-capabilities-listitem-block =
@@ -64,18 +51,12 @@ permissions-capabilities-listitem-allow-session =
 permissions-invalid-uri-title = Etibarsız bir domen adı daxil etdiniz
 permissions-invalid-uri-label = Lütfən etibarlı bir server adı daxil edin
 
-## Exceptions - Tracking Protection
-
-
 ## Exceptions - Cookies
 
 permissions-exceptions-cookie-window2 =
     .title = İstisnalar: Çərəzlər və Sayt Məlumatları
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Hansı saytların çərəz və sayt məlumatlarını işlədib-işlətməyəcəyini dəqiqləşdirə bilərsiz. İdarə etmək istədiyiniz saytın ünvanını yazaraq Əngəllə, Sessiya üçün icazə ver və ya İcazə ver-ə klikləyə bilərsiz.
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -98,9 +79,6 @@ permissions-exceptions-addons-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = Hansı saytların əlavə yükləyə biləcəyini seçə bilərsiniz. İcaz vermək istədiyiniz saytın tam ünvanını yazdıqdan sonra "İcazə ver"-ə klikləyin.
 
-## Site Permissions - Autoplay
-
-
 ## Site Permissions - Notifications
 
 permissions-site-notification-window2 =
@@ -121,9 +99,6 @@ permissions-site-location-disable-label =
     .label = Məkanınız üçün icazə istəyən yeni istəkləri əngəllə
 permissions-site-location-disable-desc = Bu yuxarıda olmayan bütün saytların mövqeyinizi istəmələrini əngəlləyəcək. Mövqeyinizi almağı əngəlləmə bəzi sayt özəlliklərini poza bilər.
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -143,8 +118,3 @@ permissions-site-microphone-desc = Aşağıdakı saytlar mikrofonunuz üçün ic
 permissions-site-microphone-disable-label =
     .label = Mikrofonunuz üçün icazə istəyən yeni istəkləri əngəllə
 permissions-site-microphone-disable-desc = Bu yuxarıda olmayan bütün saytların mikrofonunuz üçün icazə istəmələrini əngəlləyəcək. Mikrofonunuzu işlətməyi əngəlləmə bəzi sayt özəlliklərini poza bilər.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

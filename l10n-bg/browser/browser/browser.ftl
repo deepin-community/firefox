@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Поверително разглеждане с { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } Поверително сърфиране
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Поверително сърфиране
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Поверително сърфиране
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Поверително сърфиране
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Поверително сърфиране
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Поверително сърфиране
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Private Browsing
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Поверително сърфиране
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Поверително сърфиране
+       *[other] { -brand-full-name } Поверително сърфиране
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Поверително сърфиране
+popups-infobar-dont-show-message2 =
+    .label = Да не се показва това съобщение, когато са блокирани изскачащи прозорци или пренасочвания към трети страни
+    .accesskey = з
+edit-popup-settings2 =
+    .label = Управление на изскачащи прозорци и пренасочвания от трети страни…
+    .accesskey = и
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Отваряне на панел със съобщението
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Отваряне на панел със заявката за местоположение
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Управление на достъпа от локално устройство за този сайт
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Управление на достъпа до вашата локална мрежа за този сайт
 urlbar-xr-notification-anchor =
     .tooltiptext = Отваряне на панела за разрешения за виртуална реалност
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Получете помощ
     .accesskey = п
+urlbar-result-menu-dismiss-suggestion =
+    .label = Отхвърляне на това предложение
+    .accesskey = х
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Научете повече за { -firefox-suggest-brand-name }
+    .accesskey = ч
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Управление на { -firefox-suggest-brand-name }
+    .accesskey = У
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Докладване на неточно местоположение
+urlbar-result-menu-show-less-frequently =
+    .label = Показване по-рядко
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Без показване на предложения за времето
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Отваряне на меню
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Благодарим ви за обратната връзка
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Благодарим ви за обратната връзка. Вече няма да виждате повече предложения за прогнозата за времето.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = Действия
 
 urlbar-geolocation-blocked =
     .tooltiptext = Забранили сте на страницата достъп до вашето местоположение.
+urlbar-localhost-blocked =
+    .tooltiptext = Забранили сте на този сайт връзките по локално устройство.
+urlbar-local-network-blocked =
+    .tooltiptext = Забранили сте на този сайт връзките по локалната мрежа.
 urlbar-xr-blocked =
     .tooltiptext = Забранихте достъпа до устройства за виртуална реалност за тази страница.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = Забранили сте на страницата споделянето на вашия екран.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Забранили сте на страницата достъп до хранилището за постоянни данни.
+urlbar-popup-blocked2 =
+    .tooltiptext = Забранили сте на този сайт да показва изскачащи прозорци и пренасочвания към трети страни.
 urlbar-popup-blocked =
     .tooltiptext = Забранили сте на страницата да отваря изскачащи прозорци.
 urlbar-autoplay-media-blocked =
@@ -254,10 +368,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Преглед на добавките
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = разширения, теми, добавки
 quickactions-cmd-addons2 = Добавки
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Управление на отметки
 quickactions-cmd-bookmarks = отметки
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Изчистване на скорошна история
+quickactions-cmd-clearrecenthistory = изчистване на скорошна история, история
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Изчистване на историята
 quickactions-cmd-clearhistory = изчистване на историята
@@ -266,9 +387,20 @@ quickactions-downloads2 = Преглед на изтеглените файло�
 quickactions-cmd-downloads = изтегляния
 # Opens about:addons page in the extensions section
 quickactions-extensions = Управление на разширения
+quickactions-cmd-extensions2 = разширения и добавки
 quickactions-cmd-extensions = разширения
+# Opens Firefox View
+quickactions-firefoxview = Отваряне на { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = отваряне на { -firefoxview-brand-name }, { -firefoxview-brand-name }, отваряне на изглед, преглед
+# Opens SUMO home page
+quickactions-help = Помощ за { -brand-product-name }
+quickactions-cmd-help = помощ, поддръжка
 # Opens the devtools web inspector
 quickactions-inspector2 = Развойни инструменти
+quickactions-cmd-inspector2 = инспектор, развойни инструменти
 quickactions-cmd-inspector = инспектор, изследовател, изследвач, инструменти за разработка, инструменти на разработчика
 # Opens about:logins
 quickactions-logins2 = Управление на пароли
@@ -281,7 +413,7 @@ quickactions-print2 = Отпечатване
 quickactions-cmd-print = печат, отпечатване
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Запазване на страницата като PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, запазване на страници
 # Opens a new private browsing window
 quickactions-private2 = Поверителен прозорец
 quickactions-cmd-private = поверително разглеждане
@@ -293,22 +425,37 @@ quickactions-restart = Рестартиране на { -brand-short-name }
 quickactions-cmd-restart = рестарт, рестартиране
 # Opens the screenshot tool
 quickactions-screenshot3 = Снимка на екрана
+quickactions-cmd-screenshot2 = екранна снимка, правене на екранна снимка
+# Opens about:translations
+quickactions-translate = Превеждане
+quickactions-cmd-translate = превеждане
 quickactions-cmd-screenshot = снимка на екрана
 # Opens about:preferences
 quickactions-settings2 = Настройки
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = настройки, предпочитания, опции, управление
 quickactions-cmd-settings = настройки
 # Opens about:addons page in the themes section
 quickactions-themes = Управление на теми
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = теми, добавки, добавки
 quickactions-cmd-themes = теми
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Обновяване на { -brand-short-name }
 quickactions-cmd-update = обновяване
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Изходен код на страницата
+quickactions-cmd-viewsource2 = изходен код, код, източник на код
 quickactions-cmd-viewsource = преглед на изходния код, изходен код
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Научете повече за бързите действия
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Натиснете Tab, за да изберете:
 
 ## Bookmark Panel
 
@@ -382,6 +529,8 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Връзката към страницата не е защитена.
 identity-connection-verified = Връзката със сайта е шифрована.
 identity-ev-owner-label = Сертификатът е издаден на:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = Квалифициран, както е посочено в Регламент (ЕС) 2024/1183.
 identity-description-custom-root2 = Mozilla не разпознава този издател на сертификати. Може да е добавен от вашата операционна система или от администратор.
 identity-remove-cert-exception =
     .label = Премахване на изключението
@@ -495,6 +644,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Търсете или въведете адрес
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Въвеждане на адрес
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -547,6 +700,8 @@ urlbar-go-button =
     .tooltiptext = Зареждане на адреса в полето
 urlbar-page-action-button =
     .tooltiptext = Действия със страницата
+urlbar-revert-button =
+    .tooltiptext = Показване на адреса в адресната лента
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -556,14 +711,14 @@ urlbar-page-action-button =
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
-urlbar-result-action-search-in-private-w-engine = Търсене с { $engine } в поверителен прозорец
+urlbar-result-action-search-in-private-w-engine = Търсене чрез { $engine } в поверителен прозорец
 # Used when the private browsing engine is the same as the default engine.
 urlbar-result-action-search-in-private = Търсене в поверителен прозорец
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
-urlbar-result-action-search-w-engine = Търсене с { $engine }
+urlbar-result-action-search-w-engine = Търсене чрез { $engine }
 urlbar-result-action-sponsored = Спонсорирано
 urlbar-result-action-switch-tab = Превключване към раздел
 urlbar-result-action-visit = Посещаване
@@ -572,6 +727,8 @@ urlbar-result-action-visit = Посещаване
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Превключване към раздел · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Неименувана група
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Посещаване от междинната памет
 # Directs a user to press the Tab key to perform a search with the specified
@@ -601,12 +758,176 @@ urlbar-result-action-copy-to-clipboard = Копиране
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = неопределено
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> в { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> в { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> в { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Спонсорирано
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Вземете данни от борсата директно в лентата за търсене
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Показва пазарни новини и допълнителна информация от нашите партньори, когато споделяте данни за заявките за търсене { -vendor-short-name }. <a data-l10n-name="learn-more-link">Научете повече</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Показване на подсказки
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Не сега
+urlbar-result-realtime-opt-in-dismiss = Прекратяване
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Без показване на тези предложения
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Без показване на пазарни предложения
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Благодарим за обратната връзка. Вече няма да виждате пазарни предложения.
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Благодарим за обратната връзка. Вече няма да виждате тези предложения.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · След { $daysUntilStart } ден
+       *[other] { $name } · След { $daysUntilStart } дни
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Започва след { $daysUntilStart } ден
+       *[other] { $name } · Започва след { $daysUntilStart } дни
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Приключва след { $daysUntilEnd } ден
+       *[other] { $name } · Приключва след { $daysUntilEnd } дни
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Днес
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Приключва днес
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
-urlbar-result-search-with = Търсене с { $engine }
+urlbar-result-search-with = Търсене чрез { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Търсене в { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – Търсене чрез { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Изберете търсеща машина
+urlbar-searchmode-bookmarks =
+    .label = Отметки
+urlbar-searchmode-tabs =
+    .label = Раздели
+urlbar-searchmode-history =
+    .label = История
+urlbar-searchmode-actions =
+    .label = Действия
+urlbar-searchmode-exit-button =
+    .tooltiptext = Затваряне
+urlbar-searchmode-default =
+    .tooltiptext = Търсеща машина по подразбиране
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Този път търсете с:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Настройки за търсене
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Нов
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, изберете търсеща машина
+    .tooltiptext = { $engine }, изберете търсеща машина
+urlbar-searchmode-button-no-engine =
+    .label = Няма избрана клавишна комбинация, изберете една
+    .tooltiptext = Няма избрана клавишна комбинация, изберете една
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +937,12 @@ urlbar-result-action-search-bookmarks = Търсене в отметките
 urlbar-result-action-search-history = Търсене в историята
 urlbar-result-action-search-tabs = Търсене на раздели
 urlbar-result-action-search-actions = Действия при търсене
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Превключване към { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Отваряне на { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -642,6 +969,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Набиращи популярност в { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Спонсорирано
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Без показване на набиращи популярност търсения
@@ -793,7 +1123,7 @@ toolbar-settings-button =
            *[other] Отваряне на настройките
         }
 toolbar-overflow-customize-button =
-    .label = Персонализиране на лентата…
+    .label = Приспособяване на лентата…
     .accesskey = П
 toolbar-button-email-link =
     .label = Препратка по имейл
@@ -838,6 +1168,9 @@ panel-save-update-password = Парола
 # "More" item in macOS share menu
 menu-share-more =
     .label = Още…
+menu-share-copy-link =
+    .label = Копиране на препратката
+    .accesskey = К
 ui-tour-info-panel-close =
     .tooltiptext = Затваряне
 
@@ -850,6 +1183,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = Спиране на изскачащите прозорци от { $uriHost }
     .accesskey = Р
+popups-infobar-allow2 =
+    .label = Позволяване на изскачащи прозорци и пренасочвания от трети страни за { $uriHost }
+    .accesskey = и
 
 ##
 
@@ -885,6 +1221,8 @@ navbar-accessible =
     .aria-label = Навигация
 navbar-downloads =
     .label = Изтегляния
+navbar-overflow-2 =
+    .tooltiptext = Още инструменти
 navbar-overflow =
     .tooltiptext = Още инструменти…
 # Variables:
@@ -911,6 +1249,10 @@ tabs-toolbar-list-all-tabs =
     .label = Показване на всички раздели
     .tooltiptext = Показване на всички раздели
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Пуснете раздела тук, за да го закачите
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -929,6 +1271,9 @@ data-reporting-notification-button =
     .accesskey = И
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Поверително разглеждане
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Поверително сърфиране
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -937,7 +1282,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Защита на данните
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Вашата организация използва { $agentName } за защита срещу загубата на данни. <a data-l10n-name="info">Научете повече</a>
+content-analysis-panel-text-styled = Вашата организация използва <b>{ $agentName }</b> за защита срещу загуба на данни. <a data-l10n-name="info">Научете повече</a>
 
 ## Unified extensions (toolbar) button
 
@@ -962,6 +1307,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Разширения
         Някои разширения не са позволени
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Разширения
+    .tooltiptext =
+        Разширения
+        Някои разширения са изключени
 
 ## Private browsing reset button
 
@@ -991,19 +1345,28 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = Нашите сигурни и лесни за използване маски защитават вашата самоличност и предотвратяват спам, като крият вашия имейл адрес.
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Всички имейли, изпратени до вашите имейл маски, ще бъдат препращани към <strong>{ $useremail }</strong> (освен ако не решите да ги блокирате).
+firefox-relay-offer-legal-notice = С натискането на „Използване на маска за пощата“ вие се съгласявате с <label data-l10n-name="tos-url">Условията на услугата</label> и <label data-l10n-name="privacy-url">Политиката за лични данни</label>.
+firefox-relay-offer-legal-notice-1 = С регистрирането и създаването на маска се съгласявате с <label data-l10n-name="tos-url">Условията на услугата</label> и <label data-l10n-name="privacy-url">Политиката за лични данни</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (непроверено)
 popup-notification-xpinstall-prompt-learn-more = Научете повече за безопасното инсталиране на добавки
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Да работи в поверителни прозорци
-    .accesskey = п
+popup-notification-xpinstall-prompt-block-url = Вижте подробности
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Разрешаване на разширението да работи в поверителни прозорци
+    .accesskey = ш
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Споделяне на технически данни и данни за взаимодействието с разработчика на разширението
+    .accesskey = р
 
 ## Pop-up warning
 
@@ -1014,10 +1377,25 @@ popup-warning-message =
         [one] { -brand-short-name } попречи на страницата да отвори изскачащ прозорец
        *[other] { -brand-short-name } попречи на страницата да отвори { $popupCount } изскачащи прозореца.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } попречи на страницата да пренасочи.
+        [one] { -brand-short-name } попречи на страницата да отвори изскачащ прозорец и пренасочи.
+       *[other] { -brand-short-name } попречи на страницата да отвори { $popupCount } изскачащи прозореца и пренасочи.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name } попречи на страницата да отвори повече от { $popupCount } изскачащи прозореца.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } попречи на страницата да отвори повече от { $popupCount } изскачащ прозорец и пренасочвания.
+       *[other] { -brand-short-name } попречи на страницата да отвори повече от { $popupCount } изскачащи прозореца и пренасочвания.
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1033,6 +1411,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Показване на „{ $popupURI }“
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Показване на „{ $redirectURI }“
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1054,3 +1436,141 @@ file-picker-crashed-save-nowhere = Файловият диалогов проз�
 file-picker-crashed-show-in-folder =
     .label = Показване в папка
     .accessKey = о
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Завършване на настройката
+onboarding-aw-finish-setup-button =
+    .label = Завършване на настройката
+    .tooltiptext = Завършване на настройката на { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Подобрената защита от проследяване е включена
+trustpanel-etp-label-disabled = Подобрената защита от проследяване е изключена
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Подобрената защита от проследяване:  Включена за { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Подобрената защита от проследяване:  Изключена за { $host }
+trustpanel-etp-description-enabled = Ако нещо на този сайт изглежда повредено, опитайте да изключите защитите.
+trustpanel-etp-description-disabled = { -brand-product-name } смята, че компаниите трябва по-малко да ви следят. Блокираме възможно най-много проследаващи механизми, когато защитите са включени.
+trustpanel-connection-label-secure = Връзката е защитена
+trustpanel-connection-label-insecure = Връзката не е защитена
+trustpanel-header-enabled = { -brand-product-name } ви пази
+trustpanel-description-enabled2 = Защитени сте. Ако забележим нещо, ще ви уведомим.
+trustpanel-header-enabled-insecure = Бъдете внимателни на тази страница
+trustpanel-description-enabled-insecure = { -brand-product-name } установи нещо подозрително.
+trustpanel-header-disabled = Защитите са изключени
+trustpanel-description-disabled = { -brand-product-name } не ви защитава. Съветваме ви да включите защитите.
+trustpanel-clear-cookies-button = Изчистване на бисквитките и данните на сайта
+trustpanel-privacy-link = Настройки за поверителност!
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Изчистване на бисквитки и данни на страници за { $host }
+trustpanel-clear-cookies-description = Премахването на бисквитки и данни на страници може да ви принуди да излезете от тях и да изчистите съдържанието на пазарските си колички.
+trustpanel-clear-cookies-subview-button-clear = Изчистване
+trustpanel-clear-cookies-subview-button-cancel = Отказ
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Защити на връзките за { $host }
+trustpanel-siteinformation-morelink = Повече информация за уеб страницата
+trustpanel-blocker-see-all = Вижте всички
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Защити от проследяване за { $host }
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] <span>{ $count }</span> спряно проследяване на този сайт
+       *[other] <span>{ $count }</span> спрени проследявания на този сайт
+    }
+trustpanel-blocker-description = { -brand-product-name } смята, че компаниите трябва по-малко да ви следят. Блокираме колкото се може повече.
+trustpanel-blocked-header = { -brand-product-name } спря следните неща:
+trustpanel-tracking-header = { -brand-product-name } позволява следните неща, за да не се счупят страниците:
+trustpanel-tracking-description = Без проследяване някои бутони, формуляри и полета за вход може да не работят.
+trustpanel-insecure-section-header = Връзката е незащитена
+trustpanel-insecure-description = Данните, които изпращате към този сайт не са шифровани. Могат да бъдат видяни, откраднати или променяни.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } бисквитка за проследяване в различни сайтове
+       *[other] { $count } бисквитки за проследяване в различни сайтове
+    }
+trustpanel-list-label-tracking-content = Проследяващо съдържание
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } снемащ отпечатък
+       *[other] { $count } снемащи отпечатъци
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } проследяване от социални медии
+       *[other] { $count } проследявания от социални медии
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } криптокопач
+       *[other] { $count } криптокопача
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } спря { $count } проследяване от социални медии
+       *[other] { -brand-product-name } спря { $count } проследявания от социални медии
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разреши { $count } проследяване от социални медии
+       *[other] { -brand-product-name } разреши { $count } проследявания от социални медии
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } спря { $count } бисквитка за проследяване в различни сайтове
+       *[other] { -brand-product-name } спря { $count } бисквитки за проследяване в различни сайтове
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разреши { $count } проследяваща бисквитка в различни сайтове
+       *[other] { -brand-product-name } разреши { $count } проследяващи бисквитки в различни сайтове
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } спря { $count } проследяване
+       *[other] { -brand-product-name } спря { $count } проследявания
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } разреши { $count } проследяване
+       *[other] { -brand-product-name } разреши { $count } проследявания
+    }
+trustpanel-tracking-content-tab-list-header = Следните сайтове се опитват да ви проследяват:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } спря { $count } опит за идентификация чрез цифров отпечатък
+       *[other] { -brand-product-name } спря { $count } опита за идентификация чрез цифров отпечатък
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } позволи { $count } опит за идентификация чрез цифров отпечатък
+       *[other] { -brand-product-name } позволи { $count } опита за идентификация чрез цифров отпечатък
+    }
+trustpanel-fingerprinter-list-header = Тези сайтове се опитват да ви идентифицират чрез уникалния отпечатък на устройството ви:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } спря { $count } криптоминьор
+       *[other] { -brand-product-name } спря { $count } криптоминьора
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } позволи { $count } криптоминьор
+       *[other] { -brand-product-name } позволи { $count } криптоминьора
+    }
+trustpanel-cryptominer-tab-list-header = Следните сайтове се опитват да използват криптоминьори:

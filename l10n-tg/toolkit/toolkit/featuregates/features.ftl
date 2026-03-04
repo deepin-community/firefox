@@ -46,14 +46,3 @@ experimental-features-js-warp-description = Лоиҳаи «Warp»-ро фаъо�
 experimental-features-ime-search =
     .label = Навори нишонӣ: ҳангоми иҷрокунии IME натиҷаҳоро нишон медишад
 experimental-features-ime-search-description = IME (Input Method Editor) абзорест, ки ба шумо барои ворид кардани аломатҳои мураккаб, ба монанди аломатҳои хаттӣ аз забонҳои осиёии шаркӣ ва ҳиндӣ, тавассути клавиатураи стандартӣ имкон медиҳад. Фаъолсозии ин озмоиш лавҳаи навори нишониро ба таври кушод нигоҳ медорад ва ҳангоми истифодаи IME барои вориди матн натиҷаҳои ҷустуҷӯ ва пешниҳодҳоро нишон медиҳад. Ба назар гиред, ки IME метавонад лавҳаеро намоиш диҳад, ки натиҷаҳои навори нишониро маҳкам мекунад, ба ҳамин сабаб, ин хусусият танҳо барои истифода бо IME бе истифодаи ин навъи лавҳа пешниҳод карда мешавад.
-# Updated sidebar settings
-sidebar-title =
-    .label = Навори ҷонибӣ
-vertical-tabs-title =
-    .label = Варақаҳои амудӣ
-experimental-features-group-browsing =
-    .label = Тамошокунӣ
-experimental-features-group-developer-tools =
-    .label = Абзорҳои барномасозӣ
-experimental-features-group-webpage-display =
-    .label = Намоиши саҳифаи сомона

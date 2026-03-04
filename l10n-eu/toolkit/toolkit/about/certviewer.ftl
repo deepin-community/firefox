@@ -36,6 +36,9 @@ certificate-viewer-key-size = Gakoaren tamaina
 certificate-viewer-inc-locality = Sorlekua
 certificate-viewer-locality = Herria
 certificate-viewer-location = Kokalekua
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Erregistroaren izena
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Log IDa
 certificate-viewer-method = Metodoa
 certificate-viewer-modulus = Modulua
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Autoritatearen informazioa (AIA)
 certificate-viewer-certificate-policies = Ziurtagiri-politikak
 certificate-viewer-embedded-scts = Kapsulatutako SCTak
 certificate-viewer-crl-endpoints = CRL amaiera-puntuak
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Deskargatu
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (ziurtagiria)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (katea)
     .download = { $fileName }-katea.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Hedapen hau kritiko gisa markatu da, hau da, bezeroek ziurtagiria ulertzen ez badute, baztertu egin behar dute.
@@ -112,6 +113,8 @@ certificate-viewer-export = Esportatu
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (ezezaguna)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = ziurtagiria
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

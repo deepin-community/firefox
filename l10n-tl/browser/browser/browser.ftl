@@ -2,16 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
 browser-main-window-window-titles =
@@ -19,14 +18,17 @@ browser-main-window-window-titles =
     .data-title-private = { -brand-full-name } Private Browsing
     .data-content-title-default = { $content-title } — { -brand-full-name }
     .data-content-title-private = { $content-title } — { -brand-full-name } Private Browsing
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
@@ -43,6 +45,9 @@ browser-main-window-mac-window-titles =
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } Pribadong Pagba-browse
 
 ##
 
@@ -82,7 +87,7 @@ urlbar-password-notification-anchor =
 urlbar-plugins-notification-anchor =
     .tooltiptext = Pangasiwaan ang paggamit ng plug-in
 urlbar-web-rtc-share-devices-notification-anchor =
-    .tooltiptext = Pangasiwaan ang pag-bahagi ng iyong kodak at/o mikropono sa site
+    .tooltiptext = I-manage ang pag-share ng iyong kamera at/o mikropono sa site
 urlbar-autoplay-notification-anchor =
     .tooltiptext = Buksan ang panel ng autoplay
 urlbar-persistent-storage-notification-anchor =
@@ -92,11 +97,15 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Humingi ng tulong
 urlbar-search-tips-confirm = OK, nakuha ko
+urlbar-search-tips-confirm-short = Nakuha ko
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Payo:
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Alamin ang tungkol sa { -firefox-suggest-brand-name }
+    .accesskey = L
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -149,9 +158,6 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = i-Bookmark ang pahinang ito ({ $shortcut })
-
-## Page Action Context Menu
-
 
 ## Auto-hide Context Menu
 
@@ -210,11 +216,57 @@ search-one-offs-tabs =
     .tooltiptext = Mga Tab ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Kasaysayan ({ $restrict })
+search-one-offs-actions =
+    .tooltiptext = Mga Aksyon ({ $restrict })
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
 ## the action.
 
+# Opens the about:addons page in the home / recommendations section
+quickactions-addons = Tingnan ang mga add-on
+quickactions-cmd-addons2 = mga add-on
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Pamahalaan ang mga bookmark
+quickactions-cmd-bookmarks = mga bookmark
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Burahin ang Kasaysayan
+quickactions-cmd-clearhistory = burahin ang kasaysayan
+# Opens about:downloads page
+quickactions-downloads2 = Tingnan ang mga download
+quickactions-cmd-downloads = mga download
+# Opens about:addons page in the extensions section
+quickactions-extensions = Pamahalaan ang mga extension
+quickactions-cmd-extensions = mga extension
+# Opens the devtools web inspector
+quickactions-inspector2 = Buksan ang Developer Tools
+quickactions-cmd-inspector = inspektor, devtools
+# Opens about:logins
+quickactions-logins2 = Pamahalaan ang mga password
+quickactions-cmd-logins = mga login, password
+# Opens about:addons page in the plugins section
+quickactions-plugins = Pamahalaan ang mga plugin
+quickactions-cmd-plugins = mga plugin
+# Opens the print dialog
+quickactions-print2 = I-print ang pahina
+quickactions-cmd-print = i-print
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = I-save ang pahina bilang PDF
+# Opens a new private browsing window
+quickactions-private2 = Magbukas ng pribadong window
+quickactions-cmd-private = pribadong pagba-browse
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = I-refresh ang { -brand-short-name }
+quickactions-cmd-refresh = i-refresh
+# Restarts the browser
+quickactions-restart = I-restart ang { -brand-short-name }
+quickactions-cmd-restart = i-restart
+# Opens the screenshot tool
+quickactions-screenshot3 = Kumuha ng screenshot
+quickactions-cmd-screenshot = screenshot
+# Opens about:preferences
+quickactions-settings2 = Pamahalaan ang mga setting
+quickactions-cmd-settings = mga setting, kagustuhan, opsyon
 
 ## Bookmark Panel
 
@@ -370,6 +422,9 @@ popup-select-microphone-icon =
     .tooltiptext = Mikropono
 popup-select-speaker-icon =
     .tooltiptext = Mga Speaker
+popup-select-window-or-screen =
+    .label = Window o screen:
+    .accesskey = W
 popup-all-windows-shared = Lahat ng nakikitang window sa iyong screen ay ibabahagi.
 
 ## WebRTC window or screen share tab switch warning
@@ -383,6 +438,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
+enable-devtools-popup-description2 = Para magamit ang F12 shortcut, buksan muna ang DevTools sa menu ng Browser Tools.
 
 ## URL Bar
 
@@ -461,6 +517,13 @@ urlbar-result-action-search-w-engine = Maghanap gamit ang { $engine }
 urlbar-result-action-sponsored = Sponsored
 urlbar-result-action-switch-tab = Lumipat sa Tab
 urlbar-result-action-visit = Puntahan
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Lumipat sa Tab · <span>{ $container }</span>
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Bisitahin mula sa clipboard
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -489,6 +552,15 @@ urlbar-result-action-copy-to-clipboard = Kopyahin
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Mga Bookmark
+urlbar-searchmode-tabs =
+    .label = Mga Tab
+urlbar-searchmode-history =
+    .label = Kasaysayan
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -503,6 +575,11 @@ urlbar-result-action-search-tabs = Hanapin sa mga Tab
 # urlbar results.
 urlbar-group-firefox-suggest =
     .label = { -firefox-suggest-brand-name }
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Mga Hinahanap Kamakailan
 
 ## Reader View toolbar buttons
 
@@ -517,6 +594,12 @@ reader-view-close-button =
 ## Variables:
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Buksan ang Picture-in-Picture ({ $shortcut })
+picture-in-picture-panel-header = Picture-in-Picture
+picture-in-picture-panel-headline = Hindi inirerekomenda ng website na ito ang Picture-in-Picture
+picture-in-picture-enable-toggle =
+    .label = Paganahin pa rin
 
 ## Full Screen and Pointer Lock UI
 
@@ -598,6 +681,9 @@ bookmarks-toolbar-placeholder =
     .title = Mga nakalagay sa Bookmark Toolbar
 bookmarks-toolbar-placeholder-button =
     .label = Mga nakalagay sa Bookmark Toolbar
+# "Bookmark" is a verb, as in "Add current tab to bookmarks".
+bookmarks-subview-bookmark-tab =
+    .label = I-bookmark ang kasalukuyang tab…
 
 ## Library Panel items
 
@@ -635,6 +721,9 @@ toolbar-overflow-customize-button =
 toolbar-button-email-link =
     .label = Email Link
     .tooltiptext = Mag-email ng link sa page na ito
+toolbar-button-logins =
+    .label = Mga password
+    .tooltiptext = Tingnan at pamahalaan ang iyong mga naka-save na password
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -672,6 +761,9 @@ panel-save-update-password = Password
 # "More" item in macOS share menu
 menu-share-more =
     .label = Higit pa...
+menu-share-copy-link =
+    .label = Kopyahin ang Link
+    .accesskey = L
 ui-tour-info-panel-close =
     .tooltiptext = Isarado
 
@@ -693,10 +785,6 @@ popups-infobar-dont-show-message =
 picture-in-picture-hide-toggle =
     .label = Itago ang Toggle para sa Picture-in-Picture
     .accesskey = H
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -738,6 +826,7 @@ tabs-toolbar-list-all-tabs =
 
 ## Infobar shown at startup to suggest session-restore
 
+restore-session-startup-suggestion-button = Ipakita sa akin kung paano
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -745,20 +834,32 @@ data-reporting-notification-message = Ang { -brand-short-name } ay kusang nagpap
 data-reporting-notification-button =
     .label = Piliin ang Ibabahagi
     .accesskey = D
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Pribadong pag-browse
 
 ## Unified extensions (toolbar) button
 
+unified-extensions-button =
+    .label = Mga extension
+    .tooltiptext = Mga extension
 
 ## Unified extensions button when permission(s) are needed.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-permissions-needed =
+    .label = Mga extension
+    .tooltiptext =
+        Mga extension
+        Kailangan ng pahintulot
 
 ## Unified extensions button when some extensions are quarantined.
 ## Note that the new line is intentionally part of the tooltip.
 
-
-## Private browsing reset button
-
+unified-extensions-button-quarantined =
+    .label = Mga extension
+    .tooltiptext =
+        Mga extension
+        May ilang mga extension na hindi pinapayagan
 
 ## Autorefresh blocker
 
@@ -767,9 +868,6 @@ refresh-blocked-redirect-label = Pingilan ng { -brand-short-name } ang kusang pa
 refresh-blocked-allow =
     .label = Payagan
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

@@ -30,6 +30,8 @@ class FuzzingFunctions final {
   static void Crash(const GlobalObject& aGlobalObject,
                     const nsAString& aKeyValue);
 
+  static void KillGPUProcess(const GlobalObject&);
+
   static void CycleCollect(const GlobalObject&);
 
   static void MemoryPressure(const GlobalObject&);
@@ -41,6 +43,8 @@ class FuzzingFunctions final {
   MOZ_CAN_RUN_SCRIPT_BOUNDARY static void SynthesizeKeyboardEvents(
       const GlobalObject& aGlobalObject, const nsAString& aKeyValue,
       const KeyboardEventInit& aKeyboardEvent, ErrorResult& aRv);
+
+  static void SpinEventLoopFor(const GlobalObject&, uint32_t aMilliseconds);
 
  private:
   /**

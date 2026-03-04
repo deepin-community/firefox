@@ -44,7 +44,7 @@ about-private-browsing-search-banner-title = { $engineName } เป็นเค�
 about-private-browsing-search-banner-description =
     { PLATFORM() ->
         [windows] ถ้าต้องการเลือกเครื่องมือค้นหาอื่น ให้ไปที่ <a data-l10n-name="link-options">ตัวเลือก</a>
-       *[other] ถ้าต้องการเลือกเครื่องมือค้นหาอื่น ให้ไปที่ <a data-l10n-name="link-options">การกำหนดลักษณะ</a>
+       *[other] ถ้าต้องการเลือกเครื่องมือค้นหาอื่น ให้ไปที่ <a data-l10n-name="link-options">ค่าปรับแต่ง</a>
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = ปิด
@@ -59,7 +59,7 @@ about-private-browsing-pin-promo-link-text =
         [macos] เก็บไว้ใน Dock
        *[other] ปักหมุดที่แถบงาน
     }
-about-private-browsing-pin-promo-title = ไม่เก็บบันทึกคุกกี้หรือประวัติใดๆ และให้คุณท่องเว็บได้เหมือนไม่มีใครแอบมอง
+about-private-browsing-pin-promo-title = ไม่เก็บบันทึกคุกกี้หรือประวัติใด ๆ และให้คุณท่องเว็บได้เหมือนไม่มีใครแอบมอง
 
 ## Strings used in a promotion message for cookie banner reduction
 
@@ -75,6 +75,6 @@ about-private-browsing-cookie-banners-promo-body = ตอนนี้เรา�
 
 ## Strings for Felt Privacy v1 experiments in 119
 
-about-private-browsing-felt-privacy-v1-info-header = ไม่ทิ้งร่องรอยใดๆ บนอุปกรณ์นี้
+about-private-browsing-felt-privacy-v1-info-header = ไม่ทิ้งร่องรอยบนอุปกรณ์นี้
 about-private-browsing-felt-privacy-v1-info-body = { -brand-short-name } จะลบคุกกี้ ประวัติ และข้อมูลไซต์ของคุณเมื่อคุณปิดหน้าต่างส่วนตัวของคุณทั้งหมด
 about-private-browsing-felt-privacy-v1-info-link = ใครสามารถเห็นกิจกรรมของฉันได้บ้าง?

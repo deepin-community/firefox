@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Fermer
     .aria-label = Fermer
-firefoxview-empty-state-icon =
-    .alt = Attention :
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = À l’instant
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = Terminé à { $percentValue } %
 firefoxview-tabpickup-step-signin-header = Passez facilement d’un appareil à l’autre
 firefoxview-tabpickup-step-signin-description = Pour récupérer les onglets de votre téléphone ici, commencez par vous connecter ou créer un compte.
 firefoxview-tabpickup-step-signin-primarybutton = Continuer
-firefoxview-syncedtabs-signin-header = Récupérez vos onglets où que vous soyez
-firefoxview-syncedtabs-signin-description = Pour consulter vos onglets où que vous utilisiez { -brand-product-name }, connectez-vous à votre compte. Si vous n’avez pas de compte, nous vous guiderons à chaque étape de l’inscription.
-firefoxview-syncedtabs-signin-primarybutton = S’inscrire ou se connecter
+firefoxview-syncedtabs-signin-header-2 = Votre { -brand-product-name } sur tous vos appareils
+firefoxview-syncedtabs-signin-description-2 = Pour afficher les onglets ouverts sur votre téléphone et vos autres appareils, connectez-vous ou créez un compte. Avec un compte, vous pouvez également synchroniser mots de passe, historique et plus encore.
+firefoxview-syncedtabs-signin-primarybutton-2 = Connexion
 firefoxview-tabpickup-adddevice-header = Synchronisez { -brand-product-name } avec votre téléphone ou votre tablette
 firefoxview-tabpickup-adddevice-description = Téléchargez { -brand-product-name } pour mobile et connectez-vous.
 firefoxview-tabpickup-adddevice-learn-how = Découvrez comment
 firefoxview-tabpickup-adddevice-primarybutton = Installez { -brand-product-name } sur votre appareil mobile
-firefoxview-syncedtabs-adddevice-header = Connectez-vous à { -brand-product-name } sur vos autres appareils
-firefoxview-syncedtabs-adddevice-description = Pour consulter vos onglets où que vous utilisiez { -brand-product-name }, connectez-vous sur tous vos appareils. Découvrez comment <a data-l10n-name="url">connecter des appareils supplémentaires</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Récupérez vos onglets où que vous soyez
+firefoxview-syncedtabs-adddevice-description-2 = Connectez-vous à { -brand-product-name } sur votre téléphone ou un autre ordinateur pour afficher leurs onglets ici. Découvrez comment <a data-l10n-name="url">connecter des appareils supplémentaires</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Essayer { -brand-product-name } pour mobile
 firefoxview-tabpickup-synctabs-header = Activez la synchronisation des onglets
 firefoxview-tabpickup-synctabs-description = Autorisez { -brand-short-name } à partager les onglets entre vos appareils.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Me montrer comment faire
 firefoxview-tabpickup-synctabs-primarybutton = Synchroniser les onglets ouverts
 firefoxview-syncedtabs-synctabs-header = Mettez à jour vos paramètres de synchronisation
 firefoxview-syncedtabs-synctabs-description = Pour consulter les onglets d’autres appareils, vous devez synchroniser vos onglets ouverts.
-firefoxview-syncedtabs-synctabs-checkbox = Autoriser la synchronisation des onglets ouverts
 firefoxview-syncedtabs-loading-header = Synchronisation en cours
 firefoxview-syncedtabs-loading-description = Une fois terminée, vous verrez ici tous les onglets ouverts sur vos autres appareils. Revenez vite.
 firefoxview-tabpickup-fxa-admin-disabled-header = Votre organisation a désactivé la synchronisation
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Récemment fermés
 firefoxview-closed-tabs-description2 = Rouvrez des pages que vous avez fermées dans cette fenêtre.
 firefoxview-closed-tabs-placeholder-header = Aucun onglet récemment fermé
 firefoxview-closed-tabs-placeholder-body = Si vous avez fermé un onglet de cette fenêtre, vous pouvez le récupérer ici.
-firefoxview-closed-tabs-placeholder-body2 = Si vous avez fermé un onglet, vous pouvez le récupérer ici.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -136,6 +132,14 @@ firefoxview-synced-tabs-nav = Onglets d’autres appareils
     .title = Onglets d’autres appareils
 firefoxview-synced-tabs-header = Onglets d’autres appareils
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = Discussions
+    .title = Discussions
+firefoxview-chats-header = Discussions
+firefoxview-chat-context-delete = Supprimer des discussions
+    .accesskey = S
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -148,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Fenêtre { $winID } (actuelle)
-firefoxview-opentabs-focus-tab =
-    .title = Basculer vers cet onglet
 firefoxview-show-more = En afficher plus
 firefoxview-show-less = En afficher moins
 firefoxview-show-all = Tout afficher
@@ -165,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Rechercher dans les onglets récemment fermés
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Rechercher parmi les onglets synchronisés
+firefoxview-search-text-box-tabs =
+    .placeholder = Rechercher dans les onglets
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Rechercher parmi les onglets ouverts
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = Rechercher dans les discussions
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -189,10 +194,6 @@ firefoxview-sort-history-by-date-label = Trier par date
 firefoxview-sort-history-by-site-label = Trier par site
 firefoxview-sort-open-tabs-by-recency-label = Trier par activité récente
 firefoxview-sort-open-tabs-by-order-label = Trier par onglets
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Aller vers { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -205,11 +206,14 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (fichiers locaux)
+firefoxview-chat-date-today = Aujourd’hui – { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = Hier – { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = Afficher tout l’historique
-firefoxview-view-more-browsing-history = Afficher plus d’historique de navigation
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +229,8 @@ firefoxview-choose-browser-button = Choisir le navigateur
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Rien à afficher
-firefoxview-dont-remember-history-empty-description = La protection de votre vie privée est notre priorité. C’est la raison pour laquelle vous pouvez contrôler les activités dont { -brand-short-name } garde trace.
-firefoxview-dont-remember-history-empty-description-two = D’après vos paramètres actuels, { -brand-short-name } ne conserve aucune trace de vos activités de navigation. Pour changer cela, <a data-l10n-name="history-settings-url-two">modifiez vos paramètres d’historique pour conserver votre historique de navigation</a>.
+firefoxview-dont-remember-history-empty-header-2 = Vous contrôlez ce que { -brand-short-name } mémorise
+firefoxview-dont-remember-history-empty-description-one = Pour l’instant, { -brand-short-name } ne mémorise pas votre navigation. Pour changer cela, <a data-l10n-name="history-settings-url-two">modifiez vos paramètres d’historique</a>.
 
 ##
 

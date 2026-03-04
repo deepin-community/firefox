@@ -6,8 +6,6 @@
 
 #include "mozilla/dom/WorkerNavigator.h"
 
-#include <utility>
-
 #include "ErrorList.h"
 #include "MainThreadUtils.h"
 #include "RuntimeService.h"
@@ -16,6 +14,8 @@
 #include "mozilla/dom/LockManager.h"
 #include "mozilla/dom/MediaCapabilities.h"
 #include "mozilla/dom/Navigator.h"
+#include "mozilla/dom/Permissions.h"
+#include "mozilla/dom/ServiceWorkerContainer.h"
 #include "mozilla/dom/StorageManager.h"
 #include "mozilla/dom/WorkerCommon.h"
 #include "mozilla/dom/WorkerNavigatorBinding.h"
@@ -50,6 +50,8 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(WorkerNavigator)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mMediaCapabilities)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mWebGpu)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mLocks)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mPermissions)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mServiceWorkerContainer)
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 
 WorkerNavigator::WorkerNavigator(const NavigatorProperties& aProperties,
@@ -83,7 +85,14 @@ void WorkerNavigator::Invalidate() {
 
   mWebGpu = nullptr;
 
-  mLocks = nullptr;
+  if (mLocks) {
+    mLocks->Shutdown();
+    mLocks = nullptr;
+  }
+
+  mPermissions = nullptr;
+
+  mServiceWorkerContainer = nullptr;
 }
 
 JSObject* WorkerNavigator::WrapObject(JSContext* aCx,
@@ -139,21 +148,17 @@ void WorkerNavigator::GetPlatform(nsString& aPlatform, CallerType aCallerType,
   WorkerPrivate* workerPrivate = GetCurrentThreadWorkerPrivate();
   MOZ_ASSERT(workerPrivate);
 
-  if (aCallerType != CallerType::System) {
-    if (workerPrivate->ShouldResistFingerprinting(
-            RFPTarget::NavigatorPlatform)) {
-      // See nsRFPService.h for spoofed value.
-      aPlatform.AssignLiteral(SPOOFED_PLATFORM);
-      return;
-    }
-
-    if (!mProperties.mPlatformOverridden.IsEmpty()) {
-      aPlatform = mProperties.mPlatformOverridden;
-      return;
-    }
+  // navigator.platform is the same for default and spoofed values. The
+  // "general.platform.override" pref should override the default platform,
+  // but the spoofed platform should override the pref.
+  if (aCallerType == CallerType::System ||
+      workerPrivate->ShouldResistFingerprinting(RFPTarget::NavigatorPlatform) ||
+      mProperties.mPlatformOverridden.IsEmpty()) {
+    aPlatform = mProperties.mPlatform;
+  } else {
+    // from "general.platform.override" pref.
+    aPlatform = mProperties.mPlatformOverridden;
   }
-
-  aPlatform = mProperties.mPlatform;
 }
 
 namespace {
@@ -215,10 +220,12 @@ uint64_t WorkerNavigator::HardwareConcurrency() const {
   MOZ_ASSERT(rts);
 
   WorkerPrivate* aWorkerPrivate = GetCurrentThreadWorkerPrivate();
-  bool rfp = aWorkerPrivate->ShouldResistFingerprinting(
-      RFPTarget::NavigatorHWConcurrency);
 
-  return rts->ClampedHardwareConcurrency(rfp);
+  return rts->ClampedHardwareConcurrency(
+      aWorkerPrivate->ShouldResistFingerprinting(
+          RFPTarget::NavigatorHWConcurrency),
+      aWorkerPrivate->ShouldResistFingerprinting(
+          RFPTarget::NavigatorHWConcurrencyTiered));
 }
 
 StorageManager* WorkerNavigator::Storage() {
@@ -285,6 +292,34 @@ dom::LockManager* WorkerNavigator::Locks() {
     mLocks = dom::LockManager::Create(*global);
   }
   return mLocks;
+}
+
+dom::Permissions* WorkerNavigator::Permissions() {
+  if (!mPermissions) {
+    WorkerPrivate* workerPrivate = GetCurrentThreadWorkerPrivate();
+    MOZ_ASSERT(workerPrivate);
+
+    nsIGlobalObject* global = workerPrivate->GlobalScope();
+    MOZ_ASSERT(global);
+    mPermissions = new dom::Permissions(global);
+  }
+
+  return mPermissions;
+}
+
+already_AddRefed<ServiceWorkerContainer> WorkerNavigator::ServiceWorker() {
+  if (!mServiceWorkerContainer) {
+    WorkerPrivate* workerPrivate = GetCurrentThreadWorkerPrivate();
+    MOZ_ASSERT(workerPrivate);
+
+    nsIGlobalObject* global = workerPrivate->GlobalScope();
+    MOZ_ASSERT(global);
+
+    mServiceWorkerContainer = ServiceWorkerContainer::Create(global);
+  }
+
+  RefPtr<ServiceWorkerContainer> ref = mServiceWorkerContainer;
+  return ref.forget();
 }
 
 }  // namespace mozilla::dom

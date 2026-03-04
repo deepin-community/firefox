@@ -79,7 +79,14 @@ const OOP_FRAME_DOCUMENT_SNAPSHOT = {
     "text-align": "start",
     "text-indent": "0px",
   },
-  states: ["readonly", "focusable", "opaque", "enabled", "sensitive"],
+  states: [
+    "readonly",
+    "focusable",
+    "selectable text",
+    "opaque",
+    "enabled",
+    "sensitive",
+  ],
   children: [
     {
       childCount: 1,
@@ -159,7 +166,7 @@ const EXPECTED_SNAPSHOT = {
   description: "",
   indexInParent: 0,
   keyboardShortcut: "",
-  name: "",
+  name: null,
   nodeCssSelector: "",
   nodeType: 9,
   role: "document",
@@ -167,7 +174,6 @@ const EXPECTED_SNAPSHOT = {
   actions: [],
   attributes: {
     display: "block",
-    "explicit-name": "true",
     "margin-bottom": "8px",
     "margin-left": "8px",
     "margin-right": "8px",
@@ -176,7 +182,14 @@ const EXPECTED_SNAPSHOT = {
     "text-align": "start",
     "text-indent": "0px",
   },
-  states: ["readonly", "focusable", "opaque", "enabled", "sensitive"],
+  states: [
+    "readonly",
+    "focusable",
+    "selectable text",
+    "opaque",
+    "enabled",
+    "sensitive",
+  ],
   children: [OOP_FRAME_SNAPSHOT],
 };
 

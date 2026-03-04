@@ -770,9 +770,10 @@ sec_pkcs5CreateAlgorithmID(SECOidTag algorithm,
             algorithm = sec_pkcs5v2_get_pbe(cipherAlgorithm);
         }
 
+        SECOidTag hashAlg = HASH_GetHashOidTagByHMACOidTag(cipherAlgorithm);
+
         /* set the PKCS5v2 specific parameters */
         if (keyLength == 0) {
-            SECOidTag hashAlg = HASH_GetHashOidTagByHMACOidTag(cipherAlgorithm);
             if (hashAlg != SEC_OID_UNKNOWN) {
                 keyLength = HASH_ResultLenByOidTag(hashAlg);
             } else {
@@ -787,18 +788,25 @@ sec_pkcs5CreateAlgorithmID(SECOidTag algorithm,
             prfAlg = SEC_OID_HMAC_SHA1;
         }
 
-        /* build the PKCS5v2 cipher algorithm id */
-        cipherParams = pk11_GenerateNewParamWithKeyLen(
-            PK11_AlgtagToMechanism(cipherAlgorithm), keyLength);
-        if (!cipherParams) {
-            goto loser;
+        /* build the PKCS5v2 cipher algorithm id, if cipher
+         * is an HMAC, the cipherParams should be NULL */
+        if (hashAlg == SEC_OID_UNKNOWN) {
+            cipherParams = pk11_GenerateNewParamWithKeyLen(
+                PK11_AlgtagToMechanism(cipherAlgorithm), keyLength);
+            if (!cipherParams) {
+                goto loser;
+            }
+        } else {
+            cipherParams = NULL;
         }
 
         PORT_Memset(&pbeV2_param, 0, sizeof(pbeV2_param));
 
         rv = PK11_ParamToAlgid(cipherAlgorithm, cipherParams,
                                poolp, &pbeV2_param.cipherAlgId);
-        SECITEM_FreeItem(cipherParams, PR_TRUE);
+        if (cipherParams) {
+            SECITEM_FreeItem(cipherParams, PR_TRUE);
+        }
         if (rv != SECSuccess) {
             goto loser;
         }
@@ -932,15 +940,15 @@ pbe_PK11AlgidToParam(SECAlgorithmID *algid, SECItem *mech)
      * based on the algorithm. */
     if (algorithm == SEC_OID_PKCS5_PBKDF2) {
         SECOidTag prfAlgTag;
-        CK_PKCS5_PBKD2_PARAMS *pbeV2_params =
-            (CK_PKCS5_PBKD2_PARAMS *)PORT_ZAlloc(
-                sizeof(CK_PKCS5_PBKD2_PARAMS) + salt->len);
+        CK_PKCS5_PBKD2_PARAMS2 *pbeV2_params =
+            (CK_PKCS5_PBKD2_PARAMS2 *)PORT_ZAlloc(
+                PR_MAX(sizeof(CK_PKCS5_PBKD2_PARAMS2), sizeof(CK_PKCS5_PBKD2_PARAMS)) + salt->len);
 
         if (pbeV2_params == NULL) {
             goto loser;
         }
         paramData = (unsigned char *)pbeV2_params;
-        paramLen = sizeof(CK_PKCS5_PBKD2_PARAMS);
+        paramLen = PR_MAX(sizeof(CK_PKCS5_PBKD2_PARAMS2), sizeof(CK_PKCS5_PBKD2_PARAMS));
 
         /* set the prf */
         prfAlgTag = SEC_OID_HMAC_SHA1;
@@ -973,7 +981,7 @@ pbe_PK11AlgidToParam(SECAlgorithmID *algid, SECItem *mech)
         pbeV2_params->pPrfData = NULL;
         pbeV2_params->ulPrfDataLen = 0;
         pbeV2_params->saltSource = CKZ_SALT_SPECIFIED;
-        pSalt = ((CK_CHAR_PTR)pbeV2_params) + sizeof(CK_PKCS5_PBKD2_PARAMS);
+        pSalt = ((CK_CHAR_PTR)pbeV2_params) + PR_MAX(sizeof(CK_PKCS5_PBKD2_PARAMS2), sizeof(CK_PKCS5_PBKD2_PARAMS));
         if (salt->data) {
             PORT_Memcpy(pSalt, salt->data, salt->len);
         }
@@ -1412,7 +1420,24 @@ pk11_RawPBEKeyGenWithKeyType(PK11SlotInfo *slot, CK_MECHANISM_TYPE type,
                              SECItem *params, CK_KEY_TYPE keyType, int keyLen,
                              SECItem *pwitem, void *wincx)
 {
+#ifndef NSS_USE_PKCS5_PBKD2_PARAMS2_ONLY
+    SECItem _params = { 0, NULL, 0 };
+    CK_PKCS5_PBKD2_PARAMS pbev2_1_params;
     CK_ULONG pwLen;
+#endif
+#ifdef UNSAFE_FUZZER_MODE
+    PK11SymKey *zeroKey = NULL;
+    unsigned char zeroBuff[32] = { 0 };
+    SECItem zeroItem = { siBuffer, zeroBuff, sizeof zeroBuff };
+
+    zeroKey = PK11_ImportSymKeyWithFlags(slot, type, PK11_OriginUnwrap,
+                                         CKA_FLAGS_ONLY, &zeroItem,
+                                         CKF_SIGN | CKF_ENCRYPT | CKF_DECRYPT |
+                                             CKF_UNWRAP | CKF_WRAP,
+                                         PR_FALSE, wincx);
+    return zeroKey;
+#else /* UNSAFE_FUZZER_MODE */
+
     /* do some sanity checks */
     if ((params == NULL) || (params->data == NULL)) {
         PORT_SetError(SEC_ERROR_INVALID_ARGS);
@@ -1426,15 +1451,33 @@ pk11_RawPBEKeyGenWithKeyType(PK11SlotInfo *slot, CK_MECHANISM_TYPE type,
 
     /* set the password pointer in the parameters... */
     if (type == CKM_PKCS5_PBKD2) {
-        CK_PKCS5_PBKD2_PARAMS *pbev2_params;
-        if (params->len < sizeof(CK_PKCS5_PBKD2_PARAMS)) {
+        CK_PKCS5_PBKD2_PARAMS2 *pbev2_params;
+
+        if (params->len < PR_MIN(sizeof(CK_PKCS5_PBKD2_PARAMS2), sizeof(CK_PKCS5_PBKD2_PARAMS))) {
             PORT_SetError(SEC_ERROR_INVALID_ARGS);
             return NULL;
         }
-        pbev2_params = (CK_PKCS5_PBKD2_PARAMS *)params->data;
+        pbev2_params = (CK_PKCS5_PBKD2_PARAMS2 *)params->data;
         pbev2_params->pPassword = pwitem->data;
-        pwLen = pwitem->len;
-        pbev2_params->ulPasswordLen = &pwLen;
+        pbev2_params->ulPasswordLen = pwitem->len;
+        params->len = sizeof(CK_PKCS5_PBKD2_PARAMS2);
+
+#ifndef NSS_USE_PKCS5_PBKD2_PARAMS2_ONLY
+        if (PK11_CheckPKCS11Version(slot, 2, 40, PR_FALSE) < 0) {
+            /* CK_PKCS5_PBKD2_PARAMS */
+            _params.type = params->type;
+            _params.data = (CK_CHAR_PTR)&pbev2_1_params;
+            _params.len = sizeof(CK_PKCS5_PBKD2_PARAMS);
+            memcpy(&pbev2_1_params, pbev2_params,
+                   PR_MIN(sizeof(CK_PKCS5_PBKD2_PARAMS2),
+                          sizeof(CK_PKCS5_PBKD2_PARAMS)));
+
+            pwLen = pwitem->len;
+            pbev2_1_params.ulPasswordLen = &pwLen;
+            params = &_params;
+        }
+#endif
+
     } else {
         CK_PBE_PARAMS *pbe_params;
         if (params->len < sizeof(CK_PBE_PARAMS)) {
@@ -1447,10 +1490,10 @@ pk11_RawPBEKeyGenWithKeyType(PK11SlotInfo *slot, CK_MECHANISM_TYPE type,
     }
 
     /* generate the key (and sometimes the IV as a side effect...) */
-    return pk11_TokenKeyGenWithFlagsAndKeyType(slot, type, params, keyType,
-                                               keyLen, NULL,
+    return pk11_TokenKeyGenWithFlagsAndKeyType(slot, type, params, keyType, keyLen, NULL,
                                                CKF_SIGN | CKF_ENCRYPT | CKF_DECRYPT | CKF_UNWRAP | CKF_WRAP,
                                                0, wincx);
+#endif /* UNSAFE_FUZZER_MODE */
 }
 
 /*

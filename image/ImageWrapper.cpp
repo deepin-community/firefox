@@ -5,7 +5,6 @@
 
 #include "ImageWrapper.h"
 #include "mozilla/gfx/2D.h"
-#include "mozilla/RefPtr.h"
 #include "Orientation.h"
 #include "mozilla/image/Resolution.h"
 
@@ -115,11 +114,16 @@ size_t ImageWrapper::GetNativeSizesLength() {
 }
 
 NS_IMETHODIMP
-ImageWrapper::GetIntrinsicSize(nsSize* aSize) {
-  return mInnerImage->GetIntrinsicSize(aSize);
+ImageWrapper::GetIntrinsicSize(ImageIntrinsicSize* aIntrinsicSize) {
+  return mInnerImage->GetIntrinsicSize(aIntrinsicSize);
 }
 
-Maybe<AspectRatio> ImageWrapper::GetIntrinsicRatio() {
+NS_IMETHODIMP
+ImageWrapper::GetIntrinsicSizeInAppUnits(nsSize* aSize) {
+  return mInnerImage->GetIntrinsicSizeInAppUnits(aSize);
+}
+
+AspectRatio ImageWrapper::GetIntrinsicRatio() {
   return mInnerImage->GetIntrinsicRatio();
 }
 

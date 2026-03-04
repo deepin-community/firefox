@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS 조회
 about-networking-dns-lookup-button = 조회
 about-networking-dns-domain = 도메인:
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RR
 about-networking-dns-https-rr-lookup-table-column = HTTP RR
 about-networking-rcwn = RCWN 상태
 about-networking-rcwn-status = RCWN 상태
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = 이 페이지는 <a data-l10n-name="about
 
 about-networking-networkid-is-up = 링크가 작동 중
 about-networking-networkid-status-known = 링크 상태가 알려져 있음
-
-##
-

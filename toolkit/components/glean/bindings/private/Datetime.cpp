@@ -9,11 +9,13 @@
 #include "jsapi.h"
 #include "js/Date.h"
 #include "nsString.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/glean/bindings/ScalarGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
 #include "prtime.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -39,7 +41,7 @@ void DatetimeMetric::Set(const PRExplodedTime* aValue) const {
       buf[written - 1] = buf[written - 2];
       buf[written - 2] = buf[written - 3];
       buf[written - 3] = ':';
-      Telemetry::ScalarSet(id.extract(), NS_ConvertASCIItoUTF16(buf));
+      TelemetryScalar::Set(id.extract(), NS_ConvertASCIItoUTF16(buf));
     }
   }
 

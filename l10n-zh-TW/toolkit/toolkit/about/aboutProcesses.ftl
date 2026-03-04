@@ -57,7 +57,7 @@ about-processes-inference-process = 推斷（{ $pid }）
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
 #    $type (String) The raw type for this process.
-about-processes-unknown-process = 其他: { $type }（{ $pid }）
+about-processes-unknown-process = 其他：{ $type }（{ $pid }）
 
 ## Isolated process names
 ## Variables:
@@ -84,7 +84,7 @@ about-processes-with-coop-coep-process-private = { $origin } — 隱私（{ $pid
 #                   Can be an empty string if the process is idle.
 about-processes-active-threads =
     { $active ->
-       *[other] { $active } 個忙碌的執行緒，共 { $number } 個: { $list }
+       *[other] { $active } 個忙碌的執行緒，共 { $number } 個：{ $list }
     }
 # Single-line summary of threads (idle process)
 # Variables:
@@ -105,17 +105,17 @@ about-processes-thread-name-and-id = { $name }
 # Tab
 # Variables:
 #   $name (String) The name of the tab (typically the title of the page, might be the url while the page is loading).
-about-processes-tab-name = 分頁: { $name }
+about-processes-tab-name = 分頁：{ $name }
 about-processes-preloaded-tab = 預先載入的新分頁
 # Single subframe
 # Variables:
 #   $url (String) The full url of this subframe.
-about-processes-frame-name-one = 子畫框: { $url }
+about-processes-frame-name-one = 子畫框：{ $url }
 # Group of subframes
 # Variables:
 #   $number (Number) The number of subframes in this group. Always ≥ 1.
 #   $shortUrl (String) The shared prefix for the subframes in the group.
-about-processes-frame-name-many = 子畫框（{ $number }）: { $shortUrl }
+about-processes-frame-name-many = 子畫框（{ $number }）：{ $shortUrl }
 
 ## Utility process actor names
 
@@ -128,6 +128,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows Utils
 about-processes-utility-actor-windows-file-dialog = Windows 檔案對話框
+about-processes-utility-actor-pkcs11-module = 安全性模組輔助器
 
 ## Displaying CPU (percentage and total)
 ## Variables:

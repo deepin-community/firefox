@@ -6,7 +6,6 @@ import async_timeout
 import functools
 import logging
 import os
-import six
 
 import taskcluster.utils as utils
 import taskcluster.exceptions as exceptions
@@ -52,21 +51,21 @@ async def makeHttpRequest(method, url, payload, headers, retries=utils.MAX_RETRI
                     response = await makeSingleHttpRequest(method, url, payload, headers, session)
             except aiohttp.ClientError as rerr:
                 if retry < retries:
-                    log.warn('Retrying because of: %s' % rerr)
+                    log.warning('Retrying because of: %s' % rerr)
                     continue
                 # raise a connection exception
                 raise rerr
             except ValueError as rerr:
-                log.warn('ValueError from aiohttp: redirect to non-http or https')
+                log.warning('ValueError from aiohttp: redirect to non-http or https')
                 raise rerr
             except RuntimeError as rerr:
-                log.warn('RuntimeError from aiohttp: session closed')
+                log.warning('RuntimeError from aiohttp: session closed')
                 raise rerr
             # Handle non 2xx status code and retry if possible
             status = response.status
             if 500 <= status and status < 600 and retry < retries:
                 if retry < retries:
-                    log.warn('Retrying because of: %d status' % status)
+                    log.warning('Retrying because of: %d status' % status)
                     continue
                 else:
                     raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
@@ -101,7 +100,7 @@ async def makeSingleHttpRequest(method, url, payload, headers, session=None):
             log.debug('Received HTTP Status:    %s' % resp.status)
             log.debug('Received HTTP Headers: %s' % str(resp.headers))
             log.debug('Received HTTP Payload: %s (limit 1024 char)' %
-                      six.text_type(response_text)[:1024])
+                      str(response_text)[:1024])
             return resp
     finally:
         if implicit:

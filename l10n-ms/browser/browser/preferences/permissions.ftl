@@ -5,53 +5,40 @@
 permissions-window2 =
     .title = Pengecualian
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Alamat laman web
     .accesskey = l
-
 permissions-block =
     .label = Sekat
     .accesskey = a
-
 permissions-session =
     .label = Izinkan untuk Sesi
     .accesskey = S
-
 permissions-allow =
     .label = Izinkan
     .accesskey = A
-
 permissions-site-name =
     .label = Laman web
-
 permissions-status =
     .label = Status
-
 permissions-remove =
     .label = Buang Laman Web
     .accesskey = B
-
 permissions-remove-all =
     .label = Buang Semua Laman Web
     .accesskey = u
-
 permission-dialog =
     .buttonlabelaccept = Simpan Perubahan
     .buttonaccesskeyaccept = S
-
 permissions-searchbox =
     .placeholder = Carian laman web
-
 permissions-capabilities-allow =
     .label = Izinkan
 permissions-capabilities-block =
     .label = Sekat
 permissions-capabilities-prompt =
     .label = Sentiasa Tanya
-
 permissions-capabilities-listitem-allow =
     .value = Izinkan
 permissions-capabilities-listitem-block =
@@ -64,18 +51,12 @@ permissions-capabilities-listitem-allow-session =
 permissions-invalid-uri-title = Nama Hos Tidak Sah
 permissions-invalid-uri-label = Sila masukkan nama hos yang sah
 
-## Exceptions - Tracking Protection
-
-
 ## Exceptions - Cookies
 
 permissions-exceptions-cookie-window2 =
     .title = Pengecualian - Kuki dan Data Laman
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Anda boleh tentukan laman web yang sentiasa atau tidak akan dizinkan menggunakan kuki dan data laman.  Taip alamat sebenar laman yang anda mahu urus dan kemudian klik Sekat, Izin untuk Sesi, atau Izinkan.
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -98,9 +79,6 @@ permissions-exceptions-addons-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = Anda boleh tentukan laman web yang diizinkan memasang add-ons. Taip alamat laman yang tepat untuk anda izinkan dan kemudian klik Izinkan.
 
-## Site Permissions - Autoplay
-
-
 ## Site Permissions - Notifications
 
 permissions-site-notification-window2 =
@@ -121,9 +99,6 @@ permissions-site-location-disable-label =
     .label = Sekat permintaan baru yang meminta akses lokasi
 permissions-site-location-disable-desc = Ini akan menghalang mana-mana laman web yang tidak disenaraikan di atas daripada meminta izin untuk mengakses lokasi. Menyekat notifikasi boleh memecahkan beberapa ciri laman web.
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -143,8 +118,3 @@ permissions-site-microphone-desc = Laman web berikut meminta izin untuk mengakse
 permissions-site-microphone-disable-label =
     .label = Sekat permintaan baru yang mahu mengakses mikrofon
 permissions-site-microphone-disable-desc = Ini akan menghalang mana-mana laman web yang tidak disenaraikan di atas daripada meminta izin untuk mengakses mikrofon. Menyekat akses mikrofon boleh memecahkan beberapa ciri laman web.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

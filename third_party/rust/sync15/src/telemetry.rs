@@ -9,6 +9,7 @@ use crate::error::Error;
 #[cfg(feature = "sync-client")]
 use crate::error::ErrorResponse;
 
+use crate::error::warn;
 use std::collections::HashMap;
 use std::time;
 
@@ -458,10 +459,9 @@ impl Engine {
         if self.failure.is_none() {
             self.failure = Some(failure);
         } else {
-            log::warn!(
+            warn!(
                 "engine already has recorded a failure of {:?} - ignoring {:?}",
-                &self.failure,
-                &failure
+                &self.failure, &failure
             );
         }
     }
@@ -766,7 +766,7 @@ impl SyncTelemetryPing {
     pub fn uid(&mut self, uid: String) {
         if let Some(ref existing) = self.uid {
             if *existing != uid {
-                log::warn!("existing uid ${} being replaced by {}", existing, uid);
+                warn!("existing uid ${} being replaced by {}", existing, uid);
             }
         }
         self.uid = Some(uid);
@@ -781,8 +781,6 @@ impl SyncTelemetryPing {
         self.events.push(e);
     }
 }
-
-ffi_support::implement_into_ffi_by_json!(SyncTelemetryPing);
 
 #[cfg(test)]
 mod ping_tests {
@@ -816,7 +814,7 @@ mod ping_tests {
     }
 }
 
-impl<'a> From<&'a Error> for SyncFailure {
+impl From<&Error> for SyncFailure {
     fn from(e: &Error) -> SyncFailure {
         match e {
             #[cfg(feature = "sync-client")]

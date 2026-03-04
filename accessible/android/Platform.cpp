@@ -19,7 +19,7 @@
 using namespace mozilla;
 using namespace mozilla::a11y;
 
-static nsTHashMap<nsStringHashKey, nsString> sLocalizedStrings;
+MOZ_RUNINIT static nsTHashMap<nsStringHashKey, nsString> sLocalizedStrings;
 
 void a11y::PlatformInit() {
   nsresult rv = NS_OK;
@@ -140,8 +140,7 @@ void a11y::PlatformStateChangeEvent(Accessible* aTarget, uint64_t aState,
   }
 }
 
-void a11y::PlatformFocusEvent(Accessible* aTarget,
-                              const LayoutDeviceIntRect& aCaretRect) {
+void a11y::PlatformFocusEvent(Accessible* aTarget) {
   if (RefPtr<SessionAccessibility> sessionAcc =
           SessionAccessibility::GetInstanceFor(aTarget)) {
     sessionAcc->SendFocusEvent(aTarget);
@@ -150,9 +149,7 @@ void a11y::PlatformFocusEvent(Accessible* aTarget,
 
 void a11y::PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
                                   bool aIsSelectionCollapsed,
-                                  int32_t aGranularity,
-                                  const LayoutDeviceIntRect& aCaretRect,
-                                  bool aFromUser) {
+                                  int32_t aGranularity, bool aFromUser) {
   RefPtr<SessionAccessibility> sessionAcc =
       SessionAccessibility::GetInstanceFor(aTarget);
   if (!sessionAcc) {
@@ -231,4 +228,11 @@ bool a11y::LocalizeString(const nsAString& aToken, nsAString& aLocalized) {
   }
 
   return !!str;
+}
+
+uint64_t a11y::GetCacheDomainsForKnownClients(uint64_t aCacheDomains) {
+  (void)aCacheDomains;
+  // XXX: Respond to clients such as TalkBack. For now, be safe and default to
+  // caching all domains.
+  return CacheDomain::All;
 }

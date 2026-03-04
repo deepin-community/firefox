@@ -263,7 +263,7 @@ assertEq(e.tbl1.get(1), null);
 assertEq(e.tbl1.get(2), e.tbl1.get(2));
 assertEq(e.tbl1.get(2)(), 2);
 assertEq(e.tbl1.get(3), null);
-assertErrorMessage(() => e.tbl1.get(4), RangeError, /bad Table get index/);
+assertErrorMessage(() => e.tbl1.get(4), RangeError, /bad Table get address/);
 assertEq(e.tbl1.get(1), null);
 e.tbl1.set(1, e.f3);
 assertEq(e.tbl1.get(1), e.f3);
@@ -399,12 +399,6 @@ wasmFailValidateText('(module (export "a" (func 0)))', /exported function index 
 wasmFailValidateText('(module (export "a" (global 0)))', /exported global index out of bounds/);
 wasmFailValidateText('(module (export "a" (memory 0)))', /exported memory index out of bounds/);
 wasmFailValidateText('(module (export "a" (table 0)))', /exported table index out of bounds/);
-
-// Default memory/table rules
-if (!wasmMultiMemoryEnabled()) {
-    wasmFailValidateText('(module (import "a" "b" (memory 1 1)) (memory 1 1))', /already have default memory/);
-    wasmFailValidateText('(module (import "a" "b" (memory 1 1)) (import "x" "y" (memory 2 2)))', /already have default memory/);
-}
 
 // Data segments on imports
 

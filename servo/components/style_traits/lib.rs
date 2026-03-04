@@ -10,49 +10,28 @@
 #![crate_type = "rlib"]
 #![deny(unsafe_code, missing_docs)]
 
-extern crate app_units;
-#[macro_use]
-extern crate bitflags;
-extern crate cssparser;
-extern crate euclid;
-#[macro_use]
-extern crate lazy_static;
-extern crate malloc_size_of;
 #[macro_use]
 extern crate malloc_size_of_derive;
-#[cfg(feature = "gecko")]
-extern crate nsstring;
-extern crate selectors;
 #[macro_use]
 extern crate serde;
-extern crate servo_arc;
-#[cfg(feature = "servo")]
-extern crate servo_atoms;
-#[cfg(feature = "servo")]
-extern crate servo_url;
-extern crate thin_vec;
-extern crate to_shmem;
 #[macro_use]
 extern crate to_shmem_derive;
 #[cfg(feature = "servo")]
-extern crate webrender_api;
-#[cfg(feature = "servo")]
-pub use webrender_api::units::DevicePixel;
+extern crate url;
 
+use bitflags::bitflags;
 use cssparser::{CowRcStr, Token};
 use selectors::parser::SelectorParseErrorKind;
 #[cfg(feature = "servo")]
-use servo_atoms::Atom;
+use stylo_atoms::Atom;
 
 /// One hardware pixel.
 ///
 /// This unit corresponds to the smallest addressable element of the display hardware.
-#[cfg(not(feature = "servo"))]
 #[derive(Clone, Copy, Debug)]
 pub enum DevicePixel {}
 
 /// Represents a mobile style pinch zoom factor.
-/// TODO(gw): Once WR supports pinch zoom, use a type directly from webrender_api.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize, MallocSizeOf))]
 pub struct PinchZoomFactor(f32);
@@ -97,7 +76,8 @@ pub mod owned_str;
 
 pub use crate::specified_value_info::{CssType, KeywordsCollectFn, SpecifiedValueInfo};
 pub use crate::values::{
-    Comma, CommaWithSpace, CssWriter, OneOrMoreSeparated, Separator, Space, ToCss,
+    Comma, CommaWithSpace, CssString, CssStringWriter, CssWriter, NumericValue, OneOrMoreSeparated,
+    Separator, Space, ToCss, ToTyped, TypedValue,
 };
 
 /// The error type for all CSS parsing routines.
@@ -135,6 +115,10 @@ pub enum StyleParseErrorKind<'i> {
     UnexpectedFunction(CowRcStr<'i>),
     /// Error encountered parsing a @property's `syntax` descriptor
     PropertySyntaxField(PropertySyntaxParseError),
+    /// Error encountered parsing a @property's `inherits` descriptor.
+    ///
+    /// TODO(zrhoffman, bug 1920365): Include the custom property name in error messages.
+    PropertyInheritsField(PropertyInheritsParseError),
     /// @namespace must be before any rule but @charset and @import
     UnexpectedNamespaceRule,
     /// @import must be before any rule but @charset
@@ -216,6 +200,11 @@ impl<'i> StyleParseErrorKind<'i> {
 /// Errors that can be encountered while parsing the @property rule's syntax descriptor.
 #[derive(Clone, Debug, PartialEq)]
 pub enum PropertySyntaxParseError {
+    /// The syntax descriptor is required for the @property rule to be valid; if it’s missing, the
+    /// @property rule is invalid.
+    ///
+    /// <https://drafts.css-houdini.org/css-properties-values-api-1/#ref-for-descdef-property-syntax②>
+    NoSyntax,
     /// The string's length was 0.
     EmptyInput,
     /// A non-whitespace, non-pipe character was fount after parsing a component.
@@ -238,6 +227,19 @@ pub enum PropertySyntaxParseError {
     UnknownDataTypeName,
 }
 
+/// Errors that can be encountered while parsing the @property rule's inherits descriptor.
+#[derive(Clone, Debug, PartialEq)]
+pub enum PropertyInheritsParseError {
+    /// The inherits descriptor is required for the @property rule to be valid; if it’s missing,
+    /// the @property rule is invalid.
+    ///
+    /// <https://drafts.css-houdini.org/css-properties-values-api-1/#ref-for-descdef-property-inherits②>
+    NoInherits,
+
+    /// The inherits descriptor must successfully parse as `true` or `false`.
+    InvalidInherits,
+}
+
 bitflags! {
     /// The mode to use when parsing values.
     #[derive(Clone, Copy, Eq, PartialEq)]
@@ -256,7 +258,7 @@ bitflags! {
         /// In CSS Properties and Values, the initial value must be computationally
         /// independent.
         /// <https://drafts.css-houdini.org/css-properties-values-api-1/#ref-for-computationally-independent%E2%91%A0>
-        const DISALLOW_FONT_RELATIVE = 1 << 2;
+        const DISALLOW_COMPUTATIONALLY_DEPENDENT = 1 << 2;
     }
 }
 
@@ -273,10 +275,10 @@ impl ParsingMode {
         self.intersects(ParsingMode::ALLOW_ALL_NUMERIC_VALUES)
     }
 
-    /// Whether the parsing mode allows font-relative units.
+    /// Whether the parsing mode allows units or functions that are not computationally independent.
     #[inline]
-    pub fn allows_font_relative_lengths(&self) -> bool {
-        !self.intersects(ParsingMode::DISALLOW_FONT_RELATIVE)
+    pub fn allows_computational_dependence(&self) -> bool {
+        !self.intersects(ParsingMode::DISALLOW_COMPUTATIONALLY_DEPENDENT)
     }
 }
 

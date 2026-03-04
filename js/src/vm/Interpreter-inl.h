@@ -9,27 +9,20 @@
 
 #include "vm/Interpreter.h"
 
+#include "mozilla/CheckedArithmetic.h"
+
 #include "jslibmath.h"
 #include "jsmath.h"
 #include "jsnum.h"
 
 #include "js/friend/ErrorMessages.h"  // js::GetErrorMessage, JSMSG_*
-#include "util/CheckedArithmetic.h"
-#include "vm/ArgumentsObject.h"
 #include "vm/BigIntType.h"
 #include "vm/BytecodeUtil.h"  // JSDVG_SEARCH_STACK
 #include "vm/JSAtomUtils.h"   // AtomizeString
 #include "vm/Realm.h"
-#include "vm/SharedStencil.h"  // GCThingIndex
 #include "vm/StaticStrings.h"
 #include "vm/ThrowMsgKind.h"
-#ifdef ENABLE_RECORD_TUPLE
-#  include "vm/RecordTupleShared.h"
-#endif
 
-#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-#  include "vm/DisposableRecord-inl.h"
-#endif
 #include "vm/GlobalObject-inl.h"
 #include "vm/JSAtomUtils-inl.h"  // PrimitiveValueToId, TypeName
 #include "vm/JSContext-inl.h"
@@ -47,7 +40,7 @@ namespace js {
  * uninitialized let declaration, represented by the magic value
  * JS_UNINITIALIZED_LEXICAL.
  */
-static inline bool IsUninitializedLexical(const Value& val) {
+static inline bool IsUninitializedLexical(Value val) {
   // Use whyMagic here because JS_OPTIMIZED_OUT could flow into here.
   return val.isMagic() && val.whyMagic() == JS_UNINITIALIZED_LEXICAL;
 }
@@ -73,41 +66,14 @@ static inline bool IsUninitializedLexicalSlot(HandleObject obj,
       obj->as<NativeObject>().getSlot(propInfo.slot()));
 }
 
-static inline bool CheckUninitializedLexical(JSContext* cx, PropertyName* name_,
+static inline bool CheckUninitializedLexical(JSContext* cx,
+                                             Handle<PropertyName*> name,
                                              HandleValue val) {
   if (IsUninitializedLexical(val)) {
-    Rooted<PropertyName*> name(cx, name_);
     ReportRuntimeLexicalError(cx, JSMSG_UNINITIALIZED_LEXICAL, name);
     return false;
   }
   return true;
-}
-
-inline bool GetLengthProperty(const Value& lval, MutableHandleValue vp) {
-  /* Optimize length accesses on strings, arrays, and arguments. */
-  if (lval.isString()) {
-    vp.setInt32(lval.toString()->length());
-    return true;
-  }
-  if (lval.isObject()) {
-    JSObject* obj = &lval.toObject();
-    if (obj->is<ArrayObject>()) {
-      vp.setNumber(obj->as<ArrayObject>().length());
-      return true;
-    }
-
-    if (obj->is<ArgumentsObject>()) {
-      ArgumentsObject* argsobj = &obj->as<ArgumentsObject>();
-      if (!argsobj->hasOverriddenLength()) {
-        uint32_t length = argsobj->initialLength();
-        MOZ_ASSERT(length < INT32_MAX);
-        vp.setInt32(int32_t(length));
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 enum class GetNameMode { Normal, TypeOf };
@@ -129,7 +95,8 @@ inline bool FetchName(JSContext* cx, HandleObject receiver, HandleObject holder,
 
   /* Take the slow path if shape was not found in a native object. */
   if (!receiver->is<NativeObject>() || !holder->is<NativeObject>() ||
-      receiver->is<WithEnvironmentObject>()) {
+      (receiver->is<WithEnvironmentObject>() &&
+       receiver->as<WithEnvironmentObject>().supportUnscopables())) {
     Rooted<jsid> id(cx, NameToId(name));
     if (!GetProperty(cx, receiver, receiver, id, vp)) {
       return false;
@@ -140,8 +107,11 @@ inline bool FetchName(JSContext* cx, HandleObject receiver, HandleObject holder,
       /* Fast path for Object instance properties. */
       vp.set(holder->as<NativeObject>().getSlot(propInfo.slot()));
     } else {
+      // Unwrap 'with' environments for reasons given in
+      // GetNameBoundInEnvironment.
+      RootedObject normalized(cx, MaybeUnwrapWithEnvironment(receiver));
       RootedId id(cx, NameToId(name));
-      if (!NativeGetExistingProperty(cx, receiver, holder.as<NativeObject>(),
+      if (!NativeGetExistingProperty(cx, normalized, holder.as<NativeObject>(),
                                      id, propInfo, vp)) {
         return false;
       }
@@ -178,9 +148,8 @@ inline bool GetEnvironmentName(JSContext* cx, HandleObject envChain,
                                MutableHandleValue vp) {
   {
     PropertyResult prop;
-    JSObject* obj = nullptr;
     NativeObject* pobj = nullptr;
-    if (LookupNameNoGC(cx, name, envChain, &obj, &pobj, &prop)) {
+    if (LookupNameNoGC(cx, name, envChain, &pobj, &prop)) {
       if (FetchNameNoGC(pobj, prop, vp.address())) {
         return true;
       }
@@ -292,6 +261,9 @@ inline void InitGlobalLexicalOperation(
   MOZ_ASSERT(prop.isSome());
   MOZ_ASSERT(IsUninitializedLexical(lexicalEnv->getSlot(prop->slot())));
 
+  // Note: we don't have to call Watchtower::watchPropertyValueChange because
+  // this is an initialization instead of a mutation. We don't optimize loads of
+  // uninitialized lexicals in the JIT.
   lexicalEnv->setSlot(prop->slot(), value);
 }
 
@@ -399,8 +371,7 @@ static MOZ_ALWAYS_INLINE bool GetObjectElementOperation(
     }
 
     if (key.isString()) {
-      JSString* str = key.toString();
-      JSAtom* name = str->isAtom() ? &str->asAtom() : AtomizeString(cx, str);
+      JSAtom* name = AtomizeString(cx, key.toString());
       if (!name) {
         return false;
       }
@@ -432,19 +403,6 @@ static MOZ_ALWAYS_INLINE bool GetObjectElementOperation(
 static MOZ_ALWAYS_INLINE bool GetPrimitiveElementOperation(
     JSContext* cx, JS::HandleValue receiver, int receiverIndex, HandleValue key,
     MutableHandleValue res) {
-#ifdef ENABLE_RECORD_TUPLE
-  if (receiver.isExtendedPrimitive()) {
-    RootedId id(cx);
-    if (!ToPropertyKey(cx, key, &id)) {
-      return false;
-    }
-    RootedObject obj(cx, &receiver.toExtendedPrimitive());
-    if (!ExtendedPrimitiveGetProperty(cx, obj, receiver, id, res)) {
-      return false;
-    }
-  }
-#endif
-
   // FIXME: Bug 1234324 We shouldn't be boxing here.
   RootedObject boxed(
       cx, ToObjectFromStackForPropertyAccess(cx, receiver, receiverIndex, key));
@@ -466,8 +424,7 @@ static MOZ_ALWAYS_INLINE bool GetPrimitiveElementOperation(
     }
 
     if (key.isString()) {
-      JSString* str = key.toString();
-      JSAtom* name = str->isAtom() ? &str->asAtom() : AtomizeString(cx, str);
+      JSAtom* name = AtomizeString(cx, key.toString());
       if (!name) {
         return false;
       }
@@ -547,10 +504,6 @@ static MOZ_ALWAYS_INLINE bool InitElemOperation(JSContext* cx, jsbytecode* pc,
   }
 
   unsigned flags = GetInitDataPropAttrs(JSOp(*pc));
-  if (id.isPrivateName()) {
-    // Clear enumerate flag off of private names.
-    flags &= ~JSPROP_ENUMERATE;
-  }
   return DefineDataProperty(cx, obj, id, val, flags);
 }
 
@@ -661,7 +614,7 @@ static MOZ_ALWAYS_INLINE bool AddOperation(JSContext* cx,
   if (lhs.isInt32() && rhs.isInt32()) {
     int32_t l = lhs.toInt32(), r = rhs.toInt32();
     int32_t t;
-    if (MOZ_LIKELY(SafeAdd(l, r, &t))) {
+    if (MOZ_LIKELY(mozilla::SafeAdd(l, r, &t))) {
       res.setInt32(t);
       return true;
     }

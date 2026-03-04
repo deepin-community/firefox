@@ -7,13 +7,14 @@
 #ifndef AudioParam_h_
 #define AudioParam_h_
 
-#include "AudioParamTimeline.h"
-#include "nsWrapperCache.h"
-#include "nsCycleCollectionParticipant.h"
 #include "AudioNode.h"
-#include "mozilla/dom/TypedArray.h"
+#include "AudioParamTimeline.h"
 #include "WebAudioUtils.h"
 #include "js/TypeDecls.h"
+#include "mozilla/ErrorResult.h"
+#include "mozilla/dom/TypedArray.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla::dom {
 
@@ -58,27 +59,12 @@ class AudioParam final : public nsWrapperCache, public AudioParamTimeline {
 
   // Intended for use in AudioNode creation, when the setter should not throw.
   void SetInitialValue(float aValue) {
-    MOZ_ASSERT(HasSimpleValue(), "Existing events unexpected");
-    AudioParamEvent event(AudioTimelineEvent::SetValue, 0.0f, aValue);
-
-    DebugOnly<ErrorResult> rv;
-    MOZ_ASSERT(ValidateEvent(event, rv), "This event should be valid");
-
-    AudioParamTimeline::SetValue(aValue);
-
-    SendEventToEngine(event);
+    IgnoredErrorResult rv;
+    SetValue(aValue, rv);
   }
 
   void SetValue(float aValue, ErrorResult& aRv) {
-    AudioParamEvent event(AudioTimelineEvent::SetValue, 0.0f, aValue);
-
-    if (!ValidateEvent(event, aRv)) {
-      return;
-    }
-
-    AudioParamTimeline::SetValue(aValue);
-
-    SendEventToEngine(event);
+    SetValueAtTime(aValue, GetParentObject()->CurrentTime(), aRv);
   }
 
   AudioParam* SetValueAtTime(float aValue, double aStartTime,

@@ -2,14 +2,130 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Variables:
+#  $content-title (String): the title of the web content.
+browser-main-window-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } Navigare privată
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Navigare privată
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+browser-main-window-mac-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Navigare privată
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Navigare privată
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
 # `browser-main-window` and `browser-main-window-mac`.
 browser-main-window-title = { -brand-full-name }
+# The non-variable portion of this MUST match the translation of
+# "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
+private-browsing-shortcut-text-2 = { -brand-shortcut-name } Navigare privată
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } Navigare privată
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Navigare privată
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } Navigare privată
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Navigare privată
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Navigare privată
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Navigare privată
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Navigare privată
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Navigare privată
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Navigare privată
+       *[other] { -brand-full-name } Navigare privată
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Navigare privată
+popups-infobar-dont-show-message2 =
+    .label = Nu mai afișa mesajul când sunt blocate ferestrele pop-up și redirecționările către terți
+    .accesskey = D
+edit-popup-settings2 =
+    .label = Gestionează setările pentru ferestre pop-up și redirecționări către terți
+    .accesskey = M
 
 ##
 
@@ -36,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Deschide panoul de mesaje
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Deschide panoul cu cereri de locație
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Gestionează accesul dispozitivelor locale pentru acest site
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Gestionează partajarea accesului la rețeaua locală cu acest site
 urlbar-xr-notification-anchor =
     .tooltiptext = Deschide panoul de permisiuni pentru realitate virtuală
 urlbar-storage-access-anchor =
@@ -50,6 +170,10 @@ urlbar-plugins-notification-anchor =
     .tooltiptext = Gestionează utilizarea pluginurilor
 urlbar-web-rtc-share-devices-notification-anchor =
     .tooltiptext = Gestionează partajarea camerei și/sau a microfonului cu acest site
+# "Speakers" is used in a general sense that might include headphones or
+# another audio output connection.
+urlbar-web-rtc-share-speaker-notification-anchor =
+    .tooltiptext = Gestionează partajarea altor boxe cu acest site
 urlbar-autoplay-notification-anchor =
     .tooltiptext = Deschide panoul de redare automată
 urlbar-persistent-storage-notification-anchor =
@@ -59,11 +183,54 @@ urlbar-addons-notification-anchor =
 urlbar-tip-help-icon =
     .title = Obține ajutor
 urlbar-search-tips-confirm = OK, am înțeles
+urlbar-search-tips-confirm-short = Am înțeles
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
 # localized equivalent.
 urlbar-tip-icon-description =
     .alt = Pont:
+urlbar-result-menu-button =
+    .title = Deschide meniul
+urlbar-result-menu-button-feedback = Feedback
+    .title = Deschide meniul
+urlbar-result-menu-learn-more =
+    .label = Află mai multe
+    .accesskey = L
+urlbar-result-menu-remove-from-history =
+    .label = Șterge din istoric
+    .accesskey = R
+urlbar-result-menu-tip-get-help =
+    .label = Primește ajutor
+    .accesskey = h
+urlbar-result-menu-dismiss-suggestion =
+    .label = Respinge sugestia
+    .accesskey = D
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Află mai multe despre { -firefox-suggest-brand-name }
+    .accesskey = L
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Gestionează { -firefox-suggest-brand-name }
+    .accesskey = M
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Raportează locație inexactă
+urlbar-result-menu-show-less-frequently =
+    .label = Arată mai rar
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Nu afișa sugestii meteo
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Deschide meniul
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Îți mulțumim pentru feedback
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Îți mulțumim pentru feedback. Nu vei mai vedea sugestii meteo de acum înainte.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -72,6 +239,8 @@ urlbar-tip-icon-description =
 
 urlbar-search-tips-onboard = Scrii mai puțin, găsești mai multe: caută cu { $engineName } direct în bara de adrese.
 urlbar-search-tips-redirect-2 = Începe căutarea în bara de adrese ca să vezi sugestii de la { $engineName } și din istoricul tău de navigare.
+# Make sure to match the name of the Search panel in settings.
+urlbar-search-tips-persist = Căutarea a devenit mai simplă. Încearcă să restrângi căutarea aici, în bara de adrese. Pentru afișarea adresei URL, mergi la Căutare, în setări.
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
 urlbar-tabtosearch-onboard = Selectează această comandă rapidă pentru a găsi mai repede ceea ce ai nevoie.
@@ -87,6 +256,10 @@ urlbar-search-mode-actions = Acțiuni
 
 urlbar-geolocation-blocked =
     .tooltiptext = Ai blocat informațiile despre locație pentru acest site web.
+urlbar-localhost-blocked =
+    .tooltiptext = Ai blocat conexiunile la dispozitivele locale pentru acest site web.
+urlbar-local-network-blocked =
+    .tooltiptext = Ai blocat conexiunile la rețeaua locală pentru acest site web.
 urlbar-xr-blocked =
     .tooltiptext = Ai blocat accesarea dispozitivelor de realitate virtuală pentru acest site web.
 urlbar-web-notifications-blocked =
@@ -99,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = Ai blocat partajarea ecranului pe acest site web.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Ai blocat stocarea persistentă a datelor pentru acest site web.
+urlbar-popup-blocked2 =
+    .tooltiptext = Ai blocat ferestrele pop-up și redirecționările către terți pentru acest site.
 urlbar-popup-blocked =
     .tooltiptext = Ai blocat ferestrele pop-up pe acest site.
 urlbar-autoplay-media-blocked =
@@ -117,9 +292,18 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Marchează pagina ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Vizualizare divizată
+    .aria-label = Vizualizare divizată
 
 ## Page Action Context Menu
 
+page-action-manage-extension2 =
+    .label = Gestionează extensia…
+    .accesskey = E
+page-action-remove-extension2 =
+    .label = Elimină extensia
+    .accesskey = v
 
 ## Auto-hide Context Menu
 
@@ -187,30 +371,101 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Vezi suplimentele
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = extensii, teme, suplimente
+quickactions-cmd-addons2 = suplimente
+# Opens the bookmarks library window
+quickactions-bookmarks2 = Gestionează marcajele
+quickactions-cmd-bookmarks = marcaje
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Șterge istoricul recent
+quickactions-cmd-clearrecenthistory = șterge istoricul recent, istoric
+# Opens a SUMO article explaining how to clear history
+quickactions-clearhistory = Șterge istoricul
+quickactions-cmd-clearhistory = șterge istoricul
+# Opens about:downloads page
+quickactions-downloads2 = Vezi descărcările
+quickactions-cmd-downloads = descărcări
 # Opens about:addons page in the extensions section
 quickactions-extensions = Gestionează extensiile
+quickactions-cmd-extensions2 = extensii, suplimente
 quickactions-cmd-extensions = extensii
+# Opens Firefox View
+quickactions-firefoxview = Deschide { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = deschide { -firefoxview-brand-name }, { -firefoxview-brand-name }, deschide vizualizare, vizualizare
+# Opens SUMO home page
+quickactions-help = ajutor { -brand-product-name }
+quickactions-cmd-help = ajutor, asistență
+# Opens the devtools web inspector
+quickactions-inspector2 = Deschide instrumentele pentru dezvoltatori
+quickactions-cmd-inspector2 = inspector, instrumente de dezvoltare
+quickactions-cmd-inspector = inspector, instrumente de dezvoltare
+# Opens about:logins
+quickactions-logins2 = Gestionează parolele
+quickactions-cmd-logins = autentificări, parole
+# Opens about:addons page in the plugins section
+quickactions-plugins = Gestionează pluginurile
+quickactions-cmd-plugins = pluginuri
+# Opens the print dialog
+quickactions-print2 = Printează pagina
+quickactions-cmd-print = printare
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = Salvează pagina ca PDF
+quickactions-cmd-savepdf2 = pdf, salvează pagina
+# Opens a new private browsing window
+quickactions-private2 = Deschide o fereastră privată
+quickactions-cmd-private = navigare privată
+# Opens a SUMO article explaining how to refresh
+quickactions-refresh = Reîmprospătează { -brand-short-name }
 quickactions-cmd-refresh = reîmprospătează
 # Restarts the browser
 quickactions-restart = Repornește { -brand-short-name }
 quickactions-cmd-restart = repornește
 # Opens the screenshot tool
-quickactions-screenshot3 = Realizează o captură de ecran
+quickactions-screenshot3 = Fă o captură de ecran
+quickactions-cmd-screenshot2 = captură de ecran, fă o captură de ecran
+# Opens about:translations
+quickactions-translate = Tradu
+quickactions-cmd-translate = tradu
+quickactions-cmd-screenshot = captură de ecran
+# Opens about:preferences
+quickactions-settings2 = Gestionează setările
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = setări, preferințe, opțiuni, gestionează
+quickactions-cmd-settings = setări, preferințe, opțiuni
 # Opens about:addons page in the themes section
 quickactions-themes = Gestionează temele
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = teme, suplimente
 quickactions-cmd-themes = teme
+# Opens a SUMO article explaining how to update the browser
+quickactions-update = Actualizează { -brand-short-name }
+quickactions-cmd-update = actualizează
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Vezi sursa paginii
+quickactions-cmd-viewsource2 = vizualizare sursă, sursă, sursă pagină
+quickactions-cmd-viewsource = vezi sursa, sursă
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Află mai multe despre acțiunile rapide
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Apasă tab pentru a selecta:
 
 ## Bookmark Panel
 
 bookmarks-add-bookmark = Adaugă un marcaj
 bookmarks-edit-bookmark = Editează marcajul
 bookmark-panel-cancel =
-    .label = Renunță
+    .label = Anulează
     .accesskey = C
 # Variables:
 #  $count (number): number of bookmarks that will be removed
@@ -247,6 +502,7 @@ identity-connection-secure = Conexiune securizată
 identity-connection-failure = Eșec la conexiune
 identity-connection-internal = Aceasta este o pagină securizată { -brand-short-name }.
 identity-connection-file = Pagina este stocată pe calculator.
+identity-connection-associated = Pagina este încărcată de pe o altă pagină.
 identity-extension-page = Această pagină a fost încărcată de la o extensie.
 identity-active-blocked = { -brand-short-name } a blocat părți de pe această pagină care nu sunt sigure.
 identity-custom-root = Conexiune verificată de un emițător de certificate nerecunoscut de Mozilla.
@@ -254,9 +510,22 @@ identity-passive-loaded = Unele părți din pagină nu sunt sigure (cum ar fi im
 identity-active-loaded = Ai dezactivat protecția pe această pagină.
 identity-weak-encryption = Această pagină folosește criptare slabă.
 identity-insecure-login-forms = Datele de autentificare introduse pe această pagină ar putea fi compromise.
+identity-https-only-connection-upgraded = (actualizat la HTTPS)
 identity-https-only-label = Mod numai HTTPS
+identity-https-only-label2 = Trece automat acest site la o conexiune securizată
+identity-https-only-dropdown-on =
+    .label = Activat
+identity-https-only-dropdown-off =
+    .label = Dezactivat
+identity-https-only-dropdown-off-temporarily =
+    .label = Dezactivat temporar
 identity-https-only-info-turn-on2 = Activează modul numai HTTPS pentru acest site dacă vrei ca { -brand-short-name } să actualizeze conexiunea atunci când este posibil.
+identity-https-only-info-turn-off2 = Dacă pagina nu pare funcțională, poate vrei să dezactivezi modul HTTPS-Only pentru ca acest site și să se reîncarce folosind HTTP nesigur.
+identity-https-only-info-turn-on3 = Activează îmbunătățirile HTTPS pentru acest site dacă vrei ca { -brand-short-name } să securizeze conexiunea când este posibil.
+identity-https-only-info-turn-off3 = Dacă pagina pare să nu funcționeze corect, ar fi bine să dezactivezi îmbunătățirile HTTPS pentru acest site și să îl reîncarci cu HTTP nesecurizat.
+identity-https-only-info-no-upgrade = Conexiunea este imposibil de securizat.
 identity-permissions-storage-access-header = Cookie-uri inter-site-uri
+identity-permissions-storage-access-hint = Aceste părți pot folosi cookie-uri intersite-uri și date de site-uri web cât timp ești pe acest site.
 identity-permissions-storage-access-learn-more = Află mai multe
 identity-permissions-reload-hint = Ar putea fi nevoie să reîncarci pagina pentru a aplica modificările.
 identity-clear-site-data =
@@ -264,12 +533,14 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Nu ești conectat în mod securizat la acest site.
 identity-connection-verified = Ești conectat în mod securizat la acest site.
 identity-ev-owner-label = Certificat emis către:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = Calificat conform specificațiilor din Regulamentul (UE) 2024/1183.
 identity-description-custom-root2 = Mozilla nu recunoaște acest emițător de certificate. Este posibil să fi fost adăugat de sistemul tău de operare sau de un administrator.
 identity-remove-cert-exception =
     .label = Elimină excepția
     .accesskey = R
 identity-description-insecure = Conexiunea la acest site nu este privată. Informațiile pe care le trimiți pot fi văzute de alții (cum ar fi parolele, mesajele, cardurile de credit, etc.).
-identity-description-insecure-login-forms = Informațiile de autentificare pe care le introduci pe această pagină nu sunt securizate și pot fi compromise.
+identity-description-insecure-login-forms = Datele de autentificare pe care le introduci pe această pagină nu sunt securizate și pot fi compromise.
 identity-description-weak-cipher-intro = Conexiunea la acest site web folosește criptare slabă și nu este privată.
 identity-description-weak-cipher-risk = Alte persoane îți pot vedea informațiile sau pot modifica comportamentul site-ului web.
 identity-description-active-blocked2 = { -brand-short-name } a blocat părți ale acestei pagini care nu sunt sigure.
@@ -302,20 +573,63 @@ browser-window-close-button =
 
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-playing2 = SE REDĂ
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-muted2 = SONOR DEZACTIVAT
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-blocked = REDARE AUTOMATĂ BLOCATĂ
+# This label should be written in all capital letters if your locale supports them.
+browser-tab-audio-pip = IMAGINE ÎN IMAGINE
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
 ##  $count (number): number of affected tabs
 
+browser-tab-mute =
+    { $count ->
+        [1] ÎNCHIDE SONORUL FILEI
+        [one] ÎNCHIDE SONORUL PENTRU 1 FILĂ
+        [few] ÎNCHIDE SONORUL PENTRU { $count } FILE
+       *[other] ÎNCHIDE SONORUL PENTRU { $count } DE FILE
+    }
+browser-tab-unmute =
+    { $count ->
+        [1] REDĂ SONORUL FILEI
+        [one] REDĂ SONORUL FILEI
+        [few] REDĂ SONORUL A { $count } FILE
+       *[other] REDĂ SONORUL A { $count } DE FILE
+    }
+browser-tab-unblock =
+    { $count ->
+        [1] REDĂ FILA
+        [one] REDĂ FILA
+        [few] REDĂ { $count } FILE
+       *[other] REDĂ { $count } DE FILE
+    }
 
 ## Bookmarks toolbar items
 
 browser-import-button2 =
     .label = Importă marcaje ...
     .tooltiptext = Importă marcaje dintr-un alt browser în { -brand-short-name }
+bookmarks-toolbar-empty-message = Pentru acces rapid, adaugă marcajele aici, în bara de marcaje. <a data-l10n-name="manage-bookmarks">Gestionează marcaje…</a>
 
 ## WebRTC Pop-up notifications
 
+popup-select-camera-device =
+    .value = Cameră:
+    .accesskey = C
+popup-select-camera-icon =
+    .tooltiptext = Cameră
+popup-select-microphone-device =
+    .value = Microfon:
+    .accesskey = M
+popup-select-microphone-icon =
+    .tooltiptext = Microfon
+popup-select-speaker-icon =
+    .tooltiptext = Boxe
+popup-select-window-or-screen =
+    .label = Fereastră sau ecran:
+    .accesskey = W
 popup-all-windows-shared = Toate ferestrele vizibile pe ecran vor fi partajate.
 
 ## WebRTC window or screen share tab switch warning
@@ -329,6 +643,7 @@ sharing-warning-disable-for-session =
 
 ## DevTools F12 popup
 
+enable-devtools-popup-description2 = Pentru a folosi comanda rapidă F12, deschide mai întâi instrumentele pentru dezvoltatori din meniul de instrumente al browserului.
 
 ## URL Bar
 
@@ -339,6 +654,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Caută sau introdu adresa
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Introdu adresa
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -367,14 +686,23 @@ urlbar-placeholder-search-mode-other-history =
 urlbar-placeholder-search-mode-other-tabs =
     .placeholder = Introdu termenii de căutare
     .aria-label = Caută file
+# This placeholder is used when searching quick actions.
+urlbar-placeholder-search-mode-other-actions =
+    .placeholder = Introdu termenii de căutare
+    .aria-label = Acțiuni de căutare
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
     .placeholder = Caută cu { $name } sau introdu adresa
+# Variables
+#  $component (String): the name of the component which forces remote control.
+#    Example: "DevTools", "Marionette", "RemoteAgent".
+urlbar-remote-control-notification-anchor2 =
+    .tooltiptext = Browserul este sub comandă la distanță (motiv: { $component })
 urlbar-permissions-granted =
     .tooltiptext = Ai acordat permisiuni suplimentare acestui site web.
 urlbar-switch-to-tab =
-    .value = Comută pe filă:
+    .value = Treci pe fila:
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Extensie:
@@ -382,6 +710,8 @@ urlbar-go-button =
     .tooltiptext = Mergi la adresa din bara de adrese
 urlbar-page-action-button =
     .tooltiptext = Acțiuni pe pagină
+urlbar-revert-button =
+    .tooltiptext = Arată adresa în bara de adrese
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -399,28 +729,261 @@ urlbar-result-action-search-in-private = Caută într-o fereastră privată
 # Variables
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = Caută pe { $engine }
-urlbar-result-action-switch-tab = Comută la filă
+urlbar-result-action-sponsored = Sponsorizat
+urlbar-result-action-switch-tab = Treci la filă
+urlbar-result-action-move-tab-to-split-view = Mută fila în vizualizare divizată
 urlbar-result-action-visit = Vizitează
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Treci la fila · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Grup fără nume
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = Vizitează din clipboard
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
 #  $engine (String): the name of a search engine that searches the entire Web
 #  (e.g. Google).
 urlbar-result-action-before-tabtosearch-web = Apasă Tab pentru a căuta cu { $engine }
+# Directs a user to press the Tab key to perform a search with the specified
+# engine.
+# Variables
+#  $engine (String): the name of a search engine that searches a specific site
+#  (e.g. Amazon).
+urlbar-result-action-before-tabtosearch-other = Apasă Tab pentru căutare { $engine }
 # Variables
 #  $engine (String): the name of a search engine that searches the entire Web
 #  (e.g. Google).
 urlbar-result-action-tabtosearch-web = Caută cu { $engine } direct din bara de adrese
+# Variables
+#  $engine (String): the name of a search engine that searches a specific site
+#  (e.g. Amazon).
+urlbar-result-action-tabtosearch-other-engine = Caută { $engine } direct din bara de adrese
+# Action text for copying to clipboard.
+urlbar-result-action-copy-to-clipboard = Copiază
+# Shows the result of a formula expression being calculated, the last = sign will be shown
+# as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = nedefinit
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = Extensie { -brand-product-name }
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = Recomandate
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> în { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> în { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> în { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Sponsorizat
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Întreabă
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Obține date de pe bursă direct din bara de căutare
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Afișează actualizări de piață și multe altele de la partenerii noștri când partajezi date despre interogările de căutare cu { -vendor-short-name }. <a data-l10n-name="learn-more-link">Află mai multe</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Arată sugestii
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Nu acum
+urlbar-result-realtime-opt-in-dismiss = Respinge
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Nu mai arăta aceste sugestii
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Nu mai arăta sugestii de pe piețe
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Îți mulțumim pentru feedback. Nu vei mai vedea sugestii de pe piețe.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Sugestii de pe bursa de valori
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Îți mulțumim pentru feedback. Nu vei mai vedea aceste sugestii.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · În { $daysUntilStart } zi
+        [few] { $name } · În { $daysUntilStart } zile
+       *[other] { $name } · În { $daysUntilStart } de zile
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Începe în { $daysUntilStart } zi
+        [few] { $name } · Începe în { $daysUntilStart } zile
+       *[other] { $name } · Începe în { $daysUntilStart } de zile
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Se termină în { $daysUntilEnd } zi
+        [few] { $name } · Se termină în { $daysUntilEnd } zile
+       *[other] { $name } · Se termină în { $daysUntilEnd } de zile
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Azi
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Se termină azi
+
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = Caută cu { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Caută { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Caută cu { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Alege un motor de căutare
+urlbar-searchmode-bookmarks =
+    .label = Marcaje
+urlbar-searchmode-tabs =
+    .label = File
+urlbar-searchmode-history =
+    .label = Istoric
+urlbar-searchmode-actions =
+    .label = Acțiuni
+urlbar-searchmode-exit-button =
+    .tooltiptext = Închide
+urlbar-searchmode-default =
+    .tooltiptext = Motor de căutare implicit
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = De data asta caută cu:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-sticky-description = Căutare cu:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Setări de căutare
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Nou
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, alege un motor de căutare
+    .tooltiptext = { $engine }, alege un motor de căutare
+urlbar-searchmode-button-no-engine =
+    .label = Nicio comandă rapidă selectată, alege o comandă rapidă
+    .tooltiptext = Nicio comandă rapidă selectată, alege o comandă rapidă
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword =
+    .label = Căutarea de cuvinte-cheie este dezactivată
+    .tooltiptext = Căutarea de cuvinte-cheie este dezactivată
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
 
 urlbar-result-action-search-bookmarks = Caută în marcaje
+urlbar-result-action-search-history = Caută în istoric
 urlbar-result-action-search-tabs = Caută file
+urlbar-result-action-search-actions = Acțiuni de căutare
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Treci pe { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Deschide { $group }
 
 ## Labels shown above groups of urlbar results
 
+# A label shown above the "Firefox Suggest" (bookmarks/history) group in the
+# urlbar results.
+urlbar-group-firefox-suggest =
+    .label = { -firefox-suggest-brand-name }
 # A label shown above the search suggestions group in the urlbar results. It
 # should use sentence case.
 # Variables
@@ -430,6 +993,29 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = Acțiuni rapide
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = Căutări recente
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = În tendințe pe { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Sponsorizat
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Nu afișa căutări în tendințe
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = De ce văd asta?
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Îți mulțumim pentru feedback. Nu vei mai vedea căutări în tendințe de acum înainte.
 
 ## Reader View toolbar buttons
 
@@ -444,6 +1030,15 @@ reader-view-close-button =
 ## Variables:
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = Deschide imagine în imagine ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Închide modul imagine în imagine ({ $shortcut })
+picture-in-picture-panel-header = Imagine în imagine
+picture-in-picture-panel-headline = Acest site nu recomandă utilizarea modului de imagine în imagine
+picture-in-picture-panel-body = Este posibil ca videoclipurile să nu fie redate conform intenției dezvoltatorului atât timp cât ai activată funcționalitatea de imagine-în-imagine.
+picture-in-picture-enable-toggle =
+    .label = Activează oricum
 
 ## Full Screen and Pointer Lock UI
 
@@ -512,6 +1107,8 @@ bookmarks-search =
     .label = Caută în marcaje
 bookmarks-tools =
     .label = Instrumente pentru marcaje
+bookmarks-subview-edit-bookmark =
+    .label = Editează marcajul...
 # The aria-label is a spoken label that should not include the word "toolbar" or
 # such, because screen readers already know that this container is a toolbar.
 # This avoids double-speaking.
@@ -533,6 +1130,8 @@ bookmarks-subview-bookmark-tab =
 
 library-bookmarks-menu =
     .label = Marcaje
+library-recent-activity-title =
+    .value = Activitate recentă
 
 ## Pocket toolbar button
 
@@ -563,6 +1162,9 @@ toolbar-overflow-customize-button =
 toolbar-button-email-link =
     .label = Trimite e-mail cu linkul
     .tooltiptext = Trimite un e-mail cu linkul către acestă pagină
+toolbar-button-logins =
+    .label = Parole
+    .tooltiptext = Vezi și gestionează parolele salvate
 # Variables:
 #  $shortcut (String): keyboard shortcut to save a copy of the page
 toolbar-button-save-page =
@@ -587,6 +1189,7 @@ toolbar-button-new-private-window =
 eme-notifications-drm-content-playing = Unele elemente audio sau video de pe acest site folosesc programe DRM, care pot limita ceea ce îți permite { -brand-short-name } să faci cu ele.
 eme-notifications-drm-content-playing-manage = Gestionează setările
 eme-notifications-drm-content-playing-manage-accesskey = M
+eme-notifications-drm-content-playing-dismiss = Respinge
 eme-notifications-drm-content-playing-dismiss-accesskey = D
 
 ## Password save/update panel
@@ -596,6 +1199,12 @@ panel-save-update-password = Parolă
 
 ##
 
+# "More" item in macOS share menu
+menu-share-more =
+    .label = Mai multe…
+menu-share-copy-link =
+    .label = Copiază linkul
+    .accesskey = L
 ui-tour-info-panel-close =
     .tooltiptext = Închide
 
@@ -608,6 +1217,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = Blochează ferestrele pop-up pentru { $uriHost }
     .accesskey = p
+popups-infobar-allow2 =
+    .label = Permite ferestre pop-up și redirecționări către terți pentru { $uriHost }
+    .accesskey = p
 
 ##
 
@@ -618,12 +1230,18 @@ edit-popup-settings =
     .label = Gestionează setările ferestrelor pop-up…
     .accesskey = M
 picture-in-picture-hide-toggle =
-    .label = Ascunde comutatorul Picture-in-Picture
+    .label = Ascunde butonul de imagine-în-imagine
     .accesskey = H
 
 ## Since the default position for PiP controls does not change for RTL layout,
 ## right-to-left languages should use "Left" and "Right" as in the English strings,
 
+picture-in-picture-move-toggle-right =
+    .label = Dă butonul de imagine-în-imagine la dreapta
+    .accesskey = R
+picture-in-picture-move-toggle-left =
+    .label = Dă butonul de imagine-în-imagine la stânga
+    .accesskey = L
 
 ##
 
@@ -637,13 +1255,15 @@ navbar-accessible =
     .aria-label = Navigare
 navbar-downloads =
     .label = Descărcări
+navbar-overflow-2 =
+    .tooltiptext = Mai multe instrumente
 navbar-overflow =
     .tooltiptext = Mai multe instrumente…
 # Variables:
 #   $shortcut (String): keyboard shortcut to print the page
 navbar-print =
-    .label = Tipărește
-    .tooltiptext = Tipărește pagina… ({ $shortcut })
+    .label = Printează
+    .tooltiptext = Printează pagina… ({ $shortcut })
 navbar-home =
     .label = Pagină de start
     .tooltiptext = Pagina de start { -brand-short-name }
@@ -660,14 +1280,22 @@ tabs-toolbar =
 tabs-toolbar-new-tab =
     .label = Filă nouă
 tabs-toolbar-list-all-tabs =
-    .label = Listează toate filele
-    .tooltiptext = Listează toate filele
+    .label = Printează toate filele
+    .tooltiptext = Printează toate filele
+
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Plasează aici fila de fixat
 
 ## Infobar shown at startup to suggest session-restore
 
+# <img data-l10n-name="icon"/> will be replaced by the application menu icon
+restore-session-startup-suggestion-message = <strong>Deschizi file anterioare?</strong> Poți restaura sesiunea anterioară din { -brand-short-name } meniul aplicației <img data-l10n-name="icon"/>, la Istoric.
+restore-session-startup-suggestion-button = Arată-mi cum
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = Organizația ta a blocat accesul la fișierele locale de pe acest calculator
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -675,6 +1303,20 @@ data-reporting-notification-message = { -brand-short-name } trimite automat anum
 data-reporting-notification-button =
     .label = Alege ce partajezi
     .accesskey = C
+# Label for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-label = Navigare privată
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Navigare privată
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Prevenirea pierderilor de date (PPD) de la { $agentName }. Dă clic pentru mai multe informații.
+content-analysis-panel-title = Protecția datelor
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = Organizația ta folosește <b>{ $agentName }</b> pentru protecție împotriva pierderilor de date. <a data-l10n-name="info">Află mai multe</a>
 
 ## Unified extensions (toolbar) button
 
@@ -694,9 +1336,38 @@ unified-extensions-button-permissions-needed =
 ## Unified extensions button when some extensions are quarantined.
 ## Note that the new line is intentionally part of the tooltip.
 
+unified-extensions-button-quarantined =
+    .label = Extensii
+    .tooltiptext =
+        Extensii
+        Unele extensii nu sunt permise
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Extensii
+    .tooltiptext =
+        Extensii
+        Unele extensii sunt dezactivate
 
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = Închide sesiunea privată
+    .tooltiptext = Închide sesiunea privată
+reset-pbm-panel-heading = Termini sesiunea privată?
+reset-pbm-panel-description = Închide toate filele private și șterge istoricul, cookie-urile și toate celelalte date ale site-urilor.
+reset-pbm-panel-always-ask-checkbox =
+    .label = Întreabă-mă mereu
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = Anulează
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = Șterge datele sesiunii
+    .accesskey = D
+reset-pbm-panel-complete = Datele sesiunii private au fost șterse
 
 ## Autorefresh blocker
 
@@ -708,12 +1379,28 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = Măștile noastre sigure și ușor de folost îți protejează identitatea și previn spamul prin ascunderea adresei tale de e-mail.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = Toate mesajele trimise către măștile tale de e-mail vor fi redirecționate către <strong>{ $useremail }</strong>(asta dacă nu vrei să le blochezi).
+firefox-relay-offer-legal-notice = Dând clic pe „Folosește masca de e-mail”, ești de acord cu <label data-l10n-name="tos-url">Condițiile de utilizare a serviciilor</label> și <label data-l10n-name="privacy-url">Notificarea privind confidențialitatea</label>.
+firefox-relay-offer-legal-notice-1 = Prin crearea unui cont și a unei măști de e-mail, ești de acord cu <label data-l10n-name="tos-url">Condițiile de utilizare a serviciilor</label> și <label data-l10n-name="privacy-url">Notificarea privind confidențialitatea</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Neverificat)
 popup-notification-xpinstall-prompt-learn-more = Află mai multe despre instalarea în siguranță a suplimentelor
+popup-notification-xpinstall-prompt-block-url = Vezi detalii
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Permite acestei extensii să ruleze în ferestre private
+    .accesskey = P
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Să partajeze date tehnice și de interacțiune cu dezvoltatorul extensiei
+    .accesskey = S
 
 ## Pop-up warning
 
@@ -725,6 +1412,16 @@ popup-warning-message =
         [few] { -brand-short-name } a împiedicat acest site să deschidă { $popupCount } ferestre pop-up.
        *[other] { -brand-short-name } a împiedicat acest site să deschidă { $popupCount } de ferestre pop-up.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } a împiedicat acest site să redirecționeze.
+        [1] { -brand-short-name } a împiedicat acest site să deschidă o fereastră pop-up și să redirecționeze.
+        [one] { -brand-short-name } a împiedicat acest site să deschidă { $popupCount } fereastră pop-up și să redirecționeze.
+        [few] { -brand-short-name } a împiedicat acest site să deschidă { $popupCount } ferestre pop-up și să redirecționeze.
+       *[other] { -brand-short-name } a împiedicat acest site să deschidă { $popupCount } de ferestre pop-up și să redirecționeze.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
@@ -732,6 +1429,14 @@ popup-warning-exceeded-message =
     { $popupCount ->
         [few] { -brand-short-name } a împiedicat acest site să deschidă mai mult de { $popupCount } ferestre pop-up.
        *[other] { -brand-short-name } a împiedicat acest site să deschidă mai mult de { $popupCount } de ferestre pop-up.
+    }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } a împiedicat acest site să deschidă mai mult de { $popupCount } fereastră pop-up și să redirecționeze.
+        [few] { -brand-short-name } a împiedicat acest site să deschidă mai mult de { $popupCount } ferestre pop-up și să redirecționeze.
+       *[other] { -brand-short-name } a împiedicat acest site să deschidă mai mult de { $popupCount } de ferestre pop-up și să redirecționeze.
     }
 popup-warning-button =
     .label =
@@ -748,3 +1453,194 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Afișează „{ $popupURI }”
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Afișează „{ $redirectURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = Fereastra de dialog pentru fișiere Windows nu a putut fi deschisă. Nu s-a putut alege niciun fișier sau dosar.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Fereastra de dialog pentru fișiere Windows nu a putut fi deschisă. Fișierul va fi salvat în { $path }.
+file-picker-failed-save-nowhere = Fereastra de dialog pentru fișiere Windows nu a putut fi deschisă. Nu s-a găsit nicio locație implicită; fișierul nu va fi salvat.
+file-picker-crashed-open = Fereastra de dialog pentru fișiere Windows s-a oprit neașteptat. Nu s-a putut alege niciun fișier sau dosar.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Fereastra de dialog pentru fișiere Windows s-a oprit neașteptat. Fișierul va fi salvat în { $path }.
+file-picker-crashed-save-nowhere = Fereastra de dialog pentru fișiere Windows s-a oprit neașteptat. Nu s-a găsit nicio locație implicită; fișierul nu va fi salvat.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Afișează în dosar
+    .accessKey = F
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Finalizează configurarea
+onboarding-aw-finish-setup-button =
+    .label = Finalizează configurarea
+    .tooltiptext = Finalizează configurarea { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Protecția îmbunătățită împotriva urmăririi este activată
+trustpanel-etp-label-disabled = Protecția îmbunătățită împotriva urmăririi este dezactivată
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Protecție îmbunătățită împotriva urmăririi: activată pentru { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Protecție îmbunătățită împotriva urmăririi: dezactivată pentru { $host }
+trustpanel-etp-description-enabled = Dacă ceva pare defect pe acest site, încearcă să dezactivezi protecțiile.
+trustpanel-etp-description-disabled = { -brand-product-name } consideră că firmele ar trebui să te urmărească mai puțin. Blocăm cât mai multe elemente de urmărire posibil când activezi protecțiile.
+trustpanel-connection-label-secure = Conexiune securizată
+trustpanel-connection-label-insecure = Conexiune nesecurizată
+trustpanel-header-enabled = { -brand-product-name } este în gardă
+trustpanel-description-enabled2 = Ești protejat(ă). Dacă observăm ceva, te vom anunța.
+trustpanel-header-enabled-insecure = Ai grijă pe acest site
+trustpanel-description-enabled-insecure = { -brand-product-name } a observat ceva suspect.
+trustpanel-header-disabled = Ai dezactivat protecțiile
+trustpanel-description-disabled = { -brand-product-name } nu este în gardă. Îți sugerăm să reactivezi protecțiile.
+trustpanel-clear-cookies-button = Șterge cookie-urile și datele site-urilor
+trustpanel-privacy-link = Setări de confidențialitate
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Șterge cookie-urile și datele site-ului pentru { $host }
+trustpanel-clear-cookies-description = Eliminarea cookie-urilor și a datelor site-urilor te poate deconecta de pe site-uri web și poate goli coșurile de cumpărături.
+trustpanel-clear-cookies-subview-button-clear = Șterge
+trustpanel-clear-cookies-subview-button-cancel = Anulează
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Protecții de conexiune pentru { $host }
+trustpanel-siteinformation-morelink = Mai multe informații despre site
+trustpanel-blocker-see-all = Afișează tot
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Protecții împotriva urmăririi pentru { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Nesecurizat
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] <span>{ $count }</span> element de urmărire blocat pe acest site
+        [few] <span>{ $count }</span> elemente de urmărire blocate pe acest site
+       *[other] <span>{ $count }</span> de elemente de urmărire blocate pe acest site
+    }
+trustpanel-blocker-description = { -brand-product-name } consideră că firmele ar trebui să te urmărească mai puțin. Așa că blocăm cât mai mult posibil.
+trustpanel-blocked-header = { -brand-product-name } a blocat aceste elemente pentru tine:
+trustpanel-tracking-header = { -brand-product-name } a permis aceste elemente ca să nu se defecteze site-urile:
+trustpanel-tracking-description = Fără elemente de urmărire, este posibil ca unele butoane, formulare și câmpuri de autentificare să nu funcționeze.
+trustpanel-insecure-section-header = Conexiunea nu este securizată
+trustpanel-insecure-description = Datele pe care le transmiți acestui site nu sunt criptate. Ar putea fi văzute, furate sau alterate.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } cookie de urmărire intersite-uri
+        [few] { $count } cookie-uri de urmărire intersite-uri
+       *[other] { $count } de cookie-uri de urmărire intersite-uri
+    }
+trustpanel-list-label-tracking-content = Conținut de urmărire
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } detector de amprente digitale
+        [few] { $count } detectoare de amprente digitale
+       *[other] { $count } de detectoare de amprente digitale
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } element de urmărire de rețele sociale
+        [few] { $count } elemente de urmărire de rețele sociale
+       *[other] { $count } de elemente de urmărire de rețele sociale
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } criptominer
+        [few] { $count } criptomineri
+       *[other] { $count } de criptomineri
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a blocat { $count } element de urmărire de rețele sociale
+        [few] { -brand-product-name } a blocat { $count } elemente de urmărire de rețele sociale
+       *[other] { -brand-product-name } a blocat { $count } de elemente de urmărire de rețele sociale
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a permis { $count } element de urmărire de rețele sociale
+        [few] { -brand-product-name } a permis { $count } elemente de urmărire de rețele sociale
+       *[other] { -brand-product-name } a permis { $count } de elemente de urmărire de rețele sociale
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a blocat { $count } cookie de urmărire intersite-uri
+        [few] { -brand-product-name } a blocat { $count } cookie-uri de urmărire intersite-uri
+       *[other] { -brand-product-name } a blocat { $count } de cookie-uri de urmărire intersite-uri
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a permis { $count } cookie de urmărire intersite-uri
+        [few] { -brand-product-name } a permis { $count } cookie-uri de urmărire intersite-uri
+       *[other] { -brand-product-name } a permis { $count } de cookie-uri de urmărire intersite-uri
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a blocat { $count } element de urmărire
+        [few] { -brand-product-name } a blocat { $count } elemente de urmărire
+       *[other] { -brand-product-name } a blocat { $count } de elemente de urmărire
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a permis { $count } element de urmărire
+        [few] { -brand-product-name } a permis { $count } elemente de urmărire
+       *[other] { -brand-product-name } a permis { $count } de elemente de urmărire
+    }
+trustpanel-tracking-content-tab-list-header = Aceste site-uri încearcă să te urmărească:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a blocat { $count } detector de amprente digitale
+        [few] { -brand-product-name } a blocat { $count } detectoare de amprente digitale
+       *[other] { -brand-product-name } a blocat { $count } de detectoare de amprente digitale
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a permis { $count } detector de amprente digitale
+        [few] { -brand-product-name } a permis { $count } detectoare de amprente digitale
+       *[other] { -brand-product-name } a permis { $count } de detectoare de amprente digitale
+    }
+trustpanel-fingerprinter-list-header = Aceste site-uri încearcă să îți detecteze amprentele digitale:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a blocat { $count } criptominer
+        [few] { -brand-product-name } a blocat { $count } criptomineri
+       *[other] { -brand-product-name } a blocat { $count } de criptomineri
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } a permis { $count } criptominer
+        [few] { -brand-product-name } a permis { $count } criptomineri
+       *[other] { -brand-product-name } a permis { $count } de criptomineri
+    }
+trustpanel-cryptominer-tab-list-header = Aceste site-uri încearcă să criptomineze:
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> element de urmărire blocat pe acest site
+        [few] <span data-l10n-name="count">{ $count }</span> elemente de urmărire blocate pe acest site
+       *[other] <span data-l10n-name="count">{ $count }</span> de elemente de urmărire blocate pe acest site
+    }

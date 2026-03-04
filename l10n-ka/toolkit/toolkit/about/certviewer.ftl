@@ -14,7 +14,7 @@ certificate-viewer-error-title = რაღაც ხარვეზი წარ
 certificate-viewer-algorithm = ალგორითმი
 certificate-viewer-certificate-authority = სერტიფიკატის გამცემი
 certificate-viewer-cipher-suite = შიფრის ნაკრები
-certificate-viewer-common-name = საერთო სახელი
+certificate-viewer-common-name = ზოგადი სახელი
 certificate-viewer-email-address = ელფოსტის მისამართი
 # Variables:
 #   $firstCertName (String) - Common Name for the displayed certificate
@@ -36,6 +36,9 @@ certificate-viewer-key-size = გასაღების ზომა
 certificate-viewer-inc-locality = რეგისტრ. ადგილი
 certificate-viewer-locality = ადგილსამყოფელი
 certificate-viewer-location = მდებარეობა
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = აღრიცხვის სახელი
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = აღრიცხვის ID
 certificate-viewer-method = მეთოდი
 certificate-viewer-modulus = მოდული
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = უფლებამოსილი მ
 certificate-viewer-certificate-policies = სერტიფიკატის პირობები
 certificate-viewer-embedded-scts = ჩაშენებული SCT- ები
 certificate-viewer-crl-endpoints = CRL-ს მომწოდებლები
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = ჩამოტვირთვა
@@ -101,10 +103,9 @@ certificate-viewer-download-pem = PEM (სერტიფიკატი)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (ჯაჭვი)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
-    .title = ეს გაფართოება მიიჩნევა გადამწყვეტად, რაც ნიშნავს, რომ კლიენტებმა უნდა უარყონ სერტიფიკატი, თუ მათთვის გაუგებარია.
+    .title = ეს გაფართოება გადამწყვეტი სახითაა მითითებული, რაც ნიშნავს, რომ კლიენტებისთვის თუ გაუგებარია, უნდა უარყონ სერტიფიკატი.
 certificate-viewer-export = ცალკე შენახვა
     .download = { $fileName }.pem
 
@@ -112,6 +113,8 @@ certificate-viewer-export = ცალკე შენახვა
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (უცნობი)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = სერტიფიკატი
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

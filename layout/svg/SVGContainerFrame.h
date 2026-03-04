@@ -7,7 +7,6 @@
 #ifndef LAYOUT_SVG_SVGCONTAINERFRAME_H_
 #define LAYOUT_SVG_SVGCONTAINERFRAME_H_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/ISVGDisplayableFrame.h"
 #include "mozilla/UniquePtr.h"
 #include "nsContainerFrame.h"
@@ -77,7 +76,6 @@ class SVGContainerFrame : public nsContainerFrame {
                     const nsLineList::iterator* aPrevFrameLine,
                     nsFrameList&& aFrameList) override;
   void RemoveFrame(DestroyContext&, ChildListID, nsIFrame*) override;
-
   void BuildDisplayList(nsDisplayListBuilder* aBuilder,
                         const nsDisplayListSet& aLists) override {}
 
@@ -117,6 +115,7 @@ class SVGDisplayContainerFrame : public SVGContainerFrame,
   NS_DECL_ABSTRACT_FRAME(SVGDisplayContainerFrame)
 
   // nsIFrame:
+  void DidSetComputedStyle(ComputedStyle*) override;
   void InsertFrames(ChildListID aListID, nsIFrame* aPrevFrame,
                     const nsLineList::iterator* aPrevFrameLine,
                     nsFrameList&& aFrameList) override;
@@ -134,7 +133,7 @@ class SVGDisplayContainerFrame : public SVGContainerFrame,
                 imgDrawingParams& aImgParams) override;
   nsIFrame* GetFrameForPoint(const gfxPoint& aPoint) override;
   void ReflowSVG() override;
-  void NotifySVGChanged(uint32_t aFlags) override;
+  void NotifySVGChanged(ChangeFlags aFlags) override;
   SVGBBox GetBBoxContribution(const Matrix& aToBBoxUserspace,
                               uint32_t aFlags) override;
   bool IsDisplayContainer() override { return true; }

@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Flytta till slutet
     .accesskey = s
 fxviewtabrow-move-tab-window = Flytta till nytt fönster
     .accesskey = n
+fxviewtabrow-send-to-device = Skicka till enhet
+    .accesskey = S
 fxviewtabrow-send-tab = Skicka flik till enhet
     .accesskey = f
 fxviewtabrow-pin-tab = Fäst flik
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Ljud på för flik
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Alternativ för { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Ljud av { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Ljud på { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

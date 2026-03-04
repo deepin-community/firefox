@@ -2,7 +2,7 @@
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 const { TabUnloader } = ChromeUtils.importESModule(
-  "resource:///modules/TabUnloader.sys.mjs"
+  "moz-src:///browser/components/tabbrowser/TabUnloader.sys.mjs"
 );
 
 const BASE_URL = "https://example.com/browser/browser/modules/test/browser/";
@@ -139,6 +139,12 @@ const PREF_VIDEO_LOOPBACK = "media.video_loopback_dev";
 const PREF_FAKE_STREAMS = "media.navigator.streams.fake";
 const PREF_ENABLE_UNLOADER = "browser.tabs.unloadOnLowMemory";
 const PREF_MAC_LOW_MEM_RESPONSE = "browser.lowMemoryResponseMask";
+
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
 
 add_task(async function test() {
   registerCleanupFunction(() => {

@@ -30,6 +30,10 @@ options-context-inspector = Mbohekoha
 options-show-user-agent-styles-label = Kundaha rehegua jehechauka
 options-show-user-agent-styles-tooltip =
     .title = Emyandývo kóva ojehechaukáta ypykuéva rehegua kundaha omyanyhẽva.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Ehechauka DOM kundahára ãgua
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Emyandývo ko poravorã, ehecháta Shadow DOM mba’eporurã kundahára rehegua.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Tekome’ẽ DOM ñemboyke
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Kache HTTP ñemonge (tembiporu ryru ijuruja j
 options-disable-http-cache-tooltip =
     .title = Emyandývo ko porãvopyrã oipe’áta kache HTTP opavave tenda’i ombojurujáva tembiporu renda. Mba’apoharakuérape ndohupytýi ko tembiapo hesegua.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Eipe’a JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript * monge
 options-disable-javascript-tooltip =
     .title = Emyendývo ko poravopyrã omongéta JavaScript tendayke ag̃aguágui. Pe tendayke térã tembiporu ryru oñembotýta upéicharõ ko ñemoĩporã oñemboykéta.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Embojuruja yvyra’ãnga ypýva
 options-source-maps-tooltip =
     .title = Embojurujáramo ko poravopyrã, teñoiha ijehecháta tembiporúpe.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (jeike ag̃agua, emyenyhẽjey kuatiarogue)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Tembiapo ag̃agua añónte, emyanyhẽjey kuatiarogue
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (emyanyhẽjey kuatiarogue)

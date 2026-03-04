@@ -50,25 +50,3 @@ experimental-features-js-warp-description = Povolí projekt Warp, který má zle
 experimental-features-ime-search =
     .label = Adresní řádek: zobrazovat výsledky při použití IME
 experimental-features-ime-search-description = IME (Input Method Editor) je nástroj pro zadávání komplexních symbolů, jako jsou znaky východoasijských nebo indických jazyků, pomocí běžné klávesnice. Po zapnutí tohoto experimentu bude panel adresního řádku zobrazovat výsledky vyhledávání a návrhy našeptávače i při použití IME pro zadávání textu. Protože IME může zakrýt výsledky adresního řádku, doporučujeme tuto předvolbu použít jen s IME, který toto nedělá.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Obraz v obraze: automatické otevírání při přepnutí panelu
-experimental-features-auto-pip-description = Povolí obraz v obraze u aktivních videí při přepínání panelů.
-genai-settings-chat-title =
-    .label = AI chatbot
-# Updated sidebar settings
-sidebar-title =
-    .label = Postranní lišta
-sidebar-description = Mějte během prohlížení snadný přístup ke své historii, panelům z jiných zařízení, rozšířením postranní lišty a dalším funkcím. <a data-l10n-name="connect">Sdílet zpětnou vazbu</a>
-vertical-tabs-title =
-    .label = Svislé panely
-vertical-tabs-description = Přesuňte si panely z horní části prohlížeče na stranu. Vyžaduje, abyste také vyzkoušeli postranní lištu. <a data-l10n-name="connect">Sdílet zpětnou vazbu</a>
-experimental-features-group-browsing =
-    .label = Prohlížení
-experimental-features-group-developer-tools =
-    .label = Vývojářské nástroje
-experimental-features-group-webpage-display =
-    .label = Zobrazení webové stránky
-experimental-features-group-customize-browsing =
-    .label = Přizpůsobte si své prohlížení
-experimental-features-group-customize-browsing-description = Pokud tyto funkce vyzkoušíte, <a data-l10n-name="connect">podělte se o svůj názor na fóru Connect</a>

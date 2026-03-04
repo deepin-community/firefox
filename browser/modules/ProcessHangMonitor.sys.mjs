@@ -68,9 +68,9 @@ export var ProcessHangMonitor = {
    * Collection of hang reports that haven't expired or been dismissed
    * by the user. These are nsIHangReports. They are mapped to objects
    * containing:
-   * - notificationTime: when (Cu.now()) we first showed a notification
+   * - notificationTime: when (ChromeUtils.now()) we first showed a notification
    * - waitCount: how often the user asked to wait for the script to finish
-   * - lastReportFromChild: when (Cu.now()) we last got hang info from the
+   * - lastReportFromChild: when (ChromeUtils.now()) we last got hang info from the
    *   child.
    */
   _activeReports: new Map(),
@@ -92,7 +92,6 @@ export var ProcessHangMonitor = {
     Services.obs.addObserver(this, "quit-application-granted");
     Services.obs.addObserver(this, "xpcom-shutdown");
     Services.ww.registerNotification(this);
-    Services.telemetry.setEventRecordingEnabled("slow_script_warning", true);
   },
 
   /**
@@ -374,7 +373,7 @@ export var ProcessHangMonitor = {
       }
       let uptime = 0;
       if (info.notificationTime) {
-        uptime = Cu.now() - info.notificationTime;
+        uptime = ChromeUtils.now() - info.notificationTime;
       }
       uptime = "" + uptime;
       // We combine the duration of the hang in the content process with the
@@ -384,21 +383,15 @@ export var ProcessHangMonitor = {
       // there is no cross-process monotonically increasing timestamp we can
       // use. :-(
       let hangDuration =
-        report.hangDuration + Cu.now() - info.lastReportFromChild;
-      Services.telemetry.recordEvent(
-        "slow_script_warning",
-        "shown",
-        "content",
-        null,
-        {
-          end_reason: endReason,
-          hang_duration: "" + hangDuration,
-          n_tab_deselect: "" + info.deselectCount,
-          uri_type,
-          uptime,
-          wait_count: "" + info.waitCount,
-        }
-      );
+        report.hangDuration + ChromeUtils.now() - info.lastReportFromChild;
+      Glean.slowScriptWarning.shownContent.record({
+        end_reason: endReason,
+        hang_duration: hangDuration,
+        n_tab_deselect: info.deselectCount,
+        uri_type,
+        uptime,
+        wait_count: info.waitCount,
+      });
     } catch (ex) {
       console.error(ex);
     }
@@ -461,7 +454,7 @@ export var ProcessHangMonitor = {
     if (report) {
       let info = this._activeReports.get(report);
       if (info && !info.notificationTime) {
-        info.notificationTime = Cu.now();
+        info.notificationTime = ChromeUtils.now();
       }
       this.showNotification(win, report);
     } else {
@@ -646,7 +639,7 @@ export var ProcessHangMonitor = {
    * before, show a notification for it in all open XUL windows.
    */
   reportHang(report) {
-    let now = Cu.now();
+    let now = ChromeUtils.now();
     if (this._shuttingDown) {
       this.stopHang(report, "shutdown-in-progress", {
         lastReportFromChild: now,
@@ -673,7 +666,7 @@ export var ProcessHangMonitor = {
 
     // On e10s this counts slow-script notice only once.
     // This code is not reached on non-e10s.
-    Services.telemetry.getHistogramById("SLOW_SCRIPT_NOTICE_COUNT").add();
+    Glean.dom.slowScriptNoticeCount.add(1);
 
     this._activeReports.set(report, {
       deselectCount: 0,

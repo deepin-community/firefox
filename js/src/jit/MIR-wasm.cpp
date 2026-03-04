@@ -56,11 +56,11 @@ MDefinition* MWasmTruncateToInt32::foldsTo(TempAllocator& alloc) {
     }
 
     if (!isUnsigned() && d <= double(INT32_MAX) && d >= double(INT32_MIN)) {
-      return MConstant::New(alloc, Int32Value(ToInt32(d)));
+      return MConstant::NewInt32(alloc, ToInt32(d));
     }
 
     if (isUnsigned() && d <= double(UINT32_MAX) && d >= 0) {
-      return MConstant::New(alloc, Int32Value(ToInt32(d)));
+      return MConstant::NewInt32(alloc, ToInt32(d));
     }
   }
 
@@ -71,11 +71,11 @@ MDefinition* MWasmTruncateToInt32::foldsTo(TempAllocator& alloc) {
     }
 
     if (!isUnsigned() && f <= double(INT32_MAX) && f >= double(INT32_MIN)) {
-      return MConstant::New(alloc, Int32Value(ToInt32(f)));
+      return MConstant::NewInt32(alloc, ToInt32(f));
     }
 
     if (isUnsigned() && f <= double(UINT32_MAX) && f >= 0) {
-      return MConstant::New(alloc, Int32Value(ToInt32(f)));
+      return MConstant::NewInt32(alloc, ToInt32(f));
     }
   }
 
@@ -95,8 +95,8 @@ MDefinition* MWasmExtendU32Index::foldsTo(TempAllocator& alloc) {
 MDefinition* MWasmWrapU32Index::foldsTo(TempAllocator& alloc) {
   MDefinition* input = this->input();
   if (input->isConstant()) {
-    return MConstant::New(
-        alloc, Int32Value(int32_t(uint32_t(input->toConstant()->toInt64()))));
+    return MConstant::NewInt32(
+        alloc, int32_t(uint32_t(input->toConstant()->toInt64())));
   }
 
   return this;
@@ -136,8 +136,7 @@ static MDefinition* ToIntegralConstant(TempAllocator& alloc, MIRType ty,
                                        uint64_t val) {
   switch (ty) {
     case MIRType::Int32:
-      return MConstant::New(alloc,
-                            Int32Value(int32_t(uint32_t(val & Low32Mask))));
+      return MConstant::NewInt32(alloc, int32_t(uint32_t(val & Low32Mask)));
     case MIRType::Int64:
       return MConstant::NewInt64(alloc, int64_t(val));
     default:
@@ -229,7 +228,7 @@ MDefinition* MWasmBinaryBitwise::foldsTo(TempAllocator& alloc) {
       case SubOpcode::Or:
         return OnesOfType(alloc, type());
       case SubOpcode::Xor:
-        return MBitNot::New(alloc, argR);
+        return MBitNot::New(alloc, argR, type());
       default:
         MOZ_CRASH();
     }
@@ -243,7 +242,7 @@ MDefinition* MWasmBinaryBitwise::foldsTo(TempAllocator& alloc) {
       case SubOpcode::Or:
         return OnesOfType(alloc, type());
       case SubOpcode::Xor:
-        return MBitNot::New(alloc, argL);
+        return MBitNot::New(alloc, argL, type());
       default:
         MOZ_CRASH();
     }
@@ -264,7 +263,7 @@ MDefinition* MWasmAddOffset::foldsTo(TempAllocator& alloc) {
     if (!ptr.isValid()) {
       return this;
     }
-    return MConstant::New(alloc, Int32Value(ptr.value()));
+    return MConstant::NewInt32(alloc, ptr.value());
   }
 
   MOZ_ASSERT(baseArg->type() == MIRType::Int64);
@@ -344,7 +343,7 @@ MDefinition::AliasType MWasmLoadGlobalCell::mightAlias(
 
 HashNumber MWasmLoadInstanceDataField::valueHash() const {
   // Same comment as in MWasmLoadInstanceDataField::congruentTo() applies here.
-  HashNumber hash = MDefinition::valueHash();
+  HashNumber hash = MUnaryInstruction::valueHash();
   hash = addU32ToHash(hash, instanceDataOffset_);
   return hash;
 }
@@ -388,6 +387,13 @@ MDefinition* MWasmLoadInstanceDataField::foldsTo(TempAllocator& alloc) {
   }
 
   return store->value();
+}
+
+MDefinition* MWasmSelect::foldsTo(TempAllocator& alloc) {
+  if (condExpr()->isConstant()) {
+    return condExpr()->toConstant()->toInt32() != 0 ? trueExpr() : falseExpr();
+  }
+  return this;
 }
 
 bool MWasmLoadGlobalCell::congruentTo(const MDefinition* ins) const {
@@ -734,7 +740,7 @@ MDefinition* MWasmReduceSimd128::foldsTo(TempAllocator& alloc) {
 #  endif
         return this;
     }
-    return MConstant::New(alloc, Int32Value(i32Result), MIRType::Int32);
+    return MConstant::NewInt32(alloc, i32Result);
   }
 #  ifdef DEBUG
   logging.release();
@@ -745,8 +751,8 @@ MDefinition* MWasmReduceSimd128::foldsTo(TempAllocator& alloc) {
 
 MDefinition* MWasmUnsignedToDouble::foldsTo(TempAllocator& alloc) {
   if (input()->isConstant()) {
-    return MConstant::New(
-        alloc, DoubleValue(uint32_t(input()->toConstant()->toInt32())));
+    return MConstant::NewDouble(alloc,
+                                uint32_t(input()->toConstant()->toInt32()));
   }
 
   return this;
@@ -763,23 +769,20 @@ MDefinition* MWasmUnsignedToFloat32::foldsTo(TempAllocator& alloc) {
   return this;
 }
 
-MWasmCallCatchable* MWasmCallCatchable::New(TempAllocator& alloc,
-                                            const wasm::CallSiteDesc& desc,
-                                            const wasm::CalleeDesc& callee,
-                                            const Args& args,
-                                            uint32_t stackArgAreaSizeUnaligned,
-                                            const MWasmCallTryDesc& tryDesc,
-                                            MDefinition* tableIndexOrRef) {
-  MOZ_ASSERT(tryDesc.inTry);
+MWasmCallCatchable* MWasmCallCatchable::New(
+    TempAllocator& alloc, const wasm::CallSiteDesc& desc,
+    const wasm::CalleeDesc& callee, const Args& args,
+    uint32_t stackArgAreaSizeUnaligned, uint32_t tryNoteIndex,
+    MBasicBlock* fallthroughBlock, MBasicBlock* prePadBlock,
+    MDefinition* tableAddressOrRef) {
+  MWasmCallCatchable* call = new (alloc)
+      MWasmCallCatchable(desc, callee, stackArgAreaSizeUnaligned, tryNoteIndex);
 
-  MWasmCallCatchable* call = new (alloc) MWasmCallCatchable(
-      desc, callee, stackArgAreaSizeUnaligned, tryDesc.tryNoteIndex);
+  call->setSuccessor(FallthroughBranchIndex, fallthroughBlock);
+  call->setSuccessor(PrePadBranchIndex, prePadBlock);
 
-  call->setSuccessor(FallthroughBranchIndex, tryDesc.fallthroughBlock);
-  call->setSuccessor(PrePadBranchIndex, tryDesc.prePadBlock);
-
-  MOZ_ASSERT_IF(callee.isTable() || callee.isFuncRef(), tableIndexOrRef);
-  if (!call->initWithArgs(alloc, call, args, tableIndexOrRef)) {
+  MOZ_ASSERT_IF(callee.isTable() || callee.isFuncRef(), tableAddressOrRef);
+  if (!call->initWithArgs(alloc, call, args, tableAddressOrRef)) {
     return nullptr;
   }
 
@@ -789,11 +792,13 @@ MWasmCallCatchable* MWasmCallCatchable::New(TempAllocator& alloc,
 MWasmCallCatchable* MWasmCallCatchable::NewBuiltinInstanceMethodCall(
     TempAllocator& alloc, const wasm::CallSiteDesc& desc,
     const wasm::SymbolicAddress builtin, wasm::FailureMode failureMode,
-    const ABIArg& instanceArg, const Args& args,
-    uint32_t stackArgAreaSizeUnaligned, const MWasmCallTryDesc& tryDesc) {
+    wasm::Trap failureTrap, const ABIArg& instanceArg, const Args& args,
+    uint32_t stackArgAreaSizeUnaligned, uint32_t tryNoteIndex,
+    MBasicBlock* fallthroughBlock, MBasicBlock* prePadBlock) {
   auto callee = wasm::CalleeDesc::builtinInstanceMethod(builtin);
   MWasmCallCatchable* call = MWasmCallCatchable::New(
-      alloc, desc, callee, args, stackArgAreaSizeUnaligned, tryDesc, nullptr);
+      alloc, desc, callee, args, stackArgAreaSizeUnaligned, tryNoteIndex,
+      fallthroughBlock, prePadBlock, nullptr);
   if (!call) {
     return nullptr;
   }
@@ -801,18 +806,19 @@ MWasmCallCatchable* MWasmCallCatchable::NewBuiltinInstanceMethodCall(
   MOZ_ASSERT(instanceArg != ABIArg());
   call->instanceArg_ = instanceArg;
   call->builtinMethodFailureMode_ = failureMode;
+  call->builtinMethodFailureTrap_ = failureTrap;
   return call;
 }
 
 MWasmCallUncatchable* MWasmCallUncatchable::New(
     TempAllocator& alloc, const wasm::CallSiteDesc& desc,
     const wasm::CalleeDesc& callee, const Args& args,
-    uint32_t stackArgAreaSizeUnaligned, MDefinition* tableIndexOrRef) {
+    uint32_t stackArgAreaSizeUnaligned, MDefinition* tableAddressOrRef) {
   MWasmCallUncatchable* call =
       new (alloc) MWasmCallUncatchable(desc, callee, stackArgAreaSizeUnaligned);
 
-  MOZ_ASSERT_IF(callee.isTable() || callee.isFuncRef(), tableIndexOrRef);
-  if (!call->initWithArgs(alloc, call, args, tableIndexOrRef)) {
+  MOZ_ASSERT_IF(callee.isTable() || callee.isFuncRef(), tableAddressOrRef);
+  if (!call->initWithArgs(alloc, call, args, tableAddressOrRef)) {
     return nullptr;
   }
 
@@ -822,7 +828,7 @@ MWasmCallUncatchable* MWasmCallUncatchable::New(
 MWasmCallUncatchable* MWasmCallUncatchable::NewBuiltinInstanceMethodCall(
     TempAllocator& alloc, const wasm::CallSiteDesc& desc,
     const wasm::SymbolicAddress builtin, wasm::FailureMode failureMode,
-    const ABIArg& instanceArg, const Args& args,
+    wasm::Trap failureTrap, const ABIArg& instanceArg, const Args& args,
     uint32_t stackArgAreaSizeUnaligned) {
   auto callee = wasm::CalleeDesc::builtinInstanceMethod(builtin);
   MWasmCallUncatchable* call = MWasmCallUncatchable::New(
@@ -834,6 +840,7 @@ MWasmCallUncatchable* MWasmCallUncatchable::NewBuiltinInstanceMethodCall(
   MOZ_ASSERT(instanceArg != ABIArg());
   call->instanceArg_ = instanceArg;
   call->builtinMethodFailureMode_ = failureMode;
+  call->builtinMethodFailureTrap_ = failureTrap;
   return call;
 }
 
@@ -842,12 +849,12 @@ MWasmReturnCall* MWasmReturnCall::New(TempAllocator& alloc,
                                       const wasm::CalleeDesc& callee,
                                       const Args& args,
                                       uint32_t stackArgAreaSizeUnaligned,
-                                      MDefinition* tableIndexOrRef) {
+                                      MDefinition* tableAddressOrRef) {
   MWasmReturnCall* call =
       new (alloc) MWasmReturnCall(desc, callee, stackArgAreaSizeUnaligned);
 
-  MOZ_ASSERT_IF(callee.isTable() || callee.isFuncRef(), tableIndexOrRef);
-  if (!call->initWithArgs(alloc, call, args, tableIndexOrRef)) {
+  MOZ_ASSERT_IF(callee.isTable() || callee.isFuncRef(), tableAddressOrRef);
+  if (!call->initWithArgs(alloc, call, args, tableAddressOrRef)) {
     return nullptr;
   }
 
@@ -933,35 +940,122 @@ MWasmShuffleSimd128* jit::BuildWasmShuffleSimd128(TempAllocator& alloc,
 }
 #endif  // ENABLE_WASM_SIMD
 
-static MDefinition* FoldTrivialWasmCasts(TempAllocator& alloc,
+static MDefinition* FoldTrivialWasmTests(TempAllocator& alloc,
                                          wasm::RefType sourceType,
                                          wasm::RefType destType) {
   // Upcasts are trivially valid.
   if (wasm::RefType::isSubTypeOf(sourceType, destType)) {
-    return MConstant::New(alloc, Int32Value(1), MIRType::Int32);
+    return MConstant::NewInt32(alloc, 1);
   }
 
   // If two types are completely disjoint, then all casts between them are
   // impossible.
   if (!wasm::RefType::castPossible(destType, sourceType)) {
-    return MConstant::New(alloc, Int32Value(0), MIRType::Int32);
+    return MConstant::NewInt32(alloc, 0);
   }
 
   return nullptr;
 }
 
-MDefinition* MWasmRefIsSubtypeOfAbstract::foldsTo(TempAllocator& alloc) {
-  MDefinition* folded = FoldTrivialWasmCasts(alloc, sourceType(), destType());
+static MDefinition* FoldTrivialWasmCasts(MDefinition* ref,
+                                         wasm::RefType sourceType,
+                                         wasm::RefType destType) {
+  // Upcasts are trivially valid.
+  if (wasm::RefType::isSubTypeOf(sourceType, destType)) {
+    return ref;
+  }
+
+  // We can't fold invalid casts to a trap instruction, because that will
+  // confuse GVN which assumes the folded to instruction has the same type
+  // as the original instruction.
+
+  return nullptr;
+}
+
+MDefinition* MWasmRefTestAbstract::foldsTo(TempAllocator& alloc) {
+  if (ref()->wasmRefType().isNothing()) {
+    return this;
+  }
+
+  MDefinition* folded =
+      FoldTrivialWasmTests(alloc, ref()->wasmRefType().value(), destType());
   if (folded) {
     return folded;
   }
   return this;
 }
 
-MDefinition* MWasmRefIsSubtypeOfConcrete::foldsTo(TempAllocator& alloc) {
-  MDefinition* folded = FoldTrivialWasmCasts(alloc, sourceType(), destType());
+MDefinition* MWasmRefTestConcrete::foldsTo(TempAllocator& alloc) {
+  if (ref()->wasmRefType().isNothing()) {
+    return this;
+  }
+
+  MDefinition* folded =
+      FoldTrivialWasmTests(alloc, ref()->wasmRefType().value(), destType());
   if (folded) {
     return folded;
   }
   return this;
+}
+
+MDefinition* MWasmRefCastAbstract::foldsTo(TempAllocator& alloc) {
+  if (ref()->wasmRefType().isNothing()) {
+    return this;
+  }
+
+  MDefinition* folded =
+      FoldTrivialWasmCasts(ref(), ref()->wasmRefType().value(), destType());
+  if (folded) {
+    return folded;
+  }
+  return this;
+}
+
+MDefinition* MWasmRefCastConcrete::foldsTo(TempAllocator& alloc) {
+  if (ref()->wasmRefType().isNothing()) {
+    return this;
+  }
+
+  MDefinition* folded =
+      FoldTrivialWasmCasts(ref(), ref()->wasmRefType().value(), destType());
+  if (folded) {
+    return folded;
+  }
+  return this;
+}
+
+MDefinition* MWasmRefAsNonNull::foldsTo(TempAllocator& alloc) {
+  wasm::MaybeRefType inputType = ref()->wasmRefType();
+  if (inputType.isSome() && !inputType.value().isNullable()) {
+    return ref();
+  }
+  return this;
+}
+
+bool MWasmStructState::init() {
+  // Reserve the size for the number of fields.
+  return fields_.resize(
+      wasmStruct_->toWasmNewStructObject()->structType().fields_.length());
+}
+
+MWasmStructState* MWasmStructState::New(TempAllocator& alloc,
+                                        MDefinition* structObject) {
+  MWasmStructState* state = new (alloc) MWasmStructState(alloc, structObject);
+  if (!state->init()) {
+    return nullptr;
+  }
+  return state;
+}
+
+MWasmStructState* MWasmStructState::Copy(TempAllocator& alloc,
+                                         MWasmStructState* state) {
+  MDefinition* newWasmStruct = state->wasmStruct();
+  MWasmStructState* res = new (alloc) MWasmStructState(alloc, newWasmStruct);
+  if (!res || !res->init()) {
+    return nullptr;
+  }
+  for (size_t i = 0; i < state->numFields(); i++) {
+    res->setField(i, state->getField(i));
+  }
+  return res;
 }

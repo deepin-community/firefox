@@ -6,14 +6,17 @@
 
 #include "jit/IonAnalysis.h"
 
+#include "mozilla/CheckedArithmetic.h"
+#include "mozilla/HashFunctions.h"
+
 #include <algorithm>
 #include <utility>  // for ::std::pair
 
 #include "jit/AliasAnalysis.h"
 #include "jit/CompileInfo.h"
+#include "jit/DominatorTree.h"
 #include "jit/MIRGenerator.h"
 #include "jit/MIRGraph.h"
-#include "util/CheckedArithmetic.h"
 
 #include "vm/BytecodeUtil-inl.h"
 
@@ -29,7 +32,7 @@ using MPhiUseIteratorStack =
 
 // Look for Phi uses with a depth-first search. If any uses are found the stack
 // of MPhi instructions is returned in the |worklist| argument.
-[[nodiscard]] static bool DepthFirstSearchUse(MIRGenerator* mir,
+[[nodiscard]] static bool DepthFirstSearchUse(const MIRGenerator* mir,
                                               MPhiUseIteratorStack& worklist,
                                               MPhi* phi) {
   // Push a Phi and the next use to iterate over in the worklist.
@@ -133,7 +136,7 @@ using MPhiUseIteratorStack =
 }
 
 [[nodiscard]] static bool FlagPhiInputsAsImplicitlyUsed(
-    MIRGenerator* mir, MBasicBlock* block, MBasicBlock* succ,
+    const MIRGenerator* mir, MBasicBlock* block, MBasicBlock* succ,
     MPhiUseIteratorStack& worklist) {
   // When removing an edge between 2 blocks, we might remove the ability of
   // later phases to figure out that the uses of a Phi should be considered as
@@ -267,7 +270,8 @@ static MInstructionIterator FindFirstInstructionAfterBail(MBasicBlock* block) {
 // Given an iterator pointing to the first removed instruction, mark
 // the operands of each removed instruction as having implicit uses.
 [[nodiscard]] static bool FlagOperandsAsImplicitlyUsedAfter(
-    MIRGenerator* mir, MBasicBlock* block, MInstructionIterator firstRemoved) {
+    const MIRGenerator* mir, MBasicBlock* block,
+    MInstructionIterator firstRemoved) {
   MOZ_ASSERT(firstRemoved->block() == block);
 
   const CompileInfo& info = block->info();
@@ -313,7 +317,7 @@ static MInstructionIterator FindFirstInstructionAfterBail(MBasicBlock* block) {
   return true;
 }
 
-[[nodiscard]] static bool FlagEntryResumePointOperands(MIRGenerator* mir,
+[[nodiscard]] static bool FlagEntryResumePointOperands(const MIRGenerator* mir,
                                                        MBasicBlock* block) {
   // Flag observable operands of the entry resume point as having implicit uses.
   MResumePoint* rp = block->entryResumePoint();
@@ -335,8 +339,8 @@ static MInstructionIterator FindFirstInstructionAfterBail(MBasicBlock* block) {
   return true;
 }
 
-[[nodiscard]] static bool FlagAllOperandsAsImplicitlyUsed(MIRGenerator* mir,
-                                                          MBasicBlock* block) {
+[[nodiscard]] static bool FlagAllOperandsAsImplicitlyUsed(
+    const MIRGenerator* mir, MBasicBlock* block) {
   return FlagEntryResumePointOperands(mir, block) &&
          FlagOperandsAsImplicitlyUsedAfter(mir, block, block->begin());
 }
@@ -345,7 +349,7 @@ static MInstructionIterator FindFirstInstructionAfterBail(MBasicBlock* block) {
 // unconditional bailout. We trim any instructions in those blocks
 // after the first unconditional bailout, and remove any blocks that
 // are only reachable through bailing blocks.
-bool jit::PruneUnusedBranches(MIRGenerator* mir, MIRGraph& graph) {
+bool jit::PruneUnusedBranches(const MIRGenerator* mir, MIRGraph& graph) {
   JitSpew(JitSpew_Prune, "Begin");
 
   // Pruning is guided by unconditional bailouts. Wasm does not have bailouts.
@@ -667,12 +671,20 @@ static bool IsTestInputMaybeToBool(MTest* test, MDefinition* value) {
   }
 }
 
-// Change block so that it ends in a goto to the specific target block.
-// existingPred is an existing predecessor of the block.
+// Change |block| so that it ends in a goto to the specific |target| block.
+// |existingPred| is an existing predecessor of the block.
+//
+// |blockResult| is the value computed by |block|. This was a phi input but the
+// caller has determined that |blockResult| matches the input of an earlier
+// MTest instruction and we don't need to test it a second time. Mark it as
+// implicitly-used because we're removing a use.
 [[nodiscard]] static bool UpdateGotoSuccessor(TempAllocator& alloc,
                                               MBasicBlock* block,
+                                              MDefinition* blockResult,
                                               MBasicBlock* target,
                                               MBasicBlock* existingPred) {
+  blockResult->setImplicitlyUsedUnchecked();
+
   MInstruction* ins = block->lastIns();
   MOZ_ASSERT(ins->isGoto());
   ins->toGoto()->target()->removePredecessor(block);
@@ -847,8 +859,8 @@ static bool IsDiamondPattern(MBasicBlock* initialBlock) {
   // testBlock, rather than to testBlock itself.
 
   if (IsTestInputMaybeToBool(initialTest, trueResult)) {
-    if (!UpdateGotoSuccessor(graph.alloc(), trueBranch, finalTest->ifTrue(),
-                             testBlock)) {
+    if (!UpdateGotoSuccessor(graph.alloc(), trueBranch, trueResult,
+                             finalTest->ifTrue(), testBlock)) {
       return false;
     }
   } else {
@@ -860,8 +872,8 @@ static bool IsDiamondPattern(MBasicBlock* initialBlock) {
   }
 
   if (IsTestInputMaybeToBool(initialTest, falseResult)) {
-    if (!UpdateGotoSuccessor(graph.alloc(), falseBranch, finalTest->ifFalse(),
-                             testBlock)) {
+    if (!UpdateGotoSuccessor(graph.alloc(), falseBranch, falseResult,
+                             finalTest->ifFalse(), testBlock)) {
       return false;
     }
   } else {
@@ -1050,8 +1062,8 @@ static bool IsTrianglePattern(MBasicBlock* initialBlock) {
       return false;
     }
   } else if (IsTestInputMaybeToBool(initialTest, trueResult)) {
-    if (!UpdateGotoSuccessor(graph.alloc(), trueBranch, finalTest->ifTrue(),
-                             testBlock)) {
+    if (!UpdateGotoSuccessor(graph.alloc(), trueBranch, trueResult,
+                             finalTest->ifTrue(), testBlock)) {
       return false;
     }
   } else {
@@ -1069,8 +1081,8 @@ static bool IsTrianglePattern(MBasicBlock* initialBlock) {
       return false;
     }
   } else if (IsTestInputMaybeToBool(initialTest, falseResult)) {
-    if (!UpdateGotoSuccessor(graph.alloc(), falseBranch, finalTest->ifFalse(),
-                             testBlock)) {
+    if (!UpdateGotoSuccessor(graph.alloc(), falseBranch, falseResult,
+                             finalTest->ifFalse(), testBlock)) {
       return false;
     }
   } else {
@@ -1308,7 +1320,9 @@ bool jit::FoldTests(MIRGraph& graph) {
   return true;
 }
 
-bool jit::FoldEmptyBlocks(MIRGraph& graph) {
+bool jit::FoldEmptyBlocks(MIRGraph& graph, bool* changed) {
+  *changed = false;
+
   for (MBasicBlockIterator iter(graph.begin()); iter != graph.end();) {
     MBasicBlock* block = *iter;
     iter++;
@@ -1345,6 +1359,8 @@ bool jit::FoldEmptyBlocks(MIRGraph& graph) {
       return false;
     }
     succ->removePredecessor(block);
+
+    *changed = true;
   }
   return true;
 }
@@ -1385,7 +1401,7 @@ static void EliminateTriviallyDeadResumePointOperands(MIRGraph& graph,
 // will not artificially extend the lifetimes of any SSA values. This could
 // otherwise occur if the new resume point captured a value which is created
 // between the old and new resume point and is dead at the new resume point.
-bool jit::EliminateTriviallyDeadResumePointOperands(MIRGenerator* mir,
+bool jit::EliminateTriviallyDeadResumePointOperands(const MIRGenerator* mir,
                                                     MIRGraph& graph) {
   for (auto* block : graph) {
     if (MResumePoint* rp = block->entryResumePoint()) {
@@ -1408,7 +1424,8 @@ bool jit::EliminateTriviallyDeadResumePointOperands(MIRGenerator* mir,
 // will not artificially extend the lifetimes of any SSA values. This could
 // otherwise occur if the new resume point captured a value which is created
 // between the old and new resume point and is dead at the new resume point.
-bool jit::EliminateDeadResumePointOperands(MIRGenerator* mir, MIRGraph& graph) {
+bool jit::EliminateDeadResumePointOperands(const MIRGenerator* mir,
+                                           MIRGraph& graph) {
   // If we are compiling try blocks, locals and arguments may be observable
   // from catch or finally blocks (which Ion does not compile). For now just
   // disable the pass in this case.
@@ -1531,7 +1548,7 @@ bool jit::EliminateDeadResumePointOperands(MIRGenerator* mir, MIRGraph& graph) {
         // interpreter could throw an exception; we avoid this problem
         // by removing dead operands before removing dead code.
         MConstant* constant =
-            MConstant::New(graph.alloc(), MagicValue(JS_OPTIMIZED_OUT));
+            MConstant::NewMagic(graph.alloc(), JS_OPTIMIZED_OUT);
         block->insertBefore(*(block->begin()), constant);
         use->replaceProducer(constant);
       }
@@ -1620,7 +1637,7 @@ bool js::jit::IsDiscardableAllowEffectful(const MDefinition* def) {
 // Instructions are useless if they are unused and have no side effects.
 // This pass eliminates useless instructions.
 // The graph itself is unchanged.
-bool jit::EliminateDeadCode(MIRGenerator* mir, MIRGraph& graph) {
+bool jit::EliminateDeadCode(const MIRGenerator* mir, MIRGraph& graph) {
   // Traverse in postorder so that we hit uses before definitions.
   // Traverse instruction list backwards for the same reason.
   for (PostorderIterator block = graph.poBegin(); block != graph.poEnd();
@@ -1695,7 +1712,7 @@ static inline MDefinition* IsPhiRedundant(MPhi* phi) {
   return first;
 }
 
-bool jit::EliminatePhis(MIRGenerator* mir, MIRGraph& graph,
+bool jit::EliminatePhis(const MIRGenerator* mir, MIRGraph& graph,
                         Observability observe) {
   // Eliminates redundant or unobservable phis from the graph.  A
   // redundant phi is something like b = phi(a, a) or b = phi(a, b),
@@ -1802,6 +1819,10 @@ bool jit::EliminatePhis(MIRGenerator* mir, MIRGraph& graph,
   // Sweep dead phis.
   for (PostorderIterator block = graph.poBegin(); block != graph.poEnd();
        block++) {
+    if (mir->shouldCancel("Eliminate Phis (sweep dead phis)")) {
+      return false;
+    }
+
     MPhiIterator iter = block->phisBegin();
     while (iter != block->phisEnd()) {
       MPhi* phi = *iter++;
@@ -1830,7 +1851,7 @@ namespace {
 // conversion operations.
 //
 class TypeAnalyzer {
-  MIRGenerator* mir;
+  const MIRGenerator* mir;
   MIRGraph& graph;
   Vector<MPhi*, 0, SystemAllocPolicy> phiWorklist_;
 
@@ -1875,7 +1896,8 @@ class TypeAnalyzer {
   MIRType guessPhiType(MPhi* phi) const;
 
  public:
-  TypeAnalyzer(MIRGenerator* mir, MIRGraph& graph) : mir(mir), graph(graph) {}
+  TypeAnalyzer(const MIRGenerator* mir, MIRGraph& graph)
+      : mir(mir), graph(graph) {}
 
   bool analyze();
 };
@@ -1933,7 +1955,7 @@ bool TypeAnalyzer::shouldSpecializeOsrPhis() const {
   //
   //     * TypeAnalyzer::replaceRedundantPhi: adds a type guard for values that
   //       can't be unboxed (null/undefined/magic Values).
-  if (!mir->graph().osrBlock()) {
+  if (!graph.osrBlock()) {
     return false;
   }
 
@@ -2219,7 +2241,7 @@ bool TypeAnalyzer::adjustPhiInputs(MPhi* phi) {
   // 1. Every input is of that type.
   // 2. Every observed input is of that type (i.e., some inputs haven't been
   // executed yet).
-  // 3. Inputs were doubles and int32s, and was specialized to double.
+  // 3. Inputs were numbers, and was specialized to floating point type.
   if (phiType != MIRType::Value) {
     for (size_t i = 0, e = phi->numOperands(); i < e; i++) {
       MDefinition* in = phi->getOperand(i);
@@ -2227,55 +2249,53 @@ bool TypeAnalyzer::adjustPhiInputs(MPhi* phi) {
         continue;
       }
 
+      if (in->isBox() && in->toBox()->input()->type() == phiType) {
+        phi->replaceOperand(i, in->toBox()->input());
+        continue;
+      }
+
       if (!alloc().ensureBallast()) {
         return false;
       }
 
-      if (in->isBox() && in->toBox()->input()->type() == phiType) {
-        phi->replaceOperand(i, in->toBox()->input());
-      } else {
-        MInstruction* replacement;
-        MBasicBlock* predecessor = phi->block()->getPredecessor(i);
+      MBasicBlock* predecessor = phi->block()->getPredecessor(i);
 
-        if (phiType == MIRType::Double && IsFloatType(in->type())) {
-          // Convert int32 operands to double.
+      MInstruction* replacement;
+      if (IsFloatingPointType(phiType) &&
+          IsTypeRepresentableAsDouble(in->type())) {
+        // Convert number operands to |phiType|.
+        if (phiType == MIRType::Double) {
           replacement = MToDouble::New(alloc(), in);
-        } else if (phiType == MIRType::Float32) {
-          if (in->type() == MIRType::Int32 || in->type() == MIRType::Double) {
-            replacement = MToFloat32::New(alloc(), in);
-          } else {
-            // See comment below
-            if (in->type() != MIRType::Value) {
-              MBox* box = MBox::New(alloc(), in);
-              predecessor->insertAtEnd(box);
-              in = box;
-            }
-
-            MUnbox* unbox =
-                MUnbox::New(alloc(), in, MIRType::Double, MUnbox::Fallible);
-            unbox->setBailoutKind(BailoutKind::SpeculativePhi);
-            predecessor->insertAtEnd(unbox);
-            replacement = MToFloat32::New(alloc(), in);
-          }
         } else {
-          // If we know this branch will fail to convert to phiType,
-          // insert a box that'll immediately fail in the fallible unbox
-          // below.
-          if (in->type() != MIRType::Value) {
-            MBox* box = MBox::New(alloc(), in);
-            predecessor->insertAtEnd(box);
-            in = box;
-          }
-
-          // Be optimistic and insert unboxes when the operand is a
-          // value.
-          replacement = MUnbox::New(alloc(), in, phiType, MUnbox::Fallible);
+          MOZ_ASSERT(phiType == MIRType::Float32);
+          replacement = MToFloat32::New(alloc(), in);
+        }
+      } else {
+        // If we know this branch will fail to convert to phiType, insert a box
+        // that'll immediately fail in the fallible unbox below.
+        if (in->type() != MIRType::Value) {
+          auto* box = MBox::New(alloc(), in);
+          predecessor->insertAtEnd(box);
+          in = box;
         }
 
-        replacement->setBailoutKind(BailoutKind::SpeculativePhi);
-        predecessor->insertAtEnd(replacement);
-        phi->replaceOperand(i, replacement);
+        // Be optimistic and insert unboxes when the operand is a value.
+        if (phiType == MIRType::Float32) {
+          // Float32 is unboxed as Double, then converted.
+          auto* unbox =
+              MUnbox::New(alloc(), in, MIRType::Double, MUnbox::Fallible);
+          unbox->setBailoutKind(BailoutKind::SpeculativePhi);
+          predecessor->insertAtEnd(unbox);
+          replacement = MToFloat32::New(alloc(), unbox);
+        } else {
+          replacement = MUnbox::New(alloc(), in, phiType, MUnbox::Fallible);
+          replacement->setBailoutKind(BailoutKind::SpeculativePhi);
+        }
       }
+      MOZ_ASSERT(replacement->type() == phiType);
+
+      predecessor->insertAtEnd(replacement);
+      phi->replaceOperand(i, replacement);
     }
 
     return true;
@@ -2303,7 +2323,7 @@ bool TypeAnalyzer::adjustPhiInputs(MPhi* phi) {
       }
 
       MBasicBlock* pred = phi->block()->getPredecessor(i);
-      in = AlwaysBoxAt(alloc(), pred->lastIns(), in);
+      in = BoxAt(alloc(), pred->lastIns(), in);
     }
 
     phi->replaceOperand(i, in);
@@ -2925,7 +2945,7 @@ bool TypeAnalyzer::analyze() {
   return true;
 }
 
-bool jit::ApplyTypeInformation(MIRGenerator* mir, MIRGraph& graph) {
+bool jit::ApplyTypeInformation(const MIRGenerator* mir, MIRGraph& graph) {
   TypeAnalyzer analyzer(mir, graph);
 
   if (!analyzer.analyze()) {
@@ -2945,7 +2965,7 @@ void jit::RenumberBlocks(MIRGraph& graph) {
 
 // A utility for code which adds/deletes blocks. Renumber the remaining blocks,
 // recompute dominators, and optionally recompute AliasAnalysis dependencies.
-bool jit::AccountForCFGChanges(MIRGenerator* mir, MIRGraph& graph,
+bool jit::AccountForCFGChanges(const MIRGenerator* mir, MIRGraph& graph,
                                bool updateAliasAnalysis,
                                bool underValueNumberer) {
   // Renumber the blocks and clear out the old dominator info.
@@ -2957,7 +2977,7 @@ bool jit::AccountForCFGChanges(MIRGenerator* mir, MIRGraph& graph,
   }
 
   // Recompute dominator info.
-  if (!BuildDominatorTree(graph)) {
+  if (!BuildDominatorTree(mir, graph)) {
     return false;
   }
 
@@ -2974,7 +2994,7 @@ bool jit::AccountForCFGChanges(MIRGenerator* mir, MIRGraph& graph,
 
 // Remove all blocks not marked with isMarked(). Unmark all remaining blocks.
 // Alias analysis dependencies may be invalid after calling this function.
-bool jit::RemoveUnmarkedBlocks(MIRGenerator* mir, MIRGraph& graph,
+bool jit::RemoveUnmarkedBlocks(const MIRGenerator* mir, MIRGraph& graph,
                                uint32_t numMarkedBlocks) {
   if (numMarkedBlocks == graph.numBlocks()) {
     // If all blocks are marked, no blocks need removal. Just clear the
@@ -3022,178 +3042,6 @@ bool jit::RemoveUnmarkedBlocks(MIRGenerator* mir, MIRGraph& graph,
 
   // Renumber the blocks and update the dominator tree.
   return AccountForCFGChanges(mir, graph, /*updateAliasAnalysis=*/false);
-}
-
-// A Simple, Fast Dominance Algorithm by Cooper et al.
-// Modified to support empty intersections for OSR, and in RPO.
-static MBasicBlock* IntersectDominators(MBasicBlock* block1,
-                                        MBasicBlock* block2) {
-  MBasicBlock* finger1 = block1;
-  MBasicBlock* finger2 = block2;
-
-  MOZ_ASSERT(finger1);
-  MOZ_ASSERT(finger2);
-
-  // In the original paper, the block ID comparisons are on the postorder index.
-  // This implementation iterates in RPO, so the comparisons are reversed.
-
-  // For this function to be called, the block must have multiple predecessors.
-  // If a finger is then found to be self-dominating, it must therefore be
-  // reachable from multiple roots through non-intersecting control flow.
-  // nullptr is returned in this case, to denote an empty intersection.
-
-  while (finger1->id() != finger2->id()) {
-    while (finger1->id() > finger2->id()) {
-      MBasicBlock* idom = finger1->immediateDominator();
-      if (idom == finger1) {
-        return nullptr;  // Empty intersection.
-      }
-      finger1 = idom;
-    }
-
-    while (finger2->id() > finger1->id()) {
-      MBasicBlock* idom = finger2->immediateDominator();
-      if (idom == finger2) {
-        return nullptr;  // Empty intersection.
-      }
-      finger2 = idom;
-    }
-  }
-  return finger1;
-}
-
-void jit::ClearDominatorTree(MIRGraph& graph) {
-  for (MBasicBlockIterator iter = graph.begin(); iter != graph.end(); iter++) {
-    iter->clearDominatorInfo();
-  }
-}
-
-static void ComputeImmediateDominators(MIRGraph& graph) {
-  // The default start block is a root and therefore only self-dominates.
-  MBasicBlock* startBlock = graph.entryBlock();
-  startBlock->setImmediateDominator(startBlock);
-
-  // Any OSR block is a root and therefore only self-dominates.
-  MBasicBlock* osrBlock = graph.osrBlock();
-  if (osrBlock) {
-    osrBlock->setImmediateDominator(osrBlock);
-  }
-
-  bool changed = true;
-
-  while (changed) {
-    changed = false;
-
-    ReversePostorderIterator block = graph.rpoBegin();
-
-    // For each block in RPO, intersect all dominators.
-    for (; block != graph.rpoEnd(); block++) {
-      // If a node has once been found to have no exclusive dominator,
-      // it will never have an exclusive dominator, so it may be skipped.
-      if (block->immediateDominator() == *block) {
-        continue;
-      }
-
-      // A block with no predecessors is not reachable from any entry, so
-      // it self-dominates.
-      if (MOZ_UNLIKELY(block->numPredecessors() == 0)) {
-        block->setImmediateDominator(*block);
-        continue;
-      }
-
-      MBasicBlock* newIdom = block->getPredecessor(0);
-
-      // Find the first common dominator.
-      for (size_t i = 1; i < block->numPredecessors(); i++) {
-        MBasicBlock* pred = block->getPredecessor(i);
-        if (pred->immediateDominator() == nullptr) {
-          continue;
-        }
-
-        newIdom = IntersectDominators(pred, newIdom);
-
-        // If there is no common dominator, the block self-dominates.
-        if (newIdom == nullptr) {
-          block->setImmediateDominator(*block);
-          changed = true;
-          break;
-        }
-      }
-
-      if (newIdom && block->immediateDominator() != newIdom) {
-        block->setImmediateDominator(newIdom);
-        changed = true;
-      }
-    }
-  }
-
-#ifdef DEBUG
-  // Assert that all blocks have dominator information.
-  for (MBasicBlockIterator block(graph.begin()); block != graph.end();
-       block++) {
-    MOZ_ASSERT(block->immediateDominator() != nullptr);
-  }
-#endif
-}
-
-bool jit::BuildDominatorTree(MIRGraph& graph) {
-  MOZ_ASSERT(graph.canBuildDominators());
-
-  ComputeImmediateDominators(graph);
-
-  Vector<MBasicBlock*, 4, JitAllocPolicy> worklist(graph.alloc());
-
-  // Traversing through the graph in post-order means that every non-phi use
-  // of a definition is visited before the def itself. Since a def
-  // dominates its uses, by the time we reach a particular
-  // block, we have processed all of its dominated children, so
-  // block->numDominated() is accurate.
-  for (PostorderIterator i(graph.poBegin()); i != graph.poEnd(); i++) {
-    MBasicBlock* child = *i;
-    MBasicBlock* parent = child->immediateDominator();
-
-    // Dominance is defined such that blocks always dominate themselves.
-    child->addNumDominated(1);
-
-    // If the block only self-dominates, it has no definite parent.
-    // Add it to the worklist as a root for pre-order traversal.
-    // This includes all roots. Order does not matter.
-    if (child == parent) {
-      if (!worklist.append(child)) {
-        return false;
-      }
-      continue;
-    }
-
-    if (!parent->addImmediatelyDominatedBlock(child)) {
-      return false;
-    }
-
-    parent->addNumDominated(child->numDominated());
-  }
-
-#ifdef DEBUG
-  // If compiling with OSR, many blocks will self-dominate.
-  // Without OSR, there is only one root block which dominates all.
-  if (!graph.osrBlock()) {
-    MOZ_ASSERT(graph.entryBlock()->numDominated() == graph.numBlocks());
-  }
-#endif
-  // Now, iterate through the dominator tree in pre-order and annotate every
-  // block with its index in the traversal.
-  size_t index = 0;
-  while (!worklist.empty()) {
-    MBasicBlock* block = worklist.popCopy();
-    block->setDomIndex(index);
-
-    if (!worklist.append(block->immediatelyDominatedBlocksBegin(),
-                         block->immediatelyDominatedBlocksEnd())) {
-      return false;
-    }
-    index++;
-  }
-
-  return true;
 }
 
 bool jit::BuildPhiReverseMapping(MIRGraph& graph) {
@@ -3597,19 +3445,20 @@ static bool IsResumableMIRType(MIRType type) {
     case MIRType::MagicUninitializedLexical:
     case MIRType::MagicIsConstructing:
     case MIRType::Value:
-    case MIRType::Simd128:
     case MIRType::Int64:
+    case MIRType::IntPtr:
       return true;
 
+    case MIRType::Simd128:
     case MIRType::MagicHole:
     case MIRType::None:
     case MIRType::Slots:
     case MIRType::Elements:
     case MIRType::Pointer:
     case MIRType::WasmAnyRef:
+    case MIRType::WasmStructData:
     case MIRType::WasmArrayData:
     case MIRType::StackResults:
-    case MIRType::IntPtr:
       return false;
   }
   MOZ_CRASH("Unknown MIRType.");
@@ -3642,12 +3491,11 @@ static void AssertResumePointDominatedByOperands(MResumePoint* resume) {
 }
 #endif  // DEBUG
 
+// Checks the basic GraphCoherency but also other conditions that
+// do not hold immediately (such as the fact that critical edges
+// are split, or conditions related to wasm semantics)
 void jit::AssertExtendedGraphCoherency(MIRGraph& graph, bool underValueNumberer,
                                        bool force) {
-  // Checks the basic GraphCoherency but also other conditions that
-  // do not hold immediately (such as the fact that critical edges
-  // are split)
-
 #ifdef DEBUG
   if (!JitOptions.checkGraphConsistency) {
     return;
@@ -3725,20 +3573,8 @@ void jit::AssertExtendedGraphCoherency(MIRGraph& graph, bool underValueNumberer,
       MInstruction* ins = *iter;
       for (size_t i = 0, e = ins->numOperands(); i < e; ++i) {
         MDefinition* op = ins->getOperand(i);
-        MBasicBlock* opBlock = op->block();
-        MOZ_ASSERT(opBlock->dominates(*block),
-                   "Instruction is not dominated by its operands");
-
-        // If the operand is an instruction in the same block, check
-        // that it comes first.
-        if (opBlock == *block && !op->isPhi()) {
-          MInstructionIterator opIter = block->begin(op->toInstruction());
-          do {
-            ++opIter;
-            MOZ_ASSERT(opIter != block->end(),
-                       "Operand in same block as instruction does not precede");
-          } while (*opIter != ins);
-        }
+        MOZ_ASSERT(op->dominates(ins),
+                   "instruction is not dominated by its operands");
       }
       AssertIfResumableInstruction(ins);
       if (MResumePoint* resume = ins->resumePoint()) {
@@ -3755,6 +3591,12 @@ void jit::AssertExtendedGraphCoherency(MIRGraph& graph, bool underValueNumberer,
     if (MResumePoint* resume = block->outerResumePoint()) {
       AssertResumePointDominatedByOperands(resume);
       AssertResumableOperands(resume);
+    }
+
+    // Verify that any nodes with a wasm ref type have MIRType WasmAnyRef.
+    for (MDefinitionIterator def(*block); def; def++) {
+      MOZ_ASSERT_IF(def->wasmRefType().isSome(),
+                    def->type() == MIRType::WasmAnyRef);
     }
   }
 #endif
@@ -3873,6 +3715,10 @@ SimpleLinearSum jit::ExtractLinearSum(MDefinition* ins, MathSpace space,
   }
   MOZ_ASSERT(space == MathSpace::Modulo || space == MathSpace::Infinite);
 
+  if (space == MathSpace::Modulo) {
+    return SimpleLinearSum(ins, 0);
+  }
+
   MDefinition* lhs = ins->getOperand(0);
   MDefinition* rhs = ins->getOperand(1);
   if (lhs->type() != MIRType::Int32 || rhs->type() != MIRType::Int32) {
@@ -3894,7 +3740,7 @@ SimpleLinearSum jit::ExtractLinearSum(MDefinition* ins, MathSpace space,
     int32_t constant;
     if (space == MathSpace::Modulo) {
       constant = uint32_t(lsum.constant) + uint32_t(rsum.constant);
-    } else if (!SafeAdd(lsum.constant, rsum.constant, &constant) ||
+    } else if (!mozilla::SafeAdd(lsum.constant, rsum.constant, &constant) ||
                !MonotoneAdd(lsum.constant, rsum.constant)) {
       return SimpleLinearSum(ins, 0);
     }
@@ -3907,7 +3753,7 @@ SimpleLinearSum jit::ExtractLinearSum(MDefinition* ins, MathSpace space,
     int32_t constant;
     if (space == MathSpace::Modulo) {
       constant = uint32_t(lsum.constant) - uint32_t(rsum.constant);
-    } else if (!SafeSub(lsum.constant, rsum.constant, &constant) ||
+    } else if (!mozilla::SafeSub(lsum.constant, rsum.constant, &constant) ||
                !MonotoneSub(lsum.constant, rsum.constant)) {
       return SimpleLinearSum(ins, 0);
     }
@@ -3920,7 +3766,7 @@ SimpleLinearSum jit::ExtractLinearSum(MDefinition* ins, MathSpace space,
 
 // Extract a linear inequality holding when a boolean test goes in the
 // specified direction, of the form 'lhs + lhsN <= rhs' (or >=).
-bool jit::ExtractLinearInequality(MTest* test, BranchDirection direction,
+bool jit::ExtractLinearInequality(const MTest* test, BranchDirection direction,
                                   SimpleLinearSum* plhs, MDefinition** prhs,
                                   bool* plessEqual) {
   if (!test->getOperand(0)->isCompare()) {
@@ -3948,7 +3794,7 @@ bool jit::ExtractLinearInequality(MTest* test, BranchDirection direction,
   SimpleLinearSum lsum = ExtractLinearSum(lhs);
   SimpleLinearSum rsum = ExtractLinearSum(rhs);
 
-  if (!SafeSub(lsum.constant, rsum.constant, &lsum.constant)) {
+  if (!mozilla::SafeSub(lsum.constant, rsum.constant, &lsum.constant)) {
     return false;
   }
 
@@ -3959,7 +3805,7 @@ bool jit::ExtractLinearInequality(MTest* test, BranchDirection direction,
       break;
     case JSOp::Lt:
       /* x < y ==> x + 1 <= y */
-      if (!SafeAdd(lsum.constant, 1, &lsum.constant)) {
+      if (!mozilla::SafeAdd(lsum.constant, 1, &lsum.constant)) {
         return false;
       }
       *plessEqual = true;
@@ -3969,7 +3815,7 @@ bool jit::ExtractLinearInequality(MTest* test, BranchDirection direction,
       break;
     case JSOp::Gt:
       /* x > y ==> x - 1 >= y */
-      if (!SafeSub(lsum.constant, 1, &lsum.constant)) {
+      if (!mozilla::SafeSub(lsum.constant, 1, &lsum.constant)) {
         return false;
       }
       *plessEqual = false;
@@ -4033,18 +3879,20 @@ static bool TryEliminateBoundsCheck(BoundsCheckMap& checks, size_t blockIndex,
 
   // Normalize the ranges according to the constant offsets in the two indexes.
   int32_t minimumA, maximumA, minimumB, maximumB;
-  if (!SafeAdd(sumA.constant, dominating->minimum(), &minimumA) ||
-      !SafeAdd(sumA.constant, dominating->maximum(), &maximumA) ||
-      !SafeAdd(sumB.constant, dominated->minimum(), &minimumB) ||
-      !SafeAdd(sumB.constant, dominated->maximum(), &maximumB)) {
+  if (!mozilla::SafeAdd(sumA.constant, dominating->minimum(), &minimumA) ||
+      !mozilla::SafeAdd(sumA.constant, dominating->maximum(), &maximumA) ||
+      !mozilla::SafeAdd(sumB.constant, dominated->minimum(), &minimumB) ||
+      !mozilla::SafeAdd(sumB.constant, dominated->maximum(), &maximumB)) {
     return false;
   }
 
   // Update the dominating check to cover both ranges, denormalizing the
   // result per the constant offset in the index.
   int32_t newMinimum, newMaximum;
-  if (!SafeSub(std::min(minimumA, minimumB), sumA.constant, &newMinimum) ||
-      !SafeSub(std::max(maximumA, maximumB), sumA.constant, &newMaximum)) {
+  if (!mozilla::SafeSub(std::min(minimumA, minimumB), sumA.constant,
+                        &newMinimum) ||
+      !mozilla::SafeSub(std::max(maximumA, maximumB), sumA.constant,
+                        &newMaximum)) {
     return false;
   }
 
@@ -4336,14 +4184,17 @@ bool jit::EliminateRedundantGCBarriers(MIRGraph& graph) {
 
   for (ReversePostorderIterator block = graph.rpoBegin();
        block != graph.rpoEnd(); block++) {
-    for (MInstructionIterator insIter(block->begin());
-         insIter != block->end();) {
+    for (MInstructionIterator insIter(block->begin()); insIter != block->end();
+         insIter++) {
       MInstruction* ins = *insIter;
-      insIter++;
-
       if (ins->isNewCallObject()) {
-        if (!TryEliminateGCBarriersForAllocation(graph.alloc(), ins)) {
-          return false;
+        MNewCallObject* allocation = ins->toNewCallObject();
+        // We can only eliminate the post barrier if we know the call object
+        // will be allocated in the nursery.
+        if (allocation->initialHeap() == gc::Heap::Default) {
+          if (!TryEliminateGCBarriersForAllocation(graph.alloc(), allocation)) {
+            return false;
+          }
         }
       }
     }
@@ -4381,6 +4232,8 @@ bool jit::MarkLoadsUsedAsPropertyKeys(MIRGraph& graph) {
         idVal = ins->toGetPropSuperCache()->idval();
       } else if (ins->isMegamorphicLoadSlotByValue()) {
         idVal = ins->toMegamorphicLoadSlotByValue()->idVal();
+      } else if (ins->isMegamorphicLoadSlotByValuePermissive()) {
+        idVal = ins->toMegamorphicLoadSlotByValuePermissive()->idVal();
       } else if (ins->isMegamorphicHasProp()) {
         idVal = ins->toMegamorphicHasProp()->idVal();
       } else if (ins->isMegamorphicSetElement()) {
@@ -4449,20 +4302,101 @@ bool jit::MarkLoadsUsedAsPropertyKeys(MIRGraph& graph) {
   return true;
 }
 
+// Updates the wasm ref type of a node and verifies that in this pass we only
+// narrow types, and never widen.
+static bool UpdateWasmRefType(MDefinition* def) {
+  wasm::MaybeRefType newRefType = def->computeWasmRefType();
+  bool changed = newRefType != def->wasmRefType();
+
+  // Ensure that we do not regress from Some to Nothing.
+  MOZ_ASSERT(!(def->wasmRefType().isSome() && newRefType.isNothing()));
+  // Ensure that the new ref type is a subtype of the previous one (i.e. we
+  // only narrow ref types).
+  MOZ_ASSERT_IF(def->wasmRefType().isSome(),
+                wasm::RefType::isSubTypeOf(newRefType.value(),
+                                           def->wasmRefType().value()));
+
+  def->setWasmRefType(newRefType);
+  return changed;
+}
+
+// Since wasm has a fairly rich type system enforced in validation, we can use
+// this type system within MIR to robustly track the types of ref values. This
+// allows us to make MIR-level optimizations such as eliding null checks or
+// omitting redundant casts.
+//
+// This analysis pass performs simple data flow analysis by assigning ref types
+// to each definition, then revisiting phis and their uses as necessary until
+// the types have narrowed to a fixed point.
+bool jit::TrackWasmRefTypes(MIRGraph& graph) {
+  // The worklist tracks nodes whose types have changed and whose uses must
+  // therefore be re-evaluated.
+  Vector<MDefinition*, 16, SystemAllocPolicy> worklist;
+
+  // Assign an initial ref type to each definition. Reverse postorder ensures
+  // that nodes are always visited before their uses, with the exception of loop
+  // backedge phis.
+  for (ReversePostorderIterator blockIter = graph.rpoBegin();
+       blockIter != graph.rpoEnd(); blockIter++) {
+    MBasicBlock* block = *blockIter;
+    for (MDefinitionIterator def(block); def; def++) {
+      // Set the initial type on all nodes. If a type is produced, then any
+      // loop backedge phis that use this node must have been previously
+      // visited, and must be updated and possibly added to the worklist. (Any
+      // other uses of this node will be visited later in this first pass.)
+
+      if (def->type() != MIRType::WasmAnyRef) {
+        continue;
+      }
+
+      bool hasType = UpdateWasmRefType(*def);
+      if (hasType) {
+        for (MUseIterator use(def->usesBegin()); use != def->usesEnd(); use++) {
+          MNode* consumer = use->consumer();
+          if (!consumer->isDefinition() || !consumer->toDefinition()->isPhi()) {
+            continue;
+          }
+          MPhi* phi = consumer->toDefinition()->toPhi();
+          if (phi->block()->isLoopHeader() &&
+              *def == phi->getLoopBackedgeOperand()) {
+            bool changed = UpdateWasmRefType(phi);
+            if (changed && !worklist.append(phi)) {
+              return false;
+            }
+          } else {
+            // Any other type of use must not have a ref type yet, because we
+            // are yet to hit it in this forward pass.
+            MOZ_ASSERT(consumer->toDefinition()->wasmRefType().isNothing());
+          }
+        }
+      }
+    }
+  }
+
+  // Until the worklist is empty, update the uses of any worklist nodes and
+  // track the ones whose types change.
+  while (!worklist.empty()) {
+    MDefinition* def = worklist.popCopy();
+
+    for (MUseIterator use(def->usesBegin()); use != def->usesEnd(); use++) {
+      if (!use->consumer()->isDefinition()) {
+        continue;
+      }
+      bool changed = UpdateWasmRefType(use->consumer()->toDefinition());
+      if (changed && !worklist.append(use->consumer()->toDefinition())) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 static bool NeedsKeepAlive(MInstruction* slotsOrElements, MInstruction* use) {
   MOZ_ASSERT(slotsOrElements->type() == MIRType::Elements ||
              slotsOrElements->type() == MIRType::Slots);
 
   if (slotsOrElements->block() != use->block()) {
-    return true;
-  }
-
-  // Allocating a BigInt can GC, so we have to keep the object alive.
-  if (use->type() == MIRType::BigInt) {
-    return true;
-  }
-  if (use->isLoadTypedArrayElementHole() &&
-      Scalar::isBigIntType(use->toLoadTypedArrayElementHole()->arrayType())) {
     return true;
   }
 
@@ -4472,37 +4406,60 @@ static bool NeedsKeepAlive(MInstruction* slotsOrElements, MInstruction* use) {
   ++iter;
 
   while (true) {
-    if (*iter == use) {
-      return false;
-    }
-
-    switch (iter->op()) {
+    MInstruction* ins = *iter;
+    switch (ins->op()) {
       case MDefinition::Opcode::Nop:
       case MDefinition::Opcode::Constant:
       case MDefinition::Opcode::KeepAliveObject:
       case MDefinition::Opcode::Unbox:
       case MDefinition::Opcode::LoadDynamicSlot:
+      case MDefinition::Opcode::LoadDynamicSlotAndUnbox:
       case MDefinition::Opcode::StoreDynamicSlot:
       case MDefinition::Opcode::LoadFixedSlot:
+      case MDefinition::Opcode::LoadFixedSlotAndUnbox:
       case MDefinition::Opcode::StoreFixedSlot:
       case MDefinition::Opcode::LoadElement:
       case MDefinition::Opcode::LoadElementAndUnbox:
       case MDefinition::Opcode::LoadElementHole:
       case MDefinition::Opcode::StoreElement:
       case MDefinition::Opcode::StoreHoleValueElement:
+      case MDefinition::Opcode::LoadUnboxedScalar:
+      case MDefinition::Opcode::StoreUnboxedScalar:
+      case MDefinition::Opcode::StoreTypedArrayElementHole:
+      case MDefinition::Opcode::LoadDataViewElement:
+      case MDefinition::Opcode::StoreDataViewElement:
+      case MDefinition::Opcode::AtomicTypedArrayElementBinop:
+      case MDefinition::Opcode::AtomicExchangeTypedArrayElement:
+      case MDefinition::Opcode::CompareExchangeTypedArrayElement:
       case MDefinition::Opcode::InitializedLength:
+      case MDefinition::Opcode::SetInitializedLength:
       case MDefinition::Opcode::ArrayLength:
       case MDefinition::Opcode::BoundsCheck:
       case MDefinition::Opcode::GuardElementNotHole:
+      case MDefinition::Opcode::GuardElementsArePacked:
       case MDefinition::Opcode::InArray:
       case MDefinition::Opcode::SpectreMaskIndex:
       case MDefinition::Opcode::DebugEnterGCUnsafeRegion:
       case MDefinition::Opcode::DebugLeaveGCUnsafeRegion:
-        iter++;
         break;
+      case MDefinition::Opcode::LoadTypedArrayElementHole: {
+        // Allocating a BigInt can GC, so we have to keep the object alive.
+        auto* loadIns = ins->toLoadTypedArrayElementHole();
+        if (Scalar::isBigIntType(loadIns->arrayType())) {
+          return true;
+        }
+        break;
+      }
       default:
         return true;
     }
+
+    if (ins == use) {
+      // We didn't find any instructions in range [slotsOrElements, use] that
+      // can GC.
+      return false;
+    }
+    iter++;
   }
 
   MOZ_CRASH("Unreachable");
@@ -4526,6 +4483,10 @@ bool jit::AddKeepAliveInstructions(MIRGraph& graph) {
           MOZ_ASSERT(ins->numOperands() == 1);
           ownerObject = ins->getOperand(0);
           break;
+        case MDefinition::Opcode::ArrayBufferViewElementsWithOffset:
+          MOZ_ASSERT(ins->numOperands() == 2);
+          ownerObject = ins->getOperand(0);
+          break;
         case MDefinition::Opcode::Slots:
           ownerObject = ins->toSlots()->object();
           break;
@@ -4535,9 +4496,10 @@ bool jit::AddKeepAliveInstructions(MIRGraph& graph) {
 
       MOZ_ASSERT(ownerObject->type() == MIRType::Object);
 
-      if (ownerObject->isConstant()) {
-        // Constants are kept alive by other pointers, for instance
-        // ImmGCPtr in JIT code.
+      const MDefinition* unwrapped = ownerObject->skipObjectGuards();
+      if (unwrapped->isConstant() || unwrapped->isNurseryObject()) {
+        // Constants are kept alive by other pointers, for instance ImmGCPtr in
+        // JIT code. NurseryObjects will be kept alive by the IonScript.
         continue;
       }
 
@@ -4556,13 +4518,6 @@ bool jit::AddKeepAliveInstructions(MIRGraph& graph) {
 
         if (!NeedsKeepAlive(ins, use)) {
 #ifdef DEBUG
-          // These two instructions don't start a GC unsafe region, because they
-          // overwrite their elements register at the very start. This ensures
-          // there's no invalidated elements value kept on the stack.
-          if (use->isApplyArray() || use->isConstructArray()) {
-            continue;
-          }
-
           if (!graph.alloc().ensureBallast()) {
             return false;
           }
@@ -4593,11 +4548,11 @@ bool jit::AddKeepAliveInstructions(MIRGraph& graph) {
 
 bool LinearSum::multiply(int32_t scale) {
   for (size_t i = 0; i < terms_.length(); i++) {
-    if (!SafeMul(scale, terms_[i].scale, &terms_[i].scale)) {
+    if (!mozilla::SafeMul(scale, terms_[i].scale, &terms_[i].scale)) {
       return false;
     }
   }
-  return SafeMul(scale, constant_, &constant_);
+  return mozilla::SafeMul(scale, constant_, &constant_);
 }
 
 bool LinearSum::divide(uint32_t scale) {
@@ -4623,7 +4578,7 @@ bool LinearSum::divide(uint32_t scale) {
 bool LinearSum::add(const LinearSum& other, int32_t scale /* = 1 */) {
   for (size_t i = 0; i < other.terms_.length(); i++) {
     int32_t newScale = scale;
-    if (!SafeMul(scale, other.terms_[i].scale, &newScale)) {
+    if (!mozilla::SafeMul(scale, other.terms_[i].scale, &newScale)) {
       return false;
     }
     if (!add(other.terms_[i].term, newScale)) {
@@ -4631,7 +4586,7 @@ bool LinearSum::add(const LinearSum& other, int32_t scale /* = 1 */) {
     }
   }
   int32_t newConstant = scale;
-  if (!SafeMul(scale, other.constant_, &newConstant)) {
+  if (!mozilla::SafeMul(scale, other.constant_, &newConstant)) {
     return false;
   }
   return add(newConstant);
@@ -4643,7 +4598,7 @@ bool LinearSum::add(SimpleLinearSum other, int32_t scale) {
   }
 
   int32_t constant;
-  if (!SafeMul(other.constant, scale, &constant)) {
+  if (!mozilla::SafeMul(other.constant, scale, &constant)) {
     return false;
   }
 
@@ -4659,7 +4614,7 @@ bool LinearSum::add(MDefinition* term, int32_t scale) {
 
   if (MConstant* termConst = term->maybeConstantValue()) {
     int32_t constant = termConst->toInt32();
-    if (!SafeMul(constant, scale, &constant)) {
+    if (!mozilla::SafeMul(constant, scale, &constant)) {
       return false;
     }
     return add(constant);
@@ -4667,7 +4622,7 @@ bool LinearSum::add(MDefinition* term, int32_t scale) {
 
   for (size_t i = 0; i < terms_.length(); i++) {
     if (term == terms_[i].term) {
-      if (!SafeAdd(scale, terms_[i].scale, &terms_[i].scale)) {
+      if (!mozilla::SafeAdd(scale, terms_[i].scale, &terms_[i].scale)) {
         return false;
       }
       if (terms_[i].scale == 0) {
@@ -4687,7 +4642,7 @@ bool LinearSum::add(MDefinition* term, int32_t scale) {
 }
 
 bool LinearSum::add(int32_t constant) {
-  return SafeAdd(constant, constant_, &constant_);
+  return mozilla::SafeAdd(constant, constant_, &constant_);
 }
 
 void LinearSum::dump(GenericPrinter& out) const {
@@ -4742,7 +4697,7 @@ MDefinition* jit::ConvertLinearSum(TempAllocator& alloc, MBasicBlock* block,
       }
     } else if (term.scale == -1) {
       if (!def) {
-        def = MConstant::New(alloc, Int32Value(0));
+        def = MConstant::NewInt32(alloc, 0);
         block->insertAtEnd(def->toInstruction());
         def->computeRange(alloc);
       }
@@ -4752,7 +4707,7 @@ MDefinition* jit::ConvertLinearSum(TempAllocator& alloc, MBasicBlock* block,
       def->computeRange(alloc);
     } else {
       MOZ_ASSERT(term.scale != 0);
-      MConstant* factor = MConstant::New(alloc, Int32Value(term.scale));
+      MConstant* factor = MConstant::NewInt32(alloc, term.scale);
       block->insertAtEnd(factor);
       MMul* mul = MMul::New(alloc, term.term, factor, MIRType::Int32);
       mul->setBailoutKind(bailoutKind);
@@ -4770,7 +4725,7 @@ MDefinition* jit::ConvertLinearSum(TempAllocator& alloc, MBasicBlock* block,
   }
 
   if (!def) {
-    def = MConstant::New(alloc, Int32Value(0));
+    def = MConstant::NewInt32(alloc, 0);
     block->insertAtEnd(def->toInstruction());
     def->computeRange(alloc);
   }
@@ -4781,7 +4736,8 @@ MDefinition* jit::ConvertLinearSum(TempAllocator& alloc, MBasicBlock* block,
 // Mark all the blocks that are in the loop with the given header.
 // Returns the number of blocks marked. Set *canOsr to true if the loop is
 // reachable from both the normal entry and the OSR entry.
-size_t jit::MarkLoopBlocks(MIRGraph& graph, MBasicBlock* header, bool* canOsr) {
+size_t jit::MarkLoopBlocks(MIRGraph& graph, const MBasicBlock* header,
+                           bool* canOsr) {
 #ifdef DEBUG
   for (ReversePostorderIterator i = graph.rpoBegin(), e = graph.rpoEnd();
        i != e; ++i) {
@@ -4870,7 +4826,7 @@ size_t jit::MarkLoopBlocks(MIRGraph& graph, MBasicBlock* header, bool* canOsr) {
 }
 
 // Unmark all the blocks that are in the loop with the given header.
-void jit::UnmarkLoopBlocks(MIRGraph& graph, MBasicBlock* header) {
+void jit::UnmarkLoopBlocks(MIRGraph& graph, const MBasicBlock* header) {
   MBasicBlock* backedge = header->backedge();
   for (ReversePostorderIterator i = graph.rpoBegin(header);; ++i) {
     MOZ_ASSERT(i != graph.rpoEnd(),
@@ -4892,11 +4848,13 @@ void jit::UnmarkLoopBlocks(MIRGraph& graph, MBasicBlock* header) {
 #endif
 }
 
-bool jit::FoldLoadsWithUnbox(MIRGenerator* mir, MIRGraph& graph) {
+bool jit::FoldLoadsWithUnbox(const MIRGenerator* mir, MIRGraph& graph) {
   // This pass folds MLoadFixedSlot, MLoadDynamicSlot, MLoadElement instructions
   // followed by MUnbox into a single instruction. For LoadElement this allows
-  // us to fuse the hole check with the type check for the unbox.
+  // us to fuse the hole check with the type check for the unbox. It may also
+  // allow us to remove some GuardElementsArePacked nodes.
 
+  Vector<MInstruction*, 16, SystemAllocPolicy> optimizedElements;
   for (MBasicBlockIterator block(graph.begin()); block != graph.end();
        block++) {
     if (mir->shouldCancel("FoldLoadsWithUnbox")) {
@@ -4910,7 +4868,7 @@ bool jit::FoldLoadsWithUnbox(MIRGenerator* mir, MIRGraph& graph) {
 
       // We're only interested in loads producing a Value.
       if (!ins->isLoadFixedSlot() && !ins->isLoadDynamicSlot() &&
-          !ins->isLoadElement()) {
+          !ins->isLoadElement() && !ins->isSuperFunction()) {
         continue;
       }
       if (ins->type() != MIRType::Value) {
@@ -4956,6 +4914,16 @@ bool jit::FoldLoadsWithUnbox(MIRGenerator* mir, MIRGraph& graph) {
         continue;
       }
 
+      // If this is a SuperFunction, we only support folding the load when the
+      // unbox is fallible and its type is Object.
+      //
+      // SuperFunction is currently only used for `super()` constructor calls
+      // in classes, which always use fallible unbox to Object.
+      if (load->isSuperFunction() &&
+          !(unbox->type() == MIRType::Object && unbox->fallible())) {
+        continue;
+      }
+
       // Combine the load and unbox into a single MIR instruction.
       if (!graph.alloc().ensureBallast()) {
         return false;
@@ -4985,6 +4953,24 @@ bool jit::FoldLoadsWithUnbox(MIRGenerator* mir, MIRGraph& graph) {
           MOZ_ASSERT(unbox->fallible());
           replacement = MLoadElementAndUnbox::New(
               graph.alloc(), loadIns->elements(), loadIns->index(), mode, type);
+          MOZ_ASSERT(!IsMagicType(type));
+          // FoldElementAndUnbox will implicitly check for holes by unboxing. We
+          // may be able to remove a GuardElementsArePacked check. Add this
+          // Elements to a list to check later (unless we just added it for
+          // a different load).
+          if ((optimizedElements.empty() ||
+               optimizedElements.back() != loadIns) &&
+              !optimizedElements.append(loadIns->elements()->toInstruction())) {
+            return false;
+          }
+          break;
+        }
+        case MDefinition::Opcode::SuperFunction: {
+          auto* loadIns = load->toSuperFunction();
+          MOZ_ASSERT(unbox->fallible());
+          MOZ_ASSERT(unbox->type() == MIRType::Object);
+          replacement =
+              MSuperFunctionAndUnbox::New(graph.alloc(), loadIns->callee());
           break;
         }
         default:
@@ -5010,6 +4996,50 @@ bool jit::FoldLoadsWithUnbox(MIRGenerator* mir, MIRGraph& graph) {
         block->discard(lexicalCheck);
       }
       block->discard(load);
+    }
+  }
+
+  // For each Elements that had a load folded with an unbox, check to see if
+  // there is a GuardElementsArePacked node that can be removed. It can't be
+  // removed if:
+  //     1. There is a loadElement/storeElement use that will not emit a
+  //        hole check.
+  //     2. There is another use that has not been allow-listed.
+  // It is safe to add additional operations to the allow list if they don't
+  // require a packed Elements array as input.
+  for (auto* elements : optimizedElements) {
+    bool canRemovePackedChecks = true;
+    Vector<MInstruction*, 4, SystemAllocPolicy> guards;
+    for (MUseDefIterator uses(elements); uses; uses++) {
+      MInstruction* use = uses.def()->toInstruction();
+      if (use->isGuardElementsArePacked()) {
+        if (!guards.append(use)) {
+          return false;
+        }
+      } else if (use->isLoadElement()) {
+        if (!use->toLoadElement()->needsHoleCheck()) {
+          canRemovePackedChecks = false;
+          break;
+        }
+      } else if (use->isStoreElement()) {
+        if (!use->toStoreElement()->needsHoleCheck()) {
+          canRemovePackedChecks = false;
+          break;
+        }
+      } else if (use->isLoadElementAndUnbox() || use->isInitializedLength() ||
+                 use->isArrayLength()) {
+        // These operations are not affected by the packed flag.
+        continue;
+      } else {
+        canRemovePackedChecks = false;
+        break;
+      }
+    }
+    if (!canRemovePackedChecks) {
+      continue;
+    }
+    for (auto* guard : guards) {
+      guard->block()->discard(guard);
     }
   }
 
@@ -5096,14 +5126,48 @@ bool jit::MakeLoopsContiguous(MIRGraph& graph) {
   return true;
 }
 
-static MDefinition* SkipUnbox(MDefinition* ins) {
+static MDefinition* SkipIterObjectUnbox(MDefinition* ins) {
+  if (ins->isGuardIsNotProxy()) {
+    ins = ins->toGuardIsNotProxy()->input();
+  }
   if (ins->isUnbox()) {
-    return ins->toUnbox()->input();
+    ins = ins->toUnbox()->input();
   }
   return ins;
 }
 
-bool jit::OptimizeIteratorIndices(MIRGenerator* mir, MIRGraph& graph) {
+static MDefinition* SkipBox(MDefinition* ins) {
+  if (ins->isBox()) {
+    return ins->toBox()->input();
+  }
+  return ins;
+}
+
+static MObjectToIterator* FindObjectToIteratorUse(MDefinition* ins) {
+  for (MUseIterator use(ins->usesBegin()); use != ins->usesEnd(); use++) {
+    if (!(*use)->consumer()->isDefinition()) {
+      continue;
+    }
+    MDefinition* def = (*use)->consumer()->toDefinition();
+    if (def->isGuardIsNotProxy()) {
+      MObjectToIterator* recursed = FindObjectToIteratorUse(def);
+      if (recursed) {
+        return recursed;
+      }
+    } else if (def->isUnbox()) {
+      MObjectToIterator* recursed = FindObjectToIteratorUse(def);
+      if (recursed) {
+        return recursed;
+      }
+    } else if (def->isObjectToIterator()) {
+      return def->toObjectToIterator();
+    }
+  }
+
+  return nullptr;
+}
+
+bool jit::OptimizeIteratorIndices(const MIRGenerator* mir, MIRGraph& graph) {
   bool changed = false;
 
   for (ReversePostorderIterator blockIter = graph.rpoBegin();
@@ -5130,6 +5194,9 @@ bool jit::OptimizeIteratorIndices(MIRGenerator* mir, MIRGraph& graph) {
       } else if (ins->isMegamorphicLoadSlotByValue()) {
         receiver = ins->toMegamorphicLoadSlotByValue()->object();
         idVal = ins->toMegamorphicLoadSlotByValue()->idVal();
+      } else if (ins->isMegamorphicLoadSlotByValuePermissive()) {
+        receiver = ins->toMegamorphicLoadSlotByValuePermissive()->object();
+        idVal = ins->toMegamorphicLoadSlotByValuePermissive()->idVal();
       } else if (ins->isGetPropertyCache()) {
         receiver = ins->toGetPropertyCache()->value();
         idVal = ins->toGetPropertyCache()->idval();
@@ -5147,11 +5214,12 @@ bool jit::OptimizeIteratorIndices(MIRGenerator* mir, MIRGraph& graph) {
         continue;
       }
 
-      // Given the following structure (that occurs inside for-in loops):
+      // Given the following structure (that occurs inside for-in loops or
+      // when iterating a scalar-replaced Object.keys result):
       //   obj: some object
       //   iter: ObjectToIterator <obj>
-      //   iterNext: IteratorMore <iter>
-      //   access: HasProp/GetElem <obj> <iterNext>
+      //   iterLoad: IteratorMore <iter> | LoadIteratorElement <iter, index>
+      //   access: HasProp/GetElem <obj> <iterLoad>
       // If the iterator object has an indices array, we can speed up the
       // property access:
       // 1. If the property access is a HasProp looking for own properties,
@@ -5161,36 +5229,108 @@ bool jit::OptimizeIteratorIndices(MIRGenerator* mir, MIRGraph& graph) {
       // 2. If the property access is a GetProp, then we can use the contents
       //    of the indices array to find the correct property faster than
       //    the megamorphic cache.
-      if (!idVal->isIteratorMore()) {
+      // 3. If the property access is a SetProp, then we can use the contents
+      //    of the indices array to find the correct slots faster than the
+      //    megamorphic cache.
+      //
+      // In some cases involving Object.keys, we can also end up with a pattern
+      // like this:
+      //
+      //   obj1: some object
+      //   obj2: some object
+      //   iter1: ObjectToIterator <obj1>
+      //   iter2: ObjectToIterator <obj2>
+      //   iterLoad: LoadIteratorElement <iter1>
+      //   access: GetElem <obj2> <iterLoad>
+      //
+      // This corresponds to `obj2[Object.keys(obj1)[index]]`. In the general
+      // case we can't do much with this, but if obj1 and obj2 have the same
+      // shape, then we may reuse the iterator, in which case iter1 == iter2.
+      // In that case, we can optimize the access as if it were using iter2,
+      // at the cost of a single comparison to see if iter1 == iter2.
+#ifdef JS_CODEGEN_X86
+      // The ops required for this want more registers than is convenient on
+      // x86
+      bool supportObjectKeys = false;
+#else
+      bool supportObjectKeys = true;
+#endif
+
+      MObjectToIterator* iter = nullptr;
+      MObjectToIterator* otherIter = nullptr;
+      MDefinition* iterElementIndex = nullptr;
+      if (idVal->isIteratorMore()) {
+        auto* iterNext = idVal->toIteratorMore();
+
+        if (!iterNext->iterator()->isObjectToIterator()) {
+          continue;
+        }
+
+        iter = iterNext->iterator()->toObjectToIterator();
+        if (SkipIterObjectUnbox(iter->object()) !=
+            SkipIterObjectUnbox(receiver)) {
+          continue;
+        }
+      } else if (supportObjectKeys && SkipBox(idVal)->isLoadIteratorElement()) {
+        auto* iterLoad = SkipBox(idVal)->toLoadIteratorElement();
+
+        if (!iterLoad->iter()->isObjectToIterator()) {
+          continue;
+        }
+
+        iter = iterLoad->iter()->toObjectToIterator();
+        if (SkipIterObjectUnbox(iter->object()) !=
+            SkipIterObjectUnbox(receiver)) {
+          if (!setValue) {
+            otherIter = FindObjectToIteratorUse(SkipIterObjectUnbox(receiver));
+          }
+
+          if (!otherIter || !otherIter->dominates(ins)) {
+            continue;
+          }
+        }
+        iterElementIndex = iterLoad->index();
+      } else {
         continue;
       }
-      auto* iterNext = idVal->toIteratorMore();
 
-      if (!iterNext->iterator()->isObjectToIterator()) {
-        continue;
+      MOZ_ASSERT_IF(iterElementIndex, supportObjectKeys);
+      MOZ_ASSERT_IF(otherIter, supportObjectKeys);
+
+      MInstruction* indicesCheck = nullptr;
+      if (otherIter) {
+        indicesCheck = MIteratorsMatchAndHaveIndices::New(
+            graph.alloc(), otherIter->object(), iter, otherIter);
+      } else {
+        indicesCheck =
+            MIteratorHasIndices::New(graph.alloc(), iter->object(), iter);
       }
 
-      MObjectToIterator* iter = iterNext->iterator()->toObjectToIterator();
-      if (SkipUnbox(iter->object()) != SkipUnbox(receiver)) {
-        continue;
-      }
-
-      MInstruction* indicesCheck =
-          MIteratorHasIndices::New(graph.alloc(), iter->object(), iter);
       MInstruction* replacement;
       if (ins->isHasOwnCache() || ins->isMegamorphicHasProp()) {
         MOZ_ASSERT(!setValue);
-        replacement = MConstant::New(graph.alloc(), BooleanValue(true));
+        replacement = MConstant::NewBoolean(graph.alloc(), true);
       } else if (ins->isMegamorphicLoadSlotByValue() ||
+                 ins->isMegamorphicLoadSlotByValuePermissive() ||
                  ins->isGetPropertyCache()) {
         MOZ_ASSERT(!setValue);
-        replacement =
-            MLoadSlotByIteratorIndex::New(graph.alloc(), receiver, iter);
+        if (iterElementIndex) {
+          replacement = MLoadSlotByIteratorIndexIndexed::New(
+              graph.alloc(), receiver, iter, iterElementIndex);
+        } else {
+          replacement =
+              MLoadSlotByIteratorIndex::New(graph.alloc(), receiver, iter);
+        }
       } else {
         MOZ_ASSERT(ins->isMegamorphicSetElement() || ins->isSetPropertyCache());
         MOZ_ASSERT(setValue);
-        replacement = MStoreSlotByIteratorIndex::New(graph.alloc(), receiver,
-                                                     iter, setValue);
+        if (iterElementIndex) {
+          replacement = MStoreSlotByIteratorIndexIndexed::New(
+              graph.alloc(), receiver, iter, iterElementIndex, setValue);
+        } else {
+          replacement = MStoreSlotByIteratorIndex::New(graph.alloc(), receiver,
+                                                       iter, setValue);
+        }
       }
 
       if (!block->wrapInstructionInFastpath(ins, replacement, indicesCheck)) {
@@ -5213,9 +5353,50 @@ bool jit::OptimizeIteratorIndices(MIRGenerator* mir, MIRGraph& graph) {
   return true;
 }
 
-void jit::DumpMIRDefinition(GenericPrinter& out, MDefinition* def) {
+// =====================================================================
+//
+// Debug printing
+
+void jit::DumpHashedPointer(GenericPrinter& out, const void* p) {
 #ifdef JS_JITSPEW
-  out.printf("%u = %s.", def->id(), StringFromMIRType(def->type()));
+  if (!p) {
+    out.printf("NULL");
+    return;
+  }
+  char tab[27] = "abcdefghijklmnopqrstuvwxyz";
+  MOZ_ASSERT(tab[26] == '\0');
+  mozilla::HashNumber hash = mozilla::AddToHash(mozilla::HashNumber(0), p);
+  hash %= (26 * 26 * 26 * 26 * 26);
+  char buf[6];
+  for (int i = 0; i <= 4; i++) {
+    buf[i] = tab[hash % 26];
+    hash /= 26;
+  }
+  buf[5] = '\0';
+  out.printf("%s", buf);
+#endif
+}
+
+void jit::DumpMIRDefinitionID(GenericPrinter& out, const MDefinition* def,
+                              bool showDetails) {
+#ifdef JS_JITSPEW
+  if (!def) {
+    out.printf("(null)");
+    return;
+  }
+  if (showDetails) {
+    DumpHashedPointer(out, def);
+    out.printf(".");
+  }
+  out.printf("%u", def->id());
+#endif
+}
+
+void jit::DumpMIRDefinition(GenericPrinter& out, const MDefinition* def,
+                            bool showDetails) {
+#ifdef JS_JITSPEW
+  DumpMIRDefinitionID(out, def, showDetails);
+  out.printf(" = %s.", StringFromMIRType(def->type()));
   if (def->isConstant()) {
     def->printOpcode(out);
   } else {
@@ -5232,13 +5413,111 @@ void jit::DumpMIRDefinition(GenericPrinter& out, MDefinition* def) {
   }
 
   for (size_t i = 0; i < def->numOperands(); i++) {
-    out.printf(" %u", def->getOperand(i)->id());
+    out.printf(" ");
+    DumpMIRDefinitionID(out, def->getOperand(i), showDetails);
+  }
+
+  if (def->dependency() && showDetails) {
+    out.printf(" DEP=");
+    DumpMIRDefinitionID(out, def->dependency(), showDetails);
+  }
+
+  if (def->hasUses()) {
+    out.printf("   uses=");
+    bool first = true;
+    for (auto use = def->usesBegin(); use != def->usesEnd(); use++) {
+      MNode* consumer = (*use)->consumer();
+      if (!first) {
+        out.printf(",");
+      }
+      if (consumer->isDefinition()) {
+        out.printf("%d", consumer->toDefinition()->id());
+      } else {
+        out.printf("?");
+      }
+      first = false;
+    }
+  }
+
+  if (def->hasAnyFlags() && showDetails) {
+    out.printf("   flags=");
+    bool first = true;
+#  define OUTPUT_FLAG(_F)                          \
+    do {                                           \
+      if (def->is##_F()) {                         \
+        out.printf("%s%s", first ? "" : ",", #_F); \
+        first = false;                             \
+      }                                            \
+    } while (0);
+    MIR_FLAG_LIST(OUTPUT_FLAG);
+#  undef OUTPUT_FLAG
+  }
+#endif
+}
+
+void jit::DumpMIRBlockID(GenericPrinter& out, const MBasicBlock* block,
+                         bool showDetails) {
+#ifdef JS_JITSPEW
+  if (!block) {
+    out.printf("Block(null)");
+    return;
+  }
+  out.printf("Block");
+  if (showDetails) {
+    out.printf(".");
+    DumpHashedPointer(out, block);
+    out.printf(".");
+  }
+  out.printf("%u", block->id());
+#endif
+}
+
+void jit::DumpMIRBlock(GenericPrinter& out, MBasicBlock* block,
+                       bool showDetails) {
+#ifdef JS_JITSPEW
+  out.printf("  ");
+  DumpMIRBlockID(out, block, showDetails);
+  out.printf(" -- preds=[");
+  for (uint32_t i = 0; i < block->numPredecessors(); i++) {
+    MBasicBlock* pred = block->getPredecessor(i);
+    out.printf("%s", i == 0 ? "" : ", ");
+    DumpMIRBlockID(out, pred, showDetails);
+  }
+  out.printf("] -- LD=%u -- K=%s -- s-w-phis=", block->loopDepth(),
+             block->nameOfKind());
+  if (block->successorWithPhis()) {
+    DumpMIRBlockID(out, block->successorWithPhis(), showDetails);
+    out.printf(",#%u\n", block->positionInPhiSuccessor());
+  } else {
+    out.printf("(null)\n");
+  }
+  for (MPhiIterator iter(block->phisBegin()), end(block->phisEnd());
+       iter != end; iter++) {
+    out.printf("    ");
+    jit::DumpMIRDefinition(out, *iter, showDetails);
+    out.printf("\n");
+  }
+  for (MInstructionIterator iter(block->begin()), end(block->end());
+       iter != end; iter++) {
+    out.printf("    ");
+    DumpMIRDefinition(out, *iter, showDetails);
+    out.printf("\n");
+  }
+#endif
+}
+
+void jit::DumpMIRGraph(GenericPrinter& out, MIRGraph& graph, bool showDetails) {
+#ifdef JS_JITSPEW
+  for (ReversePostorderIterator block(graph.rpoBegin());
+       block != graph.rpoEnd(); block++) {
+    DumpMIRBlock(out, *block, showDetails);
   }
 #endif
 }
 
 void jit::DumpMIRExpressions(GenericPrinter& out, MIRGraph& graph,
-                             const CompileInfo& info, const char* phase) {
+                             const CompileInfo& info, const char* phase,
+                             bool showDetails) {
 #ifdef JS_JITSPEW
   if (!JitSpewEnabled(JitSpew_MIRExpressions)) {
     return;
@@ -5246,22 +5525,7 @@ void jit::DumpMIRExpressions(GenericPrinter& out, MIRGraph& graph,
 
   out.printf("===== %s =====\n", phase);
 
-  for (ReversePostorderIterator block(graph.rpoBegin());
-       block != graph.rpoEnd(); block++) {
-    out.printf("  Block%u:\n", block->id());
-    for (MPhiIterator iter(block->phisBegin()), end(block->phisEnd());
-         iter != end; iter++) {
-      out.printf("    ");
-      jit::DumpMIRDefinition(out, *iter);
-      out.printf("\n");
-    }
-    for (MInstructionIterator iter(block->begin()), end(block->end());
-         iter != end; iter++) {
-      out.printf("    ");
-      DumpMIRDefinition(out, *iter);
-      out.printf("\n");
-    }
-  }
+  DumpMIRGraph(out, graph, showDetails);
 
   if (info.compilingWasm()) {
     out.printf("===== end wasm MIR dump =====\n");

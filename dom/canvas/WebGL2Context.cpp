@@ -5,19 +5,17 @@
 
 #include "WebGL2Context.h"
 
-#include "mozilla/StaticPrefs_webgl.h"
 #include "GLContext.h"
-#include "mozilla/dom/WebGL2RenderingContextBinding.h"
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/Telemetry.h"
-#include "nsPrintfCString.h"
 #include "WebGLBuffer.h"
 #include "WebGLFormats.h"
 #include "WebGLTransformFeedback.h"
+#include "mozilla/StaticPrefs_webgl.h"
+#include "mozilla/dom/WebGL2RenderingContextBinding.h"
+#include "nsPrintfCString.h"
 
 namespace mozilla {
 
-UniquePtr<webgl::FormatUsageAuthority> WebGL2Context::CreateFormatUsage(
+std::unique_ptr<webgl::FormatUsageAuthority> WebGL2Context::CreateFormatUsage(
     gl::GLContext* gl) const {
   return webgl::FormatUsageAuthority::CreateForWebGL2(gl);
 }

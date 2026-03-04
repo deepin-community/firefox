@@ -8,18 +8,16 @@
 #define mozilla_TimingParams_h
 
 #include "X11UndefineNone.h"
-#include "nsPrintfCString.h"
-#include "nsStringFwd.h"
-#include "nsPrintfCString.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/ServoStyleConsts.h"
+#include "mozilla/StickyTimeDuration.h"
+#include "mozilla/TimeStamp.h"                   // for TimeDuration
+#include "mozilla/dom/AnimationEffectBinding.h"  // for FillMode
 #include "mozilla/dom/Nullable.h"
 #include "mozilla/dom/UnionTypes.h"  // For OwningUnrestrictedDoubleOrString
-#include "mozilla/Maybe.h"
-#include "mozilla/StickyTimeDuration.h"
-#include "mozilla/TimeStamp.h"  // for TimeDuration
-#include "mozilla/ServoStyleConsts.h"
-
-#include "mozilla/dom/AnimationEffectBinding.h"  // for FillMode
-                                                 // and PlaybackDirection
+#include "nsPrintfCString.h"
+#include "nsStringFwd.h"
+// and PlaybackDirection
 
 namespace mozilla {
 
@@ -163,8 +161,7 @@ struct TimingParams {
   StickyTimeDuration CalcBeforeActiveBoundary() const {
     static constexpr StickyTimeDuration zeroDuration;
     // https://drafts.csswg.org/web-animations-1/#before-active-boundary-time
-    return std::max(std::min(StickyTimeDuration(mDelay), mEndTime),
-                    zeroDuration);
+    return std::clamp(StickyTimeDuration(mDelay), zeroDuration, mEndTime);
   }
 
   StickyTimeDuration CalcActiveAfterBoundary() const {

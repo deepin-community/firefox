@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } қиындыққа т�
 crashreporter-plea = Мәселені шешуге көмектесу үшін, сіз бізге хабар жібере аласыз.
 crashreporter-information = Бұл бағдарлама қателік ақпаратын { -vendor-short-name } адресіне жіберу үшін құлаудан кейін орындалады. Сондықтан оны жеке орындаудың қажеті жоқ.
 crashreporter-error = { -brand-short-name } қиындыққа тап болып, құлады. Өкінішке орай құлау хабаршысы бұл қате туралы хабарды жібере алмады.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Толық мәлімет: { $details }
+crashreporter-error-details-header = Ақпараты:
 crashreporter-no-run-message = Бұл бағдарлама қателік ақпаратын әзірлеушіге жіберу үшін құлаудан кейін орындалады. Сондықтан оны жеке орындаудың қажеті жоқ.
 crashreporter-button-details = Көбірек білу…
 crashreporter-loading-details = Жүктелуде…
 crashreporter-view-report-title = Хабар мазмұны
 crashreporter-comment-prompt = Түсініктеме қосу (түсініктеме әркімге көрінеді)
 crashreporter-report-info = Бұл хабардың құрамында бағдарламаның құлау кезі туралы техникалық ақпарат бар.
-crashreporter-send-report = Бұл құлауды жөндей алу үшін, ол туралы { -vendor-short-name } өндірушісіне хабарлаңыз.
-crashreporter-include-url = Мен қарап отырған беттің адресін де қосу.
+crashreporter-checkbox-test-hardware = Менің құрылғымдағы құрылғылық және конфигурация мәселелерін тексеру.
+crashreporter-checkbox-send-report = Бұл құлауды жөндей алу үшін, ол туралы { -vendor-short-name } өндірушісіне хабарлаңыз.
+crashreporter-checkbox-include-url = Мен қарап отырған беттің адресін де қосу.
 crashreporter-submit-status = Құлау туралы хабар сіз шықпай тұрып не қайта қоспай тұрып орындалады.
+crashreporter-submit-waiting-hardware-tests = Құрылғылық және конфигурация мәселелері тексерілуде…
 crashreporter-submit-in-progress = Хабар жіберілуде…
 crashreporter-submit-success = Хабар сәтті жіберілді!
 crashreporter-submit-failure = Хабар сәтті жіберілді!
@@ -34,7 +35,6 @@ crashreporter-crash-details = Осы құлаудың толық мәлімет�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = minidump-analyzer орындау сәтсіз аяқталды
 # $path (String) - the file path
 crashreporter-error-opening-file = Файлды ашу сәтсіз аяқталды ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Үй бумасы жоқ
 # $to (String) - the destination path
 crashreporter-error-moving-path = { $from } ішінен { $to } ішіне жылжыту сәтсіз аяқталды
 crashreporter-error-version-eol = Нұсқаның қызмет ету мерзімінің аяқталуы: құлау туралы есептер енді қабылданбайды.
+crashreporter-error-failed-to-generate-minidump = Қолданба құлау туралы ақпаратты жасай алмады.

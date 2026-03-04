@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Priwatny modus { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Priwatny modus { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Priwatny modus { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Priwatny modus { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Priwatny modus { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Priwatny modus
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Priwatny modus { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Priwatny modus
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Priwatny modus
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Priwatny modus
+       *[other] Priwatny modus { -brand-full-name }
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Priwatny modus
+popups-infobar-dont-show-message2 =
+    .label = Tutu zdźělenku njepokazać, hdyž so wuskakowace wokna abo dalesposrědkowanja třećich poskićowarjow blokuja
+    .accesskey = T
+edit-popup-settings2 =
+    .label = Nastajenja wuskakowacych woknow a třećich poskićowarjow rjadować…
+    .accesskey = N
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Wobłuk powěsćow wočinić
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Wobłuk stejnišćoweho naprašowanja wočinić
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Přistup lokalneho grata za tute sydło rjadować
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Dźělenje přistupa wašeje lokalneje syće ze sydłom rjadować
 urlbar-xr-notification-anchor =
     .tooltiptext = Dialog za prawa wirtualneje reality wočinić
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Pomoc wobstarać
     .accesskey = P
+urlbar-result-menu-dismiss-suggestion =
+    .label = Tutón namjet zaćisnyć
+    .accesskey = z
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Zhońće wjace wo { -firefox-suggest-brand-name }
+    .accesskey = Z
+urlbar-result-menu-manage-firefox-suggest =
+    .label = { -firefox-suggest-brand-name } rjadować
+    .accesskey = r
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Njedokładne stejnišćo zdźělić
+urlbar-result-menu-show-less-frequently =
+    .label = Mjenje často pokazać
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Wjedrowe daty njepokazać
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Meni wočinić
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Dźakujemy so za waš komentar
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Wulki dźak za waš komentar. Njebudźeće hižo wjedrowe namjety widźeć.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = Akcije
 
 urlbar-geolocation-blocked =
     .tooltiptext = Sće tutomu websydłu informacijie wo stejnišću zapowědźił.
+urlbar-localhost-blocked =
+    .tooltiptext = Sće zwiski lokalneho grata za tute websydło zablokował.
+urlbar-local-network-blocked =
+    .tooltiptext = Sće zwiski lokalneje syće za tute websydło zablokował.
 urlbar-xr-blocked =
     .tooltiptext = Sće přistup ke gratej wirtuelneje reality za tute websydło zablokował.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = Sće tutomu websydłu dźělenje swojeje wobrazowki zakazał.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Sće trajny składowak za tute websydło zablokował.
+urlbar-popup-blocked2 =
+    .tooltiptext = Sće wuskakowace wokna a dalesposrědkowanja třećich poskićowarjow za tute websydło zablokował.
 urlbar-popup-blocked =
     .tooltiptext = Sće wuskakowace wokna za tute websydło zablokował.
 urlbar-autoplay-media-blocked =
@@ -178,6 +292,9 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Tutu stronu ({ $shortcut }) jako zapołožku składować
+urlbar-split-view-button =
+    .tooltiptext = Rozdźěleny napohlad
+    .aria-label = Rozdźěleny napohlad
 
 ## Page Action Context Menu
 
@@ -254,10 +371,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Přidatki pokazać
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = rozšerjenja, drasty, přidatki
 quickactions-cmd-addons2 = přidatki
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Zapołožki rjadować
 quickactions-cmd-bookmarks = zapołožki
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Aktualnu historiju wuprózdnić
+quickactions-cmd-clearrecenthistory = aktualnu historiju wuprózdnić, historija
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Historiju zhašeć
 quickactions-cmd-clearhistory = historiju zhašeć
@@ -266,9 +390,20 @@ quickactions-downloads2 = Sćehnjenja pokazać
 quickactions-cmd-downloads = sćehnjenja
 # Opens about:addons page in the extensions section
 quickactions-extensions = Rozšěrjenja rjadować
+quickactions-cmd-extensions2 = rozšerjenja, přidatki
 quickactions-cmd-extensions = rozšěrjenja
+# Opens Firefox View
+quickactions-firefoxview = { -firefoxview-brand-name } wočinić
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = { -firefoxview-brand-name } wočinić, { -firefoxview-brand-name }, view wočinić, view
+# Opens SUMO home page
+quickactions-help = Pomoc { -brand-product-name }
+quickactions-cmd-help = pomoc, podpěra
 # Opens the devtools web inspector
 quickactions-inspector2 = Wuwiwarske nastroje wočinić
+quickactions-cmd-inspector2 = inspektor, wuwiwarske nastroje, devtools
 quickactions-cmd-inspector = inspektor, wuwiwarske nastroje
 # Opens about:logins
 quickactions-logins2 = Hesła rjadować
@@ -281,7 +416,7 @@ quickactions-print2 = Stronu ćišćeć
 quickactions-cmd-print = ćišćeć
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Stronu jako PDF składować
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, stronu składować
 # Opens a new private browsing window
 quickactions-private2 = Priwatne wokno wočinić
 quickactions-cmd-private = priwatny modus
@@ -293,22 +428,37 @@ quickactions-restart = { -brand-short-name } znowa startować
 quickactions-cmd-restart = znowa startować
 # Opens the screenshot tool
 quickactions-screenshot3 = Foto wobrazowki činić
+quickactions-cmd-screenshot2 = foto wobrazowki, foto wobrazowki činić
+# Opens about:translations
+quickactions-translate = Přełožić
+quickactions-cmd-translate = přełožić
 quickactions-cmd-screenshot = foto wobrazowki
 # Opens about:preferences
 quickactions-settings2 = Nastajenja rjadować
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = nastajenja, rjadować
 quickactions-cmd-settings = nastajenja
 # Opens about:addons page in the themes section
 quickactions-themes = Drasty rjadować
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = drasty, přidatki
 quickactions-cmd-themes = drasty
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = { -brand-short-name } aktualizować
 quickactions-cmd-update = aktualizować
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Žórłowy tekst strony pokazać
+quickactions-cmd-viewsource2 = žórło pokazać, žórło, žórło strony
 quickactions-cmd-viewsource = žórło pokazać, žórło
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Zhońće wjace wo spěšnych akcijach
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Tłóčće tabulatorowu tastu, zo byšće wubrał:
 
 ## Bookmark Panel
 
@@ -384,6 +534,8 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = Njejsće wěsće z tutym sydłom zwjazany.
 identity-connection-verified = Sće wěsće z tutym sydłom zwjazany.
 identity-ev-owner-label = Certifikat wupisany na:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = Kwalifikowany kaž we wukazu (EU) 2024/1183 podaty.
 identity-description-custom-root2 = Mozilla tutoho certifikatoweho wudawarja njepřipóznawa. Je so snano přez waš dźěłowy system abo wot administratora přidał.
 identity-remove-cert-exception =
     .label = Wuwzaće wotstronić
@@ -506,6 +658,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Pytać abo adresu zapodać
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Adresu zapodać
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -560,8 +716,6 @@ urlbar-page-action-button =
     .tooltiptext = Akcije strony
 urlbar-revert-button =
     .tooltiptext = Adresu w adresowym polu pokazać
-urlbar-show-page-actions-button =
-    .tooltiptext = Wšě akcije strony pokazać
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -581,12 +735,15 @@ urlbar-result-action-search-in-private = W priwatnym woknje pytać
 urlbar-result-action-search-w-engine = Z { $engine } pytać
 urlbar-result-action-sponsored = Sponserowany
 urlbar-result-action-switch-tab = K rajtarkej přeńć
+urlbar-result-action-move-tab-to-split-view = Rajtark do dźěleneho napohlada přesunyć
 urlbar-result-action-visit = Wopytać
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = K rajtarkej přeńć · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Skupina bjez mjena
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Z mjezyskłada wopytać
 # Directs a user to press the Tab key to perform a search with the specified
@@ -616,12 +773,202 @@ urlbar-result-action-copy-to-clipboard = Kopěrować
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = njedefinowany
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = Rozšěrjenje { -brand-product-name }
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = Doporučeny
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> w měsće { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> w { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> w měsće { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Sponserowany
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Prašeć so
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Wobstarajće sej daty akcijowych wikow direktnje w pytanskim polu
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Pokazajće aktualizacije wikow a wjace wot našich partnerow, hdyž daty pytanja z { -vendor-short-name } dźěliće. <a data-l10n-name="learn-more-link">Dalše informacije</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Namjety pokazać
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Nic nětko
+urlbar-result-realtime-opt-in-dismiss = Zaćisnyć
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Tute namjety njepokazać
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Wične namjety njepokazać
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Wulki dźak za waš komentar. Njebudźeće hižo wične namjety widźeć.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Namjety akcijowych wikow
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Wulki dźak za waš komentar. Njebudźeće hižo tute namjety widźeć.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · Za { $daysUntilStart } dźeń
+        [two] { $name } · Za { $daysUntilStart } dnjej
+        [few] { $name } · Za { $daysUntilStart } dny
+       *[other] { $name } · Za { $daysUntilStart } dnjow
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Započnje so za { $daysUntilStart } dźeń
+        [two] { $name } · Započnje so za { $daysUntilStart } dnjej
+        [few] { $name } · Započnje so za { $daysUntilStart } dny
+       *[other] { $name } · Započnje so za { $daysUntilStart } dnjow
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Skónči so za { $daysUntilEnd } dźeń
+        [two] { $name } · Skónči so za { $daysUntilEnd } dnjej
+        [few] { $name } · Skónči so za { $daysUntilEnd } dny
+       *[other] { $name } · Skónči so za { $daysUntilEnd } dnjow
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Dźensa
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Skónči so dźensa
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Z { $engine } pytać
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } – { $localSearchMode } pytać
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – z { $engine } pytać
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Wubjerće pytawu
+urlbar-searchmode-bookmarks =
+    .label = Zapołožki
+urlbar-searchmode-tabs =
+    .label = Rajtarki
+urlbar-searchmode-history =
+    .label = Historija
+urlbar-searchmode-actions =
+    .label = Akcije
+urlbar-searchmode-exit-button =
+    .tooltiptext = Začinić
+urlbar-searchmode-default =
+    .tooltiptext = Standardna pytawa
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Tónkróć pytać z:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-sticky-description = Pytać z:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Pytanske nastajenja
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Nowy
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, wubjerće pytawu
+    .tooltiptext = { $engine }, wubjerće pytawu
+urlbar-searchmode-button-no-engine =
+    .label = Žana skrótšenka wubrana, wubjerće skrótšenku
+    .tooltiptext = Žana skrótšenka wubrana, wubjerće skrótšenku
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword =
+    .label = Pytanje z klučowymi słowami je znjemóžnjene
+    .tooltiptext = Pytanje z klučowymi słowami je znjemóžnjene
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -631,6 +978,12 @@ urlbar-result-action-search-bookmarks = Zapołožki přepytać
 urlbar-result-action-search-history = Historiju přepytać
 urlbar-result-action-search-tabs = Rajtarki přepytać
 urlbar-result-action-search-actions = W akcijach pytać
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = K { $group } přeńć
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = { $group } wočinić
 
 ## Labels shown above groups of urlbar results
 
@@ -657,6 +1010,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Trendowy na { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Sponserowany
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Trendowe pytanja njepokazać
@@ -853,6 +1209,9 @@ panel-save-update-password = Hesło
 # "More" item in macOS share menu
 menu-share-more =
     .label = Wjace…
+menu-share-copy-link =
+    .label = Wotkaz kopěrować
+    .accesskey = r
 ui-tour-info-panel-close =
     .tooltiptext = Začinić
 
@@ -864,6 +1223,9 @@ popups-infobar-allow =
     .accesskey = u
 popups-infobar-block =
     .label = Wuskakowace wokna za { $uriHost } blokować
+    .accesskey = u
+popups-infobar-allow2 =
+    .label = Wuskakowace wokna a dalesposrědkowanja třećich poskićowarjow za { $uriHost } dowolić
     .accesskey = u
 
 ##
@@ -900,6 +1262,8 @@ navbar-accessible =
     .aria-label = Nawigacija
 navbar-downloads =
     .label = Sćehnjenja
+navbar-overflow-2 =
+    .tooltiptext = Dalše nastroje
 navbar-overflow =
     .tooltiptext = Dalše nastroje…
 # Variables:
@@ -926,6 +1290,10 @@ tabs-toolbar-list-all-tabs =
     .label = Wšě rajtarki nalistować
     .tooltiptext = Wšě rajtarki nalistować
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Pušćće tu, zo byšće připjał
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -944,6 +1312,9 @@ data-reporting-notification-button =
     .accesskey = u
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Priwatny modus
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Priwatny modus
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -952,7 +1323,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Škit datow
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Waša organizacija { $agentName } wužiwa, zo by přećiwo zhubjenju datow škitała. <a data-l10n-name="info">Dalše informacije</a>
+content-analysis-panel-text-styled = Waša organizacija <b>{ $agentName }</b> wužiwa, zo by přećiwo zhubjenju datow škitała. <a data-l10n-name="info">Dalše informacije</a>
 
 ## Unified extensions (toolbar) button
 
@@ -977,6 +1348,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Rozšěrjenja
         Někotre rozšěrjenja dowolene njejsu
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Rozšěrjenja
+    .tooltiptext =
+        Rozšěrjenja
+        Někotre rozšěrjenja su znjemóžnjene
 
 ## Private browsing reset button
 
@@ -1010,17 +1390,24 @@ firefox-relay-offer-why-to-use-relay = Naše wěste, lochko wužiwajomne maski w
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Wšě mejlki, kotrež so na waše e-mejlowe maski sćelu, so do <strong>{ $useremail }</strong> dale posrědkuja (chibazo rozsudźeće je blokować).
-firefox-relay-offer-legal-notice = Hdyž na „E-mejlowu masku wužiwać“ klikaće, zwoliće do <label data-l10n-name="tos-url">>wužiwanskich wuměnjenjow</label>> a <label data-l10n-name="privacy-url">zdźělenki priwatnosće</label>.
+firefox-relay-offer-legal-notice = Hdyž na „E-mejlowu masku wužiwać“ klikaće, zwoliće do <label data-l10n-name="tos-url">wužiwanskich wuměnjenjow</label> a <label data-l10n-name="privacy-url">zdźělenki priwatnosće</label>.
+firefox-relay-offer-legal-notice-1 = Hdyž so registrujeće a e-mejlowu masku wutworjeće, zwoliće do <label data-l10n-name="tos-url">wužiwanskich wuměnjenjow</label> a <label data-l10n-name="privacy-url">zdźělenki priwatnosće</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Njewobkrućeny)
 popup-notification-xpinstall-prompt-learn-more = Zhońće wjace wo wěstym instalowanju přidatkow
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = W priwatnych woknach wuwjesć
-    .accesskey = p
+popup-notification-xpinstall-prompt-block-url = Hlejće podrobnosće
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Wuwjedźenje rozšěrjenja w priwatnych woknach dowolić
+    .accesskey = W
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Techniske daty a daty interakcije z wuwiwarjom rozšěrjenja dźělić
+    .accesskey = T
 
 ## Pop-up warning
 
@@ -1033,6 +1420,17 @@ popup-warning-message =
         [few] { -brand-short-name } je zadźěwał, zo tute sydło { $popupCount } wuskakowace wokna wočinja.
        *[other] { -brand-short-name } je zadźěwał, zo tute sydło { $popupCount } wuskakowacych woknow wočinja.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } je zadźěwał, zo tute sydło dale posrědkuje.
+        [1] { -brand-short-name } je zadźěwał, zo tute sydło wuskakowace wokno wočinja a dale posrědkuje.
+        [one] { -brand-short-name } je zadźěwał, zo tute sydło { $popupCount } wuskakowace wokno wočinja a dale posrědkuje.
+        [two] { -brand-short-name } je zadźěwał, zo tute sydło { $popupCount } wuskakowacej woknje wočinja a dale posrědkuje.
+        [few] { -brand-short-name } je zadźěwał, zo tute sydło { $popupCount } wuskakowace wokna wočinja a dale posrědkuje.
+       *[other] { -brand-short-name } je zadźěwał, zo tute sydło { $popupCount } wuskakowacych woknow wočinja a dale posrědkuje.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
@@ -1042,6 +1440,15 @@ popup-warning-exceeded-message =
         [two] { -brand-short-name } je tute sydło při wočinjenju wyše { $popupCount } wuskakowaceju woknow haćił.
         [few] { -brand-short-name } je tute sydło při wočinjenju wyše { $popupCount } wuskakowacych woknow haćił.
        *[other] { -brand-short-name } je tute sydło pśi wočinjenju wyše { $popupCount } wuskakowacych woknow haćił.
+    }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } je zadźěwał, zo tute sydło wjace hač { $popupCount } wuskakowace wokno wočinja a dale posrědkuje.
+        [two] { -brand-short-name } je zadźěwał, zo tute sydło wjace hač { $popupCount } wuskakowacej woknje wočinja a dale posrědkuje.
+        [few] { -brand-short-name } je zadźěwał, zo tute sydło wjace hač { $popupCount } wuskakowace wokna wočinja a dale posrědkuje.
+       *[other] { -brand-short-name } je zadźěwał, zo tute sydło wjace hač { $popupCount } wuskakowacych woknow wočinja a dale posrědkuje.
     }
 popup-warning-button =
     .label =
@@ -1058,6 +1465,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = '{ $popupURI }' pokazać
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = „{ $redirectURI }“ pokazać
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1079,3 +1490,185 @@ file-picker-crashed-save-nowhere = Datajowy dialog Windows je spadnył. Standard
 file-picker-crashed-show-in-folder =
     .label = W rjadowaku pokazać
     .accessKey = r
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Konfiguraciju dokončić
+onboarding-aw-finish-setup-button =
+    .label = Konfiguraciju dokónčić
+    .tooltiptext = Konfiguraciju { -brand-short-name } dokónčić
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Polěpšeny slědowanski škit je zmóžnjeny
+trustpanel-etp-label-disabled = Polěpšeny slědowanski škit je znjemóžnjeny
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Polěpšeny slědowanski škit: Za { $host } zmóžnjeny
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Polěpšeny slědowanski škit: Za { $host } znjemóžnjeny
+trustpanel-etp-description-enabled = Jeli něšto na tutym sydle wobškodźene wupada, spytajće škity znjemóžnić.
+trustpanel-etp-description-disabled = { -brand-product-name } měni, zo předewzaća měli wam mjenje slědować. Blokujemy tak wjele přesćěhowaki kaž móžemy, hdyž škit zmóžnjeće.
+trustpanel-connection-label-secure = Zwisk wěsty
+trustpanel-connection-label-insecure = Zwisk njewěsty
+trustpanel-header-enabled = { -brand-product-name } stražuje
+trustpanel-description-enabled2 = Sće škitany. Jeli něšto namakamy, zdźělimy wam to.
+trustpanel-header-enabled-insecure = Budźće kedźbliwy na tutym sydle
+trustpanel-description-enabled-insecure = { -brand-product-name } je něšto podhladneho pytnył.
+trustpanel-header-disabled = Sće škity znjemóžnił
+trustpanel-description-disabled = { -brand-product-name } njedźěła. Namjetujemy škity zaso zmóžnić.
+trustpanel-clear-cookies-button = Placki a sydłowe daty zhašeć
+trustpanel-privacy-link = Nastajenja priwatnosće
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Placki a sydłowe daty za { $host } zhašeć
+trustpanel-clear-cookies-description = Hdyž placki a sydłowe daty wotstronjeće, wotzjewjeće so snano wot websydłow a wuprózdnjeće nakupowanski wozyk.
+trustpanel-clear-cookies-subview-button-clear = Zhašeć
+trustpanel-clear-cookies-subview-button-cancel = Přetorhnyć
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Zwiskowy škit za { $host }
+trustpanel-siteinformation-morelink = Dalše sydłowe informacije
+trustpanel-blocker-see-all = Wšě pokazać
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Slědowanski škit za { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Njewěsty
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] <span>{ $count }</span> přesćěhowak je so na tutym sydle zablokował
+        [two] <span>{ $count }</span> přesćěhowakaj stej so na tutym sydle zablokowałoj
+        [few] <span>{ $count }</span> přesćěhowak su so na tutym sydle zablokowali
+       *[other] <span>{ $count }</span> přesćěhowakow je so na tutym sydle zablokowało
+    }
+trustpanel-blocker-description = { -brand-product-name } měni, zo předewzaća měli wam mjenje slědować. Tohodla blokujemy tak wjele kaž móžemy.
+trustpanel-blocked-header = { -brand-product-name } je tute wěcy za was zablokował:
+trustpanel-tracking-header = { -brand-product-name } je tute wěcy dowolił, zo bychu sydła korektnje fungowali:
+trustpanel-tracking-description = Někotre tłóčatka, formulary a přizjewjenske pola njemóhli bjez přesćěhowakow fungować.
+trustpanel-insecure-section-header = Waš zwisk wěsty njeje
+trustpanel-insecure-description = Daty, kotrež na tute sydło sćeleće, njejsu zaklučowane. Dadźa so wobhladać, kradnyć abo změnić.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } sydła přesahowacy slědowacy plack
+        [two] { $count } sydła přesahowacej slědowacej plackaj
+        [few] { $count } sydła přesahowace slědowace placki
+       *[other] { $count } sydła přesahowacych slědowacych plackow
+    }
+trustpanel-list-label-tracking-content = Slědowacy wobsah
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } hromadźak porstowych wotćišćow
+        [two] { $count } hromadźakaj porstowych wotćišćow
+        [few] { $count } hromadźaki porstowych wotćišćow
+       *[other] { $count } hromadźakow porstowych wotćišćow
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } přesćěhowak socialnych medijow
+        [two] { $count } přesćěhowakaj socialnych medijow
+        [few] { $count } přesćěhowaki socialnych medijow
+       *[other] { $count } přesćěhowakow socialnych medijow
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } kryptokopar
+        [two] { $count } kryptokoparjej
+        [few] { $count } kryptokoparjo
+       *[other] { $count } kryptokoparjow
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } přesćěhowak socialnych medijow zablokował
+        [two] { -brand-product-name } je { $count } přesćěhowakaj socialnych medijow zablokował
+        [few] { -brand-product-name } je { $count } přesćěhowaki socialnych medijow zablokował
+       *[other] { -brand-product-name } je { $count } přesćěhowakow socialnych medijow zablokował
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } přesćěhowak socialnych medijow dowolił
+        [two] { -brand-product-name } je { $count } přesćěhowakaj socialnych medijow dowolił
+        [few] { -brand-product-name } je { $count } přesćěhowaki socialnych medijow dowolił
+       *[other] { -brand-product-name } je { $count } přesćěhowakow socialnych medijow dowolił
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } sydła přesahowacy slědowacy plack zablokował
+        [two] { -brand-product-name } je { $count } sydła přesahowacej slědowacej plackaj zablokował
+        [few] { -brand-product-name } je { $count } sydła přesahowace slědowace placki zablokował
+       *[other] { -brand-product-name } je { $count } sydła přesahowacych slědowacych plackow zablokował
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } sydła přesahowacy slědowacy plack dowolił
+        [two] { -brand-product-name } je { $count } sydła přesahowacej slědowacej plackaj dowolił
+        [few] { -brand-product-name } je { $count } sydła přesahowace slědowace placki dowolił
+       *[other] { -brand-product-name } je { $count } sydła přesahowacych slědowacych plackow dowolił
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } přesćěhowak zablokował
+        [two] { -brand-product-name } je { $count } přesćěhowakaj zablokował
+        [few] { -brand-product-name } je { $count } přesćěhowaki zablokował
+       *[other] { -brand-product-name } je { $count } přesćěhowakow zablokował
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } přesćěhowak dowolił
+        [two] { -brand-product-name } je { $count } přesćěhowakaj dowolił
+        [few] { -brand-product-name } je { $count } přesćěhowaki dowolił
+       *[other] { -brand-product-name } je { $count } přesćěhowakow dowolił
+    }
+trustpanel-tracking-content-tab-list-header = Tute sydła pospytuja wam slědować:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } hromadźak porstowych wotćišćow zablokował
+        [two] { -brand-product-name } je { $count } hromadźakaj porstowych wotćišćow zablokował
+        [few] { -brand-product-name } je { $count } hromadźaki porstowych wotćišćow zablokował
+       *[other] { -brand-product-name } je { $count } hromadźakow porstowych wotćišćow zablokował
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } hromadźak porstowych wotćišćow dowolił
+        [two] { -brand-product-name } je { $count } hromadźakaj porstowych wotćišćow dowolił
+        [few] { -brand-product-name } je { $count } hromadźaki porstowych wotćišćow dowolił
+       *[other] { -brand-product-name } je { $count } hromadźakow porstowych wotćišćow dowolił
+    }
+trustpanel-fingerprinter-list-header = Tute sydło pospytuje, porstowe wotćišće wot was wzać:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } kryptokoparja zablokował
+        [two] { -brand-product-name } je { $count } kryptokoparjej zablokował
+        [few] { -brand-product-name } je { $count } kryptokoparjow zablokował
+       *[other] { -brand-product-name } je { $count } kryptokoparjow zablokował
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } je { $count } kryptokoparja dowolił
+        [two] { -brand-product-name } je { $count } kryptokoparjej dowolił
+        [few] { -brand-product-name } je { $count } kryptokoparjow dowolił
+       *[other] { -brand-product-name } je { $count } kryptokoparjow dowolił
+    }
+trustpanel-cryptominer-tab-list-header = Tute sydła kryptokopanje pospytuja:
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> přesćěhowak je so na tutym sydle zablokował
+        [two] <span data-l10n-name="count">{ $count }</span> přesćěhowakaj stej so na tutym sydle zablokowałoj
+        [few] <span data-l10n-name="count">{ $count }</span> přesćěhowaki su so na tutym sydle zablokowali
+       *[other] <span data-l10n-name="count">{ $count }</span> přesćěhowakow je so na tutym sydle zablokowało
+    }

@@ -14,8 +14,6 @@
 #include "mozilla/layers/CompositorThread.h"
 #include "mozilla/layers/RemoteTextureMap.h"
 #include "mozilla/layers/SharedSurfacesParent.h"
-#include "mozilla/UniquePtr.h"
-#include "mozilla/Unused.h"
 #include "gfxPlatform.h"
 #include "VsyncSource.h"
 
@@ -24,7 +22,8 @@ namespace layers {
 
 StaticMonitor CompositorManagerParent::sMonitor;
 StaticRefPtr<CompositorManagerParent> CompositorManagerParent::sInstance;
-CompositorManagerParent::ManagerMap CompositorManagerParent::sManagers;
+MOZ_RUNINIT CompositorManagerParent::ManagerMap
+    CompositorManagerParent::sManagers;
 
 /* static */
 already_AddRefed<CompositorManagerParent>
@@ -389,7 +388,7 @@ void CompositorManagerParent::NotifyWebRenderError(wr::WebRenderError aError) {
   if (NS_WARN_IF(!sInstance)) {
     return;
   }
-  Unused << sInstance->SendNotifyWebRenderError(aError);
+  (void)sInstance->SendNotifyWebRenderError(aError);
 }
 
 }  // namespace layers

@@ -4,50 +4,45 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/DebugOnly.h"
-
-#include "gfxContext.h"
-#include "nsCOMPtr.h"
-#include "nsFontMetrics.h"
 #include "nsTextControlFrame.h"
-#include "nsIEditor.h"
-#include "nsCaret.h"
-#include "nsCSSPseudoElements.h"
-#include "nsDisplayList.h"
-#include "nsGenericHTMLElement.h"
-#include "nsTextFragment.h"
-#include "nsNameSpaceManager.h"
-
-#include "nsIContent.h"
-#include "nsPresContext.h"
-#include "nsGkAtoms.h"
-#include "nsLayoutUtils.h"
 
 #include <algorithm>
-#include "nsRange.h"  //for selection setting helper func
-#include "nsINode.h"
-#include "nsPIDOMWindow.h"  //needed for notify selection changed to update the menus ect.
-#include "nsQueryObject.h"
-#include "nsILayoutHistoryState.h"
 
-#include "nsFocusManager.h"
+#include "gfxContext.h"
 #include "mozilla/EventStateManager.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/PresState.h"
 #include "mozilla/ScrollContainerFrame.h"
+#include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/TextEditor.h"
-#include "nsAttrValueInlines.h"
-#include "mozilla/dom/Selection.h"
-#include "nsContentUtils.h"
-#include "nsTextNode.h"
+#include "mozilla/Try.h"
 #include "mozilla/dom/HTMLInputElement.h"
 #include "mozilla/dom/HTMLTextAreaElement.h"
 #include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/dom/Selection.h"
 #include "mozilla/dom/Text.h"
-#include "mozilla/MathAlgorithms.h"
-#include "mozilla/StaticPrefs_layout.h"
-#include "mozilla/Try.h"
+#include "nsAttrValueInlines.h"
+#include "nsCOMPtr.h"
+#include "nsCSSPseudoElements.h"
+#include "nsCaret.h"
+#include "nsContentUtils.h"
+#include "nsDisplayList.h"
+#include "nsFocusManager.h"
+#include "nsFontMetrics.h"
 #include "nsFrameSelection.h"
+#include "nsGenericHTMLElement.h"
+#include "nsGkAtoms.h"
+#include "nsIContent.h"
+#include "nsIEditor.h"
+#include "nsILayoutHistoryState.h"
+#include "nsINode.h"
+#include "nsLayoutUtils.h"
+#include "nsNameSpaceManager.h"
+#include "nsPIDOMWindow.h"  //needed for notify selection changed to update the menus ect.
+#include "nsPresContext.h"
+#include "nsQueryObject.h"
+#include "nsRange.h"  //for selection setting helper func
+#include "nsTextNode.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -201,18 +196,14 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(gfxContext* aRenderingContext,
                         nsPresContext::CSSPixelsToAppUnits(4));
     internalPadding = RoundToMultiple(internalPadding, AppUnitsPerCSSPixel());
     intrinsicSize.ISize(aWM) += internalPadding;
-  } else if (PresContext()->CompatibilityMode() ==
-             eCompatibility_FullStandards) {
-    // This is to account for the anonymous <br> having a 1 twip width
-    // in Full Standards mode, see BRFrame::Reflow and bug 228752.
-    intrinsicSize.ISize(aWM) += 1;
   }
 
   // Increment width with cols * letter-spacing.
   {
-    const StyleLength& letterSpacing = StyleText()->mLetterSpacing;
-    if (!letterSpacing.IsZero()) {
-      intrinsicSize.ISize(aWM) += cols * letterSpacing.ToAppUnits();
+    const auto& letterSpacing = StyleText()->mLetterSpacing;
+    if (!letterSpacing.IsDefinitelyZero()) {
+      intrinsicSize.ISize(aWM) +=
+          cols * letterSpacing.Resolve(fontMet->EmHeight());
     }
   }
 
@@ -249,8 +240,8 @@ LogicalSize nsTextControlFrame::CalcIntrinsicSize(gfxContext* aRenderingContext,
   // Add the inline size of the button if our char size is explicit, so as to
   // make sure to make enough space for it.
   if (maybeCols.isSome() && mButton && mButton->GetPrimaryFrame()) {
-    intrinsicSize.ISize(aWM) +=
-        mButton->GetPrimaryFrame()->GetMinISize(aRenderingContext);
+    const IntrinsicSizeInput input(aRenderingContext, Nothing(), Nothing());
+    intrinsicSize.ISize(aWM) += mButton->GetPrimaryFrame()->GetMinISize(input);
   }
 
   return intrinsicSize;
@@ -269,7 +260,9 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
   // never get used.  So, now this method is being called lazily only
   // when we actually need an editor.
 
-  if (mEditorHasBeenInitialized) return NS_OK;
+  if (mEditorHasBeenInitialized) {
+    return NS_OK;
+  }
 
   Document* doc = mContent->GetComposedDoc();
   NS_ENSURE_TRUE(doc, NS_ERROR_FAILURE);
@@ -290,7 +283,7 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
     // Hide selection changes during the initialization, as webpages should not
     // be aware of these initializations
     AutoHideSelectionChanges hideSelectionChanges(
-        textControlElement->GetConstFrameSelection());
+        textControlElement->GetIndependentFrameSelection());
 
     nsAutoScriptBlocker scriptBlocker;
 
@@ -385,8 +378,6 @@ nsresult nsTextControlFrame::CreateAnonymousContent(
   MOZ_ASSERT(!nsContentUtils::IsSafeToRunScript());
   MOZ_ASSERT(mContent, "We should have a content!");
 
-  AddStateBits(NS_FRAME_INDEPENDENT_SELECTION);
-
   RefPtr<TextControlElement> textControlElement = ControlElement();
   mRootNode = MakeAnonElement(PseudoStyleType::mozTextControlEditingRoot);
   if (NS_WARN_IF(!mRootNode)) {
@@ -442,12 +433,7 @@ nsresult nsTextControlFrame::CreateAnonymousContent(
 }
 
 bool nsTextControlFrame::ShouldInitializeEagerly() const {
-  // textareas are eagerly initialized.
-  if (!IsSingleLineTextControl()) {
-    return true;
-  }
-
-  // Also, input elements which have a cached selection should get eager
+  // Input elements which have a cached selection should get eager
   // editor initialization.
   TextControlElement* textControlElement = ControlElement();
   if (textControlElement->HasCachedSelection()) {
@@ -458,21 +444,6 @@ bool nsTextControlFrame::ShouldInitializeEagerly() const {
   if (auto* htmlElement = nsGenericHTMLElement::FromNode(mContent)) {
     if (htmlElement->Spellcheck()) {
       return true;
-    }
-  }
-
-  // If text in the editor is being dragged, we need the editor to create
-  // new source node for the drag session (TextEditor creates the text node
-  // in the anonymous <div> element.
-  if (nsCOMPtr<nsIDragSession> dragSession =
-          nsContentUtils::GetDragSession(PresContext())) {
-    if (dragSession->IsDraggingTextInTextControl()) {
-      nsCOMPtr<nsINode> sourceNode;
-      if (NS_SUCCEEDED(
-              dragSession->GetSourceNode(getter_AddRefs(sourceNode))) &&
-          sourceNode == textControlElement) {
-        return true;
-      }
     }
   }
 
@@ -559,12 +530,12 @@ void nsTextControlFrame::AppendAnonymousContentTo(
   aElements.AppendElement(mRootNode);
 }
 
-nscoord nsTextControlFrame::IntrinsicISize(gfxContext* aContext,
+nscoord nsTextControlFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                            IntrinsicISizeType aType) {
   // Our min inline size is just our preferred inline-size if we have auto
   // inline size.
   WritingMode wm = GetWritingMode();
-  return CalcIntrinsicSize(aContext, wm).ISize(wm);
+  return CalcIntrinsicSize(aInput.mContext, wm).ISize(wm);
 }
 
 Maybe<nscoord> nsTextControlFrame::ComputeBaseline(
@@ -665,20 +636,22 @@ void nsTextControlFrame::ReflowTextControlChild(
   const LogicalSize paddingBoxSize = contentBoxSize + parentPadding.Size(wm);
   const LogicalSize borderBoxSize =
       paddingBoxSize + aReflowInput.ComputedLogicalBorder(wm).Size(wm);
-  LogicalSize availSize = paddingBoxSize;
-  availSize.BSize(wm) = NS_UNCONSTRAINEDSIZE;
-
+  const bool singleLine = IsSingleLineTextControl();
   const bool isButtonBox = IsButtonBox(aKid);
-
+  LogicalSize availSize =
+      !isButtonBox && singleLine ? contentBoxSize : paddingBoxSize;
+  availSize.BSize(wm) = NS_UNCONSTRAINEDSIZE;
   ReflowInput kidReflowInput(aPresContext, aReflowInput, aKid, availSize,
                              Nothing(), ReflowInput::InitFlag::CallerWillInit);
 
   // Override padding with our computed padding in case we got it from theming
   // or percentage, if we're not the button box.
   auto overridePadding = isButtonBox ? Nothing() : Some(parentPadding);
-  if (!isButtonBox && aButtonBoxISize) {
+  if (!isButtonBox && singleLine) {
     // Button box respects inline-end-padding, so we don't need to.
-    overridePadding->IEnd(outerWM) = 0;
+    // inline-padding is not propagated to the scroller for single-line text
+    // controls.
+    overridePadding->IStart(outerWM) = overridePadding->IEnd(outerWM) = 0;
   }
 
   // We want to let our button box fill the frame in the block axis, up to the
@@ -702,6 +675,9 @@ void nsTextControlFrame::ReflowTextControlChild(
     // actually "inherits" that padding and manages it on behalf of the parent.
     position.B(wm) = border.BStart(wm);
     position.I(wm) = border.IStart(wm);
+    if (singleLine) {
+      position.I(wm) += parentPadding.IStart(wm);
+    }
 
     // Set computed width and computed height for the child (the button box is
     // the only exception, which has an auto size).
@@ -822,19 +798,18 @@ nsresult nsTextControlFrame::SetSelectionInternal(
 
 void nsTextControlFrame::ScrollSelectionIntoViewAsync(
     ScrollAncestors aScrollAncestors) {
-  nsISelectionController* selCon = GetSelectionController();
+  nsCOMPtr<nsISelectionController> selCon = GetSelectionController();
   if (!selCon) {
     return;
   }
 
-  int16_t flags = aScrollAncestors == ScrollAncestors::Yes
-                      ? 0
-                      : nsISelectionController::SCROLL_FIRST_ANCESTOR_ONLY;
-
   // Scroll the selection into view (see bug 231389).
+  const auto flags = aScrollAncestors == ScrollAncestors::Yes
+                         ? ScrollFlags::None
+                         : ScrollFlags::ScrollFirstAncestorOnly;
   selCon->ScrollSelectionIntoView(
-      nsISelectionController::SELECTION_NORMAL,
-      nsISelectionController::SELECTION_FOCUS_REGION, flags);
+      SelectionType::eNormal, nsISelectionController::SELECTION_FOCUS_REGION,
+      ScrollAxis(), ScrollAxis(), flags);
 }
 
 nsresult nsTextControlFrame::SelectAll() {
@@ -862,7 +837,9 @@ nsresult nsTextControlFrame::SetSelectionEndPoints(
     uint32_t aSelStart, uint32_t aSelEnd, SelectionDirection aDirection) {
   NS_ASSERTION(aSelStart <= aSelEnd, "Invalid selection offsets!");
 
-  if (aSelStart > aSelEnd) return NS_ERROR_FAILURE;
+  if (aSelStart > aSelEnd) {
+    return NS_ERROR_FAILURE;
+  }
 
   nsCOMPtr<nsINode> startNode, endNode;
   uint32_t startOffset, endOffset;
@@ -952,9 +929,11 @@ nsresult nsTextControlFrame::OffsetToDOMPoint(uint32_t aOffset,
 ////NSIFRAME
 nsresult nsTextControlFrame::AttributeChanged(int32_t aNameSpaceID,
                                               nsAtom* aAttribute,
-                                              int32_t aModType) {
+                                              AttrModType aModType) {
   if (aAttribute == nsGkAtoms::value && !mEditorHasBeenInitialized) {
-    UpdateValueDisplay(true);
+    if (IsSingleLineTextControl()) {
+      UpdateValueDisplay(true);
+    }
     return NS_OK;
   }
 
@@ -969,11 +948,11 @@ nsresult nsTextControlFrame::AttributeChanged(int32_t aNameSpaceID,
 
 void nsTextControlFrame::HandleReadonlyOrDisabledChange() {
   RefPtr<TextControlElement> el = ControlElement();
-  RefPtr<TextEditor> editor = el->GetTextEditorWithoutCreation();
+  const RefPtr<TextEditor> editor = el->GetExtantTextEditor();
   if (!editor) {
     return;
   }
-  nsISelectionController* selCon = el->GetSelectionController();
+  nsISelectionController* const selCon = el->GetSelectionController();
   if (!selCon) {
     return;
   }
@@ -1051,13 +1030,7 @@ void nsTextControlFrame::SetInitialChildList(ChildListID aListID,
   }
 }
 
-nsresult nsTextControlFrame::UpdateValueDisplay(bool aNotify,
-                                                bool aBeforeEditorInit,
-                                                const nsAString* aValue) {
-  if (!IsSingleLineTextControl()) {  // textareas don't use this
-    return NS_OK;
-  }
-
+nsresult nsTextControlFrame::UpdateValueDisplay(bool aNotify) {
   MOZ_ASSERT(mRootNode, "Must have a div content\n");
   MOZ_ASSERT(!mEditorHasBeenInitialized,
              "Do not call this after editor has been initialized");
@@ -1082,12 +1055,7 @@ nsresult nsTextControlFrame::UpdateValueDisplay(bool aNotify,
 
   // Get the current value of the textfield from the content.
   nsAutoString value;
-  if (aValue) {
-    value = *aValue;
-  } else {
-    ControlElement()->GetTextEditorValue(value);
-  }
-
+  ControlElement()->GetTextEditorValue(value);
   return textContent->SetText(value, aNotify);
 }
 
@@ -1131,6 +1099,10 @@ void nsTextControlFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
   DO_GLOBAL_REFLOW_COUNT_DSP("nsTextControlFrame");
 
   DisplayBorderBackgroundOutline(aBuilder, aLists);
+
+  if (HidesContent()) {
+    return;
+  }
 
   // Redirect all lists to the Content list so that nothing can escape, ie
   // opacity creating stacking contexts that then get sorted with stacking
@@ -1176,8 +1148,8 @@ nsTextControlFrame::EditorInitializer::Run() {
       if (NS_SUCCEEDED(
               dragSession->GetSourceNode(getter_AddRefs(sourceNode))) &&
           mFrame->GetContent() == sourceNode) {
-        if (TextEditor* textEditor =
-                mFrame->ControlElement()->GetTextEditorWithoutCreation()) {
+        if (const TextEditor* const textEditor =
+                mFrame->ControlElement()->GetExtantTextEditor()) {
           if (Element* anonymousDivElement = textEditor->GetRoot()) {
             if (anonymousDivElement && anonymousDivElement->GetFirstChild()) {
               MOZ_ASSERT(anonymousDivElement->GetFirstChild()->IsText());
@@ -1194,8 +1166,8 @@ nsTextControlFrame::EditorInitializer::Run() {
     TextControlElement* textControlElement = mFrame->ControlElement();
     if (nsPresContext* presContext =
             textControlElement->GetPresContext(Element::eForComposedDoc)) {
-      if (TextEditor* textEditor =
-              textControlElement->GetTextEditorWithoutCreation()) {
+      if (const TextEditor* const textEditor =
+              textControlElement->GetExtantTextEditor()) {
         if (Element* anonymousDivElement = textEditor->GetRoot()) {
           presContext->EventStateManager()->TextControlRootAdded(
               *anonymousDivElement, *textControlElement);
@@ -1216,17 +1188,17 @@ void nsTextControlFrame::nsAnonDivObserver::CharacterDataChanged(
 }
 
 void nsTextControlFrame::nsAnonDivObserver::ContentAppended(
-    nsIContent* aFirstNewContent) {
+    nsIContent* aFirstNewContent, const ContentAppendInfo&) {
   mFrame.ClearCachedValue();
 }
 
 void nsTextControlFrame::nsAnonDivObserver::ContentInserted(
-    nsIContent* aChild) {
+    nsIContent* aChild, const ContentInsertInfo&) {
   mFrame.ClearCachedValue();
 }
 
-void nsTextControlFrame::nsAnonDivObserver::ContentRemoved(
-    nsIContent* aChild, nsIContent* aPreviousSibling) {
+void nsTextControlFrame::nsAnonDivObserver::ContentWillBeRemoved(
+    nsIContent* aChild, const ContentRemoveInfo&) {
   mFrame.ClearCachedValue();
 }
 
@@ -1239,7 +1211,7 @@ Maybe<nscoord> nsTextControlFrame::GetNaturalBaselineBOffset(
     }
 
     if (aBaselineGroup == BaselineSharingGroup::First) {
-      return Some(std::clamp(mFirstBaseline, 0, BSize(aWM)));
+      return Some(CSSMinMax(mFirstBaseline, 0, BSize(aWM)));
     }
     // This isn't great, but the content of the root NAC isn't guaranteed
     // to be loaded, so the best we can do is the edge of the border-box.

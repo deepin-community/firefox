@@ -65,7 +65,7 @@ places-delete-domain-data =
     .label = Glem alt om dette websted
     .accesskey = G
 places-forget-domain-data =
-    .label = Glem dette websted
+    .label = Glem dette websted…
     .accesskey = G
 places-sortby-name =
     .label = Sorter efter navn
@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Slet sider
         }
     .accesskey = S
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Administrerede bogmærker
 # This label is used when a managed bookmarks folder doesn't have a name.

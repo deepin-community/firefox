@@ -15,7 +15,7 @@ videocontrols-play-button =
 videocontrols-pause-button =
     .aria-label = Ընդմիջել
 videocontrols-mute-button =
-    .aria-label = Անձայն
+    .aria-label = Լռեցնել
 videocontrols-unmute-button =
     .aria-label = Միացնել ձայնը
 videocontrols-enterfullscreen-button =
@@ -23,24 +23,28 @@ videocontrols-enterfullscreen-button =
 videocontrols-exitfullscreen-button =
     .aria-label = Դուրս գալ Լիաէկրան վիճակից
 videocontrols-casting-button-label =
-    .aria-label = Էկրանին
+    .aria-label = Հեռարձակել էկրանին
 # .offlabel is processed by the video control custom element to be used
 # as a text-track label
 videocontrols-closed-caption-off =
     .offlabel = Անջատել
 # This string is used as part of the Picture-in-Picture video toggle button when
 # the mouse is hovering it.
-videocontrols-picture-in-picture-label = Նկար-նկարում
+videocontrols-picture-in-picture-label = Նկարը նկարում
 # This string is used as the label for a variation of the Picture-in-Picture video
 # toggle button when the mouse is hovering over the video.
 videocontrols-picture-in-picture-toggle-label2 = Հանել տեսանյութը
-videocontrols-error-aborted = Տեսանյութի բեռնումը կանգնեցվել է։
-videocontrols-error-network = Տեսանյութի վերարտադրումը կանգնեցվել է ցանցի սխալի պատճառով:
-videocontrols-error-decode = Տեսանյութը չի կարող վերարտադրվել, քանզի ֆայլը վնասված է:
-videocontrols-error-src-not-supported = Տեսանյութի տեսակը կամ MIME-ի տեսակը չեն աջակցվում:
-videocontrols-error-no-source = Չկա աջակցվող տեսանյութի և MIME-ի տեսակ:
-videocontrols-error-generic = Տեսանյութի վերարտադրումը կանգնեցվել է անհայտ սխալի պատճառով:
-videocontrols-status-picture-in-picture = Այս տեսանյութը նվագարկվում է Նկար֊Նկարում աշխատակերպում։
+# This string is used as part of a variation of the Picture-in-Picture video toggle
+# button. When using this variation, this string appears below the toggle when the
+# mouse hovers the toggle.
+videocontrols-picture-in-picture-explainer3 = Ավելի շատ էկրաններն ավելի զվարճալի են: Նվագարկեք տեսանյութը այլ գործողություններ անելով:
+videocontrols-error-aborted = Տեսանյութի բեռնումը կանգնեցվեց։
+videocontrols-error-network = Տեսանյութի նվագարկումը կանգնեցվեց ցանցի սխալի պատճառով:
+videocontrols-error-decode = Տեսանյութը չի կարող նվագարկվել, քանզի ֆայլը վնասված է:
+videocontrols-error-src-not-supported = Տեսանյութի ձևաչափը կամ MIME-ի տեսակը չեն աջակցվում:
+videocontrols-error-no-source = Աջակցվող ձևաչափով տեսանյութ և MIME-ի տեսակ չգտնվեց:
+videocontrols-error-generic = Տեսանյութի նվագարկումը ընդհատվեց անհայտ սխալի պատճառով:
+videocontrols-status-picture-in-picture = Այս տեսանյութը նվագարկվում է Նկարը նկարում կերպում։
 # This message shows the current position and total video duration
 #
 # Variables:

@@ -7,7 +7,6 @@ page-subtitle =
     Оваа страна содржи технички информации кои може да Ви послужат кога се
     обидувате да решите некој проблем. Ако барате одговори на често поставувани прашања
     за { -brand-short-name }, појдете на нашиот <a data-l10n-name="support-link">веб сајт за поддршка</a>.
-
 support-addons-name = Име
 support-addons-version = Верзија
 support-addons-id = ID
@@ -23,7 +22,6 @@ app-basics-enabled-plugins = Овозможени приклучоци
 app-basics-build-config = Конфигурација на изданието
 app-basics-user-agent = Кориснички агент
 app-basics-memory-use = Искористеност на меморија
-
 modified-key-prefs-title = Важни променети параметри
 modified-prefs-name = Име
 modified-prefs-value = Вредност
@@ -36,24 +34,6 @@ a11y-force-disabled = Сопри пристапност
 library-version-title = Верзија на библиотеката
 copy-text-to-clipboard-label = Копирај го текстот
 copy-raw-data-to-clipboard-label = Копирај ги сировите податоци
-
-## Media titles
-
-
-## Codec support table
-
-##
-
-
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
 
 ##
 
@@ -70,7 +50,6 @@ blocked-os-version = Блокирано за верзијата на опера�
 try-newer-driver =
     Блокирано за верзијата на графичкиот драјвер. Пробајте да го надградите
     на верзија { $driverVersion } или понова.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Параметри за ClearType
@@ -81,21 +60,8 @@ clear-type-parameters = Параметри за ClearType
 
 min-lib-versions = Очекувана минимална верзија
 loaded-lib-versions = Верзија во употреба
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 drag-enabled = влечење на лизгач овозможено
-
-## Variables
-## $preferenceKey (string) - String ID of preference
-
-
-## Strings representing the status of the Enterprise Policies engine.
-
-## Printing section
-
-## Normandy sections
-

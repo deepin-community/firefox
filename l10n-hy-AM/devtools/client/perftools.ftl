@@ -17,20 +17,8 @@ perftools-heading-local-build = Տեղական հավաքում
 
 ##
 
-
-## The controls for the interval at which the profiler samples the code.
-
-
-##
-
 perftools-devtools-threads-label = Հոսքեր՝
 perftools-devtools-settings-label = Կարգավորումներ
-
-## Various statuses that affect the current state of profiling, not typically displayed.
-
-
-## These are shown briefly when the user is waiting for the profiler to respond.
-
 
 ##
 
@@ -43,13 +31,6 @@ perftools-button-edit-settings = Խմբագրել կարգավորումները
 
 pref-thread-stream-trans =
     .title = Ցանցային հոսքի փոխադրիչ
-
-##
-
-
-## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
-## devtools.performance.new-panel-onboarding preference is true.
-
 
 ## Profiler presets
 
@@ -66,6 +47,3 @@ pref-thread-stream-trans =
 perftools-presets-web-developer-label = Վեբ մշակող
 perftools-presets-media-label = Մեդիա
 perftools-presets-custom-label = Հարմարեցված
-
-##
-

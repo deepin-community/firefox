@@ -7,6 +7,7 @@ about-logging-current-log-file = Archìviu de registru atuale:
 # This message is used as a button label, "Open" indicates an action.
 about-logging-open-log-file-dir = Aberi sa cartella
 about-logging-set-log-file = Aberi s'archìviu de registru
+about-logging-copy-as-url = Còpia sa cunfiguratzione atuale comente URL
 
 ## Logging presets
 
@@ -14,7 +15,10 @@ about-logging-preset-custom-label = Personalizadu
 # Error handling
 about-logging-error = Faddina:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+## Uploaded Profiles section
 
+about-logging-delete-profile-confirm-title = Cantzella su profilu
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = Seguru chi boles cantzellare su profilu “{ $profileName }”? Custa atzione no dda podes annullare.

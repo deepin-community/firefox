@@ -15,7 +15,6 @@ use std::marker::PhantomData;
 use std::ops::Range;
 use std::mem;
 use std::collections::HashMap;
-use time::precise_time_ns;
 use malloc_size_of::{MallocSizeOf, MallocSizeOfOps};
 // local imports
 use crate::display_item as di;
@@ -83,7 +82,7 @@ impl<'a, T> ItemRange<'a, T> {
     }
 
     pub fn bytes(&self) -> &[u8] {
-        &self.bytes
+        self.bytes
     }
 }
 
@@ -140,13 +139,13 @@ impl DisplayListPayload {
         // We can safely ignore the preallocations failing, since we aren't
         // certain about how much memory we need, and this gives a chance for
         // the memory pressure events to run.
-        if let Err(_) = payload.items_data.try_reserve(capacity.items_size) {
+        if payload.items_data.try_reserve(capacity.items_size).is_err() {
             return Self::default();
         }
-        if let Err(_) = payload.cache_data.try_reserve(capacity.cache_size) {
+        if payload.cache_data.try_reserve(capacity.cache_size).is_err() {
             return Self::default();
         }
-        if let Err(_) = payload.spatial_tree.try_reserve(capacity.spatial_tree_size) {
+        if payload.spatial_tree.try_reserve(capacity.spatial_tree_size).is_err() {
             return Self::default();
         }
         payload
@@ -192,15 +191,12 @@ pub struct BuiltDisplayList {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Deserialize, Serialize)]
+#[derive(Copy, Clone, Default, Deserialize, Serialize)]
 pub enum GeckoDisplayListType {
-  None,
-  Partial(f64),
-  Full(f64),
-}
-
-impl Default for GeckoDisplayListType {
-  fn default() -> Self { GeckoDisplayListType::None }
+    #[default]
+    None,
+    Partial(f64),
+    Full(f64),
 }
 
 /// Describes the memory layout of a display list.
@@ -353,10 +349,6 @@ impl<'de> Deserialize<'de> for DisplayListWithCache {
                     DisplayListBuilder::push_iter_impl(&mut temp, filter_data.a_values);
                     Real::SetFilterData
                 },
-                Debug::SetFilterPrimitives(filter_primitives) => {
-                    DisplayListBuilder::push_iter_impl(&mut temp, filter_primitives);
-                    Real::SetFilterPrimitives
-                }
                 Debug::SetGradientStops(stops) => {
                     DisplayListBuilder::push_iter_impl(&mut temp, stops);
                     Real::SetGradientStops
@@ -369,7 +361,6 @@ impl<'de> Deserialize<'de> for DisplayListWithCache {
                 Debug::RoundedRectClip(v) => Real::RoundedRectClip(v),
                 Debug::ImageMaskClip(v) => Real::ImageMaskClip(v),
                 Debug::Rectangle(v) => Real::Rectangle(v),
-                Debug::ClearRectangle(v) => Real::ClearRectangle(v),
                 Debug::HitTest(v) => Real::HitTest(v),
                 Debug::Line(v) => Real::Line(v),
                 Debug::Image(v) => Real::Image(v),
@@ -387,6 +378,7 @@ impl<'de> Deserialize<'de> for DisplayListWithCache {
                 Debug::PopStackingContext => Real::PopStackingContext,
                 Debug::PopReferenceFrame => Real::PopReferenceFrame,
                 Debug::PopAllShadows => Real::PopAllShadows,
+                Debug::DebugMarker(val) => Real::DebugMarker(val),
             };
             poke_into_vec(&item, &mut items_data);
             // the aux data is serialized after the item, hence the temporary
@@ -422,7 +414,6 @@ pub struct BuiltDisplayListIter<'a> {
     cur_glyphs: ItemRange<'a, GlyphInstance>,
     cur_filters: ItemRange<'a, di::FilterOp>,
     cur_filter_data: Vec<TempFilterData<'a>>,
-    cur_filter_primitives: ItemRange<'a, di::FilterPrimitive>,
     cur_clip_chain_items: ItemRange<'a, di::ClipId>,
     cur_points: ItemRange<'a, LayoutPoint>,
     peeking: Peek,
@@ -532,10 +523,6 @@ impl<'a, 'b> DisplayItemRef<'a, 'b> {
 
     pub fn filter_datas(&self) -> &Vec<TempFilterData> {
         &self.iter.cur_filter_data
-    }
-
-    pub fn filter_primitives(&self) -> ItemRange<di::FilterPrimitive> {
-        self.iter.cur_filter_primitives
     }
 }
 
@@ -677,9 +664,6 @@ impl BuiltDisplayList {
                         a_values: temp_filter_data.a_values.iter().collect(),
                     })
                 },
-                Real::SetFilterPrimitives => Debug::SetFilterPrimitives(
-                    item.iter.cur_filter_primitives.iter().collect()
-                ),
                 Real::SetGradientStops => Debug::SetGradientStops(
                     item.iter.cur_stops.iter().collect()
                 ),
@@ -690,7 +674,6 @@ impl BuiltDisplayList {
                 Real::RoundedRectClip(v) => Debug::RoundedRectClip(v),
                 Real::ImageMaskClip(v) => Debug::ImageMaskClip(v),
                 Real::Rectangle(v) => Debug::Rectangle(v),
-                Real::ClearRectangle(v) => Debug::ClearRectangle(v),
                 Real::HitTest(v) => Debug::HitTest(v),
                 Real::Line(v) => Debug::Line(v),
                 Real::Image(v) => Debug::Image(v),
@@ -712,6 +695,7 @@ impl BuiltDisplayList {
                 Real::PopAllShadows => Debug::PopAllShadows,
                 Real::ReuseItems(_) |
                 Real::RetainedItems(_) => unreachable!("Unexpected item"),
+                Real::DebugMarker(val) => Debug::DebugMarker(val),
             };
             debug_items.push(serial_di);
         }
@@ -750,7 +734,6 @@ impl<'a> BuiltDisplayListIter<'a> {
             cur_glyphs: ItemRange::default(),
             cur_filters: ItemRange::default(),
             cur_filter_data: Vec::new(),
-            cur_filter_primitives: ItemRange::default(),
             cur_clip_chain_items: ItemRange::default(),
             cur_points: ItemRange::default(),
             peeking: Peek::NotPeeking,
@@ -818,7 +801,6 @@ impl<'a> BuiltDisplayListIter<'a> {
         self.cur_clip_chain_items = ItemRange::default();
         self.cur_points = ItemRange::default();
         self.cur_filters = ItemRange::default();
-        self.cur_filter_primitives = ItemRange::default();
         self.cur_filter_data.clear();
 
         loop {
@@ -827,7 +809,6 @@ impl<'a> BuiltDisplayListIter<'a> {
                 SetGradientStops |
                 SetFilterOps |
                 SetFilterData |
-                SetFilterPrimitives |
                 SetPoints => {
                     // These are marker items for populating other display items, don't yield them.
                     continue;
@@ -885,10 +866,6 @@ impl<'a> BuiltDisplayListIter<'a> {
                 self.debug_stats.log_slice("set_filter_data.g_values", &data.g_values);
                 self.debug_stats.log_slice("set_filter_data.b_values", &data.b_values);
                 self.debug_stats.log_slice("set_filter_data.a_values", &data.a_values);
-            }
-            SetFilterPrimitives => {
-                self.cur_filter_primitives = skip_slice::<di::FilterPrimitive>(&mut self.data);
-                self.debug_stats.log_slice("set_filter_primitives.primitives", &self.cur_filter_primitives);
             }
             SetPoints => {
                 self.cur_points = skip_slice::<LayoutPoint>(&mut self.data);
@@ -1202,7 +1179,7 @@ impl DisplayListBuilder {
     fn add_to_display_list_dump<T: std::fmt::Debug>(&mut self, item: T) {
         if let Some(ref mut content) = self.serialized_content_buffer {
             use std::fmt::Write;
-            write!(content, "{:?}\n", item).expect("DL dump write failed.");
+            writeln!(content, "{:?}", item).expect("DL dump write failed.");
         }
     }
 
@@ -1299,8 +1276,8 @@ impl DisplayListBuilder {
     {
         assert_eq!(self.state, BuildState::Build);
 
-        let mut buffer = self.buffer_from_section(self.default_section());
-        Self::push_iter_impl(&mut buffer, iter);
+        let buffer = self.buffer_from_section(self.default_section());
+        Self::push_iter_impl(buffer, iter);
     }
 
     // Remap a clip/bounds from stacking context coords to reference frame relative
@@ -1357,20 +1334,6 @@ impl DisplayListBuilder {
         let item = di::DisplayItem::Rectangle(di::RectangleDisplayItem {
             common,
             color,
-            bounds,
-        });
-        self.push_item(&item);
-    }
-
-    pub fn push_clear_rect(
-        &mut self,
-        common: &di::CommonItemProperties,
-        bounds: LayoutRect,
-    ) {
-        let (common, bounds) = self.remap_common_coordinates_and_bounds(common, bounds);
-
-        let item = di::DisplayItem::ClearRectangle(di::ClearRectangleDisplayItem {
-            common,
             bounds,
         });
         self.push_item(&item);
@@ -1792,16 +1755,17 @@ impl DisplayListBuilder {
         mix_blend_mode: di::MixBlendMode,
         filters: &[di::FilterOp],
         filter_datas: &[di::FilterData],
-        filter_primitives: &[di::FilterPrimitive],
         raster_space: di::RasterSpace,
         flags: di::StackingContextFlags,
+        snapshot: Option<di::SnapshotInfo>
     ) {
         let ref_frame_offset = self.rf_mapper.current_offset();
-        self.push_filters(filters, filter_datas, filter_primitives);
+        self.push_filters(filters, filter_datas);
 
         let item = di::DisplayItem::PushStackingContext(di::PushStackingContextDisplayItem {
             origin,
             spatial_id,
+            snapshot,
             prim_flags,
             ref_frame_offset,
             stacking_context: di::StackingContext {
@@ -1830,7 +1794,6 @@ impl DisplayListBuilder {
             prim_flags,
             &[],
             &[],
-            &[],
         );
     }
 
@@ -1842,7 +1805,6 @@ impl DisplayListBuilder {
         prim_flags: di::PrimitiveFlags,
         filters: &[di::FilterOp],
         filter_datas: &[di::FilterData],
-        filter_primitives: &[di::FilterPrimitive],
     ) {
         self.push_stacking_context(
             origin,
@@ -1853,9 +1815,9 @@ impl DisplayListBuilder {
             di::MixBlendMode::Normal,
             filters,
             filter_datas,
-            filter_primitives,
             di::RasterSpace::Screen,
             di::StackingContextFlags::empty(),
+            None,
         );
     }
 
@@ -1877,14 +1839,13 @@ impl DisplayListBuilder {
         common: &di::CommonItemProperties,
         filters: &[di::FilterOp],
         filter_datas: &[di::FilterData],
-        filter_primitives: &[di::FilterPrimitive],
     ) {
         let common = di::CommonItemProperties {
             clip_rect: self.remap_bounds(common.clip_rect),
             ..*common
         };
 
-        self.push_filters(filters, filter_datas, filter_primitives);
+        self.push_filters(filters, filter_datas);
 
         let item = di::DisplayItem::BackdropFilter(di::BackdropFilterDisplayItem {
             common,
@@ -1896,7 +1857,6 @@ impl DisplayListBuilder {
         &mut self,
         filters: &[di::FilterOp],
         filter_datas: &[di::FilterData],
-        filter_primitives: &[di::FilterPrimitive],
     ) {
         if !filters.is_empty() {
             self.push_item(&di::DisplayItem::SetFilterOps);
@@ -1908,17 +1868,16 @@ impl DisplayListBuilder {
                 filter_data.func_r_type, filter_data.func_g_type,
                 filter_data.func_b_type, filter_data.func_a_type];
             self.push_item(&di::DisplayItem::SetFilterData);
-            self.push_iter(&func_types);
+            self.push_iter(func_types);
             self.push_iter(&filter_data.r_values);
             self.push_iter(&filter_data.g_values);
             self.push_iter(&filter_data.b_values);
             self.push_iter(&filter_data.a_values);
         }
+    }
 
-        if !filter_primitives.is_empty() {
-            self.push_item(&di::DisplayItem::SetFilterPrimitives);
-            self.push_iter(filter_primitives);
-        }
+    pub fn push_debug(&mut self, val: u32) {
+        self.push_item(&di::DisplayItem::DebugMarker(val));
     }
 
     fn generate_clip_index(&mut self) -> di::ClipId {
@@ -2196,7 +2155,7 @@ impl DisplayListBuilder {
     pub fn begin(&mut self) {
         assert_eq!(self.state, BuildState::Idle);
         self.state = BuildState::Build;
-        self.builder_start_time = precise_time_ns();
+        self.builder_start_time = zeitstempel::now();
         self.reset();
     }
 
@@ -2230,7 +2189,7 @@ impl DisplayListBuilder {
             &mut self.payload,
             DisplayListPayload::new(next_capacity),
         );
-        let end_time = precise_time_ns();
+        let end_time = zeitstempel::now();
 
         self.state = BuildState::Idle;
 

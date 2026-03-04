@@ -30,15 +30,15 @@ firefoxview-tabpickup-progress-label = %{ $percentValue } osatuta
 firefoxview-tabpickup-step-signin-header = Aldatu di-da batean gailuen artean
 firefoxview-tabpickup-step-signin-description = Zure telefonoko fitxak hemen izateko, hasi saioa edo sortu kontua lehenik.
 firefoxview-tabpickup-step-signin-primarybutton = Jarraitu
-firefoxview-syncedtabs-signin-header = Hartu fitxak edonondik
-firefoxview-syncedtabs-signin-description = { -brand-product-name } erabiltzen duzun gailu guztietako fitxak ikusteko, hasi saioa zure kontuan. Konturik ez badaukazu, izen-emateko urratsak erakutsiko dizkizugu.
-firefoxview-syncedtabs-signin-primarybutton = Hasi saioa edo eman izena
+firefoxview-syncedtabs-signin-header-2 = { -brand-product-name } zure gailu guztietan
+firefoxview-syncedtabs-signin-description-2 = Zure telefono eta bestelako gailuetan irekita dauzkazun fitxak ikusteko, hasi saioa edo eman izena kontu bat sortzeko. Kontu batekin pasahitzak, historia eta gehiago ere sinkronizatu ahal izango duzu.
+firefoxview-syncedtabs-signin-primarybutton-2 = Hasi saioa
 firefoxview-tabpickup-adddevice-header = Sinkronizatu { -brand-product-name } zure telefono edo tabletan
 firefoxview-tabpickup-adddevice-description = Deskargatu mugikorrerako { -brand-product-name } eta hasi saioa bertan.
 firefoxview-tabpickup-adddevice-learn-how = Ikasi nola
 firefoxview-tabpickup-adddevice-primarybutton = Eskuratu mugikorrerako { -brand-product-name }
-firefoxview-syncedtabs-adddevice-header = Hasi saioa { -brand-product-name }(e)n zure beste gailuetan
-firefoxview-syncedtabs-adddevice-description = { -brand-product-name } erabiltzen duzun gailu guztietako fitxak ikusteko, hasi saioa gailu guztietan. Ikasi nola <a data-l10n-name="url">konektatu gailu gehiago</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Hartu fitxak edonondik
+firefoxview-syncedtabs-adddevice-description-2 = Hemen fitxak ikusteko, hasi saioa { -brand-product-name }(e)n zure telefonoan edo beste ordenagailu batean. Ikasi nola <a data-l10n-name="url">konektatu gailu gehiago</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Probatu mugikorrerako { -brand-product-name }
 firefoxview-tabpickup-synctabs-header = Gaitu fitxen sinkronizazioa
 firefoxview-tabpickup-synctabs-description = Baimendu { -brand-short-name }(r)i gailuen artean fitxak partekatzea.
@@ -46,11 +46,11 @@ firefoxview-tabpickup-synctabs-learn-how = Ikasi nola
 firefoxview-tabpickup-synctabs-primarybutton = Sinkronizatu irekitako fitxak
 firefoxview-syncedtabs-synctabs-header = Eguneratu zure sinkronizazio-ezarpenak
 firefoxview-syncedtabs-synctabs-description = Beste gailuetako fitxak ikusteko, irekitako fitxak sinkronizatu behar dituzu.
-firefoxview-syncedtabs-synctabs-checkbox = Baimendu irekitako fitxak sinkronizatzea
 firefoxview-syncedtabs-loading-header = Sinkronizatzen ari da
 firefoxview-syncedtabs-loading-description = Amaitutakoan, beste gailuetan irekita dituzun fitxak ikusiko dituzu. Itzuli geroago.
 firefoxview-tabpickup-fxa-admin-disabled-header = Zure erakundeak sinkronizazioa desgaitu du
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name }(e)k ezin ditu gailuen arteko fitxak sinkronizatu zure administratzaileak sinkronizazioa desgaitu duelako.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name }(e)k ezin ditu gailuen arteko fitxak sinkronizatu zure erakundeak sinkronizazioa desgaitu duelako.
 firefoxview-tabpickup-network-offline-header = Egiaztatu zure Interneterako konexioa
 firefoxview-tabpickup-network-offline-description = Suebaki edo proxy bat erabiltzen baduzu, egiaztatu { -brand-short-name }(e)k weba atzitzeko baimena duela.
 firefoxview-tabpickup-network-offline-primarybutton = Saiatu berriro
@@ -79,7 +79,6 @@ firefoxview-closed-tabs-title = Itxitako azkenak
 firefoxview-closed-tabs-description2 = Berrireki leiho honetan itxi dituzun orriak.
 firefoxview-closed-tabs-placeholder-header = Itxitako azken fitxarik ez
 firefoxview-closed-tabs-placeholder-body = Leiho honetan fitxa bat ixtean, hemendik eskura dezakezu.
-firefoxview-closed-tabs-placeholder-body2 = Fitxa bat ixtean, hemendik eskura dezakezu.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -133,6 +132,14 @@ firefoxview-synced-tabs-nav = Beste gailuetako fitxak
     .title = Beste gailuetako fitxak
 firefoxview-synced-tabs-header = Beste gailuetako fitxak
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = Txatak
+    .title = Txatak
+firefoxview-chats-header = Txatak
+firefoxview-chat-context-delete = Ezabatu txatetatik
+    .accesskey = E
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -145,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = { $winID } leihoa (unekoa)
-firefoxview-opentabs-focus-tab =
-    .title = Aldatu fitxa honetara
 firefoxview-show-more = Erakutsi gehiago
 firefoxview-show-less = Erakutsi gutxiago
 firefoxview-show-all = Erakutsi denak
@@ -162,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Bilatu itxitako azken fitxak
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Bilatu sinkronizatutako fitxak
+firefoxview-search-text-box-tabs =
+    .placeholder = Bilatu fitxak
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Bilatu irekitako fitxak
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = Bilatu txatak
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -184,10 +192,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = Emaitzarik ez "{ $query }" bilaketarako
 firefoxview-sort-history-by-date-label = Ordenatu dataren arabera
 firefoxview-sort-history-by-site-label = Ordenatu gunearen arabera
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Aldatu { $url } helbidera
+firefoxview-sort-open-tabs-by-recency-label = Ordenatu azken jardueraren arabera
+firefoxview-sort-open-tabs-by-order-label = Ordenatu fitxen ordenaren arabera
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -200,16 +206,20 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (fitxategi lokalak)
+firefoxview-chat-date-today = Gaur - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = Atzo - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = Erakutsi historia guztia
-firefoxview-view-more-browsing-history = Ikusi nabigatze-historia gehiago
 
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = Itzuli zeuden tokira
 firefoxview-history-empty-description = Nabigatu ahala, bisitatzen dituzun orrian hemen zerrendatuko dira.
+firefoxview-history-empty-description-two = Zure pribatutasuna babestea barru-barruan daramagu. Horregatik kontrola dezakezu { -brand-short-name }(e)k gogoratuko duen jarduera zure <a data-l10n-name="history-settings-url">historia-ezarpenetan</a>.
 
 ##
 
@@ -219,7 +229,8 @@ firefoxview-choose-browser-button = Aukeratu nabigatzailea
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Erakusteko ezer ez
+firefoxview-dont-remember-history-empty-header-2 = { -brand-short-name }(e)k gogoratzen duenaren gaineko kontrola duzu
+firefoxview-dont-remember-history-empty-description-one = Une honetan { -brand-short-name }(e)k ez du zure nabigatze-jarduerarik gogoratzen. Hori aldatzeko, <a data-l10n-name="history-settings-url-two">eguneratu zure historia-ezarpenak</a>.
 
 ##
 
@@ -237,6 +248,7 @@ firefoxview-import-history-description = Egizu { -brand-short-name } zure nabiga
 
 firefoxview-recentlyclosed-empty-header = Azkarregi itxi duzu fitxa?
 firefoxview-recentlyclosed-empty-description = Itxitako azken fitxak hemen aurkituko dituzu eta hauek berriz irekitzeko aukera duzu.
+firefoxview-recentlyclosed-empty-description-two = Fitxa zaharragoak aurkitzeko, ikusi zure <a data-l10n-name="history-url">nabigatze-historia</a>.
 
 ## This message is displayed below the name of another connected device when it doesn't have any open tabs.
 
@@ -253,8 +265,14 @@ firefoxview-tabs =
 
 firefoxview-opentabs-pinned-tab =
     .title = Aldatu { $tabTitle } fitxara
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = Aldatu { $tabTitle } fitxara (laster-marka)
 
 ## These tooltips will be displayed when hovering over an unpinned Open Tab
 ## Variables:
 ##   $url (string) - URL of tab that will be opened when selected
 
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = { $url } (laster-marka)

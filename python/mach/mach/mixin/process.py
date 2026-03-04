@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from mozbuild import shellutil
+import mozshellutil
 from mozprocess.processhandler import ProcessHandlerMixin
 
 from .logging import LoggingMixin
@@ -111,7 +111,7 @@ class ProcessExecutionMixin(LoggingMixin):
         self.log(
             logging.INFO,
             "new_process",
-            {"args": " ".join(shellutil.quote(arg) for arg in args)},
+            {"args": " ".join(mozshellutil.quote(arg) for arg in args)},
             "{args}",
         )
 
@@ -180,8 +180,9 @@ class ProcessExecutionMixin(LoggingMixin):
                     if sig is None:
                         sig = signal.SIGINT
                     elif sig == signal.SIGINT:
-                        # If we've already tried SIGINT, escalate.
-                        sig = signal.SIGKILL
+                        # If we've already tried SIGINT, escalate (if possible).
+                        # Note: SIGKILL is not available on Windows.
+                        getattr(signal, "SIGKILL", sig)
 
         if ensure_exit_code is False:
             return status
@@ -190,7 +191,9 @@ class ProcessExecutionMixin(LoggingMixin):
             ensure_exit_code = 0
 
         if status != ensure_exit_code:
-            raise Exception(f"Process executed with non-0 exit code {status}: {args}")
+            raise Exception(
+                f"Process executed with non-0 exit code {status}: {' '.join(mozshellutil.quote(arg) for arg in args)}"
+            )
 
         return status
 

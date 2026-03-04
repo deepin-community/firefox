@@ -142,19 +142,36 @@ add_task(async function test_mv2_scripting_permission_always_enabled() {
   Assert.deepEqual(warnings, [], "Got no warnings");
 });
 
-add_task(
-  {
-    pref_set: [["extensions.manifestV3.enabled", true]],
-  },
-  async function test_mv3_scripting_permission_always_enabled() {
-    let warnings = await testManifest({
-      manifest_version: 3,
-      permissions: ["scripting"],
-    });
+add_task(async function test_mv3_scripting_permission_always_enabled() {
+  let warnings = await testManifest({
+    manifest_version: 3,
+    permissions: ["scripting"],
+  });
 
-    Assert.deepEqual(warnings, [], "Got no warnings");
-  }
-);
+  Assert.deepEqual(warnings, [], "Got no warnings");
+});
+
+add_task(async function test_name_too_long() {
+  let extension = ExtensionTestUtils.loadExtension({
+    manifest: {
+      // This length is 80, which exceeds ExtensionData.EXT_NAME_MAX_LEN:
+      name: "123456789_".repeat(8),
+    },
+  });
+  await extension.startup();
+  equal(
+    extension.extension.name,
+    "123456789_123456789_123456789_123456789_123456789_123456789_123456789_12345",
+    "Name should be truncated"
+  );
+  Assert.deepEqual(
+    extension.extension.warnings,
+    ['Reading manifest: Warning processing "name": must be shorter than 75'],
+    "Expected error message when the name is too long"
+  );
+
+  await extension.unload();
+});
 
 add_task(async function test_simpler_version_format() {
   const TEST_CASES = [
@@ -259,23 +276,18 @@ add_task(async function test_applications() {
   await extension.unload();
 });
 
-add_task(
-  {
-    pref_set: [["extensions.manifestV3.enabled", true]],
-  },
-  async function test_applications_key_mv3() {
-    let warnings = await testManifest({
-      manifest_version: 3,
-      applications: {},
-    });
+add_task(async function test_applications_key_mv3() {
+  let warnings = await testManifest({
+    manifest_version: 3,
+    applications: {},
+  });
 
-    Assert.deepEqual(
-      warnings,
-      [`Property "applications" is unsupported in Manifest Version 3`],
-      `Manifest v3 with "applications" key logs an error.`
-    );
-  }
-);
+  Assert.deepEqual(
+    warnings,
+    [`Property "applications" is unsupported in Manifest Version 3`],
+    `Manifest v3 with "applications" key logs an error.`
+  );
+});
 
 add_task(async function test_bss_gecko_android() {
   const addonId = "some@id";
@@ -547,4 +559,33 @@ add_task(async function test_gecko_bss_unrecognized_property() {
   notEqual(extension.addon, null, "Add-on is installed");
 
   await extension.unload();
+});
+
+add_task(async function test_load_mv3_theme() {
+  const BACKGROUND =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0" +
+    "DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
+  const theme = ExtensionTestUtils.loadExtension({
+    manifest: {
+      manifest_version: 3,
+      theme: {},
+    },
+    useAddonManager: "temporary",
+    files: {
+      "bg.png": BACKGROUND,
+    },
+  });
+  // This test would hang if there were errors during install.
+  await theme.startup();
+  Assert.equal(
+    theme.extension.state,
+    "Startup: Complete",
+    "Expect theme to have reached the startup completed state"
+  );
+  info("Verify image assets packaged in the theme can be fetched");
+  // This is expected to reject if the WebExtensionPolicy instance
+  // for this theme has been left in a disabled state (policy.active
+  // set to false).
+  await fetch(theme.extension.baseURI.resolve("bg.png"));
+  await theme.unload();
 });

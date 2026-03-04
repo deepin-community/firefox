@@ -283,6 +283,7 @@ class nsHtml5AttributeName {
   static nsHtml5AttributeName* ATTR_RENDERING_INTENT;
   static nsHtml5AttributeName* ATTR_SHADOWROOTMODE;
   static nsHtml5AttributeName* ATTR_SEED;
+  static nsHtml5AttributeName* ATTR_SHADOWROOTREFERENCETARGET;
   static nsHtml5AttributeName* ATTR_SHADOWROOTCLONABLE;
   static nsHtml5AttributeName* ATTR_SHADOWROOTSERIALIZABLE;
   static nsHtml5AttributeName* ATTR_SRCDOC;
@@ -492,6 +493,7 @@ class nsHtml5AttributeName {
   static nsHtml5AttributeName* ATTR_XLINK_SHOW;
   static nsHtml5AttributeName* ATTR_XLINK_ACTUATE;
   static nsHtml5AttributeName* ATTR_AUTOPLAY;
+  static nsHtml5AttributeName* ATTR_AUTOCORRECT;
   static nsHtml5AttributeName* ATTR_AUTOCOMPLETE;
   static nsHtml5AttributeName* ATTR_AUTOFOCUS;
   static nsHtml5AttributeName* ATTR_AUTOCAPITALIZE;

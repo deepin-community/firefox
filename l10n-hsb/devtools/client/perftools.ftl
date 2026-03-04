@@ -7,7 +7,7 @@
 ### the remote profiling panel. There are additional profiler strings in the appmenu.ftl
 ### file that are used for the profiler popup.
 
-perftools-intro-title = Nastajenja profilowaka
+perftools-intro-title = Nastajenja wukonoweje analyzy
 perftools-intro-description =
     Natočenja profiler.firefox.com w nowym rajtarku wočinjeja. Wšě daty so lokalnje
     składuja, ale móžeće je nahrać, zo byšće je dźělił.
@@ -32,6 +32,7 @@ perftools-description-intro =
 perftools-description-local-build =
     Jeli wersiju přepruwujeće, kotruž sće sam na tutym ličaku kompilował, přidajće prošu lišćinje deleka objdir swojeje wersije, zo by
     so dał wužiwać, za symbolowymi informacijemi pytać.
+perftools-pick-local-build-directory = Wersijowy zapis wubrać
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -67,6 +68,14 @@ perftools-button-restart = Znowa startować
 perftools-button-add-directory = Zapis přidać
 perftools-button-remove-directory = Wubrane wotstronić
 perftools-button-edit-settings = Nastajenja wobdźěłać…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Dalše akcije
+perftools-menu-more-actions-restart-with-profiling = { -brand-shorter-name } ze zmóžnjenym startowym profilowanjom znowa startować
+perftools-menu-more-actions-copy-for-startup = Wokolinowe wariable za startowe profilowanje kopěrować
+perftools-menu-more-actions-copy-for-perf-tests = Parametry za wukonowe testy kopěrować
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -111,7 +120,7 @@ perftools-thread-jvm-pool =
 
 perftools-record-all-registered-threads = Wuběry horjeka wobeńć a wšě zregistrowane nitki natočić
 perftools-tools-threads-input-label =
-    .title = Tute nitkowe mjena su přez komu dźělena lisćina, kotraž so wužiwa, zo by přepytowanje nitkow w profilowaku zmóžnił. Mjeno trjeba so jenož zdźěla z mjenom nitki kryć, kotrež so ma zapřijeć. Na mjezery so dźiwa.
+    .title = Tute nitkowe mjena su přez komu dźělena lisćina, kotraž so wužiwa, zo by přepytowanje nitkow we wukonowej analyzy zmóžnił. Mjeno trjeba so jenož zdźěla z mjenom nitki kryć, kotrež so ma zapřijeć. Na mjezery so dźiwa.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -140,6 +149,8 @@ perftools-presets-graphics-label = Grafika
 perftools-presets-graphics-description = Přednastajenje za wuslědźenje zmylkow grafiki w { -brand-shorter-name }.
 perftools-presets-media-label = Medije
 perftools-presets-media-description2 = Přednastajenje za wuslědźenje zmylkow awdio a widejo w { -brand-shorter-name }.
+perftools-presets-ml-label = Mašinelne wuknjenje
+perftools-presets-ml-description2 = Přednastajenje za wuslědźenje zmylkow mašinelneho wuknjenja w { -brand-shorter-name }.
 perftools-presets-networking-label = Syć
 perftools-presets-networking-description = Přednastajenje za wuslědźenje syćowych zmylkow w { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -147,7 +158,6 @@ perftools-presets-power-label = Energija
 perftools-presets-power-description = Přednastajenje za wuslědźenje zmylkow wužiwanja energije w { -brand-shorter-name }, z niskej potrjebu.
 perftools-presets-debug-label = Za zmylkami pytać
 perftools-presets-debug-description = Přednastajenje za pytanje zmylkow w { -brand-shorter-name }. Wysoka přidatna ćeža, njewužiwajće jo za wukonowe dźěło, ale wužiwajće jo, zo byšće so na rozumjenje zadźerženja wobhladowaka fokusěrował.
+perftools-presets-web-compat-label = Webkompatibelnosć
+perftools-presets-web-compat-description = Doporučene přednastajenje za pytanje problemow z webkompatibelnosću we websydłach, město zo so wukonej slěduje.
 perftools-presets-custom-label = Swójski
-
-##
-

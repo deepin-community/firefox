@@ -25,12 +25,15 @@
 -send-brand-name = Firefox Send
 -screenshots-brand-name = Firefox Screenshots
 -mozilla-vpn-brand-name = Mozilla VPN
--profiler-brand-name = Firefox Profiler
+-profiler-brand-name = Профилсози «Firefox»
 -translations-brand-name = Firefox Translations
 -focus-brand-name = Firefox Focus
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
 -fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-mdn-brand-name = Ҳуҷҷатҳои интернетии «MDN»
+-yelp-brand-name = Yelp
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.

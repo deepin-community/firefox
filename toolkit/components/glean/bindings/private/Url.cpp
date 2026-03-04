@@ -9,10 +9,12 @@
 #include "jsapi.h"
 #include "js/String.h"
 #include "nsString.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/glean/bindings/ScalarGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -21,7 +23,7 @@ namespace impl {
 void UrlMetric::Set(const nsACString& aValue) const {
   auto scalarId = ScalarIdForMetric(mId);
   if (scalarId) {
-    Telemetry::ScalarSet(scalarId.extract(), NS_ConvertUTF8toUTF16(aValue));
+    TelemetryScalar::Set(scalarId.extract(), NS_ConvertUTF8toUTF16(aValue));
   }
   fog_url_set(mId, &aValue);
 }

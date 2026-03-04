@@ -19,7 +19,7 @@ import type {CDPSession} from '../api/CDPSession.js';
 import {environment} from '../environment.js';
 import {packageVersion} from '../generated/version.js';
 import {assert} from '../util/assert.js';
-import {mergeUint8Arrays} from '../util/encoding.js';
+import {mergeUint8Arrays, stringToTypedArray} from '../util/encoding.js';
 
 import {debug} from './Debug.js';
 import {TimeoutError} from './Errors.js';
@@ -54,7 +54,7 @@ export class PuppeteerURL {
 
   static fromCallSite(
     functionName: string,
-    site: NodeJS.CallSite
+    site: NodeJS.CallSite,
   ): PuppeteerURL {
     const url = new PuppeteerURL();
     url.#functionName = functionName;
@@ -99,7 +99,7 @@ export class PuppeteerURL {
  */
 export const withSourcePuppeteerURLIfNone = <T extends NonNullable<unknown>>(
   functionName: string,
-  object: T
+  object: T,
 ): T => {
   if (Object.prototype.hasOwnProperty.call(object, SOURCE_URL)) {
     return object;
@@ -125,7 +125,7 @@ export const withSourcePuppeteerURLIfNone = <T extends NonNullable<unknown>>(
 export const getSourcePuppeteerURLIfAvailable = <
   T extends NonNullable<unknown>,
 >(
-  object: T
+  object: T,
 ): PuppeteerURL | undefined => {
   if (Object.prototype.hasOwnProperty.call(object, SOURCE_URL)) {
     return object[SOURCE_URL as keyof T] as PuppeteerURL;
@@ -172,6 +172,7 @@ export const isDate = (obj: unknown): obj is Date => {
  * @internal
  */
 export function evaluationString(
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   fun: Function | string,
   ...args: unknown[]
 ): string {
@@ -195,7 +196,7 @@ export function evaluationString(
  */
 export async function getReadableAsTypedArray(
   readable: ReadableStream<Uint8Array>,
-  path?: string
+  path?: string,
 ): Promise<Uint8Array | null> {
   const buffers: Uint8Array[] = [];
   const reader = readable.getReader();
@@ -243,25 +244,15 @@ export async function getReadableAsTypedArray(
  */
 export async function getReadableFromProtocolStream(
   client: CDPSession,
-  handle: string
+  handle: string,
 ): Promise<ReadableStream<Uint8Array>> {
   return new ReadableStream({
     async pull(controller) {
-      function getUnit8Array(data: string, isBase64: boolean): Uint8Array {
-        if (isBase64) {
-          return Uint8Array.from(atob(data), m => {
-            return m.codePointAt(0)!;
-          });
-        }
-        const encoder = new TextEncoder();
-        return encoder.encode(data);
-      }
-
       const {data, base64Encoded, eof} = await client.send('IO.read', {
         handle,
       });
 
-      controller.enqueue(getUnit8Array(data, base64Encoded ?? false));
+      controller.enqueue(stringToTypedArray(data, base64Encoded ?? false));
       if (eof) {
         await client.send('IO.close', {handle});
         controller.close();
@@ -274,7 +265,7 @@ export async function getReadableFromProtocolStream(
  * @internal
  */
 export function validateDialogType(
-  type: string
+  type: string,
 ): 'alert' | 'confirm' | 'prompt' | 'beforeunload' {
   let dialogType = null;
   const validDialogTypes = new Set([
@@ -300,7 +291,7 @@ export function timeout(ms: number, cause?: Error): Observable<never> {
     : timer(ms).pipe(
         map(() => {
           throw new TimeoutError(`Timed out after waiting ${ms}ms`, {cause});
-        })
+        }),
       );
 }
 
@@ -313,7 +304,8 @@ export const UTILITY_WORLD_NAME =
 /**
  * @internal
  */
-export const SOURCE_URL_REGEX = /^[\040\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/m;
+export const SOURCE_URL_REGEX =
+  /^[\x20\t]*\/\/[@#] sourceURL=\s{0,10}(\S*?)\s{0,10}$/m;
 /**
  * @internal
  */
@@ -331,7 +323,7 @@ export const NETWORK_IDLE_TIME = 500;
  */
 export function parsePDFOptions(
   options: PDFOptions = {},
-  lengthUnit: 'in' | 'cm' = 'in'
+  lengthUnit: 'in' | 'cm' = 'in',
 ): ParsedPDFOptions {
   const defaults: Omit<ParsedPDFOptions, 'width' | 'height' | 'margin'> = {
     scale: 1,
@@ -352,7 +344,9 @@ export function parsePDFOptions(
   let height = 11;
   if (options.format) {
     const format =
-      paperFormats[options.format.toLowerCase() as LowerCasePaperFormat];
+      paperFormats[options.format.toLowerCase() as LowerCasePaperFormat][
+        lengthUnit
+      ];
     assert(format, 'Unknown paper format: ' + options.format);
     width = format.width;
     height = format.height;
@@ -397,7 +391,7 @@ export const unitToPixels = {
 
 function convertPrintParameterToInches(
   parameter?: string | number,
-  lengthUnit: 'in' | 'cm' = 'in'
+  lengthUnit: 'in' | 'cm' = 'in',
 ): number | undefined {
   if (typeof parameter === 'undefined') {
     return undefined;
@@ -423,7 +417,7 @@ function convertPrintParameterToInches(
     pixels = value * unitToPixels[unit as keyof typeof unitToPixels];
   } else {
     throw new Error(
-      'page.pdf() Cannot handle parameter type: ' + typeof parameter
+      'page.pdf() Cannot handle parameter type: ' + typeof parameter,
     );
   }
   return pixels / unitToPixels[lengthUnit];
@@ -452,7 +446,7 @@ export function fromEmitterEvent<
  */
 export function fromAbortSignal(
   signal?: AbortSignal,
-  cause?: Error
+  cause?: Error,
 ): Observable<never> {
   return signal
     ? fromEvent(signal, 'abort').pipe(
@@ -463,7 +457,7 @@ export function fromAbortSignal(
           }
 
           throw new Error(signal.reason, {cause});
-        })
+        }),
       )
     : NEVER;
 }
@@ -472,7 +466,7 @@ export function fromAbortSignal(
  * @internal
  */
 export function filterAsync<T>(
-  predicate: (value: T) => boolean | PromiseLike<boolean>
+  predicate: (value: T) => boolean | PromiseLike<boolean>,
 ): OperatorFunction<T, T> {
   return mergeMap<T, Observable<T>>((value): Observable<T> => {
     return from(Promise.resolve(predicate(value))).pipe(
@@ -481,7 +475,7 @@ export function filterAsync<T>(
       }),
       map(() => {
         return value;
-      })
+      }),
     );
   });
 }

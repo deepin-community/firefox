@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Sebagian dari laman ini mogok. </strong>Untuk memberi tahu { -brand-product-name } tentang masalah ini dan memperbaikinya lebih cepat, harap kirimkan laporan.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -28,3 +27,12 @@ pending-crash-reports-send =
     .label = Kirim
 pending-crash-reports-always-send =
     .label = Selalu Kirim
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message-new = Anda memiliki { $reportCount } laporan kerusakan yang belum terkirim terkait dengan kerusakan yang sedang diselidiki, mengirimkannya akan membantu kami meningkatkan { -brand-product-name }. Menutup pemberitahuan ini akan mengabaikan laporan ini.
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message = Anda memiliki { $reportCount } laporan kerusakan yang belum terkirim dan sesuai dengan kerusakan yang sedang diselidiki. Mengirimkannya akan membantu kami meningkatkan { -brand-product-name }. Jika Anda menutup pemberitahuan ini, laporan tersebut akan diabaikan.
+requested-crash-reports-dont-show-again =
+    .label = Jangan tampilkan lagi
+    .accesskey = J

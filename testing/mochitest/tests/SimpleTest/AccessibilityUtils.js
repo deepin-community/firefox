@@ -35,6 +35,7 @@ this.AccessibilityUtils = (function () {
     Ci.nsIAccessibleRole.ROLE_PASSWORD_TEXT,
     Ci.nsIAccessibleRole.ROLE_PUSHBUTTON,
     Ci.nsIAccessibleRole.ROLE_RADIOBUTTON,
+    Ci.nsIAccessibleRole.ROLE_SEARCHBOX,
     Ci.nsIAccessibleRole.ROLE_SLIDER,
     Ci.nsIAccessibleRole.ROLE_SPINBUTTON,
     Ci.nsIAccessibleRole.ROLE_SUMMARY,
@@ -122,14 +123,18 @@ this.AccessibilityUtils = (function () {
     ...DEFAULT_ENV,
   };
 
+  // This is set by AccessibilityUtils.init so that we always have a reference
+  // to SimpleTest regardless of changes to the global scope.
+  let SimpleTest = null;
+
   /**
    * Get role attribute for an accessible object if specified for its
-   * corresponding {@code DOMNode}.
+   * corresponding ``DOMNode``.
    *
    * @param   {nsIAccessible} accessible
    *          Accessible for which to determine its role attribute value.
    *
-   * @returns {String}
+   * @returns {string}
    *          Role attribute value if specified.
    */
   function getAriaRoles(accessible) {
@@ -146,6 +151,7 @@ this.AccessibilityUtils = (function () {
   /**
    * Get related accessible objects that are targets of labelled by relation e.g.
    * labels.
+   *
    * @param   {nsIAccessible} accessible
    *          Accessible objects to get labels for.
    *
@@ -160,13 +166,13 @@ this.AccessibilityUtils = (function () {
   }
 
   /**
-   * Test if an accessible has a {@code hidden} attribute.
+   * Test if an accessible has a ``hidden`` attribute.
    *
    * @param  {nsIAccessible} accessible
    *         Accessible object.
    *
    * @return {boolean}
-   *         True if the accessible object has a {@code hidden} attribute, false
+   *         True if the accessible object has a ``hidden`` attribute, false
    *         otherwise.
    */
   function hasHiddenAttribute(accessible) {
@@ -371,6 +377,40 @@ this.AccessibilityUtils = (function () {
         node
       ) == NodeFilter.FILTER_ACCEPT
     );
+  }
+
+  /**
+   * Determine if an accessible is a button that is excluded from a focus
+   * order, because its adjacent sibling is a focusable spinner. Controls with
+   * role="spinbutton" are often placed between two buttons that could
+   * increase ("^") or decrease ("v") the value of this spinner. Those buttons
+   * are not expected to be focusable, because their functionality for keyboard
+   * users is redundant to the spinner. But they are exposed to assistive
+   * technology for touch, mouse, switch, and speech-to-text users. Thus, we
+   * need to special case the focusable check for these buttons adjacent to
+   * a spinner.
+   */
+  function isKeyboardFocusableSpinbuttonSibling(accessible) {
+    const node = accessible.DOMNode;
+    if (!node || !node.ownerGlobal) {
+      return false;
+    }
+
+    // The control itself is a button:
+    if (accessible.role != Ci.nsIAccessibleRole.ROLE_PUSHBUTTON) {
+      return false;
+    }
+
+    // At least one sibling is a keyboard-focusable spinbutton:
+    for (const sibling of [
+      node.previousElementSibling,
+      node.nextElementSibling,
+    ]) {
+      if (sibling && sibling.tabIndex >= 0 && sibling.role == "spinbutton") {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -693,7 +733,7 @@ this.AccessibilityUtils = (function () {
    * @param   {nsIAccessible} accessible
    *          Accessible for which to determine if it is keyboard focusable.
    *
-   * @returns {Boolean}
+   * @returns {boolean}
    *          True if focusable with the keyboard.
    */
   function isKeyboardFocusable(accessible) {
@@ -704,7 +744,8 @@ this.AccessibilityUtils = (function () {
       isKeyboardFocusableUrlbarButton(accessible) ||
       isKeyboardFocusableXULTab(accessible) ||
       isKeyboardFocusableTabInTablist(accessible) ||
-      isKeyboardFocusableFxviewControlInApplication(accessible)
+      isKeyboardFocusableFxviewControlInApplication(accessible) ||
+      isKeyboardFocusableSpinbuttonSibling(accessible)
     ) {
       return true;
     }
@@ -725,6 +766,11 @@ this.AccessibilityUtils = (function () {
         ((role == Ci.nsIAccessibleRole.ROLE_PUSHBUTTON ||
           role == Ci.nsIAccessibleRole.ROLE_TOGGLE_BUTTON) &&
           node.closest('[role="toolbar"]')) ||
+        // <moz-radio-group> and <moz-visual-picker> also use a roving tabindex.
+        (role === Ci.nsIAccessibleRole.ROLE_RADIOBUTTON &&
+          node.getRootNode().host?.localName === "moz-radio") ||
+        (role === Ci.nsIAccessibleRole.ROLE_RADIOBUTTON &&
+          node.getRootNode().host?.localName === "moz-visual-picker-item") ||
         shouldIgnoreTabIndex(node))
     );
   }
@@ -744,12 +790,12 @@ this.AccessibilityUtils = (function () {
    * accessibility failure that prevents UI from being accessible to keyboard/AT
    * users.
    *
-   * @param {String} message
+   * @param {string} message
    * @param {nsIAccessible} accessible
    *        Accessible to log along with the failure message.
    */
   function a11yFail(message, { DOMNode }) {
-    SpecialPowers.SimpleTest.ok(false, buildMessage(message, DOMNode));
+    SimpleTest.ok(false, buildMessage(message, DOMNode));
   }
 
   /**
@@ -757,12 +803,13 @@ this.AccessibilityUtils = (function () {
    * accessible object. This is used for cases where accessibility best
    * practices are not followed or for something that is not as severe to be
    * considered a failure.
-   * @param {String} message
+   *
+   * @param {string} message
    * @param {nsIAccessible} accessible
    *        Accessible to log along with the todo message.
    */
   function a11yWarn(message, { DOMNode }) {
-    SpecialPowers.SimpleTest.todo(false, buildMessage(message, DOMNode));
+    SimpleTest.todo(false, buildMessage(message, DOMNode));
   }
 
   /**
@@ -1010,6 +1057,7 @@ this.AccessibilityUtils = (function () {
 
   /**
    * Walk node ancestry and force refresh driver tick in every document.
+   *
    * @param {DOMNode} node
    *        Node for traversing the ancestry.
    */
@@ -1204,7 +1252,7 @@ this.AccessibilityUtils = (function () {
       this.resetEnv();
     },
 
-    init() {
+    init(simpleTest) {
       this._shouldHandleClicks = true;
       // A top level xul window's DocShell doesn't have a chromeEventHandler
       // attribute. In that case, the chrome event handler is just the global
@@ -1212,11 +1260,13 @@ this.AccessibilityUtils = (function () {
       this._handler ??=
         window.docShell.chromeEventHandler ?? window.docShell.domWindow;
       this._handler.addEventListener("click", this, true, true);
+      SimpleTest = simpleTest;
     },
 
     uninit() {
       this._handler?.removeEventListener("click", this, true);
       this._handler = null;
+      SimpleTest = null;
     },
 
     /**

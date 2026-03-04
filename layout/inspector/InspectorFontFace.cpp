@@ -6,17 +6,17 @@
 
 #include "InspectorFontFace.h"
 
+#include "brotli/decode.h"
 #include "gfxPlatformFontList.h"
 #include "gfxTextRun.h"
 #include "gfxUserFontSet.h"
-#include "nsFontFaceLoader.h"
-#include "mozilla/gfx/2D.h"
-#include "brotli/decode.h"
-#include "zlib.h"
+#include "harfbuzz/hb-ot.h"
+#include "mozilla/ServoBindings.h"
 #include "mozilla/dom/CSSFontFaceRule.h"
 #include "mozilla/dom/FontFaceSet.h"
-#include "mozilla/ServoBindings.h"
-#include "mozilla/Unused.h"
+#include "mozilla/gfx/2D.h"
+#include "nsFontFaceLoader.h"
+#include "zlib.h"
 
 namespace mozilla {
 namespace dom {
@@ -60,6 +60,23 @@ void InspectorFontFace::GetCSSGeneric(nsAString& aName) {
     aName.AssignASCII(gfxPlatformFontList::GetGenericName(mMatchType.generic));
   } else {
     aName.Truncate(0);
+  }
+}
+
+void InspectorFontFace::GetNameString(uint16_t aNameId, nsAString& aResult) {
+  gfxFontEntry::AutoHBFace face = mFontEntry->GetHBFace();
+  unsigned int textSize = 0;
+  unsigned int len = hb_ot_name_get_utf16(face, aNameId, HB_LANGUAGE_INVALID,
+                                          &textSize, nullptr);
+  if (len) {
+    aResult.SetLength(len + 1);  // Ensure there is space for NUL terminator.
+    textSize = len + 1;  // Tell HB the total size of the available buffer.
+    len = hb_ot_name_get_utf16(
+        face, aNameId, HB_LANGUAGE_INVALID, &textSize,
+        reinterpret_cast<uint16_t*>(aResult.BeginWriting()));
+    aResult.SetLength(len);  // Size the string to exclude terminator.
+  } else {
+    aResult.Truncate(0);
   }
 }
 
@@ -245,7 +262,7 @@ void InspectorFontFace::GetVariationInstances(
       AppendTagAsASCII(value.mAxis, v.mAxis);
       value.mValue = v.mValue;
       // This won't fail, because of SetCapacity above.
-      Unused << inst.mValues.AppendElement(value, mozilla::fallible);
+      (void)inst.mValues.AppendElement(value, mozilla::fallible);
     }
   }
 }

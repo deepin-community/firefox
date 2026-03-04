@@ -128,6 +128,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation 媒体�
 about-processes-utility-actor-js-oracle = Oracle
 about-processes-utility-actor-windows-utils = Windows 工具
 about-processes-utility-actor-windows-file-dialog = Windows 文件对话框
+about-processes-utility-actor-pkcs11-module = 安全模块助手
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -180,7 +181,7 @@ duration-unit-d = d
 
 ## Memory units
 
-memory-unit-B =  字节
+memory-unit-B = 字节
 memory-unit-KB = KB
 memory-unit-MB = MB
 memory-unit-GB = GB

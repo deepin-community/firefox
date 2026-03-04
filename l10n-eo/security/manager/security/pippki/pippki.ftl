@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Vidi
 download-cert-view-text = Ekzameni atestilon de CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Liverita de: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Konservita en: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Memori tiun ĉi decidon
+client-auth-cert-remember-label = Memori tiun ĉi decidon:
+client-auth-cert-remember-never =
+    .label = Fojon
+client-auth-cert-remember-always =
+    .label = Ĉiam
+client-auth-cert-remember-temporarily =
+    .label = Por tiu ĉi seanco
 
 ## Set password (p12) dialog
 

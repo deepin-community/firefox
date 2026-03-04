@@ -18,7 +18,6 @@
 // This include is required in order for content_decryption_module to work
 // on Unix systems.
 #include <stddef.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <string>
@@ -55,7 +54,7 @@ void* CreateCdmInstance(int cdm_interface_version, const char* key_system,
                         GetCdmHostFunc get_cdm_host_func, void* user_data) {
   CK_LOGE("ClearKey CreateCDMInstance");
 
-  if (cdm_interface_version != cdm::ContentDecryptionModule_10::kVersion) {
+  if (cdm_interface_version != cdm::ContentDecryptionModule_11::kVersion) {
     CK_LOGE(
         "ClearKey CreateCDMInstance failed due to requesting unsupported "
         "version %d.",
@@ -81,7 +80,7 @@ void* CreateCdmInstance(int cdm_interface_version, const char* key_system,
   }
 #endif
 
-  cdm::Host_10* host = static_cast<cdm::Host_10*>(
+  cdm::Host_11* host = static_cast<cdm::Host_11*>(
       get_cdm_host_func(cdm_interface_version, user_data));
   ClearKeyCDM* clearKey = new ClearKeyCDM(host);
 
@@ -120,7 +119,10 @@ void ClosePlatformFile(cdm::PlatformFile aFile) {
 
 static uint32_t NumExpectedHostFiles(const cdm::HostFile* aHostFiles,
                                      uint32_t aNumFiles) {
-#if !defined(XP_WIN)
+#if defined(ANDROID)
+  // We expect 1 binary: clearkey
+  return 1;
+#elif !defined(XP_WIN)
   // We expect 4 binaries: clearkey, libxul, plugin-container, and Firefox.
   return 4;
 #else

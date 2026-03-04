@@ -8,9 +8,10 @@
 
 #include "CookieCommons.h"
 
+#include "CookieValidation.h"
 #include "mozilla/net/NeckoChannelParams.h"
-#include "nsTArray.h"
 #include "nsCOMPtr.h"
+#include "nsTArray.h"
 
 class nsIConsoleReportCollector;
 class nsIURI;
@@ -25,17 +26,7 @@ class CookieParser final {
     NoRejection,
 
     RejectedInvalidCharAttributes,
-    RejectedNoneRequiresSecure,
-    RejectedPartitionedRequiresSecure,
-    RejectedEmptyNameAndValue,
-    RejectedNameValueOversize,
-    RejectedInvalidCharName,
-    RejectedInvalidDomain,
-    RejectedInvalidPrefix,
-    RejectedInvalidCharValue,
     RejectedHttpOnlyButFromScript,
-    RejectedSecureButNonHttps,
-    RejectedForNonSameSiteness,
     RejectedForeignNoPartitionedError,
     RejectedByPermissionManager,
     RejectedNonsecureOverSecure,
@@ -46,14 +37,15 @@ class CookieParser final {
 
   nsIURI* HostURI() const { return mHostURI; }
 
-  bool Parse(const nsACString& aBaseDomain, bool aRequireHostMatch,
-             CookieStatus aStatus, nsCString& aCookieHeader, bool aFromHttp,
+  void Parse(const nsACString& aBaseDomain, bool aRequireHostMatch,
+             CookieStatus aStatus, nsCString& aCookieHeader,
+             const nsACString& aDateHeader, bool aFromHttp,
              bool aIsForeignAndNotAddon, bool aPartitionedOnly,
-             bool aIsInPrivateBrowsing);
+             bool aIsInPrivateBrowsing, bool aOn3pcbException,
+             int64_t aCurrentTimeInMSec);
 
   bool ContainsCookie() const {
-    MOZ_ASSERT_IF(mContainsCookie, mRejection == NoRejection);
-    return mContainsCookie;
+    return mValidation && mValidation->Result() == nsICookieValidation::eOK;
   }
 
   void RejectCookie(Rejection aRejection);
@@ -69,37 +61,33 @@ class CookieParser final {
   bool ParseMaxAgeAttribute(const nsACString& aMaxage, int64_t* aValue);
 
  private:
-  static bool GetTokenValue(nsACString::const_char_iterator& aIter,
+  static void GetTokenValue(nsACString::const_char_iterator& aIter,
                             nsACString::const_char_iterator& aEndIter,
                             nsDependentCSubstring& aTokenString,
                             nsDependentCSubstring& aTokenValue,
                             bool& aEqualsFound);
 
-  bool ParseAttributes(nsCString& aCookieHeader, nsACString& aExpires,
+  void ParseAttributes(nsCString& aCookieHeader, nsACString& aExpires,
                        nsACString& aMaxage, bool& aAcceptedByParser);
 
+  // expiry will be stored in milliseconds.
   bool GetExpiry(CookieStruct& aCookieData, const nsACString& aExpires,
-                 const nsACString& aMaxage, int64_t aCurrentTime,
+                 const nsACString& aMaxage, const nsACString& aDateHeader,
                  bool aFromHttp);
 
-  bool CheckPath();
-  bool CheckAttributeSize(const nsACString& currentValue,
-                          const char* aAttribute, const nsACString& aValue);
-
-  static bool CheckPrefixes(CookieStruct& aCookieData, bool aSecureRequest);
-  static bool CheckDomain(CookieStruct& aCookieData, nsIURI* aHostURI,
-                          const nsACString& aBaseDomain,
-                          bool aRequireHostMatch);
-  static bool HasSecurePrefix(const nsACString& aString);
-  static bool HasHostPrefix(const nsACString& aString);
+  static bool CheckAttributeSize(const nsACString& currentValue,
+                                 const char* aAttribute,
+                                 const nsACString& aValue,
+                                 CookieParser* aParser = nullptr);
+  static void FixPath(CookieStruct& aCookieData, nsIURI* aHostURI);
+  static void FixDomain(CookieStruct& aCookieData, nsIURI* aHostURI,
+                        const nsACString& aBaseDomain, bool aRequireHostMatch);
 
   nsCOMPtr<nsIConsoleReportCollector> mCRC;
   nsCOMPtr<nsIURI> mHostURI;
 
-  // True if the parsing succeeded.
-  bool mContainsCookie = false;
-
   Rejection mRejection = NoRejection;
+  RefPtr<CookieValidation> mValidation;
 
   struct Warnings {
     nsTArray<const char*> mAttributeOversize;
@@ -107,9 +95,6 @@ class CookieParser final {
 
     bool mInvalidSameSiteAttribute = false;
     bool mInvalidMaxAgeAttribute = false;
-    bool mSameSiteNoneRequiresSecureForBeta = false;
-    bool mSameSiteLaxForced = false;
-    bool mSameSiteLaxForcedForBeta = false;
     bool mForeignNoPartitionedWarning = false;
   } mWarnings;
 

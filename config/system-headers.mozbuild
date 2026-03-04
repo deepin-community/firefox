@@ -308,6 +308,7 @@ system_headers = [
     "gdk-pixbuf/gdk-pixbuf.h",
     "Gestalt.h",
     "getopt.h",
+    "gio/gdesktopappinfo.h",
     "gio/gio.h",
     "glibconfig.h",
     "glib.h",
@@ -690,7 +691,6 @@ system_headers = [
     "prtrace.h",
     "prtypes.h",
     "prvrsion.h",
-    "prwin16.h",
     "psap.h",
     "Pt.h",
     "pthread.h",
@@ -770,6 +770,7 @@ system_headers = [
     "soundtouch/SoundTouch.h",
     "spawn.h",
     "sqlite3.h",
+    "sqlite3_static_ext.h",
     "sslerr.h",
     "ssl.h",
     "sslproto.h",
@@ -843,6 +844,7 @@ system_headers = [
     "sys/msg.h",
     "sys/param.h",
     "sys/pda.h",
+    "sys/platform/ppc.h",
     "sys/poll.h",
     "sys/ppc.h",
     "sys/prctl.h",
@@ -863,6 +865,7 @@ system_headers = [
     "sys/shm.h",
     "sys/siginfo.h",
     "sys/signal.h",
+    "sys/single_threaded.h",
     "sys/socket.h",
     "sys/sockio.h",
     "sys/sparc/frame.h",
@@ -908,8 +911,8 @@ system_headers = [
     "TextView.h",
     "th/PCR_Th.h",
     "thread.h",
+    "threads.h",
     "ThreadManagerTests.h",
-    "Threads.h",
     "time.h",
     "Timer.h",
     "tlhelp32.h",
@@ -1028,7 +1031,9 @@ system_headers = [
     "aom/aom_image.h",
     "aom/aomdx.h",
     "aom/aomcx.h",
+    "aom/aom_codec.h",
     "aom/aom_decoder.h",
+    "aom/aom_encoder.h",
 ]
 
 if CONFIG["MOZ_X11"]:
@@ -1068,13 +1073,7 @@ if CONFIG["MOZ_X11"]:
 
 if CONFIG["OS_TARGET"] == "Android":
     system_headers += [
-        "android/api-level.h",
-        "android/ashmem.h",
         "android_audio/AudioSystem.h",
-        "android/log.h",
-        "android/looper.h",
-        "android/native_window.h",
-        "android/native_window_jni.h",
         "audio_effects/effect_aec.h",
         "audio_effects/effect_ns.h",
         "AudioParameter.h",
@@ -1142,6 +1141,10 @@ if CONFIG["OS_TARGET"] == "Android":
         "media/IOMX.h",
         "media/MediaProfiles.h",
         "media/MediaRecorderBase.h",
+        "media/NdkMediaCodec.h",
+        "media/NdkMediaCrypto.h",
+        "media/NdkMediaDrm.h",
+        "media/NdkMediaError.h",
         "media/openmax/OMX_Audio.h",
         "media/stagefright/AACWriter.h",
         "media/stagefright/AMRWriter.h",
@@ -1252,6 +1255,22 @@ if CONFIG["OS_TARGET"] == "Android":
         "vr/gvr/capi/include/gvr.h",
     ]
 
+if CONFIG["MOZ_SYSTEM_GBM"]:
+    system_headers += [
+        "gbm.h",
+    ]
+
+if CONFIG["MOZ_SYSTEM_LIBDRM"]:
+    system_headers += [
+        "drm.h",
+        "xf86drm.h",
+    ]
+
+if CONFIG["MOZ_SYSTEM_PIPEWIRE"]:
+    system_headers += [
+        "pipewire/pipewire.h",
+    ]
+
 if CONFIG["MOZ_JACK"]:
     system_headers += [
         "jack/jack.h",
@@ -1301,6 +1320,11 @@ else:
 if CONFIG["MOZ_ENABLE_LIBPROXY"]:
     system_headers += [
         "proxy.h",
+    ]
+
+if CONFIG["MOZ_SYSTEM_AV1"]:
+    system_headers += [
+        "dav1d/dav1d.h",
     ]
 
 if CONFIG["MOZ_SYSTEM_ICU"]:

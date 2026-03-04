@@ -20,7 +20,7 @@
 #include "mozilla/MiscEvents.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_intl.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/WidgetGtkMetrics.h"
 #include "mozilla/TextEventDispatcher.h"
 #include "mozilla/TextEvents.h"
 #include "mozilla/ToString.h"
@@ -73,10 +73,7 @@ class GetEventStateName : public nsAutoCString {
     if (aState & GDK_MOD4_MASK) {
       AppendModifier("mod4");
     }
-    if (aState & GDK_MOD4_MASK) {
-      AppendModifier("mod5");
-    }
-    if (aState & GDK_MOD4_MASK) {
+    if (aState & GDK_MOD5_MASK) {
       AppendModifier("mod5");
     }
     switch (aIMContextID) {
@@ -232,18 +229,11 @@ class SelectionStyleProvider final {
     sHasShutDown = true;
   }
 
-  // aGDKWindow is a GTK window which will be associated with an IM context.
-  void AttachTo(GdkWindow* aGDKWindow) {
-    GtkWidget* widget = nullptr;
-    // gdk_window_get_user_data() typically returns pointer to widget that
-    // window belongs to.  If it's widget, fcitx retrieves selection colors
-    // of them.  So, we need to overwrite its style.
-    gdk_window_get_user_data(aGDKWindow, (gpointer*)&widget);
-    if (GTK_IS_WIDGET(widget)) {
-      gtk_style_context_add_provider(gtk_widget_get_style_context(widget),
-                                     GTK_STYLE_PROVIDER(mProvider),
-                                     GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
+  // GtkWidget is a GTK window which will be associated with an IM context.
+  void AttachTo(GtkWidget* aWidget) {
+    gtk_style_context_add_provider(gtk_widget_get_style_context(aWidget),
+                                   GTK_STYLE_PROVIDER(mProvider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
   }
 
   void OnThemeChanged() {
@@ -424,7 +414,7 @@ void IMContextWrapper::Init() {
   // Overwrite selection colors of the window before associating the window
   // with IM context since IME may look up selection colors via IM context
   // to support any colored widgets.
-  SelectionStyleProvider::GetInstance()->AttachTo(gdkWindow);
+  SelectionStyleProvider::GetInstance()->AttachTo(mOwnerWindow->GetGtkWidget());
 
   // NOTE: gtk_im_*_new() abort (kill) the whole process when it fails.
   //       So, we don't need to check the result.
@@ -2303,8 +2293,7 @@ bool IMContextWrapper::DispatchCompositionStart(GtkIMContext* aContext) {
       // U+2026 is "..."
       im.Append(char16_t(0x2026));
     }
-    Telemetry::ScalarSet(Telemetry::ScalarID::WIDGET_IME_NAME_ON_LINUX, im,
-                         true);
+    glean::widget::ime_name_on_linux.Get(NS_ConvertUTF16toUTF8(im)).Set(true);
   }
 
   MOZ_LOG(gIMELog, LogLevel::Debug,
@@ -2564,11 +2553,10 @@ bool IMContextWrapper::DispatchCompositionCommitEvent(
   if (!dispatcher) {
     MOZ_ASSERT(aCommitString);
     MOZ_ASSERT(!aCommitString->IsEmpty());
-    nsEventStatus status = nsEventStatus_eIgnore;
     WidgetContentCommandEvent insertTextEvent(true, eContentCommandInsertText,
                                               lastFocusedWindow);
     insertTextEvent.mString.emplace(*aCommitString);
-    lastFocusedWindow->DispatchEvent(&insertTextEvent, status);
+    lastFocusedWindow->DispatchEvent(&insertTextEvent);
 
     if (!insertTextEvent.mSucceeded) {
       MOZ_LOG(gIMELog, LogLevel::Error,
@@ -2997,8 +2985,7 @@ void IMContextWrapper::SetCursorPosition(GtkIMContext* aContext) {
           mCompositionTargetRange.mOffset, 1);
     }
   }
-  nsEventStatus status;
-  mLastFocusedWindow->DispatchEvent(&queryCaretOrTextRectEvent, status);
+  mLastFocusedWindow->DispatchEvent(&queryCaretOrTextRectEvent);
   if (queryCaretOrTextRectEvent.Failed()) {
     MOZ_LOG(gIMELog, LogLevel::Error,
             ("0x%p   SetCursorPosition(), FAILED, %s was failed", this,
@@ -3037,8 +3024,6 @@ nsresult IMContextWrapper::GetCurrentParagraph(nsAString& aText,
              this));
     return NS_ERROR_NULL_POINTER;
   }
-
-  nsEventStatus status;
 
   uint32_t selOffset = mCompositionStart;
   uint32_t selLength = mSelectedStringRemovedByComposition.Length();
@@ -3085,7 +3070,7 @@ nsresult IMContextWrapper::GetCurrentParagraph(nsAString& aText,
   WidgetQueryContentEvent queryTextContentEvent(true, eQueryTextContent,
                                                 mLastFocusedWindow);
   queryTextContentEvent.InitForQueryTextContent(0, UINT32_MAX);
-  mLastFocusedWindow->DispatchEvent(&queryTextContentEvent, status);
+  mLastFocusedWindow->DispatchEvent(&queryTextContentEvent);
   if (NS_WARN_IF(queryTextContentEvent.Failed())) {
     return NS_ERROR_FAILURE;
   }
@@ -3152,8 +3137,6 @@ nsresult IMContextWrapper::DeleteText(GtkIMContext* aContext, int32_t aOffset,
   }
 
   RefPtr<nsWindow> lastFocusedWindow(mLastFocusedWindow);
-  nsEventStatus status;
-
   // First, we should cancel current composition because editor cannot
   // handle changing selection and deleting text.
   uint32_t selOffset;
@@ -3188,7 +3171,7 @@ nsresult IMContextWrapper::DeleteText(GtkIMContext* aContext, int32_t aOffset,
   WidgetQueryContentEvent queryTextContentEvent(true, eQueryTextContent,
                                                 mLastFocusedWindow);
   queryTextContentEvent.InitForQueryTextContent(0, UINT32_MAX);
-  mLastFocusedWindow->DispatchEvent(&queryTextContentEvent, status);
+  mLastFocusedWindow->DispatchEvent(&queryTextContentEvent);
   if (NS_WARN_IF(queryTextContentEvent.Failed())) {
     return NS_ERROR_FAILURE;
   }
@@ -3242,7 +3225,7 @@ nsresult IMContextWrapper::DeleteText(GtkIMContext* aContext, int32_t aOffset,
 
   selectionEvent.mReversed = false;
   selectionEvent.mExpandToClusterBoundary = false;
-  lastFocusedWindow->DispatchEvent(&selectionEvent, status);
+  lastFocusedWindow->DispatchEvent(&selectionEvent);
 
   if (!selectionEvent.mSucceeded || lastFocusedWindow != mLastFocusedWindow ||
       lastFocusedWindow->Destroyed()) {
@@ -3266,7 +3249,7 @@ nsresult IMContextWrapper::DeleteText(GtkIMContext* aContext, int32_t aOffset,
   // Delete the selection
   WidgetContentCommandEvent contentCommandEvent(true, eContentCommandDelete,
                                                 mLastFocusedWindow);
-  mLastFocusedWindow->DispatchEvent(&contentCommandEvent, status);
+  mLastFocusedWindow->DispatchEvent(&contentCommandEvent);
 
   if (!contentCommandEvent.mSucceeded ||
       lastFocusedWindow != mLastFocusedWindow ||
@@ -3329,10 +3312,9 @@ bool IMContextWrapper::EnsureToCacheContentSelection(
     return false;
   }
 
-  nsEventStatus status;
   WidgetQueryContentEvent querySelectedTextEvent(true, eQuerySelectedText,
                                                  dispatcherWindow);
-  dispatcherWindow->DispatchEvent(&querySelectedTextEvent, status);
+  dispatcherWindow->DispatchEvent(&querySelectedTextEvent);
   if (NS_WARN_IF(querySelectedTextEvent.Failed())) {
     MOZ_LOG(gIMELog, LogLevel::Error,
             ("0x%p EnsureToCacheContentSelection(), FAILED, due to "

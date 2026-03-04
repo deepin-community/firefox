@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Уключыць аўтазапаўненне д
 policy-AutofillCreditCardEnabled = Уключыць аўтазапаўненне для спосабаў аплаты.
 policy-AutoLaunchProtocolsFromOrigins = Вызначыць спіс знешніх пратаколаў, якія можна выкарыстоўваць з пералічаных крыніц, не запытваючы карыстальніка.
 policy-BackgroundAppUpdate2 = Уключыць або выключыць фонавае абнаўленне.
+policy-Backup = Адключыць рэзервовае капіяванне або аднаўленне дадзеных профілю.
 policy-BlockAboutAddons = Заблакаваць доступ да менеджара дадаткаў (about:addons).
 policy-BlockAboutConfig = Заблакаваць доступ да старонкі about:config.
 policy-BlockAboutProfiles = Заблакаваць доступ да старонкі about:profiles.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Адключыць магчымасць захаванн
 policy-DisablePrivateBrowsing = Адключыць прыватнае агляданне.
 policy-DisableProfileImport = Адключыць каманду меню для імпарту даных з іншага браўзера.
 policy-DisableProfileRefresh = Адключыць кнопку «Абнавіць { -brand-short-name }» на старонцы «about:support».
+policy-DisableRemoteImprovements = Забараніць { -brand-short-name } прымяняць змены прадукцыйнасці, стабільнасці і функцый паміж абнаўленнямі.
 policy-DisableSafeMode = Выключыць функцыю перазапуску ў бяспечным рэжыме. Заўвага: уваход у бяспечны рэжым з дапамогай клавішы Shift можа быць выключаны толькі праз групавыя палітыкі Windows.
 policy-DisableSecurityBypass = Не даваць карыстальніку абыходзіць пэўныя папярэджанні бяспекі.
 policy-DisableSetAsDesktopBackground = Адключыць каманду меню "Усталяваць як фон працоўнага стала…" для выяваў.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Кіраваць усімі аспектамі ўст
 policy-ExtensionUpdate = Уключае або выключае аўтаматычнае абнаўленне пашырэнняў.
 policy-FirefoxHome2 = Налады { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Наладзіць { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Наладзьце функцыі генератыўнага штучнага інтэлекту.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Прымусовы прамы пераход па ўнутранай сетцы замест пошуку пры ўводзе аднаго слова ў адрасным радку.
 policy-Handlers = Наладзіць прадвызначаныя апрацоўшчыкі праграм.
 policy-HardwareAcceleration = Калі false, адключыць апаратнае паскарэнне.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Вярнуцца да 
 ##
 
 policy-LocalFileLinks = Дазволіць пэўным вэб-сайтам спасылацца на лакальныя файлы.
+policy-LocalNetworkAccess = Уключыць або адключыць праверку доступу да лакальнай сеткі.
 policy-ManagedBookmarks = Наладжвае спіс закладак, якімі кіруе адміністратар, і якія карыстальнік не можа змяніць.
 policy-ManualAppUpdateOnly = Дазволіць абнаўленне толькі ўручную і не паведамляць карыстальніку аб абнаўленнях.
 policy-PrimaryPassword = Патрабаваць або забараняць выкарыстанне галоўнага пароля.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Уключыць постквантав�
 policy-PDFjs = Адключыць або наладзіць PDF.js, убудаваны ў { -brand-short-name } праглядальнік PDF.
 policy-Permissions2 = Наладзіць дазволы для камеры, мікрафона, месцазнаходжання, абвестак і аўтапрайгравання.
 policy-PictureInPicture = Уключыць або выключыць выяву ў выяве.
+policy-PopupBlocking2 = Дазволіць пэўным сайтам паказваць выплыўныя вокны і перанакіроўвацца праз староннія рамкі.
 policy-PopupBlocking = Дазволіць пэўным вэб-сайтам тыпова паказваць усплыўныя вокны.
 policy-Preferences = Устанавіць і зафіксаваць значэнне для падмноства пераваг.
 policy-PrivateBrowsingModeAvailability = Наладзіць доступ да рэжыму прыватнага аглядання.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Уключыць або выключыць пош�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Дадаць або выдаліць модулі PKCS #11.
 policy-ShowHomeButton = Паказваць кнопку "Дадому" на паліцы прылад.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Не паказваць Умовы карыстання і Паведамленне аб прыватнасці пры запуску. Вы пацвярджаеце, што прымаеце і маеце права прымаць Умовы карыстання ад імя ўсіх асоб, якім вы даяце доступ да гэтага браўзера.
 policy-SSLVersionMax = Устанаўляе максімальную версію SSL.
 policy-SSLVersionMin = Устанаўляе мінімальную версію SSL.
 policy-StartDownloadsInTempDirectory = Прымусова пачынаць сцягванні ў лакальнае, тымчасовае месца замест прадвызначанага каталога сцягванняў.
@@ -137,6 +144,9 @@ policy-SupportMenu = Дадае нестандартны элемент у ме�
 policy-TranslateEnabled = Уключыць або выключыць пераклад вэб-старонак.
 policy-UserMessaging = Не паказваць карыстальніку пэўныя паведамленні.
 policy-UseSystemPrintDialog = Друкаваць з дапамогай сістэмнага дыялога друку.
+policy-VisualSearchEnabled = Уключыць або адключыць візуальны пошук.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Забараніць наведванне вэб-сайтаў. За падрабязнасцямі фармату гл. дакументацыю.
 policy-Windows10SSO = Дазволіць адзіны ўваход Windows для ўліковых запісаў Microsoft, працоўных і школьных уліковых запісаў.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Дазволіць адзіны ўваход для ўліковых запісаў Microsoft Entra.

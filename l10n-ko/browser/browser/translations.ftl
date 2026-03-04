@@ -22,7 +22,7 @@ urlbar-translations-button-intro =
 #   $fromLanguage (string) - The original language of the document.
 #   $toLanguage (string) - The target language of the translation.
 urlbar-translations-button-translated =
-    .tooltiptext = { $fromLanguage }에서 { $toLanguage }(으)로 번역된 페이지
+    .tooltiptext = { $fromLanguage }에서 { $toLanguage }로 번역된 페이지
 urlbar-translations-button-loading =
     .tooltiptext = 번역 진행 중
 translations-panel-settings-button =
@@ -72,7 +72,7 @@ translations-panel-translate-cancel =
     .label = 취소
 translations-panel-learn-more-link = 더 알아보기
 translations-panel-intro-header = { -brand-shorter-name }에서 개인 정보가 보호되는 번역을 사용해 보세요
-translations-panel-intro-description = 개인 정보 보호를 위해 번역은 사용자의 기기를 떠나지 않습니다. 새로운 언어와 개선 사항이 곧 제공됩니다!
+translations-panel-intro-description = 개인 정보 보호를 위해 번역은 사용자의 기기에서 이루어 집니다. 새로운 언어와 개선 사항이 곧 제공됩니다!
 translations-panel-error-translating = 번역하는 중에 문제가 발생했습니다. 다시 시도하세요.
 translations-panel-error-load-languages = 언어를 로드할 수 없음
 translations-panel-error-load-languages-hint = 인터넷 연결을 확인하고 다시 시도하세요.
@@ -110,7 +110,7 @@ translations-panel-to-label = 대상 언어:
 # Variables:
 #   $fromLanguage (string) - The original language of the document.
 #   $toLanguage (string) - The target language of the translation.
-translations-panel-revisit-header = 이 페이지는 { $fromLanguage }에서 { $toLanguage }(으)로 번역됨
+translations-panel-revisit-header = 이 페이지는 { $fromLanguage }에서 { $toLanguage }로 번역됨
 translations-panel-choose-language =
     .label = 언어 선택
 translations-panel-restore-button =
@@ -126,13 +126,6 @@ translations-manage-description = 오프라인 번역을 위한 언어를 다운
 translations-manage-all-language = 모든 언어
 translations-manage-download-button = 다운로드
 translations-manage-delete-button = 삭제
-translations-manage-intro = 언어 및 사이트 번역 기본 설정을 하고 오프라인 번역을 위해 설치된 언어를 관리합니다.
-translations-manage-install-description = 오프라인 번역을 위한 언어를 설치합니다.
-translations-manage-language-install-button =
-    .label = 설치
-translations-manage-language-install-all-button =
-    .label = 모두 설치
-    .accesskey = I
 translations-manage-intro-2 = 언어 및 사이트 번역 기본 설정을 하고 오프라인 번역을 위해 다운로드한 언어를 관리합니다.
 translations-manage-download-description = 오프라인 번역을 위한 언어 다운로드
 translations-manage-language-download-button =
@@ -145,7 +138,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = 모두 제거
     .accesskey = e
-translations-manage-error-install = 언어 파일을 설치하는 중에 문제가 발생했습니다. 다시 시도하세요.
 translations-manage-error-download = 언어 파일을 다운로드하는 중에 문제가 발생했습니다. 다시 시도하세요.
 translations-manage-error-delete = 언어 파일을 삭제하는 동안 오류가 발생했습니다. 다시 시도하세요.
 translations-manage-error-remove = 언어 파일을 제거하는 동안 오류가 발생했습니다. 다시 시도하세요.
@@ -188,7 +180,7 @@ main-context-menu-translate-selection =
 # Variables:
 #   $language (string) - The localized display name of the target language
 main-context-menu-translate-selection-to-language =
-    .label = 선택한 텍스트를 { $language }(으)로 번역…
+    .label = 선택한 텍스트를 { $language }로 번역…
     .accesskey = n
 # Text displayed in the right-click context menu for translating
 # the text of a hyperlink to a yet-to-be-determined language.
@@ -201,7 +193,7 @@ main-context-menu-translate-link-text =
 # Variables:
 #   $language (string) - The localized display name of the target language
 main-context-menu-translate-link-text-to-language =
-    .label = 링크 텍스트를 { $language }(으)로 번역
+    .label = 링크 텍스트를 { $language }로 번역
     .accesskey = n
 # Text displayed in the select translations panel header.
 select-translations-panel-header = 번역

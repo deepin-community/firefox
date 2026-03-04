@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 with Files('**'):
-    BUG_COMPONENT = ('GeckoView', 'General')
+    BUG_COMPONENT = ("Toolkit", "Application Update")
 
 EXPORTS += [
     'src/xz.h',
@@ -29,6 +29,6 @@ DEFINES['XZ_DEC_X86'] = 1
 DEFINES['XZ_USE_CRC64'] = 1
 
 if CONFIG['OS_ARCH'] == 'WINNT':
-    USE_STATIC_LIBS = True
+    USE_STATIC_MSVCRT = True
 
 Library('xz-embedded')

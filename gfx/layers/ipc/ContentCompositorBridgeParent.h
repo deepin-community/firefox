@@ -7,9 +7,9 @@
 #ifndef mozilla_layers_ContentCompositorBridgeParent_h
 #define mozilla_layers_ContentCompositorBridgeParent_h
 
+#include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/layers/CompositorBridgeParent.h"
 #include "mozilla/layers/CompositorThread.h"
-#include "mozilla/UniquePtr.h"
 
 namespace mozilla::layers {
 
@@ -83,6 +83,11 @@ class ContentCompositorBridgeParent final : public CompositorBridgeParentBase {
   mozilla::ipc::IPCResult RecvCheckContentOnlyTDR(
       const uint32_t& sequenceNum, bool* isContentOnlyTDR) override;
 
+  mozilla::ipc::IPCResult RecvDynamicToolbarOffsetChanged(
+      const int32_t& aOffset) override {
+    return IPC_FAIL_NO_REASON(this);
+  }
+
   mozilla::ipc::IPCResult RecvBeginRecording(
       const TimeStamp& aRecordingStart,
       BeginRecordingResolver&& aResolve) override {
@@ -112,6 +117,9 @@ class ContentCompositorBridgeParent final : public CompositorBridgeParentBase {
   void SetConfirmedTargetAPZC(
       const LayersId& aLayersId, const uint64_t& aInputBlockId,
       nsTArray<ScrollableLayerGuid>&& aTargets) override;
+  void EndWheelTransaction(
+      const LayersId& aLayersId,
+      PWebRenderBridgeParent::EndWheelTransactionResolver&& aResolve) override;
 
   // Use DidCompositeLocked if you already hold a lock on
   // sIndirectLayerTreesLock; Otherwise use DidComposite, which would request
@@ -129,15 +137,10 @@ class ContentCompositorBridgeParent final : public CompositorBridgeParentBase {
 
   bool IsSameProcess() const override;
 
-  PCompositorWidgetParent* AllocPCompositorWidgetParent(
+  already_AddRefed<PCompositorWidgetParent> AllocPCompositorWidgetParent(
       const CompositorWidgetInitData& aInitData) override {
     // Not allowed.
     return nullptr;
-  }
-  bool DeallocPCompositorWidgetParent(
-      PCompositorWidgetParent* aActor) override {
-    // Not allowed.
-    return false;
   }
 
   PAPZCTreeManagerParent* AllocPAPZCTreeManagerParent(

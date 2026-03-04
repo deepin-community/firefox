@@ -8,13 +8,9 @@
 
 # The text "WebRTC" is a proper noun and should not be translated.
 about-webrtc-document-title = WebRTC आंतरिक
-
 # "about:webrtc" is a internal browser URL and should not be
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = वेबआरटीसी: के बारे में सहेजे जैसे
-
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
 
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
@@ -22,14 +18,12 @@ about-webrtc-aec-logging-msg-label = AEC लागिंग
 about-webrtc-aec-logging-off-state-label = AEC लागिंग करना प्रारंभ करें
 about-webrtc-aec-logging-on-state-label = AEC लॉगिंग को बंद करें
 about-webrtc-aec-logging-on-state-msg = एईसी लॉगिंग सक्रिय है (कॉलर से कुछ समय बात करें और फिर कैप्चर को बंद करें)
-
 about-webrtc-aec-logging-toggled-on-state-msg = एईसी लॉगिंग सक्रिय है (कॉलर से कुछ समय बात करें और फिर कैप्चर को बंद करें)
 # Variables:
 #  $path (String) - The path to which the aec log file is saved.
 about-webrtc-aec-logging-toggled-off-state-msg = कैप्चर लॉग फ़ाइल { $path } में पाया जा सकता हैं
 
 ##
-
 
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
 # an abbreviation for Identifier. This string should not normally be translated
@@ -79,12 +73,10 @@ about-webrtc-type-remote = दूरस्थ
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
 about-webrtc-nominated = मनोनीत
-
 # This adjective is used to label a table column. Cells in this column contain
 # the localized javascript string representation of "true" or are left blank.
 # This represents an attribute of an ICE candidate.
 about-webrtc-selected = चयनित
-
 about-webrtc-save-page-label = पृष्ठ सहेजें
 about-webrtc-debug-mode-msg-label = दोषसुधार मोड
 about-webrtc-debug-mode-off-state-label = दोषसुधार मोड प्रारंभ करें
@@ -97,7 +89,6 @@ about-webrtc-log-show-msg = लॉग दिखाएँ
     .title = विभाग फैलाने के लिये क्लिक करें
 about-webrtc-log-hide-msg = लॉग छुपाएँ
     .title = इस विभाग को समेटनें के लिए क्लिक करें
-
 about-webrtc-log-section-show-msg = लॉग दिखाएँ
     .title = विभाग फैलाने के लिये क्लिक करें
 about-webrtc-log-section-hide-msg = लॉग छुपाएँ
@@ -112,11 +103,6 @@ about-webrtc-log-section-hide-msg = लॉग छुपाएँ
 
 about-webrtc-connection-open = [ { $browser-id } | { $id } ] { $url } { $now }
 about-webrtc-connection-closed = [ { $browser-id } | { $id } ] { $url } (बंद) { $now }
-
-## These are used to indicate what direction media is flowing.
-## Variables:
-##  $codecs - a list of media codecs
-
 
 ##
 
@@ -150,35 +136,23 @@ about-webrtc-width-px = चौड़ाई (px)
 about-webrtc-height-px = ऊंचाई (px)
 about-webrtc-estimated-framerate = अनुमानित फ्रेमरेट
 
-## SSRCs are identifiers that represent endpoints in an RTP stream
-
-
-## These are displayed on the button that shows or hides the
-## PeerConnection configuration disclosure
-
-
 ##
 
 # The amount of time it takes for a packet to travel from the local machine to the remote machine,
 # and then have a packet return
 about-webrtc-round-trip-time-ms = RTT ms
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = { $path } को पृष्ठ सहेज गया:
 about-webrtc-debug-mode-off-state-msg = ट्रेस लॉग { $path } पर पाया जा सकता हैं
 about-webrtc-debug-mode-on-state-msg = दोषसुधार मोड सक्रिय, { $path } पर ट्रेस लॉग
 about-webrtc-aec-logging-off-state-msg = कैप्चर लॉग फ़ाइल { $path } में पाया जा सकता हैं
-
+# This path is used for saving the about:webrtc page so it can be attached to
+# bug reports.
+# Variables:
+#  $path (String) - The path to which the file is saved.
 about-webrtc-save-page-complete-msg = { $path } को पृष्ठ सहेज गया:
-about-webrtc-debug-mode-toggled-off-state-msg = ट्रेस लॉग { $path } पर पाया जा सकता हैं
-about-webrtc-debug-mode-toggled-on-state-msg = दोषसुधार मोड सक्रिय, { $path } पर ट्रेस लॉग
-
-##
-
 # This is the total number of frames encoded or decoded over an RTP stream.
 # Variables:
 #  $frames (Number) - The number of frames encoded or decoded.
@@ -187,13 +161,11 @@ about-webrtc-frames =
         [one] { $frames } फ्रेम
        *[other] { $frames } फ्रेम
     }
-
 # Jitter is the variance in the arrival time of packets.
 # See: https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-jitter
 # Variables:
 #   $jitter (Number) - The jitter.
 about-webrtc-jitter-label = अंतर { $jitter }
-
 # ICE candidates arriving after the remote answer arrives are considered trickled
 # (an attribute of an ICE candidate). These are highlighted in the ICE stats
 # table with light blue background.
@@ -206,25 +178,12 @@ about-webrtc-trickle-caption-msg = छँटे उम्मीदवार (उ
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-local = स्थानीय SDP को टाइमस्टैम्प { NUMBER($timestamp, useGrouping: "false") } पर सेट करें
-
 # This is used as a header for remote SDP.
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 about-webrtc-sdp-set-at-timestamp-remote = दूरस्थ SDP को टाइमस्टैम्प { NUMBER($timestamp, useGrouping: "false") } पर सेट करें
-
 # This is used as a header for an SDP section contained in two columns allowing for side-by-side comparisons.
 # Variables:
 #  $timestamp (Number) - The Unix Epoch time at which the SDP was set.
 #  $relative-timestamp (Number) - The timestamp relative to the timestamp of the earliest received SDP.
 about-webrtc-sdp-set-timestamp = टाइमस्टैम्प { NUMBER($timestamp, useGrouping: "false") } (+ { $relative-timestamp } ms)
-
-## These are displayed on the button that shows or hides the SDP information disclosure
-
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-

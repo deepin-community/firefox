@@ -67,7 +67,7 @@ static void AnalyzeAdd(TempAllocator& alloc, MAdd* add) {
     }
   }
 
-  MInstruction* rhs = MConstant::New(alloc, Int32Value(sum.constant));
+  MInstruction* rhs = MConstant::NewInt32(alloc, sum.constant);
   add->block()->insertBefore(add, rhs);
 
   MAdd* addNew = MAdd::New(alloc, sum.term, rhs, add->truncateKind());
@@ -84,7 +84,7 @@ static void AnalyzeAdd(TempAllocator& alloc, MAdd* add) {
   markNodesAsRecoveredOnBailout(add);
 }
 
-bool FoldLinearArithConstants(MIRGenerator* mir, MIRGraph& graph) {
+bool FoldLinearArithConstants(const MIRGenerator* mir, MIRGraph& graph) {
   JitSpew(JitSpew_FLAC, "Begin");
   for (PostorderIterator block(graph.poBegin()); block != graph.poEnd();
        block++) {

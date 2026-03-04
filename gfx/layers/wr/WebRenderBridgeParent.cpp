@@ -6,6 +6,7 @@
 
 #include "mozilla/layers/WebRenderBridgeParent.h"
 
+#include "mozmemory.h"
 #include "CompositableHost.h"
 #include "gfxEnv.h"
 #include "gfxPlatform.h"
@@ -22,7 +23,7 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/GPUParent.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "mozilla/layers/AnimationHelper.h"
 #include "mozilla/layers/APZSampler.h"
 #include "mozilla/layers/APZUpdater.h"
@@ -43,9 +44,7 @@
 #include "mozilla/layers/WebRenderImageHost.h"
 #include "mozilla/layers/WebRenderTextureHost.h"
 #include "mozilla/ProfilerMarkerTypes.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/Unused.h"
 #include "mozilla/webrender/RenderTextureHostSWGL.h"
 #include "mozilla/webrender/RenderThread.h"
 #include "mozilla/widget/CompositorWidget.h"
@@ -124,6 +123,8 @@ static CrashReporter::Annotation FromWrCrashAnnotation(
       return CrashReporter::Annotation::GraphicsCompileShader;
     case mozilla::wr::CrashAnnotation::DrawShader:
       return CrashReporter::Annotation::GraphicsDrawShader;
+    case mozilla::wr::CrashAnnotation::FontFile:
+      return CrashReporter::Annotation::GraphicsFontFile;
     default:
       MOZ_ASSERT_UNREACHABLE("Unhandled annotation!");
       return CrashReporter::Annotation::Count;
@@ -154,9 +155,65 @@ void gfx_wr_clear_crash_annotation(mozilla::wr::CrashAnnotation aAnnotation) {
 }
 }
 
+namespace mozilla::gfx {
+wr::PipelineId GetTemporaryWebRenderPipelineId(wr::PipelineId aMainPipeline);
+}
+
 namespace mozilla::layers {
 
 using namespace mozilla::gfx;
+
+#ifdef MOZ_MEMORY
+static bool sAllocAsjustmentTaskCancelled = false;
+static bool sIncreasedDirtyPageThreshold = false;
+
+static void ResetDirtyPageModifier();
+
+static void ScheduleResetMaxDirtyPageModifier() {
+  NS_DelayedDispatchToCurrentThread(
+      NewRunnableFunction("ResetDirtyPageModifier", &ResetDirtyPageModifier),
+      100  // In ms.
+  );
+}
+
+static void NeedIncreasedMaxDirtyPageModifier() {
+  if (sIncreasedDirtyPageThreshold) {
+    sAllocAsjustmentTaskCancelled = true;
+    return;
+  }
+
+  moz_set_max_dirty_page_modifier(3);
+  sIncreasedDirtyPageThreshold = true;
+
+  ScheduleResetMaxDirtyPageModifier();
+}
+
+static void ResetDirtyPageModifier() {
+  if (!sIncreasedDirtyPageThreshold) {
+    return;
+  }
+
+  if (sAllocAsjustmentTaskCancelled) {
+    sAllocAsjustmentTaskCancelled = false;
+    ScheduleResetMaxDirtyPageModifier();
+    return;
+  }
+
+  moz_set_max_dirty_page_modifier(0);
+
+  wr::RenderThread* renderThread = wr::RenderThread::Get();
+  if (renderThread) {
+    renderThread->NotifyIdle();
+  }
+
+  jemalloc_free_excess_dirty_pages();
+
+  sIncreasedDirtyPageThreshold = false;
+}
+#else
+// Don't bother doing anything of the memory allocator doesn't support this.
+static void NeedIncreasedMaxDirtyPageModifier() {}
+#endif
 
 LazyLogModule gWebRenderBridgeParentLog("WebRenderBridgeParent");
 #define LOG(...) \
@@ -557,6 +614,27 @@ bool WebRenderBridgeParent::UpdateResources(
                                          wr::ToDeviceIntRect(op.area()));
         break;
       }
+      case OpUpdateResource::TOpAddSnapshotImage: {
+        const auto& op = cmd.get_OpAddSnapshotImage();
+        if (!MatchesNamespace(wr::AsImageKey(op.key()))) {
+          MOZ_ASSERT_UNREACHABLE("Stale snapshot image key (add)!");
+          break;
+        }
+        aUpdates.AddSnapshotImage(op.key());
+        break;
+      }
+      case OpUpdateResource::TOpDeleteSnapshotImage: {
+        const auto& op = cmd.get_OpDeleteSnapshotImage();
+        if (NS_WARN_IF(!MatchesNamespace(wr::AsImageKey(op.key())))) {
+          // TODO(bug 1972525): Fix tab detach with an active view transition
+          // and uncomment this assertion.
+          //
+          // MOZ_ASSERT_UNREACHABLE("Stale snapshot image key (remove)!");
+          break;
+        }
+        aUpdates.DeleteSnapshotImage(op.key());
+        break;
+      }
       case OpUpdateResource::TOpAddSharedExternalImage: {
         const auto& op = cmd.get_OpAddSharedExternalImage();
         // gfxCriticalNote is called on error
@@ -843,7 +921,8 @@ bool WebRenderBridgeParent::UpdateSharedExternalImage(
   wr::ImageDescriptor descriptor(surfaceSize, dSurf->Stride(),
                                  dSurf->GetFormat());
   aResources.UpdateExternalImageWithDirtyRect(
-      aKey, descriptor, aExtId, imageType, wr::ToDeviceIntRect(aDirtyRect), 0);
+      aKey, descriptor, aExtId, imageType, wr::ToDeviceIntRect(aDirtyRect), 0,
+      /* aNormalizedUvs */ false);
 
   return true;
 }
@@ -852,7 +931,7 @@ void WebRenderBridgeParent::ObserveSharedSurfaceRelease(
     const nsTArray<wr::ExternalImageKeyPair>& aPairs,
     const bool& aFromCheckpoint) {
   if (!mDestroyed) {
-    Unused << SendWrReleasedImages(aPairs);
+    (void)SendWrReleasedImages(aPairs);
   }
 
   if (!aFromCheckpoint && mAsyncImageManager) {
@@ -891,7 +970,7 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvUpdateResources(
   wr::TransactionBuilder txn(mApi);
   txn.SetLowPriority(!IsRootWebRenderBridgeParent());
 
-  Unused << GetNextWrEpoch();
+  (void)GetNextWrEpoch();
 
   bool success =
       UpdateResources(aResourceUpdates, aSmallShmems, aLargeShmems, txn);
@@ -1081,7 +1160,8 @@ bool WebRenderBridgeParent::SetDisplayList(
     const nsTArray<OpUpdateResource>& aResourceUpdates,
     const nsTArray<RefCountedShmem>& aSmallShmems,
     const nsTArray<ipc::Shmem>& aLargeShmems, const TimeStamp& aTxnStartTime,
-    wr::TransactionBuilder& aTxn, wr::Epoch aWrEpoch) {
+    wr::TransactionBuilder& aTxn, wr::Epoch aWrEpoch, const VsyncId& aVsyncId,
+    bool aRenderOffscreen) {
   bool success =
       UpdateResources(aResourceUpdates, aSmallShmems, aLargeShmems, aTxn);
 
@@ -1090,25 +1170,33 @@ bool WebRenderBridgeParent::SetDisplayList(
   wr::Vec<uint8_t> dlSpatialTreeData(std::move(aSpatialTreeDL));
 
   if (IsRootWebRenderBridgeParent()) {
-#ifdef MOZ_WIDGET_GTK
-    if (mWidget->AsGTK()) {
-      mWidget->AsGTK()->RemoteLayoutSizeUpdated(aRect);
-    }
-#endif
     LayoutDeviceIntSize widgetSize = mWidget->GetClientSize();
     LayoutDeviceIntRect rect =
         LayoutDeviceIntRect(LayoutDeviceIntPoint(), widgetSize);
     aTxn.SetDocumentView(rect);
   }
-  aTxn.SetDisplayList(aWrEpoch, mPipelineId, aDLDesc, dlItems, dlCache,
+
+  wr::PipelineId pipelineId = mPipelineId;
+  if (aRenderOffscreen) {
+    pipelineId = gfx::GetTemporaryWebRenderPipelineId(pipelineId);
+  }
+
+  aTxn.SetDisplayList(aWrEpoch, pipelineId, aDLDesc, dlItems, dlCache,
                       dlSpatialTreeData);
 
-  MaybeNotifyOfLayers(aTxn, true);
+  if (aRenderOffscreen) {
+    aTxn.RenderOffscreen(pipelineId);
+    aTxn.RemovePipeline(pipelineId);
+  } else {
+    MaybeNotifyOfLayers(aTxn, true);
+  }
 
-  if (!IsRootWebRenderBridgeParent()) {
+  if (!IsRootWebRenderBridgeParent() && !aRenderOffscreen) {
     aTxn.Notify(wr::Checkpoint::SceneBuilt, MakeUnique<SceneBuiltNotification>(
                                                 this, aWrEpoch, aTxnStartTime));
   }
+
+  NeedIncreasedMaxDirtyPageModifier();
 
   mApi->SendTransaction(aTxn);
 
@@ -1119,7 +1207,8 @@ bool WebRenderBridgeParent::SetDisplayList(
 
 bool WebRenderBridgeParent::ProcessDisplayListData(
     DisplayListData& aDisplayList, wr::Epoch aWrEpoch,
-    const TimeStamp& aTxnStartTime, bool aValidTransaction) {
+    const TimeStamp& aTxnStartTime, bool aValidTransaction,
+    bool aRenderOffscreen, const VsyncId& aVsyncId) {
   wr::TransactionBuilder txn(mApi, /* aUseSceneBuilderThread */ true,
                              mRemoteTextureTxnScheduler, mFwdTransactionId);
   Maybe<wr::AutoTransactionSender> sender;
@@ -1155,15 +1244,16 @@ bool WebRenderBridgeParent::ProcessDisplayListData(
 
   if (aDisplayList.mDLItems && aDisplayList.mDLCache &&
       aDisplayList.mDLSpatialTree) {
-    success =
-        SetDisplayList(
-            aDisplayList.mRect, std::move(aDisplayList.mDLItems.ref()),
-            std::move(aDisplayList.mDLCache.ref()),
-            std::move(aDisplayList.mDLSpatialTree.ref()), aDisplayList.mDLDesc,
-            aDisplayList.mResourceUpdates, aDisplayList.mSmallShmems,
-            aDisplayList.mLargeShmems, aTxnStartTime, txn, aWrEpoch) &&
-        success;
+    success = SetDisplayList(
+                  aDisplayList.mRect, std::move(aDisplayList.mDLItems.ref()),
+                  std::move(aDisplayList.mDLCache.ref()),
+                  std::move(aDisplayList.mDLSpatialTree.ref()),
+                  aDisplayList.mDLDesc, aDisplayList.mResourceUpdates,
+                  aDisplayList.mSmallShmems, aDisplayList.mLargeShmems,
+                  aTxnStartTime, txn, aWrEpoch, aVsyncId, aRenderOffscreen) &&
+              success;
   }
+
   return success;
 }
 
@@ -1173,7 +1263,8 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvSetDisplayList(
     const bool& aContainsSVGGroup, const VsyncId& aVsyncId,
     const TimeStamp& aVsyncStartTime, const TimeStamp& aRefreshStartTime,
     const TimeStamp& aTxnStartTime, const nsACString& aTxnURL,
-    const TimeStamp& aFwdTime, nsTArray<CompositionPayload>&& aPayloads) {
+    const TimeStamp& aFwdTime, nsTArray<CompositionPayload>&& aPayloads,
+    const bool& aRenderOffscreen) {
   if (mDestroyed) {
     for (const auto& op : aToDestroy) {
       DestroyActor(op);
@@ -1195,8 +1286,7 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvSetDisplayList(
 
   CompositorBridgeParent* cbp = GetRootCompositorBridgeParent();
   uint64_t innerWindowId = cbp ? cbp->GetInnerWindowId() : 0;
-  AUTO_PROFILER_TRACING_MARKER_INNERWINDOWID("Paint", "SetDisplayList",
-                                             GRAPHICS, innerWindowId);
+  AUTO_PROFILER_MARKER_INNERWINDOWID("SetDisplayList", GRAPHICS, innerWindowId);
   UpdateFwdTransactionId(aFwdTransactionId);
 
   // This ensures that destroy operations are always processed. It is not safe
@@ -1213,8 +1303,9 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvSetDisplayList(
   }
 
   bool validTransaction = aDisplayList.mIdNamespace == mIdNamespace;
-  bool success = ProcessDisplayListData(aDisplayList, wrEpoch, aTxnStartTime,
-                                        validTransaction);
+  bool success =
+      ProcessDisplayListData(aDisplayList, wrEpoch, aTxnStartTime,
+                             validTransaction, aRenderOffscreen, aVsyncId);
 
   if (!IsRootWebRenderBridgeParent()) {
     aPayloads.AppendElement(
@@ -1262,7 +1353,7 @@ bool WebRenderBridgeParent::ProcessEmptyTransactionUpdates(
   // Update WrEpoch for UpdateResources() and ProcessWebRenderParentCommands().
   // WrEpoch is used to manage ExternalImages lifetimes in
   // AsyncImagePipelineManager.
-  Unused << GetNextWrEpoch();
+  (void)GetNextWrEpoch();
 
   const bool validTransaction = aData.mIdNamespace == mIdNamespace;
   bool success = true;
@@ -1284,6 +1375,7 @@ bool WebRenderBridgeParent::ProcessEmptyTransactionUpdates(
     // There are resource updates, then we update Epoch of transaction.
     txn.UpdateEpoch(mPipelineId, mWrEpoch);
     *aScheduleComposite = true;
+    NeedIncreasedMaxDirtyPageModifier();
   } else {
     // If TransactionBuilder does not have resource updates nor display list,
     // ScheduleGenerateFrame is not triggered via SceneBuilder and there is no
@@ -1333,7 +1425,7 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvEmptyTransaction(
                                              aTxnURL);
   }
 
-  AUTO_PROFILER_TRACING_MARKER("Paint", "EmptyTransaction", GRAPHICS);
+  AUTO_PROFILER_MARKER("EmptyTransaction", GRAPHICS);
   UpdateFwdTransactionId(aFwdTransactionId);
 
   // This ensures that destroy operations are always processed. It is not safe
@@ -1426,6 +1518,7 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvParentCommands(
   wr::TransactionBuilder txn(mApi);
   txn.SetLowPriority(!IsRootWebRenderBridgeParent());
   bool success = ProcessWebRenderParentCommands(aCommands, txn);
+  NeedIncreasedMaxDirtyPageModifier();
   mApi->SendTransaction(txn);
 
   if (!success) {
@@ -1589,7 +1682,7 @@ void WebRenderBridgeParent::FlushFramePresentation() {
   // this effectively blocks on the render backend and renderer threads,
   // following the same codepath that WebRender takes to render and composite
   // a frame.
-  mApi->WaitFlushed();
+  mApi->WaitUntilPresentationFlushed();
 }
 
 void WebRenderBridgeParent::DisableNativeCompositor() {
@@ -1710,7 +1803,7 @@ void WebRenderBridgeParent::MaybeCaptureScreenPixels() {
   mApi->Readback(TimeStamp::Now(), size, format,
                  Range<uint8_t>(mem.get<uint8_t>(), buffer_size), &needsYFlip);
 
-  Unused << mScreenPixelsTarget->SendScreenPixels(
+  (void)mScreenPixelsTarget->SendScreenPixels(
       std::move(mem), ScreenIntSize(client_size.width, client_size.height),
       needsYFlip);
 
@@ -1763,20 +1856,28 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvGetSnapshot(
   TimeStamp start = TimeStamp::Now();
   MOZ_ASSERT(bufferTexture->GetBufferDescriptor().type() ==
              BufferDescriptor::TRGBDescriptor);
-  DebugOnly<uint32_t> stride = ImageDataSerializer::GetRGBStride(
-      bufferTexture->GetBufferDescriptor().get_RGBDescriptor());
+  if (bufferTexture->GetBufferDescriptor().type() !=
+      BufferDescriptor::TRGBDescriptor) {
+    return IPC_FAIL_NO_REASON(this);
+  }
+
   uint8_t* buffer = bufferTexture->GetBuffer();
+  MOZ_ASSERT(buffer);
+  if (!buffer) {
+    return IPC_FAIL_NO_REASON(this);
+  }
+
   IntSize size = bufferTexture->GetSize();
 
-  MOZ_ASSERT(buffer);
   // For now the only formats we get here are RGBA and BGRA, and code below is
   // assuming a bpp of 4. If we allow other formats, the code needs adjusting
   // accordingly.
   MOZ_ASSERT(BytesPerPixel(bufferTexture->GetFormat()) == 4);
-  uint32_t buffer_size = size.width * size.height * 4;
+  if (BytesPerPixel(bufferTexture->GetFormat()) != 4) {
+    return IPC_FAIL_NO_REASON(this);
+  }
 
-  // Assert the stride of the buffer is what webrender expects
-  MOZ_ASSERT((uint32_t)(size.width * 4) == stride);
+  uint32_t buffer_size = size.width * size.height * 4;
 
   FlushSceneBuilds();
   FlushFrameGeneration(wr::RenderReasons::SNAPSHOT);
@@ -1937,14 +2038,6 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvClearCachedResources() {
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult WebRenderBridgeParent::RecvClearAnimationResources() {
-  if (!mDestroyed) {
-    ClearAnimationResources();
-  }
-
-  return IPC_OK();
-}
-
 wr::Epoch WebRenderBridgeParent::UpdateWebRender(
     CompositorVsyncScheduler* aScheduler, RefPtr<wr::WebRenderAPI>&& aApi,
     AsyncImagePipelineManager* aImageMgr,
@@ -1971,7 +2064,7 @@ wr::Epoch WebRenderBridgeParent::UpdateWebRender(
   // allocation. Without client side's layout refactoring, we could not finish
   // all old layers/webrender keys removals before new layer/webrender keys
   // allocation. In future, we could address the problem.
-  Unused << SendWrUpdated(mIdNamespace, aTextureFactoryIdentifier);
+  (void)SendWrUpdated(mIdNamespace, aTextureFactoryIdentifier);
   CompositorBridgeParentBase* cBridge = mCompositorBridge;
   // XXX Stop to clear resources if webreder supports resources sharing between
   // different webrender instances.
@@ -2201,6 +2294,15 @@ mozilla::ipc::IPCResult WebRenderBridgeParent::RecvGetFrameUniformity(
   return IPC_OK();
 }
 
+mozilla::ipc::IPCResult WebRenderBridgeParent::RecvEndWheelTransaction(
+    EndWheelTransactionResolver&& aResolve) {
+  if (mDestroyed) {
+    return IPC_OK();
+  }
+  mCompositorBridge->EndWheelTransaction(GetLayersId(), std::move(aResolve));
+  return IPC_OK();
+}
+
 void WebRenderBridgeParent::ActorDestroy(ActorDestroyReason aWhy) { Destroy(); }
 
 void WebRenderBridgeParent::ResetPreviousSampleTime() {
@@ -2256,8 +2358,8 @@ void WebRenderBridgeParent::CompositeToTarget(VsyncId aId,
 
   CompositorBridgeParent* cbp = GetRootCompositorBridgeParent();
   uint64_t innerWindowId = cbp ? cbp->GetInnerWindowId() : 0;
-  AUTO_PROFILER_TRACING_MARKER_INNERWINDOWID("Paint", "CompositeToTarget",
-                                             GRAPHICS, innerWindowId);
+  AUTO_PROFILER_MARKER_INNERWINDOWID("CompositeToTarget", GRAPHICS,
+                                     innerWindowId);
 
   bool paused = true;
   if (cbp) {
@@ -2294,7 +2396,7 @@ void WebRenderBridgeParent::CompositeToTarget(VsyncId aId,
                          MarkerInnerWindowId(innerWindowId),
                          "Too many pending frames");
 
-    Telemetry::ScalarAdd(Telemetry::ScalarID::GFX_SKIPPED_COMPOSITES, 1);
+    glean::gfx::skipped_composites.Add(1);
 
     return;
   }
@@ -2390,8 +2492,12 @@ void WebRenderBridgeParent::MaybeGenerateFrame(VsyncId aId,
   mApi->SetFrameStartTime(startTime);
 #endif
 
-  fastTxn.GenerateFrame(aId, aReasons);
+  const bool present = true;
+  const bool tracked = true;
+  fastTxn.GenerateFrame(aId, present, tracked, aReasons);
   wr::RenderThread::Get()->IncPendingFrameCount(mApi->GetId(), aId, start);
+
+  NeedIncreasedMaxDirtyPageModifier();
 
   mApi->SendTransaction(fastTxn);
 
@@ -2444,7 +2550,7 @@ void WebRenderBridgeParent::NotifySceneBuiltForEpoch(
   }
 }
 
-void WebRenderBridgeParent::NotifyDidSceneBuild(
+void WebRenderBridgeParent::ScheduleFrameAfterSceneBuild(
     RefPtr<const wr::WebRenderPipelineInfo> aInfo) {
   MOZ_ASSERT(IsRootWebRenderBridgeParent());
   if (!mCompositorScheduler) {
@@ -2491,18 +2597,6 @@ void WebRenderBridgeParent::NotifyDidSceneBuild(
                     wr::RenderReasons::SCENE, nullptr, nullptr);
 }
 
-static Telemetry::HistogramID GetHistogramId(const bool aIsLargePaint,
-                                             const bool aIsFullDisplayList) {
-  const Telemetry::HistogramID histogramIds[] = {
-      Telemetry::CONTENT_SMALL_PAINT_PHASE_WEIGHT_PARTIAL,
-      Telemetry::CONTENT_LARGE_PAINT_PHASE_WEIGHT_PARTIAL,
-      Telemetry::CONTENT_SMALL_PAINT_PHASE_WEIGHT_FULL,
-      Telemetry::CONTENT_LARGE_PAINT_PHASE_WEIGHT_FULL,
-  };
-
-  return histogramIds[(aIsFullDisplayList * 2) + aIsLargePaint];
-}
-
 static void RecordPaintPhaseTelemetry(wr::RendererStats* aStats) {
   if (!aStats || !aStats->full_paint) {
     return;
@@ -2528,8 +2622,23 @@ static void RecordPaintPhaseTelemetry(wr::RendererStats* aStats) {
 
   auto RecordKey = [&](const nsCString& aKey, const double aTimeMs) -> void {
     const auto val = static_cast<uint32_t>(AsPercentage(aTimeMs));
-    const auto histogramId = GetHistogramId(isLargePaint, isFullDisplayList);
-    Telemetry::Accumulate(histogramId, aKey, val);
+    if (isFullDisplayList) {
+      if (isLargePaint) {
+        glean::gfx_content::large_paint_phase_weight_full.Get(aKey)
+            .AccumulateSingleSample(val);
+      } else {
+        glean::gfx_content::small_paint_phase_weight_full.Get(aKey)
+            .AccumulateSingleSample(val);
+      }
+    } else {
+      if (isLargePaint) {
+        glean::gfx_content::large_paint_phase_weight_partial.Get(aKey)
+            .AccumulateSingleSample(val);
+      } else {
+        glean::gfx_content::small_paint_phase_weight_partial.Get(aKey)
+            .AccumulateSingleSample(val);
+      }
+    }
   };
 
   RecordKey("dl"_ns, geckoDL);
@@ -2572,7 +2681,6 @@ void WebRenderBridgeParent::FlushTransactionIdsForEpoch(
             transactionId.mId, aCompositeStartTime, aRenderStartTime, aEndTime,
             contentFrameTime,
             aStats ? (double(aStats->resource_upload_time) / 1000000.0) : 0.0,
-            aStats ? (double(aStats->gpu_cache_upload_time) / 1000000.0) : 0.0,
             transactionId.mTxnStartTime, transactionId.mRefreshStartTime,
             transactionId.mFwdTime, transactionId.mSceneBuiltTime,
             transactionId.mSkippedComposites, transactionId.mTxnURL));
@@ -2824,8 +2932,8 @@ TextureFactoryIdentifier WebRenderBridgeParent::GetTextureFactoryIdentifier() {
   TextureFactoryIdentifier ident(
       mApi->GetBackendType(), mApi->GetCompositorType(), XRE_GetProcessType(),
       mApi->GetMaxTextureSize(), mApi->GetUseANGLE(), mApi->GetUseDComp(),
-      mAsyncImageManager->UseCompositorWnd(), false, false, false,
-      supportsD3D11NV12, mApi->GetSyncHandle());
+      mApi->GetUseLayerCompositor(), mAsyncImageManager->UseCompositorWnd(),
+      false, false, false, supportsD3D11NV12, mApi->GetSyncHandle());
   return ident;
 }
 

@@ -19,7 +19,6 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/TimeStamp.h"  // for TimeStamp
-#include "mozilla/Unused.h"
 #include "VRChild.h"
 #include "VRThread.h"
 
@@ -50,7 +49,7 @@ bool VRProcessParent::Launch() {
 
   mLaunchPhase = LaunchPhase::Waiting;
 
-  std::vector<std::string> extraArgs;
+  geckoargs::ChildProcessArgs extraArgs;
   ProcessChild::AddPlatformBuildID(extraArgs);
 
   mPrefSerializer = MakeUnique<ipc::SharedPreferenceSerializer>();
@@ -60,7 +59,7 @@ bool VRProcessParent::Launch() {
   }
   mPrefSerializer->AddSharedPrefCmdLineArgs(*this, extraArgs);
 
-  if (!GeckoChildProcessHost::AsyncLaunch(extraArgs)) {
+  if (!GeckoChildProcessHost::AsyncLaunch(std::move(extraArgs))) {
     mLaunchPhase = LaunchPhase::Complete;
     mPrefSerializer = nullptr;
     return false;
@@ -177,7 +176,7 @@ bool VRProcessParent::InitAfterConnect(bool aSucceeded) {
         vpm->CreateGPUBridges(gpuChild->OtherEndpointProcInfo(), &vrGPUBridge);
     MOZ_ASSERT(opened);
 
-    Unused << gpuChild->SendInitVR(std::move(vrGPUBridge));
+    (void)gpuChild->SendInitVR(std::move(vrGPUBridge));
   }
 
   return true;

@@ -1,5 +1,5 @@
-commit 5861e1fd52f1d7673eee38bc3c965aa18b336062
-Author: Peter Edberg <pedberg@unicode.org>
-Date:   Tue Apr 11 10:32:35 2023 -0700
+commit b33869b304cff387d544eaa5e820b93a39e737bf
+Author: Fredrik Roubert <roubert@google.com>
+Date:   Fri Nov 7 11:53:21 2025 -0800
 
-    ICU-22221 update cldr-icu instructions, and ICU tag for integration
+    ICU-23261 Bugfix: Correctly propagate errors to the caller.

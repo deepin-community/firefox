@@ -24,18 +24,15 @@ webext-perms-add =
 webext-perms-cancel =
     .label = Bekor qilish
     .accesskey = C
-
 webext-perms-sideload-enable =
     .label = Yoqish
     .accesskey = Y
 webext-perms-sideload-cancel =
     .label = Bekor qilish
     .accesskey = B
-
 webext-perms-update-accept =
     .label = Yangilash
     .accesskey = Y
-
 webext-perms-optional-perms-list-intro = U quyidagi uchun huquqni olmoqchi:
 webext-perms-optional-perms-allow =
     .label = Ruxsat berish
@@ -43,17 +40,6 @@ webext-perms-optional-perms-allow =
 webext-perms-optional-perms-deny =
     .label = Rad qilish
     .accesskey = D
-
-## Headers used in the webextension permissions dialog for synthetic add-ons.
-## The part of the string describing what privileges the extension gives should be consistent
-## with the value of webext-site-perms-description-gated-perms-{sitePermission}.
-## Note, this string will be used as raw markup. Avoid characters like <, >, &
-## Variables:
-##   $hostname (String): the hostname of the site the add-on is being installed from.
-
-
-##
-
 
 ## Headers used in the webextension permissions dialog.
 ## Note: This string will be used as raw markup. Avoid characters like <, >, &

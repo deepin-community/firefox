@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Ogled
 download-cert-view-text = Preveri digitalno potrdilo overitelja
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Izdal: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Shranjeno na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Zapomni si to odločitev
+client-auth-cert-remember-label = Zapomni si to odločitev:
+client-auth-cert-remember-never =
+    .label = enkrat
+client-auth-cert-remember-always =
+    .label = trajno
+client-auth-cert-remember-temporarily =
+    .label = za to sejo
 
 ## Set password (p12) dialog
 

@@ -1,0 +1,35 @@
+From: Cheng Yangyang <chengyangyang-hf@loongson.cn>
+Date: Tue, 13 Jan 2026 13:17:12 +0000
+Subject: Bug 2008694 - Fix build error by 'undeclared identifier uint8_t'.
+ r=sergesanspaille
+
+Differential Revision: https://phabricator.services.mozilla.com/D278607
+---
+ mfbt/tests/TestIntegerRange.cpp      | 1 +
+ mfbt/tests/TestSmallPointerArray.cpp | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/mfbt/tests/TestIntegerRange.cpp b/mfbt/tests/TestIntegerRange.cpp
+index 3aad90f..7f5855e 100644
+--- a/mfbt/tests/TestIntegerRange.cpp
++++ b/mfbt/tests/TestIntegerRange.cpp
+@@ -8,6 +8,7 @@
+ #include "mozilla/IntegerRange.h"
+ 
+ #include <stddef.h>
++#include <stdint.h>
+ 
+ using mozilla::IntegerRange;
+ using mozilla::Reversed;
+diff --git a/mfbt/tests/TestSmallPointerArray.cpp b/mfbt/tests/TestSmallPointerArray.cpp
+index 163b2b1d..f6c960c 100644
+--- a/mfbt/tests/TestSmallPointerArray.cpp
++++ b/mfbt/tests/TestSmallPointerArray.cpp
+@@ -5,6 +5,7 @@
+  * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ 
+ #include "mozilla/SmallPointerArray.h"
++#include <stdint.h>
+ 
+ #define PTR1 (void*)0x4
+ #define PTR2 (void*)0x5

@@ -6,7 +6,6 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { Sqlite } from "resource://gre/modules/Sqlite.sys.mjs";
 
 const SCHEMA_VERSION = 1;
-const TRACKERS_BLOCKED_COUNT = "contentblocking.trackers_blocked_count";
 
 const lazy = {};
 
@@ -135,6 +134,11 @@ TrackingDBService.prototype = {
   },
 
   async _initialize() {
+    if (Services.startup.shuttingDown) {
+      // Skip initialization once shutdown has begun
+      return;
+    }
+
     let db = await Sqlite.openConnection({ path: lazy.DB_PATH });
 
     try {
@@ -241,7 +245,9 @@ TrackingDBService.prototype = {
           // If a tracking cookie was blocked attribute it to tracking cookies.
           // This includes social tracking cookies since STP is not enabled.
           state & Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_TRACKER ||
-          state & Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_SOCIALTRACKER
+          state &
+            Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_SOCIALTRACKER ||
+          state & Ci.nsIWebProgressListener.STATE_COOKIES_PARTITIONED_TRACKER
         ) {
           result = Ci.nsITrackingDBService.TRACKING_COOKIES_ID;
         } else if (
@@ -276,6 +282,7 @@ TrackingDBService.prototype = {
 
   /**
    * Saves data rows to the DB.
+   *
    * @param data
    *        An array of JS objects representing row items to save.
    */
@@ -290,7 +297,7 @@ TrackingDBService.prototype = {
           let type = this.identifyType(log[thirdParty]);
           if (type) {
             // Send the blocked event to Telemetry
-            Services.telemetry.scalarAdd(TRACKERS_BLOCKED_COUNT, 1);
+            Glean.contentblocking.trackersBlockedCount.add(1);
 
             // today is a date "YYY-MM-DD" which can compare with what is
             // already saved in the database.

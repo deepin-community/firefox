@@ -80,7 +80,7 @@ migration-passwords-option-label = 저장된 비밀번호
 migration-history-option-label = 방문 기록
 migration-extensions-option-label = 확장 기능
 migration-form-autofill-option-label = 양식 자동 채우기 데이터
-migration-payment-methods-option-label = 결제 방법
+migration-payment-methods-option-label = 결제 수단
 migration-cookies-option-label = 쿠키
 migration-session-option-label = 창과 탭
 migration-otherdata-option-label = 기타 데이터
@@ -161,7 +161,7 @@ migration-list-password-label = 비밀번호
 migration-list-history-label = 기록
 migration-list-extensions-label = 확장 기능
 migration-list-autofill-label = 자동 채우기 데이터
-migration-list-payment-methods-label = 결제 방법
+migration-list-payment-methods-label = 결제 수단
 
 ##
 
@@ -184,6 +184,14 @@ migration-safari-password-import-step1 = Safari에서 "Safari" 메뉴를 열고 
 migration-safari-password-import-step2 = <img data-l10n-name="safari-icon-3dots"/> 버튼을 선택하고 "모든 비밀번호 내보내기"를 선택하세요
 migration-safari-password-import-step3 = 비밀번호 파일을 저장하세요
 migration-safari-password-import-step4 = 아래의 "파일 선택"을 사용하여 저장한 비밀번호 파일을 선택하세요.
+migration-chrome-windows-password-import-header = Chrome에서 비밀번호를 가져오는 방법
+migration-chrome-windows-password-import-steps-header = Chrome:
+migration-chrome-windows-password-import-step1 = 주 메뉴 <img data-l10n-name="chrome-icon-3dots"/>를 열고, 비밀번호 및 자동 완성 > Google 비밀번호 관리자로 이동하세요.
+migration-chrome-windows-password-import-step2 = 메뉴에서 "설정"을 선택하세요.
+migration-chrome-windows-password-import-step3 = "파일 다운로드"를 선택하고 기기에 저장하세요.
+migration-chrome-windows-password-import-step4 = 가져오기를 마치려면, 여기로 돌아와서 "파일 선택"을 하세요.
+migration-manual-password-import-skip-button = 건너뛰기
+migration-manual-password-import-select-button = 파일 선택
 migration-safari-password-import-skip-button = 건너뛰기
 migration-safari-password-import-select-button = 파일 선택
 # Shown in the migration wizard after importing bookmarks from another
@@ -244,7 +252,7 @@ migration-wizard-progress-success-formdata = 양식 기록
 #
 # Variables:
 #  $quantity (Number): the number of successfully imported payment methods
-migration-wizard-progress-success-payment-methods = 결제 방법 { $quantity }개
+migration-wizard-progress-success-payment-methods = 결제 수단 { $quantity }개
 migration-wizard-safari-permissions-sub-header = Safari 북마크 및 방문 기록을 가져오려면:
 migration-wizard-safari-instructions-continue = "계속"을 선택하세요
 migration-wizard-safari-instructions-folder = 목록에서 Safari 폴더를 선택하고 "열기"를 선택하세요

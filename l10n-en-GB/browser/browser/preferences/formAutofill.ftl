@@ -17,7 +17,9 @@ autofill-manage-remove-button = Remove
 autofill-manage-add-button = Add…
 autofill-manage-edit-button = Edit…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Save address?
 address-capture-save-doorhanger-description = Save info to { -brand-short-name } so you can fill out forms quickly.
@@ -39,8 +41,6 @@ address-capture-manage-address-button =
     .label = Address settings
 address-capture-learn-more-button =
     .label = Learn more
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Add New Address
 address-capture-open-menu-button =
     .aria-label = Open menu
 address-capture-edit-address-button =
@@ -49,68 +49,78 @@ address-capture-edit-address-button =
 autofill-add-address-title = Add address
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Edit address
-autofill-address-name = Name
 autofill-address-given-name = First Name
 autofill-address-additional-name = Middle Name
 autofill-address-family-name = Last Name
+autofill-address-name = Name
 autofill-address-organization = Organisation
 autofill-address-street-address = Street Address
 autofill-address-street = Street Address
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Neighbourhood
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Village or Township
 autofill-address-island = Island
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Townland
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = City
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = District
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Post town
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Suburb
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Province
 autofill-address-state = State
 autofill-address-county = County
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Parish
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefecture
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Area
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Department
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirate
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblast
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Post Code
+# Postal code field.
 autofill-address-zip = Zip Code
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Add New Address
 autofill-address-country = Country or Region
 autofill-address-country-only = Country
 autofill-address-tel = Phone
@@ -122,11 +132,6 @@ autofill-country-warning-message = Form Autofill is currently available only for
 autofill-add-new-card-title = Add New Credit Card
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Edit Credit Card
-autofill-message-tooltip = View message about autofill
-# The dialog title for creating credit cards in browser preferences.
-autofill-add-card-title = Add card
-# The dialog title for editing credit cards in browser preferences.
-autofill-edit-card-title2 = Edit card
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -135,6 +140,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } is trying to show credit card information. Confirm access to this Windows account below.
        *[other] { -brand-short-name } is trying to show credit card information.
     }
+autofill-message-tooltip = View message about autofill
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Add card
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Edit card
 autofill-card-number = Card Number
 autofill-card-invalid-number = Please enter a valid card number
 autofill-card-name-on-card = Name on Card
@@ -142,6 +152,12 @@ autofill-card-expires-month = Exp. Month
 autofill-card-expires-year = Exp. Year
 autofill-card-billing-address = Billing Address
 autofill-card-network = Card Type
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = credit cards, credit, cards, debit cards, debit, wallet, checkout
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

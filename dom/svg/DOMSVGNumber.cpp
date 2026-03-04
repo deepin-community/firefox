@@ -5,14 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "DOMSVGNumber.h"
-#include "DOMSVGNumberList.h"
+
 #include "DOMSVGAnimatedNumberList.h"
+#include "DOMSVGNumberList.h"
 #include "SVGAnimatedNumberList.h"
 #include "SVGElement.h"
-#include "nsError.h"
-#include "nsContentUtils.h"  // for NS_ENSURE_FINITE
 #include "mozilla/dom/SVGNumberBinding.h"
 #include "mozilla/dom/SVGSVGElement.h"
+#include "nsContentUtils.h"  // for NS_ENSURE_FINITE
+#include "nsError.h"
 
 // See the architecture comment in DOMSVGAnimatedNumberList.h.
 
@@ -81,7 +82,7 @@ float DOMSVGNumber::Value() {
 
 void DOMSVGNumber::SetValue(float aValue, ErrorResult& aRv) {
   if (mIsAnimValItem) {
-    aRv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 

@@ -19,6 +19,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "jit/CompilationDependencyTracker.h"
 #include "jit/CompileInfo.h"
 #include "jit/CompileWrappers.h"
 #include "jit/JitAllocPolicy.h"
@@ -31,6 +32,7 @@
 namespace js {
 namespace jit {
 
+class BacktrackingAllocator;
 class JitRuntime;
 class MIRGraph;
 class OptimizationInfo;
@@ -40,9 +42,8 @@ class MIRGenerator final {
   MIRGenerator(CompileRealm* realm, const JitCompileOptions& options,
                TempAllocator* alloc, MIRGraph* graph,
                const CompileInfo* outerInfo,
-               const OptimizationInfo* optimizationInfo);
-
-  void initMinWasmMemory0Length(uint64_t init) { minWasmMemory0Length_ = init; }
+               const OptimizationInfo* optimizationInfo,
+               const wasm::CodeMetadata* wasmCodeMeta = nullptr);
 
   TempAllocator& alloc() { return *alloc_; }
   MIRGraph& graph() { return *graph_; }
@@ -57,7 +58,7 @@ class MIRGenerator final {
   }
 
   template <typename T>
-  T* allocate(size_t count = 1) {
+  js::lifo_alloc_pointer<T*> allocate(size_t count = 1) {
     size_t bytes;
     if (MOZ_UNLIKELY(!CalculateAllocSize<T>(count, &bytes))) {
       return nullptr;
@@ -108,7 +109,7 @@ class MIRGenerator final {
   }
 
   // Whether the main thread is trying to cancel this build.
-  bool shouldCancel(const char* why) { return cancelBuild_; }
+  bool shouldCancel(const char* why) const { return cancelBuild_; }
   void cancel() { cancelBuild_ = true; }
 
   bool compilingWasm() const { return outerInfo_->compilingWasm(); }
@@ -121,7 +122,6 @@ class MIRGenerator final {
     MOZ_ASSERT(compilingWasm());
     wasmMaxStackArgBytes_ = std::max(n, wasmMaxStackArgBytes_);
   }
-  uint64_t minWasmMemory0Length() const { return minWasmMemory0Length_; }
 
   void setNeedsOverrecursedCheck() { needsOverrecursedCheck_ = true; }
   bool needsOverrecursedCheck() const { return needsOverrecursedCheck_; }
@@ -136,8 +136,9 @@ class MIRGenerator final {
  private:
   // The CompileInfo for the outermost script.
   const CompileInfo* outerInfo_;
-
   const OptimizationInfo* optimizationInfo_;
+  const wasm::CodeMetadata* wasmCodeMeta_;
+
   TempAllocator* alloc_;
   MIRGraph* graph_;
   AbortReasonOr<Ok> offThreadStatus_;
@@ -159,22 +160,45 @@ class MIRGenerator final {
   bool licmEnabled() const;
   bool branchHintingEnabled() const;
 
- private:
-  uint64_t minWasmMemory0Length_;
-
-  IonPerfSpewer wasmPerfSpewer_;
-
- public:
-  IonPerfSpewer& perfSpewer() { return wasmPerfSpewer_; }
+  const wasm::CodeMetadata* wasmCodeMeta() const {
+    MOZ_ASSERT(wasmCodeMeta_);
+    return wasmCodeMeta_;
+  }
 
  public:
   const JitCompileOptions options;
 
  private:
-  GraphSpewer gs_;
+#ifdef JS_JITSPEW
+  GraphSpewer* graphSpewer_ = nullptr;
+#endif
+  JitSpewGraphSpewer jitSpewer_;
+  IonPerfSpewer perfSpewer_;
 
  public:
-  GraphSpewer& graphSpewer() { return gs_; }
+#ifdef JS_JITSPEW
+  void setGraphSpewer(GraphSpewer* graphSpewer) {
+    MOZ_ASSERT(!graphSpewer_);
+    graphSpewer_ = graphSpewer;
+  }
+#endif
+  IonPerfSpewer& perfSpewer() { return perfSpewer_; }
+
+  void spewBeginFunction(JSScript* function);
+  void spewBeginWasmFunction(unsigned funcIndex);
+  void spewPass(const char* name, BacktrackingAllocator* ra = nullptr);
+  void spewEndFunction();
+
+  CompilationDependencyTracker tracker;
+};
+
+class AutoSpewEndFunction {
+ private:
+  MIRGenerator* mir_;
+
+ public:
+  explicit AutoSpewEndFunction(MIRGenerator* mir) : mir_(mir) {}
+  ~AutoSpewEndFunction();
 };
 
 }  // namespace jit

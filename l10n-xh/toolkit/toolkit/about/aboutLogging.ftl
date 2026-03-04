@@ -8,10 +8,3 @@ about-logging-set-log-file = Seta iFayile yokuLoga
 about-logging-set-log-modules = Seta iiModyuli zokuLoga
 about-logging-start-logging = Qalisa ukuLoga
 about-logging-stop-logging = Yeka ukuLoga
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

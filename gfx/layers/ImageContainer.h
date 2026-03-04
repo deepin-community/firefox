@@ -31,6 +31,8 @@
 #include "mozilla/EnumeratedArray.h"
 #include "mozilla/UniquePtr.h"
 #include "nsTHashMap.h"
+#include "TimeUnits.h"
+#include "MediaData.h"
 
 #ifdef XP_WIN
 struct ID3D10Texture2D;
@@ -67,6 +69,7 @@ class D3D11YCbCrRecycleAllocator;
 class MacIOSurfaceRecycleAllocator;
 #endif
 class SurfaceDescriptorBuffer;
+enum class VideoBridgeSource : uint8_t;
 
 struct ImageBackendData {
   virtual ~ImageBackendData() = default;
@@ -131,6 +134,7 @@ class Image {
 
   virtual void OnPrepareForwardToHost() {}
   virtual void OnAbandonForwardToHost() {}
+  virtual void OnSetCurrent() {}
 
   virtual already_AddRefed<gfx::SourceSurface> GetAsSourceSurface() = 0;
 
@@ -142,6 +146,16 @@ class Image {
   virtual nsresult BuildSurfaceDescriptorBuffer(
       SurfaceDescriptorBuffer& aSdBuffer, BuildSdbFlags aFlags,
       const std::function<MemoryOrShmem(uint32_t)>& aAllocate);
+
+  /**
+   * Get a SurfaceDescriptorGPUVideo if possible, with the source matching aDest
+   * if given. Otherwise copy the data into a SurfaceDescriptorBuffer.
+   */
+  nsresult BuildSurfaceDescriptorGPUVideoOrBuffer(
+      SurfaceDescriptor& aSd, BuildSdbFlags aFlags,
+      const Maybe<VideoBridgeSource>& aDest,
+      const std::function<MemoryOrShmem(uint32_t)>& aAllocate,
+      const std::function<void(MemoryOrShmem&&)>& aFree);
 
   virtual bool IsValid() const { return true; }
 
@@ -223,7 +237,7 @@ class BufferRecycleBin final {
   void RecycleBuffer(mozilla::UniquePtr<uint8_t[]> aBuffer, uint32_t aSize);
   // Returns a recycled buffer of the right size, or allocates a new buffer.
   mozilla::UniquePtr<uint8_t[]> GetBuffer(uint32_t aSize);
-  virtual void ClearRecycledBuffers();
+  void ClearRecycledBuffers();
 
  private:
   typedef mozilla::Mutex Mutex;
@@ -292,6 +306,8 @@ class ImageContainerListener final {
   ImageContainer* mImageContainer MOZ_GUARDED_BY(mLock);
 };
 
+enum class ClearImagesType { All, CacheOnly };
+
 /**
  * A class that manages Images for an ImageLayer. The only reason
  * we need a separate class here is that ImageLayers aren't threadsafe
@@ -328,8 +344,11 @@ class ImageContainer final : public SupportsThreadSafeWeakPtr<ImageContainer> {
 
   ~ImageContainer();
 
-  typedef ContainerFrameID FrameID;
-  typedef ContainerProducerID ProducerID;
+  using FrameID = ContainerFrameID;
+  using ProducerID = ContainerProducerID;
+  using CaptureTime = ContainerCaptureTime;
+  using ReceiveTime = ContainerReceiveTime;
+  using RtpTimestamp = ContainerRtpTimestamp;
 
   RefPtr<PlanarYCbCrImage> CreatePlanarYCbCrImage();
 
@@ -337,17 +356,32 @@ class ImageContainer final : public SupportsThreadSafeWeakPtr<ImageContainer> {
   RefPtr<SharedRGBImage> CreateSharedRGBImage();
 
   struct NonOwningImage {
-    explicit NonOwningImage(Image* aImage = nullptr,
-                            TimeStamp aTimeStamp = TimeStamp(),
-                            FrameID aFrameID = 0, ProducerID aProducerID = 0)
+    explicit NonOwningImage(
+        Image* aImage = nullptr, TimeStamp aTimeStamp = TimeStamp(),
+        FrameID aFrameID = 0, ProducerID aProducerID = 0,
+        media::TimeUnit aProcessingDuration = media::TimeUnit::Invalid(),
+        media::TimeUnit aMediaTime = media::TimeUnit::Invalid(),
+        const CaptureTime& aWebrtcCaptureTime = AsVariant(Nothing()),
+        const ReceiveTime& aWebrtcReceiveTime = Nothing(),
+        const RtpTimestamp& aRtpTimestamp = Nothing())
         : mImage(aImage),
           mTimeStamp(aTimeStamp),
           mFrameID(aFrameID),
-          mProducerID(aProducerID) {}
+          mProducerID(aProducerID),
+          mProcessingDuration(aProcessingDuration),
+          mMediaTime(aMediaTime),
+          mWebrtcCaptureTime(aWebrtcCaptureTime),
+          mWebrtcReceiveTime(aWebrtcReceiveTime),
+          mRtpTimestamp(aRtpTimestamp) {}
     Image* mImage;
     TimeStamp mTimeStamp;
     FrameID mFrameID;
     ProducerID mProducerID;
+    media::TimeUnit mProcessingDuration = media::TimeUnit::Invalid();
+    media::TimeUnit mMediaTime = media::TimeUnit::Invalid();
+    CaptureTime mWebrtcCaptureTime = AsVariant(Nothing());
+    ReceiveTime mWebrtcReceiveTime;
+    RtpTimestamp mRtpTimestamp;
   };
   /**
    * Set aImages as the list of timestamped to display. The Images must have
@@ -378,11 +412,11 @@ class ImageContainer final : public SupportsThreadSafeWeakPtr<ImageContainer> {
   void SetCurrentImages(const nsTArray<NonOwningImage>& aImages);
 
   /**
-   * Clear all images. Let ImageClient release all TextureClients. Because we
-   * may release the lock after acquiring it in this method, it cannot be called
-   * with the lock held.
+   * Clear images in host. It could be used only with async ImageContainer.
+   * Because we may release the lock after acquiring it in this method, it
+   * cannot be called with the lock held.
    */
-  void ClearAllImages() MOZ_EXCLUDES(mRecursiveMutex);
+  void ClearImagesInHost(ClearImagesType aType) MOZ_EXCLUDES(mRecursiveMutex);
 
   /**
    * Clear any resources that are not immediately necessary. This may be called
@@ -440,12 +474,16 @@ class ImageContainer final : public SupportsThreadSafeWeakPtr<ImageContainer> {
   bool HasCurrentImage();
 
   struct OwningImage {
-    OwningImage() : mFrameID(0), mProducerID(0), mComposited(false) {}
     RefPtr<Image> mImage;
     TimeStamp mTimeStamp;
-    FrameID mFrameID;
-    ProducerID mProducerID;
-    bool mComposited;
+    media::TimeUnit mProcessingDuration = media::TimeUnit::Invalid();
+    media::TimeUnit mMediaTime = media::TimeUnit::Invalid();
+    CaptureTime mWebrtcCaptureTime = AsVariant(Nothing());
+    ReceiveTime mWebrtcReceiveTime;
+    RtpTimestamp mRtpTimestamp;
+    FrameID mFrameID = 0;
+    ProducerID mProducerID = 0;
+    bool mComposited = false;
   };
   /**
    * Copy the current Image list to aImages.
@@ -679,7 +717,8 @@ class AutoLockImage {
     return mImages.IsEmpty() ? nullptr : mImages[0].mImage.get();
   }
 
-  Image* GetImage(TimeStamp aTimeStamp) const {
+  const ImageContainer::OwningImage* GetOwningImage(
+      TimeStamp aTimeStamp) const {
     if (mImages.IsEmpty()) {
       return nullptr;
     }
@@ -692,7 +731,14 @@ class AutoLockImage {
       ++chosenIndex;
     }
 
-    return mImages[chosenIndex].mImage.get();
+    return &mImages[chosenIndex];
+  }
+
+  Image* GetImage(TimeStamp aTimeStamp) const {
+    if (const auto* owningImage = GetOwningImage(aTimeStamp)) {
+      return owningImage->mImage.get();
+    }
+    return nullptr;
   }
 
  private:
@@ -751,6 +797,7 @@ struct PlanarYCbCrData {
   }
 
   static Maybe<PlanarYCbCrData> From(const SurfaceDescriptorBuffer&);
+  static Maybe<PlanarYCbCrData> From(const VideoData::YCbCrBuffer&);
 };
 
 /****** Image subtypes for the different formats ******/
@@ -848,6 +895,10 @@ class PlanarYCbCrImage : public Image {
       SurfaceDescriptorBuffer& aSdBuffer, BuildSdbFlags aFlags,
       const std::function<MemoryOrShmem(uint32_t)>& aAllocate) override;
 
+  void SetColorDepth(gfx::ColorDepth aColorDepth) { mColorDepth = aColorDepth; }
+
+  gfx::ColorDepth GetColorDepth() const override { return mColorDepth; }
+
  protected:
   already_AddRefed<gfx::SourceSurface> GetAsSourceSurface() override;
 
@@ -859,6 +910,7 @@ class PlanarYCbCrImage : public Image {
   Data mData;
   gfx::IntPoint mOrigin;
   gfx::IntSize mSize;
+  gfx::ColorDepth mColorDepth = gfx::ColorDepth::COLOR_8;
   gfxImageFormat mOffscreenFormat;
   RefPtr<gfx::DataSourceSurface> mSourceSurface;
   uint32_t mBufferSize;

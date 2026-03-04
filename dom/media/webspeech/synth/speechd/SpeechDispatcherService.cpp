@@ -6,11 +6,13 @@
 
 #include "SpeechDispatcherService.h"
 
-#include "mozilla/dom/nsSpeechTask.h"
-#include "mozilla/dom/nsSynthVoiceRegistry.h"
+#include <math.h>
+
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/nsSpeechTask.h"
+#include "mozilla/dom/nsSynthVoiceRegistry.h"
 #include "nsEscape.h"
 #include "nsISupports.h"
 #include "nsPrintfCString.h"
@@ -19,9 +21,6 @@
 #include "nsThreadUtils.h"
 #include "nsXULAppAPI.h"
 #include "prlink.h"
-
-#include <math.h>
-#include <stdlib.h>
 
 #define URI_PREFIX "urn:moz-tts:speechd:"
 
@@ -334,7 +333,7 @@ void SpeechDispatcherService::Setup() {
     return;
   }
 
-  for (uint32_t i = 0; i < ArrayLength(kSpeechDispatcherSymbols); i++) {
+  for (uint32_t i = 0; i < std::size(kSpeechDispatcherSymbols); i++) {
     *kSpeechDispatcherSymbols[i].function = PR_FindFunctionSymbol(
         speechdLib, kSpeechDispatcherSymbols[i].functionName);
 

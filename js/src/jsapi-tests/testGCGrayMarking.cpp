@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+#include "gc/GCInternals.h"
 #include "gc/WeakMap.h"
 #include "gc/Zone.h"
 #include "js/PropertyAndElement.h"  // JS_DefineProperty, JS_DefinePropertyById
@@ -25,8 +26,10 @@ static constexpr CellColor MarkedCellColors[] = {CellColor::Gray,
 
 namespace js {
 
-struct GCManagedObjectWeakMap : public ObjectWeakMap {
-  using ObjectWeakMap::ObjectWeakMap;
+struct GCManagedObjectWeakMap
+    : public WeakMap<JSObject*, JSObject*, ZoneAllocPolicy> {
+  using Base = WeakMap<JSObject*, JSObject*, ZoneAllocPolicy>;
+  using Base::Base;
 };
 
 }  // namespace js
@@ -379,6 +382,9 @@ bool TestInternalWeakMap(CellColor keyMarkColor, CellColor delegateMarkColor,
     CHECK(key->color() == expectedColor);
     CHECK(delegate->color() == expectedColor);
     CHECK(value->color() == expectedColor);
+
+    AutoSetThreadIsFinalizing setFinalizing;
+    js_delete(weakMap.release());
   }
 
   return true;
@@ -433,6 +439,9 @@ bool TestInternalWeakMapWithGrayUnmarking(CellColor keyMarkColor,
     CHECK(key->color() == expectedColor);
     CHECK(delegate->color() == expectedColor);
     CHECK(value->color() == expectedColor);
+
+    AutoSetThreadIsFinalizing setFinalizing;
+    js_delete(weakMap.release());
   }
 
   JS::UnsetGCZeal(cx, uint8_t(ZealMode::YieldWhileGrayMarking));
@@ -453,7 +462,7 @@ bool CreateInternalWeakMapObjects(UniquePtr<GCManagedObjectWeakMap>* weakMapOut,
   auto weakMap = cx->make_unique<GCManagedObjectWeakMap>(cx);
   CHECK(weakMap);
 
-  CHECK(weakMap->add(cx, key, value));
+  CHECK(weakMap->put(key, value));
 
   *weakMapOut = std::move(weakMap);
   *keyOut = key;

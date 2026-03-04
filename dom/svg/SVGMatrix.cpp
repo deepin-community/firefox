@@ -5,10 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGMatrix.h"
-#include "nsError.h"
+
 #include <math.h>
+
+#include "mozilla/dom/DOMMatrix.h"
 #include "mozilla/dom/SVGMatrixBinding.h"
-#include "mozilla/FloatingPoint.h"
+#include "nsError.h"
 
 const double radPerDegree = 2.0 * M_PI / 360.0;
 
@@ -23,9 +25,9 @@ JSObject* SVGMatrix::WrapObject(JSContext* aCx,
   return SVGMatrix_Binding::Wrap(aCx, this, aGivenProto);
 }
 
-void SVGMatrix::SetA(float aA, ErrorResult& rv) {
+void SVGMatrix::SetA(float aA, ErrorResult& aRv) {
   if (IsAnimVal()) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -34,9 +36,9 @@ void SVGMatrix::SetA(float aA, ErrorResult& rv) {
   SetMatrix(mx);
 }
 
-void SVGMatrix::SetB(float aB, ErrorResult& rv) {
+void SVGMatrix::SetB(float aB, ErrorResult& aRv) {
   if (IsAnimVal()) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -45,9 +47,9 @@ void SVGMatrix::SetB(float aB, ErrorResult& rv) {
   SetMatrix(mx);
 }
 
-void SVGMatrix::SetC(float aC, ErrorResult& rv) {
+void SVGMatrix::SetC(float aC, ErrorResult& aRv) {
   if (IsAnimVal()) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -56,9 +58,9 @@ void SVGMatrix::SetC(float aC, ErrorResult& rv) {
   SetMatrix(mx);
 }
 
-void SVGMatrix::SetD(float aD, ErrorResult& rv) {
+void SVGMatrix::SetD(float aD, ErrorResult& aRv) {
   if (IsAnimVal()) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -67,9 +69,9 @@ void SVGMatrix::SetD(float aD, ErrorResult& rv) {
   SetMatrix(mx);
 }
 
-void SVGMatrix::SetE(float aE, ErrorResult& rv) {
+void SVGMatrix::SetE(float aE, ErrorResult& aRv) {
   if (IsAnimVal()) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -78,9 +80,9 @@ void SVGMatrix::SetE(float aE, ErrorResult& rv) {
   SetMatrix(mx);
 }
 
-void SVGMatrix::SetF(float aF, ErrorResult& rv) {
+void SVGMatrix::SetF(float aF, ErrorResult& aRv) {
   if (IsAnimVal()) {
-    rv.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    aRv.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -89,14 +91,23 @@ void SVGMatrix::SetF(float aF, ErrorResult& rv) {
   SetMatrix(mx);
 }
 
-already_AddRefed<SVGMatrix> SVGMatrix::Multiply(SVGMatrix& aMatrix) {
-  return do_AddRef(new SVGMatrix(aMatrix.GetMatrix() * GetMatrix()));
+already_AddRefed<SVGMatrix> SVGMatrix::Multiply(const DOMMatrix2DInit& aMatrix,
+                                                ErrorResult& aRv) {
+  auto matrix2D = DOMMatrixReadOnly::ToValidatedMatrixDouble(aMatrix, aRv);
+  if (aRv.Failed()) {
+    return nullptr;
+  }
+  if (!matrix2D.IsFinite()) {
+    aRv.ThrowTypeError<MSG_NOT_FINITE>("SVGMatrix::Multiply matrix");
+    return nullptr;
+  }
+  return do_AddRef(new SVGMatrix(matrix2D * GetMatrix()));
 }
 
-already_AddRefed<SVGMatrix> SVGMatrix::Inverse(ErrorResult& rv) {
+already_AddRefed<SVGMatrix> SVGMatrix::Inverse(ErrorResult& aRv) {
   gfxMatrix mat = GetMatrix();
   if (!mat.Invert()) {
-    rv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
+    aRv.ThrowInvalidStateError("Matrix is not invertible");
     return nullptr;
   }
   return do_AddRef(new SVGMatrix(mat));
@@ -123,9 +134,9 @@ already_AddRefed<SVGMatrix> SVGMatrix::Rotate(float angle) {
 }
 
 already_AddRefed<SVGMatrix> SVGMatrix::RotateFromVector(float x, float y,
-                                                        ErrorResult& rv) {
+                                                        ErrorResult& aRv) {
   if (x == 0.0 || y == 0.0) {
-    rv.Throw(NS_ERROR_DOM_INVALID_ACCESS_ERR);
+    aRv.ThrowInvalidAccessError("Neither input parameter may be zero");
     return nullptr;
   }
 
@@ -145,10 +156,10 @@ already_AddRefed<SVGMatrix> SVGMatrix::FlipY() {
       gfxMatrix(mx._11, mx._12, -mx._21, -mx._22, mx._31, mx._32)));
 }
 
-already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& rv) {
+already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& aRv) {
   double ta = tan(angle * radPerDegree);
   if (!std::isfinite(ta)) {
-    rv.Throw(NS_ERROR_DOM_INVALID_ACCESS_ERR);
+    aRv.ThrowInvalidAccessError("Invalid angle");
     return nullptr;
   }
 
@@ -158,10 +169,10 @@ already_AddRefed<SVGMatrix> SVGMatrix::SkewX(float angle, ErrorResult& rv) {
   return do_AddRef(new SVGMatrix(skewMx));
 }
 
-already_AddRefed<SVGMatrix> SVGMatrix::SkewY(float angle, ErrorResult& rv) {
+already_AddRefed<SVGMatrix> SVGMatrix::SkewY(float angle, ErrorResult& aRv) {
   double ta = tan(angle * radPerDegree);
   if (!std::isfinite(ta)) {
-    rv.Throw(NS_ERROR_DOM_INVALID_ACCESS_ERR);
+    aRv.ThrowInvalidAccessError("Invalid angle");
     return nullptr;
   }
 

@@ -13,7 +13,6 @@
 
 #include "mozilla/URLPreloader.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Components.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/FileUtils.h"
@@ -23,13 +22,14 @@
 #include "mozilla/Services.h"
 #include "mozilla/StaticPrefs_javascript.h"
 #include "mozilla/TaskController.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/JsXpconnectMetrics.h"
+#include "mozilla/glean/XpcomMetrics.h"
 #include "mozilla/Try.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/scache/StartupCache.h"
+#include "mozilla/scache/StartupCacheUtils.h"
 
 #include "crc32c.h"
 #include "js/CompileOptions.h"              // JS::ReadOnlyCompileOptions
@@ -121,11 +121,12 @@ StaticAutoPtr<AutoMemMap> ScriptPreloader::gChildCacheData;
 
 ScriptPreloader& ScriptPreloader::GetSingleton() {
   if (!gScriptPreloader) {
+    AssertIsOnMainThread();
     if (XRE_IsParentProcess()) {
       gCacheData = new AutoMemMap();
       gScriptPreloader = new ScriptPreloader(gCacheData.get());
       gScriptPreloader->mChildCache = &GetChildSingleton();
-      Unused << gScriptPreloader->InitCache();
+      (void)gScriptPreloader->InitCache();
     } else {
       gScriptPreloader = &GetChildSingleton();
     }
@@ -159,10 +160,11 @@ ScriptPreloader& ScriptPreloader::GetSingleton() {
 //  previous cache file, but I'd rather do that as a follow-up.
 ScriptPreloader& ScriptPreloader::GetChildSingleton() {
   if (!gChildScriptPreloader) {
+    AssertIsOnMainThread();
     gChildCacheData = new AutoMemMap();
     gChildScriptPreloader = new ScriptPreloader(gChildCacheData.get());
     if (XRE_IsParentProcess()) {
-      Unused << gChildScriptPreloader->InitCache(u"scriptCache-child"_ns);
+      (void)gChildScriptPreloader->InitCache(u"scriptCache-child"_ns);
     }
   }
 
@@ -185,8 +187,10 @@ void ScriptPreloader::DeleteCacheDataSingleton() {
 }
 
 void ScriptPreloader::InitContentChild(ContentParent& parent) {
+  AssertIsOnMainThread();
+
   auto& cache = GetChildSingleton();
-  cache.mSaveMonitor.AssertOnWritingThread();
+  cache.mSaveMonitor.NoteOnMainThread();
 
   // We want startup script data from the first process of a given type.
   // That process sends back its script data before it executes any
@@ -210,10 +214,10 @@ void ScriptPreloader::InitContentChild(ContentParent& parent) {
   // Don't send original cache data to new processes if the cache has been
   // invalidated.
   if (fd.IsValid() && !cache.mCacheInvalidated) {
-    Unused << parent.SendPScriptCacheConstructor(fd, wantScriptData);
+    (void)parent.SendPScriptCacheConstructor(fd, wantScriptData);
   } else {
-    Unused << parent.SendPScriptCacheConstructor(NS_ERROR_FILE_NOT_FOUND,
-                                                 wantScriptData);
+    (void)parent.SendPScriptCacheConstructor(NS_ERROR_FILE_NOT_FOUND,
+                                             wantScriptData);
   }
 }
 
@@ -230,7 +234,7 @@ ProcessType ScriptPreloader::GetChildProcessType(const nsACString& remoteType) {
 ScriptPreloader::ScriptPreloader(AutoMemMap* cacheData)
     : mCacheData(cacheData),
       mMonitor("[ScriptPreloader.mMonitor]"),
-      mSaveMonitor("[ScriptPreloader.mSaveMonitor]", this) {
+      mSaveMonitor("[ScriptPreloader.mSaveMonitor]") {
   // We do not set the process type for child processes here because the
   // remoteType in ContentChild is not ready yet.
   if (XRE_IsParentProcess()) {
@@ -261,7 +265,7 @@ void ScriptPreloader::Cleanup() {
 void ScriptPreloader::StartCacheWrite() {
   MOZ_DIAGNOSTIC_ASSERT(!mSaveThread);
 
-  Unused << NS_NewNamedThread("SaveScripts", getter_AddRefs(mSaveThread), this);
+  (void)NS_NewNamedThread("SaveScripts", getter_AddRefs(mSaveThread), this);
 
   nsCOMPtr<nsIAsyncShutdownClient> barrier = GetShutdownBarrier();
   barrier->AddBlocker(this, NS_LITERAL_STRING_FROM_CSTRING(__FILE__), __LINE__,
@@ -298,18 +302,21 @@ void ScriptPreloader::InvalidateCache() {
   }
 
   {
-    MonitorSingleWriterAutoLock saveMonitorAutoLock(mSaveMonitor);
+    MonitorAutoLock saveMonitorAutoLock(mSaveMonitor.Lock());
+    mSaveMonitor.NoteExclusiveAccess();
 
     mCacheInvalidated = true;
   }
 
   // If we're waiting on a timeout to finish saving, interrupt it and just save
   // immediately.
-  mSaveMonitor.NotifyAll();
+  mSaveMonitor.Lock().NotifyAll();
 }
 
 nsresult ScriptPreloader::Observe(nsISupports* subject, const char* topic,
                                   const char16_t* data) {
+  AssertIsOnMainThread();
+
   nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
   if (!strcmp(topic, STARTUP_COMPLETE_TOPIC)) {
     obs->RemoveObserver(this, STARTUP_COMPLETE_TOPIC);
@@ -384,8 +391,7 @@ void ScriptPreloader::FinishContentStartup() {
   // privileged processes record this value at a different time, leading to
   // a higher value which skews the telemetry.
   if (sProcessType != ProcessType::PrivilegedAbout) {
-    mozilla::Telemetry::Accumulate(
-        mozilla::Telemetry::MEMORY_UNIQUE_CONTENT_STARTUP,
+    mozilla::glean::memory::unique_content_startup.Accumulate(
         nsMemoryReporterManager::ResidentUnique() / 1024);
   }
 #endif
@@ -393,6 +399,23 @@ void ScriptPreloader::FinishContentStartup() {
 
 bool ScriptPreloader::WillWriteScripts() {
   return !mDataPrepared && (XRE_IsParentProcess() || mChildActor);
+}
+
+bool ScriptPreloader::Active() const {
+  if (!mCacheInitialized) {
+    return false;
+  }
+
+  if (!mStartupFinished) {
+    return true;
+  }
+
+  if (StaticPrefs::javascript_options_force_preloader_active() &&
+      xpc::IsInAutomation()) {
+    return true;
+  }
+
+  return false;
 }
 
 Result<nsCOMPtr<nsIFile>, nsresult> ScriptPreloader::GetCacheFile(
@@ -403,7 +426,7 @@ Result<nsCOMPtr<nsIFile>, nsresult> ScriptPreloader::GetCacheFile(
   MOZ_TRY(mProfD->Clone(getter_AddRefs(cacheFile)));
 
   MOZ_TRY(cacheFile->AppendNative("startupCache"_ns));
-  Unused << cacheFile->Create(nsIFile::DIRECTORY_TYPE, 0777);
+  (void)cacheFile->Create(nsIFile::DIRECTORY_TYPE, 0777);
 
   MOZ_TRY(cacheFile->Append(mBaseName + suffix));
 
@@ -419,8 +442,7 @@ Result<Ok, nsresult> ScriptPreloader::OpenCache() {
 
   MOZ_TRY(NS_GetSpecialDirectory("ProfLDS", getter_AddRefs(mProfD)));
 
-  nsCOMPtr<nsIFile> cacheFile;
-  MOZ_TRY_VAR(cacheFile, GetCacheFile(u".bin"_ns));
+  nsCOMPtr<nsIFile> cacheFile = MOZ_TRY(GetCacheFile(u".bin"_ns));
 
   bool exists;
   MOZ_TRY(cacheFile->Exists(&exists));
@@ -442,7 +464,6 @@ Result<Ok, nsresult> ScriptPreloader::OpenCache() {
 // Opens the script cache file for this session, and initializes the script
 // cache based on its contents. See WriteCache for details of the cache file.
 Result<Ok, nsresult> ScriptPreloader::InitCache(const nsAString& basePath) {
-  mSaveMonitor.AssertOnWritingThread();
   mCacheInitialized = true;
   mBaseName = basePath;
 
@@ -468,7 +489,6 @@ Result<Ok, nsresult> ScriptPreloader::InitCache(const nsAString& basePath) {
 
 Result<Ok, nsresult> ScriptPreloader::InitCache(
     const Maybe<ipc::FileDescriptor>& cacheFile, ScriptCacheChild* cacheChild) {
-  mSaveMonitor.AssertOnWritingThread();
   MOZ_ASSERT(XRE_IsContentProcess());
 
   mCacheInitialized = true;
@@ -557,7 +577,7 @@ Result<Ok, nsresult> ScriptPreloader::InitCacheInternal(
 
     LinkedList<CachedStencil> scripts;
 
-    Range<uint8_t> header(data, data + headerSize);
+    Range<const uint8_t> header(data, data + headerSize);
     data += headerSize;
 
     // Reconstruct alignment padding if required.
@@ -628,8 +648,11 @@ void ScriptPreloader::PrepareCacheWriteInternal() {
     return;
   }
 
-  AutoSafeJSAPI jsapi;
-  JSAutoRealm ar(jsapi.cx(), xpc::PrivilegedJunkScope());
+  JS::FrontendContext* fc = JS::NewFrontendContext();
+  if (!fc) {
+    return;
+  }
+
   bool found = false;
   for (auto& script : IterHash(mScripts, Match<ScriptStatus::Saved>())) {
     // Don't write any scripts that are also in the child cache. They'll be
@@ -649,10 +672,12 @@ void ScriptPreloader::PrepareCacheWriteInternal() {
       found = true;
     }
 
-    if (!script->mSize && !script->XDREncode(jsapi.cx())) {
+    if (!script->mSize && !script->XDREncode(fc)) {
       script.Remove();
     }
   }
+
+  JS::DestroyFrontendContext(fc);
 
   if (!found) {
     mSaveComplete = true;
@@ -667,6 +692,36 @@ void ScriptPreloader::PrepareCacheWrite() {
 
   PrepareCacheWriteInternal();
 }
+
+// A struct to hold reference to a CachedStencil and the snapshot of the
+// CachedStencil::mLoadTime field.
+// CachedStencil::mLoadTime field can be modified concurrently, and we need
+// to create a snapshot, in order to sort scripts.
+struct CachedStencilRefAndTime {
+  using CachedStencil = ScriptPreloader::CachedStencil;
+  CachedStencil* mStencil;
+  TimeStamp mLoadTime;
+
+  explicit CachedStencilRefAndTime(CachedStencil* aStencil)
+      : mStencil(aStencil), mLoadTime(aStencil->mLoadTime) {}
+
+  // For use with nsTArray::Sort.
+  //
+  // Orders scripts by script load time, so that scripts which are needed
+  // earlier are stored earlier, and scripts needed at approximately the
+  // same time are stored approximately contiguously.
+  struct Comparator {
+    bool Equals(const CachedStencilRefAndTime& a,
+                const CachedStencilRefAndTime& b) const {
+      return a.mLoadTime == b.mLoadTime;
+    }
+
+    bool LessThan(const CachedStencilRefAndTime& a,
+                  const CachedStencilRefAndTime& b) const {
+      return a.mLoadTime < b.mLoadTime;
+    }
+  };
+} JS_HAZ_NON_GC_POINTER;
 
 // Writes out a script cache file for the scripts accessed during early
 // startup in this session. The cache file is a little-endian binary file with
@@ -685,10 +740,9 @@ void ScriptPreloader::PrepareCacheWrite() {
 //   an offset from the start of the block, as specified above.
 Result<Ok, nsresult> ScriptPreloader::WriteCache() {
   MOZ_ASSERT(!NS_IsMainThread());
-  mSaveMonitor.AssertCurrentThreadOwns();
 
   if (!mDataPrepared && !mSaveComplete) {
-    MonitorSingleWriterAutoUnlock mau(mSaveMonitor);
+    MonitorAutoUnlock mau(mSaveMonitor.Lock());
 
     NS_DispatchAndSpinEventLoopUntilComplete(
         "ScriptPreloader::PrepareCacheWrite"_ns,
@@ -702,8 +756,7 @@ Result<Ok, nsresult> ScriptPreloader::WriteCache() {
     return Ok();
   }
 
-  nsCOMPtr<nsIFile> cacheFile;
-  MOZ_TRY_VAR(cacheFile, GetCacheFile(u"-new.bin"_ns));
+  nsCOMPtr<nsIFile> cacheFile = MOZ_TRY(GetCacheFile(u"-new.bin"_ns));
 
   bool exists;
   MOZ_TRY(cacheFile->Exists(&exists));
@@ -722,19 +775,20 @@ Result<Ok, nsresult> ScriptPreloader::WriteCache() {
     mMonitor.AssertNotCurrentThreadOwns();
     MonitorAutoLock mal(mMonitor);
 
-    nsTArray<CachedStencil*> scripts;
+    nsTArray<CachedStencilRefAndTime> scriptRefs;
     for (auto& script : IterHash(mScripts, Match<ScriptStatus::Saved>())) {
-      scripts.AppendElement(script);
+      scriptRefs.AppendElement(CachedStencilRefAndTime(script));
     }
 
     // Sort scripts by load time, with async loaded scripts before sync scripts.
     // Since async scripts are always loaded immediately at startup, it helps to
     // have them stored contiguously.
-    scripts.Sort(CachedStencil::Comparator());
+    scriptRefs.Sort(CachedStencilRefAndTime::Comparator());
 
     OutputBuffer buf;
     size_t offset = 0;
-    for (auto script : scripts) {
+    for (auto& scriptRef : scriptRefs) {
+      auto* script = scriptRef.mStencil;
       script->mOffset = offset;
       MOZ_DIAGNOSTIC_ASSERT(
           JS::IsTranscodingBytecodeOffsetAligned(script->mOffset));
@@ -764,7 +818,8 @@ Result<Ok, nsresult> ScriptPreloader::WriteCache() {
       written += padding;
     }
 
-    for (auto script : scripts) {
+    for (auto& scriptRef : scriptRefs) {
+      auto* script = scriptRef.mStencil;
       MOZ_DIAGNOSTIC_ASSERT(JS::IsTranscodingBytecodeOffsetAligned(written));
       MOZ_TRY(Write(fd, script->Range().begin().get(), script->mSize));
 
@@ -790,7 +845,8 @@ nsresult ScriptPreloader::GetName(nsACString& aName) {
 // Runs in the mSaveThread thread, and writes out the cache file for the next
 // session after a reasonable delay.
 nsresult ScriptPreloader::Run() {
-  MonitorSingleWriterAutoLock mal(mSaveMonitor);
+  MonitorAutoLock mal(mSaveMonitor.Lock());
+  mSaveMonitor.NoteLockHeld();
 
   // Ideally wait about 10 seconds before saving, to avoid unnecessary IO
   // during early startup. But only if the cache hasn't been invalidated,
@@ -801,16 +857,16 @@ nsresult ScriptPreloader::Run() {
   }
 
   auto result = URLPreloader::GetSingleton().WriteCache();
-  Unused << NS_WARN_IF(result.isErr());
+  (void)NS_WARN_IF(result.isErr());
 
   result = WriteCache();
-  Unused << NS_WARN_IF(result.isErr());
+  (void)NS_WARN_IF(result.isErr());
 
   {
-    MonitorSingleWriterAutoLock lock(mChildCache->mSaveMonitor);
+    MonitorAutoLock lock(mChildCache->mSaveMonitor.Lock());
     result = mChildCache->WriteCache();
   }
-  Unused << NS_WARN_IF(result.isErr());
+  (void)NS_WARN_IF(result.isErr());
 
   NS_DispatchToMainThread(
       NewRunnableMethod("ScriptPreloader::CacheWriteComplete", this,
@@ -949,22 +1005,33 @@ already_AddRefed<JS::Stencil> ScriptPreloader::GetCachedStencil(
       "ScriptPreloader must be initialized before getting cached "
       "scripts in the content process.");
 
+#ifdef DEBUG
+  // All callers should have already checked that the script is from omni.ja
+  // (Gre or App resource type) before calling GetCachedStencil.
+  MOZ_ASSERT(path.Find("/resource/gre/"_ns) != kNotFound ||
+                 path.Find("/resource/app/"_ns) != kNotFound,
+             "GetCachedStencil should only be called for omni.ja scripts");
+#endif
+
   // If a script is used by both the parent and the child, it's stored only
   // in the child cache.
   if (mChildCache) {
     RefPtr<JS::Stencil> stencil =
         mChildCache->GetCachedStencilInternal(cx, options, path);
     if (stencil) {
-      Telemetry::AccumulateCategorical(
-          Telemetry::LABELS_SCRIPT_PRELOADER_REQUESTS::HitChild);
+      glean::script_preloader::requests
+          .EnumGet(glean::script_preloader::RequestsLabel::eHitchild)
+          .Add();
       return stencil.forget();
     }
   }
 
   RefPtr<JS::Stencil> stencil = GetCachedStencilInternal(cx, options, path);
-  Telemetry::AccumulateCategorical(
-      stencil ? Telemetry::LABELS_SCRIPT_PRELOADER_REQUESTS::Hit
-              : Telemetry::LABELS_SCRIPT_PRELOADER_REQUESTS::Miss);
+  glean::script_preloader::requests
+      .EnumGet(stencil ? glean::script_preloader::RequestsLabel::eHit
+                       : glean::script_preloader::RequestsLabel::eMiss)
+      .Add();
+
   return stencil.forget();
 }
 
@@ -1001,8 +1068,7 @@ already_AddRefed<JS::Stencil> ScriptPreloader::WaitForCachedStencil(
         LOG(Info, "Script is small enough to recompile on main thread\n");
 
         script->mReadyToExecute = true;
-        Telemetry::ScalarAdd(
-            Telemetry::ScalarID::SCRIPT_PRELOADER_MAINTHREAD_RECOMPILE, 1);
+        glean::script_preloader::mainthread_recompile.Add(1);
       } else {
         LOG(Info, "Must wait for async script load: %s\n", script->mURL.get());
         auto start = TimeStamp::Now();
@@ -1021,10 +1087,9 @@ already_AddRefed<JS::Stencil> ScriptPreloader::WaitForCachedStencil(
           }
         }
 
-        double waitedMS = (TimeStamp::Now() - start).ToMilliseconds();
-        Telemetry::Accumulate(Telemetry::SCRIPT_PRELOADER_WAIT_TIME,
-                              int(waitedMS));
-        LOG(Debug, "Waited %fms\n", waitedMS);
+        TimeDuration waited = TimeStamp::Now() - start;
+        glean::script_preloader::wait_time.AccumulateRawDuration(waited);
+        LOG(Debug, "Waited %fms\n", waited.ToMilliseconds());
       }
     }
   }
@@ -1265,19 +1330,20 @@ ScriptPreloader::CachedStencil::CachedStencil(ScriptPreloader& cache,
   mProcessTypes = {};
 }
 
-bool ScriptPreloader::CachedStencil::XDREncode(JSContext* cx) {
+bool ScriptPreloader::CachedStencil::XDREncode(JS::FrontendContext* aFc) {
   auto cleanup = MakeScopeExit([&]() { MaybeDropStencil(); });
 
   mXDRData.construct<JS::TranscodeBuffer>();
 
-  JS::TranscodeResult code = JS::EncodeStencil(cx, mStencil, Buffer());
+  JS::TranscodeResult code = JS::EncodeStencil(aFc, mStencil, Buffer());
+
   if (code == JS::TranscodeResult::Ok) {
     mXDRRange.emplace(Buffer().begin(), Buffer().length());
     mSize = Range().length();
     return true;
   }
   mXDRData.destroy();
-  JS_ClearPendingException(cx);
+  JS::ClearFrontendErrors(aFc);
   return false;
 }
 
@@ -1352,7 +1418,7 @@ nsresult ScriptPreloader::BlockShutdown(
     nsIAsyncShutdownClient* aBarrierClient) {
   // If we're waiting on a timeout to finish saving, interrupt it and just save
   // immediately.
-  mSaveMonitor.NotifyAll();
+  mSaveMonitor.Lock().NotifyAll();
   return NS_OK;
 }
 
@@ -1361,7 +1427,7 @@ already_AddRefed<nsIAsyncShutdownClient> ScriptPreloader::GetShutdownBarrier() {
   MOZ_RELEASE_ASSERT(svc);
 
   nsCOMPtr<nsIAsyncShutdownClient> barrier;
-  Unused << svc->GetXpcomWillShutdown(getter_AddRefs(barrier));
+  (void)svc->GetXpcomWillShutdown(getter_AddRefs(barrier));
   MOZ_RELEASE_ASSERT(barrier);
 
   return barrier.forget();

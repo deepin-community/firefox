@@ -18,9 +18,10 @@ policy-AppUpdatePin = { -brand-short-name }가 지정된 버전 이상으로 업
 policy-AppUpdateURL = 사용자 지정 앱 업데이트 URL을 설정합니다.
 policy-Authentication = 통합 인증을 지원하는 웹 사이트를 위한 설정을 합니다.
 policy-AutofillAddressEnabled = 주소 자동 채우기를 사용합니다.
-policy-AutofillCreditCardEnabled = 결제 방법에 자동 채우기를 사용합니다.
+policy-AutofillCreditCardEnabled = 결제 수단에 자동 채우기를 사용합니다.
 policy-AutoLaunchProtocolsFromOrigins = 사용자에게 메시지를 표시하지 않고 나열된 출처에서 사용할 수 있는 외부 프로토콜 목록을 정의합니다.
 policy-BackgroundAppUpdate2 = 백그라운드 업데이터를 사용하거나 사용하지 않게 합니다.
+policy-Backup = 프로필 데이터의 백업이나 복원을 사용 안 합니다.
 policy-BlockAboutAddons = 부가 기능 관리자(about:addons) 접근을 차단합니다.
 policy-BlockAboutConfig = about:config 페이지 접근을 차단합니다.
 policy-BlockAboutProfiles = about:profiles 페이지 접근을 차단합니다.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = { -pocket-brand-name }에 웹 사이트 저장하는 기
 policy-DisablePrivateBrowsing = 사생활 보호 모드를 사용 안 합니다.
 policy-DisableProfileImport = 메뉴에서 다른 브라우저의 데이터를 가져오는 명령을 사용 안 합니다.
 policy-DisableProfileRefresh = about:support 페이지의 { -brand-short-name } 새로설정 버튼을 사용 안 합니다.
+policy-DisableRemoteImprovements = { -brand-short-name }가 업데이트 간의 성능, 안정성 및 기능 변경 사항을 적용하지 못하게 합니다.
 policy-DisableSafeMode = 안전 모드로 다시 시작하는 기능을 사용 안 합니다. 참고: 그룹 정책을 사용해서 Shift 키를 눌러서 안전 모드로 들어가는 방법을 비활성화하는 것은 Windows에서만 가능합니다.
 policy-DisableSecurityBypass = 사용자가 특정 보안 경고를 무시할 수 없게 합니다.
 policy-DisableSetAsDesktopBackground = 이미지를 바탕 화면 배경으로 설정하는 메뉴 명령을 사용 안 합니다.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = 확장 기능 설치의 모든 측면을 관리합니
 policy-ExtensionUpdate = 확장 기능 자동 업데이트를 사용하거나 사용하지 않게 합니다.
 policy-FirefoxHome2 = { -firefox-home-brand-name }을 구성합니다.
 policy-FirefoxSuggest = { -firefox-suggest-brand-name }을 구성합니다.
+policy-GenerativeAI = 생성 AI 기능을 구성합니다.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = 주소 표시줄에 단일 단어 항목을 입력할 때 검색하는 대신 인트라넷 사이트를 직접 탐색합니다.
 policy-Handlers = 기본 애플리케이션 핸들러를 구성합니다.
 policy-HardwareAcceleration = False 값이면 하드웨어 가속 기능을 끕니다.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = 지정된 사이트의
 ##
 
 policy-LocalFileLinks = 특정 웹 사이트가 로컬 파일을 링크하도록 허용합니다.
+policy-LocalNetworkAccess = 로컬 네트워크 액세스 확인을 사용하거나 사용하지 않게 합니다.
 policy-ManagedBookmarks = 사용자가 변경할 수 없는 관리자가 관리하는 북마크 목록을 구성합니다.
 policy-ManualAppUpdateOnly = 수동 업데이트만 허용하고 사용자에게 업데이트에 대해 알리지 않습니다.
 policy-PrimaryPassword = 기본 비밀번호 사용을 요구하거나 금지합니다.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = TLS에 대한 사후 양자 키 합의�
 policy-PDFjs = { -brand-short-name }에 내장된 PDF 뷰어인 PDF.js를 사용 안하거나 구성합니다.
 policy-Permissions2 = 카메라, 마이크, 위치, 알림 및 자동 재생에 대한 권한을 구성합니다.
 policy-PictureInPicture = 화면 속 화면을 사용하거나 사용하지 않게 합니다.
+policy-PopupBlocking2 = 특정 웹 사이트가 팝업을 표시하고 제3자 프레임에 의해 리디렉션되도록 허용합니다.
 policy-PopupBlocking = 기본으로 특정 웹 사이트가 팝업을 보여주도록 허용합니다.
 policy-Preferences = 설정의 하위 집합에 대한 값을 설정하고 잠급니다.
 policy-PrivateBrowsingModeAvailability = 사생활 보호 모드의 가용성을 설정합니다.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = 검색 제안을 사용하거나 사용하지 않�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = PKCS #11 모듈을 추가하거나 삭제합니다.
 policy-ShowHomeButton = 도구 모음에 홈 버튼을 표시합니다.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = 시작할 때 이용 약관과 개인정보처리방침을 표시하지 않습니다. 귀하는 이 브라우저에 대한 접근 권한을 부여받은 모든 개인을 대신하여 이용 약관에 동의했으며 이를 수락할 권한이 있음을 나타냅니다.
 policy-SSLVersionMax = 최대 SSL 버전을 설정합니다.
 policy-SSLVersionMin = 최소 SSL 버전을 설정합니다.
 policy-StartDownloadsInTempDirectory = 기본 다운로드 디렉터리가 아닌 로컬 임시 위치에서 강제로 다운로드를 시작합니다.
@@ -137,6 +144,9 @@ policy-SupportMenu = 도움말 메뉴에 사용자 지정 지원 메뉴 항목�
 policy-TranslateEnabled = 웹 페이지 번역을 사용하거나 사용하지 않게 합니다.
 policy-UserMessaging = 사용자에게 특정 메시지를 표시하지 않습니다.
 policy-UseSystemPrintDialog = 시스템 인쇄 대화 상자를 사용하여 인쇄합니다.
+policy-VisualSearchEnabled = 시각적 검색을 사용하거나 사용하지 않게 합니다.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = 특정 웹 사이트 방문을 차단합니다. 자세한 형식에 대해서는 문서를 참고하세요.
 policy-Windows10SSO = Microsoft, 회사 및 학교 계정에 Windows Single Sign-On을 허용합니다.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Microsoft Entra 계정에 Single Sign-On을 허용합니다.

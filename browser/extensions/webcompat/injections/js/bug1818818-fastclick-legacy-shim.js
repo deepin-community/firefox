@@ -14,11 +14,7 @@
 
 /* globals exportFunction */
 
-const proto = CSS2Properties.prototype.wrappedJSObject;
-Object.defineProperty(proto, "msTouchAction", {
-  get: exportFunction(function () {
-    return "none";
-  }, window),
-
-  set: exportFunction(function () {}, window),
-});
+(
+  window.CSSStyleProperties ?? window.CSS2Properties
+).prototype.wrappedJSObject.msTouchAction =
+  window.wrappedJSObject.String("none");

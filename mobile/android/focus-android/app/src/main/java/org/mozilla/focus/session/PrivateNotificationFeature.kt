@@ -11,18 +11,27 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import mozilla.components.browser.state.selector.privateTabs
 import mozilla.components.browser.state.store.BrowserStore
+import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature
 
 /**
- * Responsible for starting or stopping up a [SessionNotificationService]
- * depending on whether a private tab is opened.
+ * Responsible for starting or stopping a [SessionNotificationService]
+ * depending on whether a private tab is open.
  *
- * @param browserStore Browser store reference used to observe the number of private tabs.
+ * This feature observes the number of private tabs in the [BrowserStore].
+ * When a private tab is opened, it starts the [SessionNotificationService].
+ * When all private tabs are closed, it stops the service.
+ *
+ * @param context The application context.
+ * @param browserStore The [BrowserStore] used to observe the number of private tabs.
+ * @param crashReporter The [CrashReporting] instance for error reporting.
+ * @param permissionRequestHandler A lambda function to handle permission requests for the notification service.
  */
 class PrivateNotificationFeature(
     context: Context,
     private val browserStore: BrowserStore,
+    private val crashReporter: CrashReporting,
     private val permissionRequestHandler: (() -> Unit),
 ) : LifecycleAwareFeature {
 
@@ -35,7 +44,7 @@ class PrivateNotificationFeature(
                 .distinctUntilChanged()
                 .collect { hasPrivateTabs ->
                     if (hasPrivateTabs) {
-                        SessionNotificationService.start(applicationContext, permissionRequestHandler)
+                        SessionNotificationService.start(applicationContext, permissionRequestHandler, crashReporter)
                     } else {
                         SessionNotificationService.stop(applicationContext)
                     }

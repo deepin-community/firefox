@@ -18,6 +18,10 @@ support-addons-type = Tür
 support-addons-enabled = Etkin
 support-addons-version = Sürüm
 support-addons-id = Kimlik
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Konum
 legacy-user-stylesheets-title = Eski kullanıcı stil sayfaları
 legacy-user-stylesheets-enabled = Etkin
 legacy-user-stylesheets-stylesheet-types = Stil sayfaları
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Verimlilik (%)
 place-database-stats-sequentiality-perc = Sıralılık (%)
 place-database-integrity = Bütünlük
 place-database-verify-integrity = Bütünlüğü doğrula
+place-database-last-idle-maintenance-data = Son boşta bakım tarihi
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Son vakumlama tarihi
+place-database-last-integrity-corruption-date = Son sütünlük bozulması tarihi
 a11y-title = Erişilebilirlik
 a11y-activated = Etkinleştirildi mi?
 a11y-force-disabled = Erişilebilirliği engelle
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Veritabanını numaralandır
 
 media-codec-support-sw-decoding = Yazılımsal çözme
 media-codec-support-hw-decoding = Donanımsal çözme
+media-codec-support-sw-encoding = Yazılımsal kodlama
+media-codec-support-hw-encoding = Donanımsal kodlama
 media-codec-support-codec-name = Codec adı
 media-codec-support-supported = Destekleniyor
 media-codec-support-unsupported = Desteklenmiyor

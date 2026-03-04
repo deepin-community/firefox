@@ -4,16 +4,17 @@
 
 
 ## Error messages for failed HTTP web requests.
-## https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
+## https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status#client_error_responses
 ## Variables:
 ##   $status (Number) - HTTP status code, for example 403
 
 firefox-relay-mask-generation-failed = Није могуће направити нову { -relay-brand-name } маску. Код HTTP грешке: { $status }.
 firefox-relay-get-reusable-masks-failed = Није могуће пронаћи { -relay-brand-name } вишекратне маске. Код HTTP грешке: { $status }.
 
-##
+## The "control" variation of the Relay offer popup
 
-firefox-relay-must-login-to-fxa = Морате се пријавити у { -fxaccount-brand-name } да би користили { -relay-brand-name }.
+firefox-relay-must-login-to-fxa = Морате да се пријавите на { -fxaccount-brand-name(case: "acc") } да бисте користили { -relay-brand-name(case: "acc") }.
+firefox-relay-must-login-to-account = Пријавите се у ваш налог да користите { -relay-brand-name } маске е-поште.
 firefox-relay-get-unlimited-masks =
     .label = Управљај маскама
     .accesskey = У

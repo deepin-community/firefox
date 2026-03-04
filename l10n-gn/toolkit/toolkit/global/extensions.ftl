@@ -15,7 +15,25 @@ webext-perms-header-with-perms = ¿Embojuaju { $extension }? Ko jepysokue oñemo
 webext-perms-header-unsigned = ¿Embojuaju { $extension }? Ko moĩmbaha ndojehechajeýi. Umi moĩmbaha imarãva omondakuaa ne marandu ñemigua térã omoapañuái ne mohendaha. Emohenda moĩmbaha ejeroviárõ hese.
 webext-perms-header-unsigned-with-perms = ¿Embojuaju { $extension }? Ko moĩmbaha ndojehechajeýi. Umi moĩmbaha imarãva omondakuaa ne marandu ñemigua térã omoapañuái ne mohendaha. Emohenda moĩmbaha ejeroviárõ hese. Ko moĩmbaha oñemoneĩta ojapo hag̃ua:
 webext-perms-sideload-header = { $extension } mbojuajupyre
+webext-perms-optional-perms-header2 = { $extension } oikotevẽ ñemoneĩ jo’ávare
 webext-perms-optional-perms-header = { $extension } oikotevẽ moneĩ jo’ávare.
+webext-perms-header2 = Embojuaju { $extension }
+webext-perms-list-intro-unsigned = Ko jepysokue ojehechajey’ỹva ombyaikuaa nde rekoñemi térã mba’e’oka ñemomarã. Embojuaju ejeroviáramo añoite teñoiháre.
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = Ñemoneĩ jerurepýva:
+webext-perms-header-optional-settings = Ñemboheko ikatúva:
+webext-perms-header-update-required-perms = Ñemoneĩ pyahu jerurepýva:
+webext-perms-header-optional-required-perms = Ñemoneĩ pyahu:
+webext-perms-header-data-collection-perms = Mba’ekuaarã ñembyaty tekotevẽva:
+webext-perms-header-data-collection-is-none = Mba’ekuaarã ñembyaty:
+# This is a header used in the add-ons "update" prompt, shown when the new
+# version requires new data collection permissions.
+webext-perms-header-update-data-collection-perms = Mba’ekuaarã ñembyaty pyahu tekotevẽva:
+# This is a header used in the add-ons "optional" prompt, shown when the
+# extension requests new data collection permissions programmatically.
+webext-perms-header-optional-data-collection-perms = Mba’ekuaarã ñembyaty pyahu:
 
 ##
 
@@ -33,6 +51,9 @@ webext-perms-sideload-enable =
 webext-perms-sideload-cancel =
     .label = Heja
     .accesskey = H
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text2 = Oñembohekopyahúma { $extension } jepysokue. Emoneĩ pyahujeyva’erã emohenda mboyve tembiapo ipyahuvéva. Eiporavóvo “Heja”, opytáta jepysokue ipyahuvéva.
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
 webext-perms-update-text = Oñembohekopyahúma { $extension }. Emoneĩ pyahujeyva’erã emohenda hag̃ua apopyre oĩramovéva. Eiporavóramo “Heja” ohejáta moĩmbaha ko’ag̃agua. Ko jepysokue oñemoneĩta ojapo hag̃ua:
@@ -69,6 +90,43 @@ webext-perms-host-description-too-many-sites =
         [one] Eike ne mba’ekuaarã { $domainCount }-pe ambue tenda rupi
        *[other] Eike ne mba’ekuaarã { $domainCount }-pe ambue tenda rupi
     }
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = Eike mba’ekuaarã tendakuéra tendatee { $domain }
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains =
+    { $domainCount ->
+       *[other] Eike mba’ekuaarã tendakuéra tendatee { $domainCount }
+    }
+
+## Strings for data collection permissions in the permission prompt.
+
+webext-perms-description-data-none = Mboguatahára he’i ko jepysokue noikotevẽiha mba’ekuaarã ñembyaty.
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some = Mboguatahára he’i ko jepysokue ombyatyha: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-update = Mboguatahára he’i ko jepysokue ombyatýta: { $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-optional = Mboguatahára he’i ko jepysokue ombyatyseha: { $permissions }
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text-with-data-collection = { $extension } oikotevẽ ñemboheko pyahu hekopyahu hag̃ua
+webext-perms-update-list-intro-with-data-collection = Ehejarei ereko hag̃ua apopyre ha ñemboheko ag̃agua, térã embohekopyahu apopyre ha emoneĩ umi ambuepyre.
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = { $extension } ojerure ñemboheko jo’ávare
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection-only = { $extension } ojerure ñembyatypy mba’ekuaarã jo’ávare
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent
@@ -103,3 +161,8 @@ webext-site-perms-header-unsigned-with-perms = ¿Embojuaju { $extension }? Ko je
 
 webext-site-perms-midi = Eike MIDI mba’e’okápe
 webext-site-perms-midi-sysex = Eike MIDI mba’e’okápe SysEx pytyvõha ndive
+
+## Colorway theme migration
+
+webext-colorway-theme-migration-notification-message = <b>Ne téma sa’y mbojoparaha ojejokóma.</b> { -brand-shorter-name } ombohekopyahúma sa’y mbojoparaha aty. Ejuhúta umi tembiapo ipyahuvéva ñembohekoha renápe.
+webext-colorway-theme-migration-notification-button = Ereko téma sa’y ojuehegua ag̃agua

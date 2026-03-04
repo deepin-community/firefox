@@ -30,7 +30,7 @@ registerCleanupFunction(async () => {
  * @returns {Promise<{profile, parentThread, contentProcess, contentThread}>}
  */
 async function stopProfilerNowAndGetThreads(contentPid) {
-  const profile = await stopNowAndGetProfile();
+  const profile = await ProfilerTestUtils.stopNowAndGetProfile();
 
   const parentThread = profile.threads[0];
   const contentProcess = profile.processes.find(
@@ -69,14 +69,15 @@ async function waitSamplingAndStopProfilerAndGetThreads(contentPid) {
   return stopProfilerNowAndGetThreads(contentPid);
 }
 
-/** This tries to find the service worker thread by targeting a very specific
+/**
+ * This tries to find the service worker thread by targeting a very specific
  * UserTiming marker. Indeed we use performance.mark to add this marker from the
  * service worker's events.
  * Then from this thread we get its parent thread. Indeed the parent thread is
  * where all network stuff happens, so this is useful for network marker tests.
  *
- * @param {Object} profile
- * @returns {{ serviceWorkerThread: Object, serviceWorkerParentThread: Object }} the found threads
+ * @param {object} profile
+ * @returns {{serviceWorkerThread: object, serviceWorkerParentThread: object}} the found threads
  */
 function findServiceWorkerThreads(profile) {
   const allThreads = [
@@ -143,7 +144,7 @@ function findServiceWorkerThreads(profile) {
  * This logs some basic information about the passed thread.
  *
  * @param {string} prefix
- * @param {Object} thread
+ * @param {object} thread
  */
 function logInformationForThread(prefix, thread) {
   if (!thread) {

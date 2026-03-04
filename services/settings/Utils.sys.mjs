@@ -16,13 +16,13 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "CaptivePortalService",
   "@mozilla.org/network/captive-portal-service;1",
-  "nsICaptivePortalService"
+  Ci.nsICaptivePortalService
 );
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "gNetworkLinkService",
   "@mozilla.org/network/network-link-service;1",
-  "nsINetworkLinkService"
+  Ci.nsINetworkLinkService
 );
 
 // Create a new instance of the ConsoleAPI so we can control the maxLogLevel with a pref.
@@ -117,8 +117,15 @@ export var Utils = {
   },
 
   get CERT_CHAIN_ROOT_IDENTIFIER() {
-    if (this.SERVER_URL == AppConstants.REMOTE_SETTINGS_SERVER_URL) {
-      return Ci.nsIContentSignatureVerifier.ContentSignatureProdRoot;
+    if (Services.env.exists("XPCSHELL_TEST_PROFILE_DIR")) {
+      return Ci.nsIX509CertDB.AppXPCShellRoot;
+    }
+    if (
+      this.SERVER_URL.match(
+        /^https?:\/\/(remote-settings\.localhost|127\.0\.0\.1|localhost)(:\d+)?\/v1/
+      )
+    ) {
+      return Ci.nsIContentSignatureVerifier.ContentSignatureLocalRoot;
     }
     if (this.SERVER_URL.includes("allizom.")) {
       return Ci.nsIContentSignatureVerifier.ContentSignatureStageRoot;
@@ -126,10 +133,7 @@ export var Utils = {
     if (this.SERVER_URL.includes("dev.")) {
       return Ci.nsIContentSignatureVerifier.ContentSignatureDevRoot;
     }
-    if (Services.env.exists("XPCSHELL_TEST_PROFILE_DIR")) {
-      return Ci.nsIX509CertDB.AppXPCShellRoot;
-    }
-    return Ci.nsIContentSignatureVerifier.ContentSignatureLocalRoot;
+    return Ci.nsIContentSignatureVerifier.ContentSignatureProdRoot;
   },
 
   get LOAD_DUMPS() {
@@ -151,6 +155,7 @@ export var Utils = {
 
   /**
    * Internal method to enable pulling data from preview buckets.
+   *
    * @param enabled
    */
   enablePreviewMode(enabled) {
@@ -326,8 +331,8 @@ export var Utils = {
   /**
    * Check if we ship a JSON dump for the specified bucket and collection.
    *
-   * @param {String} bucket
-   * @param {String} collection
+   * @param {string} bucket
+   * @param {string} collection
    * @return {bool} Whether it is present or not.
    */
   async hasLocalDump(bucket, collection) {
@@ -347,8 +352,8 @@ export var Utils = {
   /**
    * Look up the last modification time of the JSON dump.
    *
-   * @param {String} bucket
-   * @param {String} collection
+   * @param {string} bucket
+   * @param {string} collection
    * @return {int} The last modification time of the dump. -1 if non-existent.
    */
   async getLocalDumpLastModified(bucket, collection) {
@@ -400,13 +405,14 @@ export var Utils = {
    *     "metadata": {}
    *   }
    * ```
-   * @param {String} serverUrl         The server URL (eg. `https://server.org/v1`)
+   *
+   * @param {string} serverUrl         The server URL (eg. `https://server.org/v1`)
    * @param {int}    expectedTimestamp The timestamp that the server is supposed to return.
    *                                   We obtained it from the Megaphone notification payload,
    *                                   and we use it only for cache busting (Bug 1497159).
-   * @param {String} lastEtag          (optional) The Etag of the latest poll to be matched
+   * @param {string} lastEtag          (optional) The Etag of the latest poll to be matched
    *                                   by the server (eg. `"123456789"`).
-   * @param {Object} filters
+   * @param {object} filters
    */
   async fetchLatestChanges(serverUrl, options = {}) {
     const { expectedTimestamp, lastEtag = "", filters = {} } = options;
@@ -494,9 +500,9 @@ export var Utils = {
   /**
    * Test if a single object matches all given filters.
    *
-   * @param  {Object} filters  The filters object.
-   * @param  {Object} entry    The object to filter.
-   * @return {Boolean}
+   * @param  {object} filters  The filters object.
+   * @param  {object} entry    The object to filter.
+   * @return {boolean}
    */
   filterObject(filters, entry) {
     return Object.entries(filters).every(([filter, value]) => {
@@ -505,7 +511,7 @@ export var Utils = {
       } else if (typeof value === "object") {
         return Utils.filterObject(value, entry[filter]);
       } else if (!Object.prototype.hasOwnProperty.call(entry, filter)) {
-        console.error(`The property ${filter} does not exist`);
+        log.debug(`The property ${filter} does not exist`);
         return false;
       }
       return entry[filter] === value;
@@ -515,7 +521,7 @@ export var Utils = {
   /**
    * Sorts records in a list according to a given ordering.
    *
-   * @param  {String} order The ordering, eg. `-last_modified`.
+   * @param  {string} order The ordering, eg. `-last_modified`.
    * @param  {Array}  list  The collection to order.
    * @return {Array}
    */
@@ -535,5 +541,48 @@ export var Utils = {
       }
       return a[field] > b[field] ? direction : -direction;
     });
+  },
+
+  /**
+   * Fetches and extracts a bundle of changesets from the server.
+   *
+   * This function downloads a JSON file with all changesets required during startup, compressed as LZ4.
+   * It writes the LZ4 file to a temporary location, extracts it, and return the array of changesets.
+   * We chose to use LZ4 instead of Zip because extraction can happen off the main thread.
+   *
+   * @async
+   * @function fetchChangesetsBundle
+   * @memberof Utils
+   * @returns {Promise<Array<object>>} A promise that resolves to an array of parsed changesets.
+   *
+   * @throws {Error} Throws an error if there is an issue fetching the server info or the changeset bundle,
+   *                 or if there is an error during the extraction and parsing of the changesets.
+   */
+  async fetchChangesetsBundle() {
+    const tmpLz4File = await IOUtils.createUniqueFile(
+      PathUtils.tempDir,
+      "remote-settings-startup-bundle-"
+    );
+    try {
+      const baseUrl = await Utils.baseAttachmentsURL();
+      const bundleUrl = `${baseUrl}bundles/startup.json.mozlz4`;
+      const bundleResp = await Utils.fetch(bundleUrl);
+      if (!bundleResp.ok) {
+        throw new Error(`Cannot fetch changeset bundle from ${bundleUrl}`);
+      }
+      // Write down the LZ4 in a temporary file.
+      const downloaded = await bundleResp.arrayBuffer();
+      await IOUtils.write(tmpLz4File, new Uint8Array(downloaded), {
+        tmpPath: `${tmpLz4File}.tmp`,
+      });
+      // Decompress using LZ4
+      const changesetsJson = await IOUtils.readUTF8(tmpLz4File, {
+        decompress: true,
+      });
+      // Parse JSON from string
+      return JSON.parse(changesetsJson);
+    } finally {
+      await IOUtils.remove(tmpLz4File, { ignoreAbsent: true });
+    }
   },
 };

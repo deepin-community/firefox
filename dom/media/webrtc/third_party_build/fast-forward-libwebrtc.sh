@@ -48,14 +48,27 @@ if [ "x$GIT_IS_REBASING" != "x0" ]; then
   exit 1
 fi
 
+find_repo_type
+echo "repo type: $MOZ_REPO"
+
 if [ "x$RESUME" = "x" ]; then
   SKIP_TO="run"
   # Check for modified files and abort if present.
-  MODIFIED_FILES=`hg status --exclude "third_party/libwebrtc/**.orig" third_party/libwebrtc`
+  if [ "x$MOZ_REPO" = "xgit" ]; then
+    MODIFIED_FILES=`git status --porcelain third_party/libwebrtc`
+  else
+    MODIFIED_FILES=`hg status --exclude "third_party/libwebrtc/**.orig" third_party/libwebrtc`
+  fi
   if [ "x$MODIFIED_FILES" = "x" ]; then
-    # Completely clean the mercurial checkout before proceeding
-    hg update -C -r .
-    hg purge
+    # Completely clean the checkout before proceeding
+    if [ "x$MOZ_REPO" = "xgit" ]; then
+      git restore --staged :/
+      git restore :/
+      git clean -fd
+    else
+      hg update -C -r .
+      hg purge
+    fi
   else
     echo "There are modified files in the checkout. Cowardly aborting!"
     echo "$MODIFIED_FILES"
@@ -63,7 +76,11 @@ if [ "x$RESUME" = "x" ]; then
   fi
 else
   SKIP_TO=$RESUME
-  hg revert -C third_party/libwebrtc/README.moz-ff-commit &> /dev/null
+  if [ "x$MOZ_REPO" = "xgit" ]; then
+    git restore third_party/libwebrtc/README.mozilla.last-vendor &> /dev/null
+  else
+    hg revert -C third_party/libwebrtc/README.mozilla.last-vendor &> /dev/null
+  fi
 fi
 
 find_base_commit
@@ -79,18 +96,6 @@ echo "     MOZ_LIBWEBRTC_BASE: $MOZ_LIBWEBRTC_BASE"
 echo "MOZ_LIBWEBRTC_NEXT_BASE: $MOZ_LIBWEBRTC_NEXT_BASE"
 echo " RESUME: $RESUME"
 echo "SKIP_TO: $SKIP_TO"
-
-echo "-------"
-echo "------- Write cmd-line to third_party/libwebrtc/README.moz-ff-commit"
-echo "-------"
-echo "# MOZ_LIBWEBRTC_SRC=$MOZ_LIBWEBRTC_SRC MOZ_LIBWEBRTC_BRANCH=$MOZ_LIBWEBRTC_BRANCH bash $0" \
-    >> third_party/libwebrtc/README.moz-ff-commit
-
-echo "-------"
-echo "------- Write new-base to last line of third_party/libwebrtc/README.moz-ff-commit"
-echo "-------"
-echo "# base of lastest vendoring" >> third_party/libwebrtc/README.moz-ff-commit
-echo "$MOZ_LIBWEBRTC_NEXT_BASE" >> third_party/libwebrtc/README.moz-ff-commit
 
 REBASE_HELP=$"
 The rebase operation onto $MOZ_LIBWEBRTC_NEXT_BASE has failed.  Please

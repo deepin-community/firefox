@@ -6,7 +6,6 @@
 
 /**
  * This file tests the methods on XPCOMUtils.sys.mjs.
- * Also on ComponentUtils.jsm. Which is deprecated.
  */
 
 const {AppConstants} = ChromeUtils.importESModule("resource://gre/modules/AppConstants.sys.mjs");
@@ -49,7 +48,7 @@ add_test(function test_defineLazyServiceGetter()
     let obj = { };
     XPCOMUtils.defineLazyServiceGetter(obj, "service",
                                        "@mozilla.org/consoleservice;1",
-                                       "nsIConsoleService");
+                                       Ci.nsIConsoleService);
     let service = Cc["@mozilla.org/consoleservice;1"].
                   getService(Ci.nsIConsoleService);
 

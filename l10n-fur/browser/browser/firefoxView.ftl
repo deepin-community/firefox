@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Siere
     .aria-label = Siere
-firefoxview-empty-state-icon =
-    .alt = Atenzion:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Juste cumò
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% completât
 firefoxview-tabpickup-step-signin-header = Passe cence fastidis di un dispositîf a chel altri
 firefoxview-tabpickup-step-signin-description = Par recuperâ achì lis schedis viertis sul telefon, prime jentre o cree un account.
 firefoxview-tabpickup-step-signin-primarybutton = Continue
-firefoxview-syncedtabs-signin-header = Recupere lis tôs schedis di cualsisei dispositîf
-firefoxview-syncedtabs-signin-description = Par viodi lis tôs schedis di dapardut là che tu dopris { -brand-product-name }, jentre cul to account. Se no tu âs un account, ti acompagnìn dilunc i passaçs par creâ un.
-firefoxview-syncedtabs-signin-primarybutton = Jentre o regjistriti
+firefoxview-syncedtabs-signin-header-2 = Il to { -brand-product-name } su ducj i tiei dispositîfs
+firefoxview-syncedtabs-signin-description-2 = Par visualizâ lis schedis viertis sul telefon e su altris dispositîfs, jentre o cree un account. Cuntun account tu puedis ancje sincronizâ passwords, cronologjie e tant altri.
+firefoxview-syncedtabs-signin-primarybutton-2 = Jentre
 firefoxview-tabpickup-adddevice-header = Sincronize { -brand-product-name } sul to telefon o taulete
 firefoxview-tabpickup-adddevice-description = Discjame { -brand-product-name } par dispositîfs mobii e jentre di lì.
 firefoxview-tabpickup-adddevice-learn-how = Impare cemût
 firefoxview-tabpickup-adddevice-primarybutton = Oten { -brand-product-name } par dispositîfs mobii
-firefoxview-syncedtabs-adddevice-header = Jentre su { -brand-product-name } suntun altri dispositîf
-firefoxview-syncedtabs-adddevice-description = Par viodi lis tôs schedis di dapardut là che tu dopris { -brand-product-name }, jentre su ducj i tiei dispositîfs. Scuvierç cemût <a data-l10n-name="url">coneti altris dispositîfs</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Recupere lis tôs schedis di cualsisei dispositîf
+firefoxview-syncedtabs-adddevice-description-2 = Jentre su { -brand-product-name } dal to telefon o di un altri computer par visualizâ lis lôr schedis achì. Scuvierç cemût <a data-l10n-name="url">coneti altris dispositîfs</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Prove { -brand-product-name } par dispositîfs mobii
 firefoxview-tabpickup-synctabs-header = Ative la sincronizazion des schedis
 firefoxview-tabpickup-synctabs-description = Permet a { -brand-short-name } di condividi lis schedis tra dispositîfs.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Impare cemût
 firefoxview-tabpickup-synctabs-primarybutton = Sincronize lis schedis viertis
 firefoxview-syncedtabs-synctabs-header = Inzorne lis impostazions di sincronizazion
 firefoxview-syncedtabs-synctabs-description = Par viodi lis schedis di altris dispositîfs tu âs di ativâ la sincronizazion des schedis viertis.
-firefoxview-syncedtabs-synctabs-checkbox = Permet la sincronizazion des schedi viertis
 firefoxview-syncedtabs-loading-header = Sincronizazion in cors
 firefoxview-syncedtabs-loading-description = Une volte completade, lis schedis viertis in cualsisei altri dispositîf a vignaran visualizadis achì. Controle plui indevant.
 firefoxview-tabpickup-fxa-admin-disabled-header = La tô organizazion e à disativât la sincronizazion
@@ -63,10 +60,10 @@ firefoxview-tabpickup-sync-error-primarybutton = Torne prove
 firefoxview-tabpickup-sync-disconnected-header = Ative la sincronizazion par continuâ
 firefoxview-tabpickup-sync-disconnected-description = Par recuperâ lis tôs schedis tu scugnis ativâ la sincronizazion in { -brand-short-name }.
 firefoxview-tabpickup-sync-disconnected-primarybutton = Ative la sincronizazion tes impostazions
-firefoxview-tabpickup-password-locked-header = Inserìs la tô password primarie par visualizâ lis schedis
-firefoxview-tabpickup-password-locked-description = Par recuperâ lis tôs schedis tu scugnis inserî la password primarie par { -brand-short-name }.
+firefoxview-tabpickup-password-locked-header = Inserìs la tô password principâl par visualizâ lis schedis
+firefoxview-tabpickup-password-locked-description = Par recuperâ lis tôs schedis tu scugnis inserî la password principâl par { -brand-short-name }.
 firefoxview-tabpickup-password-locked-link = Plui informazions
-firefoxview-tabpickup-password-locked-primarybutton = Inserìs la password primarie
+firefoxview-tabpickup-password-locked-primarybutton = Inserìs la password principâl
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Altris informazions</a>
 firefoxview-tabpickup-signed-out-header = Jentre par tornâ a conetiti
 firefoxview-tabpickup-signed-out-description = Par tornâ a conetiti e recuperâ lis tôs schedis, jentre tal to { -fxaccount-brand-name }.
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Sieradis di resint
 firefoxview-closed-tabs-description2 = Torne vierç lis pagjinis che tu âs sierât in chest barcon.
 firefoxview-closed-tabs-placeholder-header = Nissune schede sierade di resint
 firefoxview-closed-tabs-placeholder-body = Cuant che tu sieris une schede in chest barcon, tu puedis recuperâle di chi.
-firefoxview-closed-tabs-placeholder-body2 = Cuant che tu sieris une schede, tu puedis simpri recuperâle di chi.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -148,8 +144,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Barcon { $winID } (atuâl)
-firefoxview-opentabs-focus-tab =
-    .title = Passe a cheste schede
 firefoxview-show-more = Mostre di plui
 firefoxview-show-less = Mostre di mancul
 firefoxview-show-all = Mostre dut
@@ -165,8 +159,8 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Cîr tes schedis sieradis di resint
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Cîr tes schedis sincronizadis
+firefoxview-search-text-box-tabs =
+    .placeholder = Cîr tes schedis
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Cîr tes schedis viertis
@@ -189,10 +183,6 @@ firefoxview-sort-history-by-date-label = Ordene par date
 firefoxview-sort-history-by-site-label = Ordene par sît
 firefoxview-sort-open-tabs-by-recency-label = Ordene par ativitât resinte
 firefoxview-sort-open-tabs-by-order-label = Ordene par ordin di schede
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Passe a { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -209,7 +199,6 @@ firefoxview-history-site-localhost = (files locâi)
 ##
 
 firefoxview-show-all-history = Mostre dute la cronologjie
-firefoxview-view-more-browsing-history = Mostre altre cronologjie di navigazion
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +214,8 @@ firefoxview-choose-browser-button = Sielç un navigadôr
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Nuie ce mostrâ
-firefoxview-dont-remember-history-empty-description = Protezi la tô riservatece e je la nestre prioritât. Par chest motîf tu puedis decidi lis ativitâts che { -brand-short-name } al à di visâsi.
-firefoxview-dont-remember-history-empty-description-two = In base aes tôs impostazions corintis, { -brand-short-name } nol à di visâsi lis tôs ativitâts dilunc la navigazion. Par cambiâ, <a data-l10n-name="history-settings-url-two">tes impostazions de cronologjie, stabilìs che il to navigadôr al salvi la cronologjie</a>.
+firefoxview-dont-remember-history-empty-header-2 = Tu sês tu a decidi ce salvâ su { -brand-short-name }
+firefoxview-dont-remember-history-empty-description-one = Pal moment { -brand-short-name } nol si impense de tô ativitât di navigazion. Par cambiâ cheste impostazion, <a data-l10n-name="history-settings-url-two">inzorne lis impostazions relativis ae cronologjie</a>.
 
 ##
 

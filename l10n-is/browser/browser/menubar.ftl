@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -138,7 +126,7 @@ menu-view-customize-toolbar2 =
     .label = Sérsníða verkfærastiku…
     .accesskey = v
 menu-view-sidebar =
-    .label = Hliðarspjald
+    .label = Hliðarstika
     .accesskey = H
 menu-view-bookmarks =
     .label = Bókamerki
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Ferill
 menu-view-synced-tabs-sidebar =
     .label = Samstilltir flipar
-menu-view-megalist-sidebar =
-    .label = Lykilorð
 menu-view-full-zoom =
     .label = Aðdráttur
     .accesskey = ð
@@ -255,6 +241,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Bókamerki farsíma
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Notkunarsnið
+menu-profiles-manage-profiles =
+    .label = Sýsla með notkunarsnið
+menu-profiles-new-profile =
+    .label = Nýtt notkunarsnið
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (núverandi)
+menu-profiles-menu =
+    .label = Notkunarsnið
+    .accesskey = k
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +265,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Niðurhal
     .accesskey = N
+menu-tools-extensions-and-themes =
+    .label = Forritsaukar og þemu
+    .accesskey = e
 menu-tools-addons-and-themes =
     .label = Viðbætur og þemu
     .accesskey = b

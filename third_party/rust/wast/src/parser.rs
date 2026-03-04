@@ -62,9 +62,9 @@
 //! This module is heavily inspired by [`syn`](https://docs.rs/syn) so you can
 //! likely also draw inspiration from the excellent examples in the `syn` crate.
 
+use crate::Error;
 use crate::lexer::{Float, Integer, Lexer, Token, TokenKind};
 use crate::token::Span;
-use crate::Error;
 use bumpalo::Bump;
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
@@ -429,7 +429,7 @@ impl ParseBuffer<'_> {
             match token.kind {
                 // Always skip whitespace and comments.
                 TokenKind::Whitespace | TokenKind::LineComment | TokenKind::BlockComment => {
-                    continue
+                    continue;
                 }
 
                 // If an lparen is seen then this may be skipped if it's an
@@ -993,6 +993,19 @@ impl<'a> Parser<'a> {
     pub(crate) fn track_instr_spans(&self) -> bool {
         self.buf.track_instr_spans
     }
+
+    #[cfg(feature = "wasm-module")]
+    pub(crate) fn with_standard_annotations_registered<R>(
+        self,
+        f: impl FnOnce(Self) -> Result<R>,
+    ) -> Result<R> {
+        let _r = self.register_annotation("custom");
+        let _r = self.register_annotation("producers");
+        let _r = self.register_annotation("name");
+        let _r = self.register_annotation("dylink.0");
+        let _r = self.register_annotation("metadata.code.branch_hint");
+        f(self)
+    }
 }
 
 impl<'a> Cursor<'a> {
@@ -1375,7 +1388,7 @@ impl<'a> Cursor<'a> {
     }
 }
 
-impl Lookahead1<'_> {
+impl<'a> Lookahead1<'a> {
     /// Attempts to see if `T` is the next token in the [`Parser`] this
     /// [`Lookahead1`] references.
     ///
@@ -1387,6 +1400,11 @@ impl Lookahead1<'_> {
             self.attempts.push(T::display());
             false
         })
+    }
+
+    /// Returns the underlying parser that this lookahead is looking at.
+    pub fn parser(&self) -> Parser<'a> {
+        self.parser
     }
 
     /// Generates an error message saying that one of the tokens passed to
@@ -1416,7 +1434,7 @@ impl Lookahead1<'_> {
             }
             _ => {
                 let join = self.attempts.join(", ");
-                let message = format!("unexpected token, expected one of: {}", join);
+                let message = format!("unexpected token, expected one of: {join}");
                 self.parser.error(&message)
             }
         }

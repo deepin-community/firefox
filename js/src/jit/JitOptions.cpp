@@ -19,7 +19,7 @@ using mozilla::Maybe;
 namespace js {
 namespace jit {
 
-DefaultJitOptions JitOptions;
+MOZ_RUNINIT DefaultJitOptions JitOptions;
 
 static void Warn(const char* env, const char* value) {
   fprintf(stderr, "Warning: I didn't understand %s=\"%s\"\n", env, value);
@@ -117,6 +117,12 @@ DefaultJitOptions::DefaultJitOptions() {
   // Toggles whether CacheIR stubs are used.
   SET_DEFAULT(disableCacheIR, false);
 
+  // Toggles whether stubs are folded.
+  SET_DEFAULT(disableStubFolding, false);
+
+  // Toggles whether stubs with different offsets in Loads or Stores are folded.
+  SET_DEFAULT(disableStubFoldingLoadsAndStores, false);
+
   // Toggles whether sink code motion is globally disabled.
   SET_DEFAULT(disableSink, true);
 
@@ -131,6 +137,9 @@ DefaultJitOptions::DefaultJitOptions() {
 
   // Whether the Baseline Interpreter is enabled.
   SET_DEFAULT(baselineInterpreter, true);
+
+  // Whether replacing Object.keys with NativeIterators is globally disabled.
+  SET_DEFAULT(disableObjectKeysScalarReplacement, false);
 
 #ifdef ENABLE_PORTABLE_BASELINE_INTERP
   // Whether the Portable Baseline Interpreter is enabled.
@@ -165,6 +174,9 @@ DefaultJitOptions::DefaultJitOptions() {
   // Whether the RegExp JIT is enabled.
   SET_DEFAULT(nativeRegExp, true);
 
+  // Whether offthread baseline compilation should be batched.
+  SET_DEFAULT(baselineBatching, false);
+
   // Whether Warp should use ICs instead of transpiling Baseline CacheIR.
   SET_DEFAULT(forceInlineCaches, false);
 
@@ -184,6 +196,20 @@ DefaultJitOptions::DefaultJitOptions() {
   // Whether to enable extra code to perform dynamic validations.
   SET_DEFAULT(runExtraChecks, false);
 
+#ifdef ENABLE_JS_AOT_ICS
+  SET_DEFAULT(enableAOTICs, false);
+  SET_DEFAULT(enableAOTICEnforce, false);
+#endif
+
+#ifdef ENABLE_JS_AOT_ICS_FORCE
+  SET_DEFAULT(enableAOTICs, true);
+#endif
+
+#ifdef ENABLE_JS_AOT_ICS_ENFORCE
+  SET_DEFAULT(enableAOTICs, true);
+  SET_DEFAULT(enableAOTICEnforce, true);
+#endif
+
   // How many invocations or loop iterations are needed before functions
   // enter the Baseline Interpreter.
   SET_DEFAULT(baselineInterpreterWarmUpThreshold, 10);
@@ -198,6 +224,10 @@ DefaultJitOptions::DefaultJitOptions() {
   // are compiled with the baseline compiler.
   // Duplicated in all.js - ensure both match.
   SET_DEFAULT(baselineJitWarmUpThreshold, 100);
+
+  // How many scripts can be queued up for offthread baseline compilation
+  // before they are dispatched.
+  SET_DEFAULT(baselineQueueCapacity, 8);
 
   // Disable eager baseline jit hints
   SET_DEFAULT(disableJitHints, false);
@@ -247,7 +277,7 @@ DefaultJitOptions::DefaultJitOptions() {
   SET_DEFAULT(osrPcMismatchesBeforeRecompile, 6000);
 
   // The bytecode length limit for small function.
-  SET_DEFAULT(smallFunctionMaxBytecodeLength, 130);
+  SET_DEFAULT(smallFunctionMaxBytecodeLength, 140);
 
   // The minimum entry count for an IC stub before it can be trial-inlined.
   SET_DEFAULT(inliningEntryThreshold, 100);
@@ -275,18 +305,8 @@ DefaultJitOptions::DefaultJitOptions() {
   SET_DEFAULT(ionMaxLocalsAndArgs, 10 * 1000);
   SET_DEFAULT(ionMaxLocalsAndArgsMainThread, 256);
 
-  // Force the used register allocator instead of letting the optimization
-  // pass decide.
-  const char* forcedRegisterAllocatorEnv = "JIT_OPTION_forcedRegisterAllocator";
-  if (const char* env = getenv(forcedRegisterAllocatorEnv)) {
-    forcedRegisterAllocator = LookupRegisterAllocator(env);
-    if (!forcedRegisterAllocator.isSome()) {
-      Warn(forcedRegisterAllocatorEnv, env);
-    }
-  }
-
-#if defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64) || \
-    defined(JS_CODEGEN_LOONG64) || defined(JS_CODEGEN_RISCV64)
+#if defined(JS_CODEGEN_MIPS64) || defined(JS_CODEGEN_LOONG64) || \
+    defined(JS_CODEGEN_RISCV64)
   SET_DEFAULT(spectreIndexMasking, false);
   SET_DEFAULT(spectreObjectMitigations, false);
   SET_DEFAULT(spectreStringMitigations, false);
@@ -343,8 +363,10 @@ DefaultJitOptions::DefaultJitOptions() {
 
   // Until which wasm bytecode size should we accumulate functions, in order
   // to compile efficiently on helper threads. Baseline code compiles much
-  // faster than Ion code so use scaled thresholds (see also bug 1320374).
-  SET_DEFAULT(wasmBatchBaselineThreshold, 10000);
+  // faster than Ion code so use scaled thresholds (see also bug 1320374
+  // and bug 1930875).  Ion compilation can use a lot of memory, so having a
+  // low threshold here (1100) helps avoid OOMs in the per-task pool allocators.
+  SET_DEFAULT(wasmBatchBaselineThreshold, 25000);
   SET_DEFAULT(wasmBatchIonThreshold, 1100);
 
   // Controls how much assertion checking code is emitted
@@ -377,9 +399,9 @@ DefaultJitOptions::DefaultJitOptions() {
   // ***** Irregexp shim flags *****
 
   // Whether the stage 3 regexp modifiers proposal is enabled.
-  SET_DEFAULT(js_regexp_modifiers, false);
+  SET_DEFAULT(js_regexp_modifiers, true);
   // Whether the stage 3 duplicate named capture groups proposal is enabled.
-  SET_DEFAULT(js_regexp_duplicate_named_groups, false);
+  SET_DEFAULT(js_regexp_duplicate_named_groups, true);
   // V8 uses this for differential fuzzing to handle stack overflows.
   // We address the same problem in StackLimitCheck::HasOverflowed.
   SET_DEFAULT(correctness_fuzzer_suppressions, false);

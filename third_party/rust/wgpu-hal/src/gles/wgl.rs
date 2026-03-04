@@ -1,24 +1,26 @@
+use alloc::{borrow::ToOwned as _, ffi::CString, string::String, sync::Arc, vec::Vec};
+use core::{
+    ffi::{c_int, c_void, CStr},
+    mem::{self, ManuallyDrop},
+    ptr,
+    time::Duration,
+};
+use std::{
+    sync::{
+        mpsc::{sync_channel, SyncSender},
+        LazyLock,
+    },
+    thread,
+};
+
 use glow::HasContext;
 use glutin_wgl_sys::wgl_extra::{
     Wgl, CONTEXT_CORE_PROFILE_BIT_ARB, CONTEXT_DEBUG_BIT_ARB, CONTEXT_FLAGS_ARB,
     CONTEXT_PROFILE_MASK_ARB,
 };
-use once_cell::sync::Lazy;
+use hashbrown::HashSet;
 use parking_lot::{Mutex, MutexGuard, RwLock};
 use raw_window_handle::{RawDisplayHandle, RawWindowHandle};
-use std::{
-    collections::HashSet,
-    ffi::{c_void, CStr, CString},
-    mem::{self, ManuallyDrop},
-    os::raw::c_int,
-    ptr,
-    sync::{
-        mpsc::{sync_channel, SyncSender},
-        Arc,
-    },
-    thread,
-    time::Duration,
-};
 use wgt::InstanceFlags;
 use windows::{
     core::{Error, PCSTR},
@@ -48,7 +50,10 @@ impl AdapterContext {
     }
 
     pub fn raw_context(&self) -> *mut c_void {
-        self.inner.lock().context.context.0
+        match self.inner.lock().context {
+            Some(ref wgl) => wgl.context.0,
+            None => ptr::null_mut(),
+        }
     }
 
     /// Obtain a lock to the WGL context and get handle to the [`glow::Context`] that can be used to
@@ -62,7 +67,9 @@ impl AdapterContext {
             .try_lock_for(Duration::from_secs(CONTEXT_LOCK_TIMEOUT_SECS))
             .expect("Could not lock adapter context. This is most-likely a deadlock.");
 
-        inner.context.make_current(inner.device.dc).unwrap();
+        if let Some(wgl) = &inner.context {
+            wgl.make_current(inner.device.dc).unwrap()
+        };
 
         AdapterContextLock { inner }
     }
@@ -79,19 +86,20 @@ impl AdapterContext {
             .try_lock_for(Duration::from_secs(CONTEXT_LOCK_TIMEOUT_SECS))
             .expect("Could not lock adapter context. This is most-likely a deadlock.");
 
-        inner
-            .context
-            .make_current(device)
-            .map(|()| AdapterContextLock { inner })
+        if let Some(wgl) = &inner.context {
+            wgl.make_current(device)?;
+        }
+
+        Ok(AdapterContextLock { inner })
     }
 }
 
-/// A guard containing a lock to an [`AdapterContext`]
+/// A guard containing a lock to an [`AdapterContext`], while the GL context is kept current.
 pub struct AdapterContextLock<'a> {
     inner: MutexGuard<'a, Inner>,
 }
 
-impl<'a> std::ops::Deref for AdapterContextLock<'a> {
+impl<'a> core::ops::Deref for AdapterContextLock<'a> {
     type Target = glow::Context;
 
     fn deref(&self) -> &Self::Target {
@@ -101,7 +109,9 @@ impl<'a> std::ops::Deref for AdapterContextLock<'a> {
 
 impl<'a> Drop for AdapterContextLock<'a> {
     fn drop(&mut self) {
-        self.inner.context.unmake_current().unwrap();
+        if let Some(wgl) = &self.inner.context {
+            wgl.unmake_current().unwrap()
+        }
     }
 }
 
@@ -118,7 +128,7 @@ impl WglContext {
         if unsafe { OpenGL::wglGetCurrentContext() }.is_invalid() {
             return Ok(());
         }
-        unsafe { OpenGL::wglMakeCurrent(None, None) }
+        unsafe { OpenGL::wglMakeCurrent(Default::default(), Default::default()) }
     }
 }
 
@@ -136,7 +146,7 @@ unsafe impl Sync for WglContext {}
 struct Inner {
     gl: ManuallyDrop<glow::Context>,
     device: InstanceDevice,
-    context: WglContext,
+    context: Option<WglContext>,
 }
 
 impl Drop for Inner {
@@ -150,8 +160,14 @@ impl Drop for Inner {
 
         // Context must be current when dropped. See safety docs on
         // `glow::HasContext`.
-        self.context.make_current(self.device.dc).unwrap();
-        let _guard = CurrentGuard(&self.context);
+        //
+        // NOTE: This is only set to `None` by `Adapter::new_external` which
+        // requires the context to be current when anything that may be holding
+        // the `Arc<AdapterShared>` is dropped.
+        let _guard = self.context.as_ref().map(|wgl| {
+            wgl.make_current(self.device.dc).unwrap();
+            CurrentGuard(wgl)
+        });
         // SAFETY: Field not used after this.
         unsafe { ManuallyDrop::drop(&mut self.gl) };
     }
@@ -162,6 +178,7 @@ unsafe impl Sync for Inner {}
 
 pub struct Instance {
     srgb_capable: bool,
+    options: wgt::GlBackendOptions,
     inner: Arc<Mutex<Inner>>,
 }
 
@@ -196,7 +213,7 @@ unsafe fn setup_pixel_format(dc: Gdi::HDC) -> Result<(), crate::InstanceError> {
     {
         let format = OpenGL::PIXELFORMATDESCRIPTOR {
             nVersion: 1,
-            nSize: mem::size_of::<OpenGL::PIXELFORMATDESCRIPTOR>() as u16,
+            nSize: size_of::<OpenGL::PIXELFORMATDESCRIPTOR>() as u16,
             dwFlags: OpenGL::PFD_DRAW_TO_WINDOW
                 | OpenGL::PFD_SUPPORT_OPENGL
                 | OpenGL::PFD_DOUBLEBUFFER,
@@ -209,7 +226,7 @@ unsafe fn setup_pixel_format(dc: Gdi::HDC) -> Result<(), crate::InstanceError> {
         if index == 0 {
             return Err(crate::InstanceError::with_source(
                 String::from("unable to choose pixel format"),
-                Error::from_win32(),
+                Error::from_thread(),
             ));
         }
 
@@ -227,22 +244,17 @@ unsafe fn setup_pixel_format(dc: Gdi::HDC) -> Result<(), crate::InstanceError> {
         if index == 0 {
             return Err(crate::InstanceError::with_source(
                 String::from("unable to get pixel format index"),
-                Error::from_win32(),
+                Error::from_thread(),
             ));
         }
         let mut format = Default::default();
         if unsafe {
-            OpenGL::DescribePixelFormat(
-                dc,
-                index,
-                mem::size_of_val(&format) as u32,
-                Some(&mut format),
-            )
+            OpenGL::DescribePixelFormat(dc, index, size_of_val(&format) as u32, Some(&mut format))
         } == 0
         {
             return Err(crate::InstanceError::with_source(
                 String::from("unable to read pixel format"),
-                Error::from_win32(),
+                Error::from_thread(),
             ));
         }
 
@@ -269,6 +281,21 @@ fn create_global_window_class() -> Result<CString, crate::InstanceError> {
     let name = format!("wgpu Device Class {:x}\0", class_addr as usize);
     let name = CString::from_vec_with_nul(name.into_bytes()).unwrap();
 
+    // The window class may already be registered if we are a dynamic library that got
+    // unloaded & loaded back into the same process. If so, just skip creation.
+    let already_exists = unsafe {
+        let mut wc = mem::zeroed::<WindowsAndMessaging::WNDCLASSEXA>();
+        WindowsAndMessaging::GetClassInfoExA(
+            Some(instance.into()),
+            PCSTR(name.as_ptr().cast()),
+            &mut wc,
+        )
+        .is_ok()
+    };
+    if already_exists {
+        return Ok(name);
+    }
+
     // Use a wrapper function for compatibility with `windows-rs`.
     unsafe extern "system" fn wnd_proc(
         window: Foundation::HWND,
@@ -280,7 +307,7 @@ fn create_global_window_class() -> Result<CString, crate::InstanceError> {
     }
 
     let window_class = WindowsAndMessaging::WNDCLASSEXA {
-        cbSize: mem::size_of::<WindowsAndMessaging::WNDCLASSEXA>() as u32,
+        cbSize: size_of::<WindowsAndMessaging::WNDCLASSEXA>() as u32,
         style: WindowsAndMessaging::CS_OWNDC,
         lpfnWndProc: Some(wnd_proc),
         cbClsExtra: 0,
@@ -299,7 +326,7 @@ fn create_global_window_class() -> Result<CString, crate::InstanceError> {
     if atom == 0 {
         return Err(crate::InstanceError::with_source(
             String::from("unable to register window class"),
-            Error::from_win32(),
+            Error::from_thread(),
         ));
     }
 
@@ -309,8 +336,8 @@ fn create_global_window_class() -> Result<CString, crate::InstanceError> {
 }
 
 fn get_global_window_class() -> Result<CString, crate::InstanceError> {
-    static GLOBAL: Lazy<Result<CString, crate::InstanceError>> =
-        Lazy::new(create_global_window_class);
+    static GLOBAL: LazyLock<Result<CString, crate::InstanceError>> =
+        LazyLock::new(create_global_window_class);
     GLOBAL.clone()
 }
 
@@ -370,7 +397,7 @@ fn create_instance_device() -> Result<InstanceDevice, crate::InstanceError> {
                         1,
                         None,
                         None,
-                        instance,
+                        Some(instance.into()),
                         None,
                     )
                 }
@@ -382,11 +409,11 @@ fn create_instance_device() -> Result<InstanceDevice, crate::InstanceError> {
                 })?;
                 let window = Window { window };
 
-                let dc = unsafe { Gdi::GetDC(window.window) };
+                let dc = unsafe { Gdi::GetDC(Some(window.window)) };
                 if dc.is_invalid() {
                     return Err(crate::InstanceError::with_source(
                         String::from("unable to create memory device"),
-                        Error::from_win32(),
+                        Error::from_thread(),
                     ));
                 }
                 let dc = DeviceContextHandle {
@@ -421,17 +448,16 @@ fn create_instance_device() -> Result<InstanceDevice, crate::InstanceError> {
 impl crate::Instance for Instance {
     type A = super::Api;
 
-    unsafe fn init(desc: &crate::InstanceDescriptor) -> Result<Self, crate::InstanceError> {
+    unsafe fn init(desc: &crate::InstanceDescriptor<'_>) -> Result<Self, crate::InstanceError> {
         profiling::scope!("Init OpenGL (WGL) Backend");
         let opengl_module =
-            unsafe { LibraryLoader::LoadLibraryA(PCSTR("opengl32.dll\0".as_ptr())) }.map_err(
-                |e| {
+            unsafe { LibraryLoader::LoadLibraryA(PCSTR(c"opengl32.dll".as_ptr().cast())) }
+                .map_err(|e| {
                     crate::InstanceError::with_source(
                         String::from("unable to load the OpenGL library"),
                         e,
                     )
-                },
-            )?;
+                })?;
 
         let device = create_instance_device()?;
         let dc = device.dc;
@@ -473,7 +499,7 @@ impl crate::Instance for Instance {
             if context.is_null() {
                 return Err(crate::InstanceError::with_source(
                     String::from("unable to create OpenGL context"),
-                    Error::from_win32(),
+                    Error::from_thread(),
                 ));
             }
             WglContext {
@@ -515,7 +541,9 @@ impl crate::Instance for Instance {
             unsafe { gl.debug_message_callback(super::gl_debug_message_callback) };
         }
 
-        // Avoid accidental drop when the context is not current.
+        // Wrap in ManuallyDrop to make it easier to "current" the GL context before dropping this
+        // GLOW context, which could also happen if a panic occurs after we uncurrent the context
+        // below but before Inner is constructed.
         let gl = ManuallyDrop::new(gl);
         context.unmake_current().map_err(|e| {
             crate::InstanceError::with_source(
@@ -528,8 +556,9 @@ impl crate::Instance for Instance {
             inner: Arc::new(Mutex::new(Inner {
                 device,
                 gl,
-                context,
+                context: Some(context),
             })),
+            options: desc.backend_options.gl.clone(),
             srgb_capable,
         })
     }
@@ -561,12 +590,56 @@ impl crate::Instance for Instance {
         _surface_hint: Option<&Surface>,
     ) -> Vec<crate::ExposedAdapter<super::Api>> {
         unsafe {
-            super::Adapter::expose(AdapterContext {
-                inner: self.inner.clone(),
-            })
+            super::Adapter::expose(
+                AdapterContext {
+                    inner: self.inner.clone(),
+                },
+                self.options.clone(),
+            )
         }
         .into_iter()
         .collect()
+    }
+}
+
+impl super::Adapter {
+    /// Creates a new external adapter using the specified loader function.
+    ///
+    /// # Safety
+    ///
+    /// - The underlying OpenGL ES context must be current.
+    /// - The underlying OpenGL ES context must be current when interfacing with any objects returned by
+    ///   wgpu-hal from this adapter.
+    /// - The underlying OpenGL ES context must be current when dropping this adapter and when
+    ///   dropping any objects returned from this adapter.
+    pub unsafe fn new_external(
+        fun: impl FnMut(&str) -> *const c_void,
+        options: wgt::GlBackendOptions,
+    ) -> Option<crate::ExposedAdapter<super::Api>> {
+        let context = unsafe { glow::Context::from_loader_function(fun) };
+        unsafe {
+            Self::expose(
+                AdapterContext {
+                    inner: Arc::new(Mutex::new(Inner {
+                        gl: ManuallyDrop::new(context),
+                        device: create_instance_device().ok()?,
+                        context: None,
+                    })),
+                },
+                options,
+            )
+        }
+    }
+
+    pub fn adapter_context(&self) -> &AdapterContext {
+        &self.shared.context
+    }
+}
+
+impl super::Device {
+    /// Returns the underlying WGL context.
+    pub fn context(&self) -> &AdapterContext {
+        &self.shared.context
     }
 }
 
@@ -578,7 +651,7 @@ struct DeviceContextHandle {
 impl Drop for DeviceContextHandle {
     fn drop(&mut self) {
         unsafe {
-            Gdi::ReleaseDC(self.window, self.device);
+            Gdi::ReleaseDC(Some(self.window), self.device);
         };
     }
 }
@@ -614,11 +687,11 @@ impl Surface {
     ) -> Result<(), crate::SurfaceError> {
         let swapchain = self.swapchain.read();
         let sc = swapchain.as_ref().unwrap();
-        let dc = unsafe { Gdi::GetDC(self.window) };
+        let dc = unsafe { Gdi::GetDC(Some(self.window)) };
         if dc.is_invalid() {
             log::error!(
                 "unable to get the device context from window: {}",
-                Error::from_win32()
+                Error::from_thread()
             );
             return Err(crate::SurfaceError::Other(
                 "unable to get the device context from window",
@@ -692,11 +765,11 @@ impl crate::Surface for Surface {
         // Remove the old configuration.
         unsafe { self.unconfigure(device) };
 
-        let dc = unsafe { Gdi::GetDC(self.window) };
+        let dc = unsafe { Gdi::GetDC(Some(self.window)) };
         if dc.is_invalid() {
             log::error!(
                 "unable to get the device context from window: {}",
-                Error::from_win32()
+                Error::from_thread()
             );
             return Err(crate::SurfaceError::Other(
                 "unable to get the device context from window",
@@ -770,7 +843,7 @@ impl crate::Surface for Surface {
         };
 
         if unsafe { extra.SwapIntervalEXT(if vsync { 1 } else { 0 }) } == Foundation::FALSE.0 {
-            log::error!("unable to set swap interval: {}", Error::from_win32());
+            log::error!("unable to set swap interval: {}", Error::from_thread());
             return Err(crate::SurfaceError::Other("unable to set swap interval"));
         }
 

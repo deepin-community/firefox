@@ -19,7 +19,6 @@ open-location = جست‌وجو یا ورود نشانی
 share = اشتراک‌گذاری
 close-window = بستن پنجره
 open-sidebar = نوارهای جانبی
-
 # This string describes shortcuts for search.
 search-popover = جستجوی میانبرها
 # Describes searches limited to a specific scope
@@ -33,6 +32,3 @@ search-history = تاریخچه
 search-opentabs = زبانه‌های باز
 search-tags = برچسب‌ها
 search-titles = عناوین
-
-##
-

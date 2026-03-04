@@ -30,8 +30,8 @@
 #include "mozilla/dom/StorageUtils.h"
 #include "mozilla/JSONStringWriteFuncs.h"
 #include "mozilla/JSONWriter.h"
+#include "nsIEffectiveTLDService.h"
 #include "nsIURL.h"
-#include "nsEffectiveTLDService.h"
 #include "nsIURIMutator.h"
 #include "mozilla/StaticPrefs_permissions.h"
 #include "nsIURIMutator.h"
@@ -372,7 +372,7 @@ nsresult BasePrincipal::ToJSON(nsACString& aJSON) {
 }
 
 nsresult BasePrincipal::ToJSON(JSONWriter& aWriter) {
-  static_assert(eKindMax < ArrayLength(JSONEnumKeyStrings));
+  static_assert(eKindMax < std::size(JSONEnumKeyStrings));
 
   aWriter.Start(JSONWriter::CollectionStyle::SingleLineStyle);
 
@@ -538,7 +538,7 @@ BasePrincipal::EqualsForPermission(nsIPrincipal* aOther, bool aExactHost,
   }
 
   nsCOMPtr<nsIEffectiveTLDService> tldService =
-      do_GetService(NS_EFFECTIVETLDSERVICE_CONTRACTID);
+      mozilla::components::EffectiveTLD::Service();
   if (!tldService) {
     NS_ERROR("Should have a tld service!");
     return NS_ERROR_FAILURE;
@@ -856,7 +856,7 @@ BasePrincipal::HasFirstpartyStorageAccess(mozIDOMWindow* aCheckWindow,
     return NS_ERROR_UNEXPECTED;
   }
 
-  *aOutAllowed = ShouldAllowAccessFor(win, uri, aRejectedReason);
+  *aOutAllowed = ShouldAllowAccessFor(win, uri, true, aRejectedReason);
   return NS_OK;
 }
 
@@ -1067,6 +1067,12 @@ NS_IMETHODIMP
 BasePrincipal::IsURIInPrefList(const char* aPref, bool* aResult) {
   AssertIsOnMainThread();
   *aResult = false;
+
+  if (Kind() != eContentPrincipal) {
+    // We don't store prefs for non-content principals.
+    return NS_OK;
+  }
+
   nsCOMPtr<nsIURI> prinURI;
   nsresult rv = GetURI(getter_AddRefs(prinURI));
   if (NS_FAILED(rv) || !prinURI) {
@@ -1416,8 +1422,8 @@ BasePrincipal::GetLocalStorageQuotaKey(nsACString& aKey) {
     rv = url->GetDirectory(baseDomain);
     NS_ENSURE_SUCCESS(rv, rv);
   } else {
-    nsCOMPtr<nsIEffectiveTLDService> eTLDService(
-        do_GetService(NS_EFFECTIVETLDSERVICE_CONTRACTID, &rv));
+    nsCOMPtr<nsIEffectiveTLDService> eTLDService =
+        mozilla::components::EffectiveTLD::Service(&rv);
     NS_ENSURE_SUCCESS(rv, rv);
 
     nsAutoCString eTLDplusOne;
@@ -1459,7 +1465,12 @@ BasePrincipal::GetNextSubDomainPrincipal(
   }
 
   nsCString subDomain;
-  rv = nsEffectiveTLDService::GetInstance()->GetNextSubDomain(host, subDomain);
+  nsCOMPtr<nsIEffectiveTLDService> eTLDService =
+      mozilla::components::EffectiveTLD::Service();
+  if (!eTLDService) {
+    return NS_OK;
+  }
+  rv = eTLDService->GetNextSubDomain(host, subDomain);
 
   if (NS_FAILED(rv) || subDomain.IsEmpty()) {
     return NS_OK;
@@ -1607,3 +1618,9 @@ void BasePrincipal::WriteJSONProperty(JSONWriter& aWriter,
 }
 
 }  // namespace mozilla
+
+uint32_t nsIPrincipal::GetHashValue() const {
+  auto* bp = mozilla::BasePrincipal::Cast(this);
+  return mozilla::HashGeneric(bp->GetOriginNoSuffixHash(),
+                              bp->GetOriginSuffixHash());
+}

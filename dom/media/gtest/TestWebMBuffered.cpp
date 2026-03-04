@@ -1,12 +1,14 @@
+/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "gtest/gtest.h"
-#include "mozilla/ArrayUtils.h"
 #include <stdio.h>
-#include "nsTArray.h"
+
 #include "WebMBufferedParser.h"
+#include "gtest/gtest.h"
+#include "nsTArray.h"
 
 using namespace mozilla;
 
@@ -44,7 +46,7 @@ TEST(WebMBuffered, BasicTests)
   EXPECT_EQ(parser.mCurrentOffset, 0);
 
   unsigned char buf[] = {0x1a, 0x45, 0xdf, 0xa3};
-  EXPECT_EQ(parser.Append(buf, ArrayLength(buf), mapping), NS_OK);
+  EXPECT_EQ(parser.Append(buf, std::size(buf), mapping), NS_OK);
   EXPECT_TRUE(mapping.IsEmpty());
   EXPECT_EQ(parser.mStartOffset, 0);
   EXPECT_EQ(parser.mCurrentOffset, 4);

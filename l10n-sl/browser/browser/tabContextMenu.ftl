@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nov zavihek
     .accesskey = v
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Zapri zavihke na levi
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = Zapri zavihke nad izbranim
+    .accesskey = n
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Zapri zavihke na desni
     .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = Zapri zavihke pod izbranim
+    .accesskey = p
 close-other-tabs =
     .label = Zapri ostale zavihke
     .accesskey = t
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Premakni v novo okno
     .accesskey = o
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Premakni v profil { $profileName }
 tab-context-close-multiple-tabs =
     .label = Zapri več zavihkov
     .accesskey = č
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Deli
     .accesskey = D
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nov zavihek desno od izbranega
+    .accesskey = v
+tab-context-new-tab-open-vertical =
+    .label = Nov zavihek pod izbranim
+    .accesskey = p
+tab-context-new-group =
+    .label = Nova skupina
+    .accesskey = k
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -111,6 +135,17 @@ tab-context-move-tabs =
            *[other] Premakni zavihke
         }
     .accesskey = m
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Pošlji na napravo
+            [one] Pošlji { $tabCount } zavihek na napravo
+            [two] Pošlji { $tabCount } zavihka na napravo
+            [few] Pošlji { $tabCount } zavihke na napravo
+           *[other] Pošlji { $tabCount } zavihkov na napravo
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -120,3 +155,12 @@ tab-context-send-tabs-to-device =
            *[other] Pošlji { $tabCount } zavihkov na napravo
         }
     .accesskey = š
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [one] Sprosti zavihek
+            [two] Sprosti { $tabCount } zavihka
+            [few] Sprosti { $tabCount } zavihke
+           *[other] Sprosti { $tabCount } zavihkov
+        }
+    .accesskey = S

@@ -7,10 +7,9 @@
 #ifndef mozilla_dom_Worklet_h
 #define mozilla_dom_Worklet_h
 
-#include "mozilla/Attributes.h"
+#include "nsCOMPtr.h"
 #include "nsRefPtrHashtable.h"
 #include "nsWrapperCache.h"
-#include "nsCOMPtr.h"
 
 class nsPIDOMWindowInner;
 
@@ -27,7 +26,7 @@ class WorkletScriptHandler;
 struct WorkletOptions;
 enum class CallerType : uint32_t;
 
-class Worklet final : public nsISupports, public nsWrapperCache {
+class Worklet : public nsISupports, public nsWrapperCache {
  public:
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(Worklet)
@@ -54,9 +53,10 @@ class Worklet final : public nsISupports, public nsWrapperCache {
     return mLocalizedStrings;
   }
 
- private:
-  ~Worklet();
+ protected:
+  virtual ~Worklet();
 
+ private:
   WorkletFetchHandler* GetImportFetchHandler(const nsACString& aURI);
 
   void AddImportFetchHandler(const nsACString& aURI,

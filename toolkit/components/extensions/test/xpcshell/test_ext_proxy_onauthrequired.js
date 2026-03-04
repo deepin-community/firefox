@@ -4,7 +4,7 @@ XPCOMUtils.defineLazyServiceGetter(
   this,
   "authManager",
   "@mozilla.org/network/http-auth-manager;1",
-  "nsIHttpAuthManager"
+  Ci.nsIHttpAuthManager
 );
 
 const proxy = createHttpServer();
@@ -177,9 +177,8 @@ add_task(async function test_webRequest_auth_proxy() {
 
   authManager.clearAll();
 
-  let contentPage = await ExtensionTestUtils.loadContentPage(
-    `http://mozilla.org/`
-  );
+  let contentPage =
+    await ExtensionTestUtils.loadContentPage(`http://mozilla.org/`);
 
   await handlingExt.awaitMessage("done");
   await contentPage.close();

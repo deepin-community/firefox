@@ -7,25 +7,24 @@
 #ifndef AudioContext_h_
 #define AudioContext_h_
 
-#include "X11UndefineNone.h"
 #include "AudioParamDescriptorMap.h"
-#include "mozilla/dom/OfflineAudioContextBinding.h"
-#include "mozilla/dom/AudioContextBinding.h"
 #include "MediaBufferDecoder.h"
-#include "mozilla/Attributes.h"
+#include "X11UndefineNone.h"
+#include "js/TypeDecls.h"
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/MemoryReporting.h"
-#include "mozilla/dom/TypedArray.h"
 #include "mozilla/RelativeTimeline.h"
 #include "mozilla/TypedEnumBits.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/dom/AudioContextBinding.h"
+#include "mozilla/dom/OfflineAudioContextBinding.h"
+#include "mozilla/dom/TypedArray.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsTHashMap.h"
 #include "nsHashKeys.h"
-#include "nsTHashSet.h"
-#include "js/TypeDecls.h"
 #include "nsIMemoryReporter.h"
+#include "nsTHashMap.h"
+#include "nsTHashSet.h"
 
 namespace WebCore {
 class PeriodicWave;
@@ -50,6 +49,7 @@ class AudioBufferSourceNode;
 class AudioDestinationNode;
 class AudioListener;
 class AudioNode;
+class AudioWorklet;
 class BiquadFilterNode;
 class BrowsingContext;
 class ChannelMergerNode;
@@ -72,7 +72,6 @@ class PannerNode;
 class ScriptProcessorNode;
 class StereoPannerNode;
 class WaveShaperNode;
-class Worklet;
 class PeriodicWave;
 struct PeriodicWaveConstraints;
 class Promise;
@@ -202,7 +201,7 @@ class AudioContext final : public DOMEventTargetHelper,
 
   void GetOutputTimestamp(AudioTimestamp& aTimeStamp);
 
-  Worklet* GetAudioWorklet(ErrorResult& aRv);
+  AudioWorklet* GetAudioWorklet(ErrorResult& aRv);
 
   bool IsRunning() const;
 
@@ -393,7 +392,7 @@ class AudioContext final : public DOMEventTargetHelper,
   AudioContextState mAudioContextState;
   RefPtr<AudioDestinationNode> mDestination;
   RefPtr<AudioListener> mListener;
-  RefPtr<Worklet> mWorklet;
+  RefPtr<AudioWorklet> mWorklet;
   nsTArray<UniquePtr<WebAudioDecodeJob>> mDecodeJobs;
   // This array is used to keep the suspend/close promises alive until
   // they are resolved, so we can safely pass them accross threads.

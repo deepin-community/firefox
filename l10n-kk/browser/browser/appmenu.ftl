@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Жүктемелер
 appmenuitem-passwords =
     .label = Парольдер
+appmenuitem-extensions-and-themes =
+    .label = Кеңейтулер және темалар
+appmenuitem-extensions =
+    .label = Кеңейтулер
 appmenuitem-addons-and-themes =
     .label = Кеңейтулер және темалар
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Деректерді синхрондау жә
 appmenu-fxa-signed-in-label = Кіру
 appmenu-fxa-setup-sync =
     .label = Синхрондауды іске қосу…
+appmenu-fxa-setup-sync-new = Іске қосу
 appmenuitem-save-page =
     .label = Парақты қалайша сақтау…
+appmenuitem-fxa-sync-off-title = Синхрондау сөндірулі тұр
+appmenuitem-fxa-sync-off-description = Кез келген жерде бетбелгілер, паррольдер және т.б. қорғау және оларға қол жеткізу.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Профильдеуші панелін ашу
+    .tooltiptext = Профильдеуші панелін ашу
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = { -brand-shorter-name } ішінде аудио және видео ақаулықтарын зерттеуге арналған баптаулар жиынтығы.
 profiler-popup-presets-media-label =
     .label = Медиа
+profiler-popup-presets-ml-description = { -brand-shorter-name } ішінде машиналық оқыту ақаулықтарын зерттеуге арналған баптаулар жиынтығы.
+profiler-popup-presets-ml-label =
+    .label = Машиналық оқыту
 profiler-popup-presets-networking-description = { -brand-shorter-name } ішінде желі ақаулықтарын зерттеуге арналған баптаулар жиынтығы.
 profiler-popup-presets-networking-label =
     .label = Желі
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = { -brand-shorter-name } ішінде жөндеуге арналған алдын ала жасалған баптау. Жоғары шығынды, өнімділік жұмысы үшін емес, браузер әрекетін түсіну үшін пайдаланыңыз.
 profiler-popup-presets-debug-label =
     .label = Жөндеу
+profiler-popup-presets-web-compat-description = Өнімділікті қадағалаудың орнына веб-сайттардағы веб-үйлесімділік мәселелерін түзету үшін ұсынылған алдын ала орнату.
+profiler-popup-presets-web-compat-label =
+    .label = Веб-үйлесімділік
 profiler-popup-presets-custom-label =
     .label = Таңдауыңызша
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Деректерді бұзу туралы ескертулерді алу
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Шын эл. пошта және телефоныңызды жасырыңыз
+appmenuitem-services-relay-description = Эл. пошта маскаларын бақылау тақтасын іске қосу
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Құрылғыны толығымен қорғауды алыңыз
 appmenuitem-vpn-description = Желідегі әрекетіңізді қорғаңыз
+appmenu-services-header = Менің қызметтерім
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Mozilla ұсынған басқа қорғау құралдарын пайдаланып көріңіз:
+appmenu-other-protection-header = { -vendor-short-name } ұсынған басқа қорғау құралдарын қолданып көріңіз:
+
+## Profiles panel
+
+appmenu-other-profiles = Басқа профильдер
+appmenu-manage-profiles =
+    .label = Профильдерді басқару
+appmenu-copy-profile =
+    .label = Бұл профильді көшіру
+appmenu-create-profile =
+    .label = Жаңа профиль
+appmenu-edit-profile =
+    .aria-label = Профильді түзету
+appmenu-profiles-2 =
+    .label = Профильдер

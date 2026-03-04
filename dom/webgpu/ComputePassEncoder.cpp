@@ -3,18 +3,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/dom/WebGPUBinding.h"
 #include "ComputePassEncoder.h"
-#include "BindGroup.h"
-#include "ComputePipeline.h"
-#include "CommandEncoder.h"
 
+#include "BindGroup.h"
+#include "CommandEncoder.h"
+#include "ComputePipeline.h"
+#include "ExternalTexture.h"
+#include "Utility.h"
+#include "mozilla/dom/WebGPUBinding.h"
 #include "mozilla/webgpu/ffi/wgpu.h"
 
 namespace mozilla::webgpu {
 
 GPU_IMPL_CYCLE_COLLECTION(ComputePassEncoder, mParent, mUsedBindGroups,
-                          mUsedPipelines)
+                          mUsedBuffers, mUsedPipelines)
 GPU_IMPL_JS_WRAP(ComputePassEncoder)
 
 void ffiWGPUComputePassDeleter::operator()(ffi::WGPURecordedComputePass* raw) {
@@ -31,31 +33,67 @@ ffi::WGPURecordedComputePass* BeginComputePass(
   webgpu::StringHelper label(aDesc.mLabel);
   desc.label = label.Get();
 
+  ffi::WGPUPassTimestampWrites passTimestampWrites = {};
+  if (aDesc.mTimestampWrites.WasPassed()) {
+    AssignPassTimestampWrites(aDesc.mTimestampWrites.Value(),
+                              passTimestampWrites);
+    desc.timestamp_writes = &passTimestampWrites;
+  }
+
   return ffi::wgpu_command_encoder_begin_compute_pass(&desc);
 }
 
 ComputePassEncoder::ComputePassEncoder(
-    CommandEncoder* const aParent, const dom::GPUComputePassDescriptor& aDesc)
-    : ChildOf(aParent), mPass(BeginComputePass(aParent->mId, aDesc)) {}
+    CommandEncoder* const aParent, RawId aId,
+    const dom::GPUComputePassDescriptor& aDesc)
+    : ObjectBase(aParent->GetChild(), aId,
+                 ffi::wgpu_client_drop_compute_pass_encoder),
+      ChildOf(aParent),
+      mPass(BeginComputePass(aParent->GetId(), aDesc)) {}
 
-ComputePassEncoder::~ComputePassEncoder() { Cleanup(); }
+ComputePassEncoder::~ComputePassEncoder() = default;
 
-void ComputePassEncoder::Cleanup() {
-  if (mValid) {
-    End();
+void ComputePassEncoder::SetBindGroup(uint32_t aSlot,
+                                      BindGroup* const aBindGroup,
+                                      const uint32_t* aDynamicOffsets,
+                                      size_t aDynamicOffsetsLength) {
+  RawId bindGroup = 0;
+  if (aBindGroup) {
+    mUsedBindGroups.AppendElement(aBindGroup);
+    mUsedCanvasContexts.AppendElements(aBindGroup->GetCanvasContexts());
+    bindGroup = aBindGroup->GetId();
   }
+  ffi::wgpu_recorded_compute_pass_set_bind_group(
+      mPass.get(), aSlot, bindGroup, {aDynamicOffsets, aDynamicOffsetsLength});
 }
 
 void ComputePassEncoder::SetBindGroup(
-    uint32_t aSlot, const BindGroup& aBindGroup,
-    const dom::Sequence<uint32_t>& aDynamicOffsets) {
+    uint32_t aSlot, BindGroup* const aBindGroup,
+    const dom::Sequence<uint32_t>& aDynamicOffsets, ErrorResult& aRv) {
   if (!mValid) {
     return;
   }
-  mUsedBindGroups.AppendElement(&aBindGroup);
-  ffi::wgpu_recorded_compute_pass_set_bind_group(
-      mPass.get(), aSlot, aBindGroup.mId, aDynamicOffsets.Elements(),
-      aDynamicOffsets.Length());
+  this->SetBindGroup(aSlot, aBindGroup, aDynamicOffsets.Elements(),
+                     aDynamicOffsets.Length());
+}
+
+void ComputePassEncoder::SetBindGroup(
+    uint32_t aSlot, BindGroup* const aBindGroup,
+    const dom::Uint32Array& aDynamicOffsetsData,
+    uint64_t aDynamicOffsetsDataStart, uint64_t aDynamicOffsetsDataLength,
+    ErrorResult& aRv) {
+  if (!mValid) {
+    return;
+  }
+
+  auto dynamicOffsets =
+      GetDynamicOffsetsFromArray(aDynamicOffsetsData, aDynamicOffsetsDataStart,
+                                 aDynamicOffsetsDataLength, aRv);
+
+  if (dynamicOffsets.isSome()) {
+    this->SetBindGroup(aSlot, aBindGroup, dynamicOffsets->Elements(),
+                       dynamicOffsets->Length());
+  }
 }
 
 void ComputePassEncoder::SetPipeline(const ComputePipeline& aPipeline) {
@@ -63,7 +101,7 @@ void ComputePassEncoder::SetPipeline(const ComputePipeline& aPipeline) {
     return;
   }
   mUsedPipelines.AppendElement(&aPipeline);
-  ffi::wgpu_recorded_compute_pass_set_pipeline(mPass.get(), aPipeline.mId);
+  ffi::wgpu_recorded_compute_pass_set_pipeline(mPass.get(), aPipeline.GetId());
 }
 
 void ComputePassEncoder::DispatchWorkgroups(uint32_t workgroupCountX,
@@ -81,8 +119,9 @@ void ComputePassEncoder::DispatchWorkgroupsIndirect(
   if (!mValid) {
     return;
   }
+  mUsedBuffers.AppendElement(&aIndirectBuffer);
   ffi::wgpu_recorded_compute_pass_dispatch_workgroups_indirect(
-      mPass.get(), aIndirectBuffer.mId, aIndirectOffset);
+      mPass.get(), aIndirectBuffer.GetId(), aIndirectOffset);
 }
 
 void ComputePassEncoder::PushDebugGroup(const nsAString& aString) {
@@ -108,12 +147,26 @@ void ComputePassEncoder::InsertDebugMarker(const nsAString& aString) {
 }
 
 void ComputePassEncoder::End() {
-  if (mValid) {
-    mValid = false;
-    auto* pass = mPass.release();
-    MOZ_ASSERT(pass);
-    mParent->EndComputePass(*pass);
+  if (mParent->GetState() != CommandEncoderState::Locked) {
+    const auto* message = "Encoding must not have ended";
+    ffi::wgpu_report_validation_error(GetClient(),
+                                      mParent->GetDevice()->GetId(), message);
   }
+  if (!mValid) {
+    return;
+  }
+  nsTArray<RefPtr<ExternalTexture>> externalTextures;
+  for (const auto& bindGroup : mUsedBindGroups) {
+    externalTextures.AppendElements(bindGroup->GetExternalTextures());
+  }
+  MOZ_ASSERT(!!mPass);
+  mParent->EndComputePass(*mPass, mUsedCanvasContexts, externalTextures);
+
+  mValid = false;
+  mPass.release();
+  mUsedBindGroups.Clear();
+  mUsedBuffers.Clear();
+  mUsedPipelines.Clear();
 }
 
 }  // namespace mozilla::webgpu

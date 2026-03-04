@@ -9,9 +9,9 @@ profiles-restart-title = Վերամեկնարկել
 profiles-restart-in-safe-mode = Վերամեկնարկել՝ հավելումներն անջատված...
 profiles-restart-normal = Նորմալ վերամեկնարկում...
 profiles-conflict = { -brand-product-name }-ի մեկ այլ օրինակը փոփոխություններ է կատարել հատկագիրներում։ Այլ փոփոխություններ կատարելուց առաջ անհրաժեշտ է վերագործարկել { -brand-short-name }-ը:
-profiles-flush-fail-title = Փոփոխությունները պահպանված չեն
+profiles-flush-fail-title = Փոփոխությունները պահված չեն
 profiles-flush-conflict = { profiles-conflict }
-profiles-flush-failed = Անսպասելի սխալը կանխել է ձեր փոփոխությունների պահպանումը։
+profiles-flush-failed = Անսպասելի սխալը կանխել է ձեր փոփոխությունների պահումը։
 profiles-flush-restart-button = Վերագործարկել { -brand-short-name }֊ը
 # Variables:
 #   $name (String) - Name of the profile
@@ -29,10 +29,10 @@ profiles-current-profile = Այս պրոֆիլը օգտագործվում է և 
 profiles-in-use-profile = Այս պրոֆիլը կիրառման մեջ է, և այն հնարավոր չէ ջնջել։
 profiles-rename = Վերանվանում
 profiles-remove = Հեռացնել
-profiles-set-as-default = Կայել որպես լռելյայն պրոֆիլ
+profiles-set-as-default = Դնել որպես սկզբնադիր պրոֆիլ
 profiles-launch-profile = Բացել պրոֆիլը նոր դիտարկիչով
-profiles-cannot-set-as-default-title = Հնարավոր չէ կայել պատկերը
-profiles-cannot-set-as-default-message = Լռելյայն  պրոֆիլը հնարավոր չէ փոխել { -brand-short-name }
+profiles-cannot-set-as-default-title = Անհնար է կայել սկզբնադիրը
+profiles-cannot-set-as-default-message = Սկզբնադիր պրոֆիլը հնարավոր չէ փոխել { -brand-short-name }-ի համար:
 profiles-yes = այո
 profiles-no = ոչ
 profiles-rename-profile-title = Հաշիվը Վերանվանել
@@ -48,10 +48,10 @@ profiles-delete-profile-title = Ջնջել պրոֆիլը
 #   $dir (String) - Path to be displayed
 profiles-delete-profile-confirm =
     Պրոֆիլի ջնջումը կջնջի այն հասանելի պրոֆիլների ցուցակից և չի կարող ետարկվել:
-     Դուք նաև կարող եք ընտրել և ջնջել պրոֆիլի տվյալների ֆայլերը՝ ներառյալ կարգավորումները, արտոնագրերը և օգտագործողին վերաբերող այլ տվյալներ: Այս ընտրանքը կջնջի ՙ{ $dir }՚ թղթապանակը և չի կարող ետարկվել:
+    Կարող եք նաև ընտրել ջնջել պրոֆիլի տվյալների ֆայլերը՝ ներառյալ կարգավորումները, արտոնագրերը և օգտվողին վերաբերող այլ տվյալներ: Այս ընտրանքը կջնջի ՙ{ $dir }՚ պանակը և չի կարող ետարկվել:
     Ջնջե՞լ պրոֆիլի տվյալները:
 profiles-delete-files = Ջնջել Ֆայլերը
-profiles-dont-delete-files = Ֆայլերը Չջնջել
+profiles-dont-delete-files = Չջնջել ֆայլերը
 profiles-delete-profile-failed-title = Սխալ
 profiles-delete-profile-failed-message = Այս պրոֆիլը ջնջելու ընթացքում սխալ տեղի ունեցավ։
 profiles-opendir =

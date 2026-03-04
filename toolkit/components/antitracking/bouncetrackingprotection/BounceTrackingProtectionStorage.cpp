@@ -38,25 +38,42 @@ namespace mozilla {
 NS_IMPL_ISUPPORTS(BounceTrackingProtectionStorage, nsIAsyncShutdownBlocker,
                   nsIObserver);
 
-BounceTrackingStateGlobal*
+RefPtr<BounceTrackingStateGlobal>
+BounceTrackingProtectionStorage::GetStateGlobal(nsIPrincipal* aPrincipal) {
+  MOZ_ASSERT(aPrincipal);
+  return GetStateGlobal(aPrincipal->OriginAttributesRef());
+}
+
+RefPtr<BounceTrackingStateGlobal>
+BounceTrackingProtectionStorage::GetStateGlobal(
+    const OriginAttributes& aOriginAttributes) {
+  OriginAttributes oa = aOriginAttributes;
+  oa.mFirstPartyDomain.Truncate();
+
+  return mStateGlobal.Get(oa);
+}
+
+RefPtr<BounceTrackingStateGlobal>
 BounceTrackingProtectionStorage::GetOrCreateStateGlobal(
     nsIPrincipal* aPrincipal) {
   MOZ_ASSERT(aPrincipal);
   return GetOrCreateStateGlobal(aPrincipal->OriginAttributesRef());
 }
 
-BounceTrackingStateGlobal*
+RefPtr<BounceTrackingStateGlobal>
 BounceTrackingProtectionStorage::GetOrCreateStateGlobal(
     BounceTrackingState* aBounceTrackingState) {
   MOZ_ASSERT(aBounceTrackingState);
   return GetOrCreateStateGlobal(aBounceTrackingState->OriginAttributesRef());
 }
 
-BounceTrackingStateGlobal*
+RefPtr<BounceTrackingStateGlobal>
 BounceTrackingProtectionStorage::GetOrCreateStateGlobal(
     const OriginAttributes& aOriginAttributes) {
-  return mStateGlobal.GetOrInsertNew(aOriginAttributes, this,
-                                     aOriginAttributes);
+  OriginAttributes oa = aOriginAttributes;
+  oa.mFirstPartyDomain.Truncate();
+
+  return mStateGlobal.GetOrInsertNew(oa, this, oa);
 }
 
 nsresult BounceTrackingProtectionStorage::ClearByType(
@@ -120,12 +137,27 @@ nsresult BounceTrackingProtectionStorage::ClearByTimeRange(PRTime aFrom,
 }
 
 nsresult BounceTrackingProtectionStorage::ClearByOriginAttributesPattern(
-    const OriginAttributesPattern& aOriginAttributesPattern) {
+    const OriginAttributesPattern& aOriginAttributesPattern,
+    const Maybe<nsCString>& aSiteHost) {
   // Clear in memory state.
   for (auto iter = mStateGlobal.Iter(); !iter.Done(); iter.Next()) {
-    if (aOriginAttributesPattern.Matches(iter.Key())) {
-      iter.Remove();
+    BounceTrackingStateGlobal* stateGlobal = iter.Data();
+    MOZ_ASSERT(stateGlobal);
+
+    if (!aOriginAttributesPattern.Matches(stateGlobal->OriginAttributesRef())) {
+      continue;
     }
+
+    // If there is no site host filtering we can remove the entire state global.
+    if (aSiteHost.isNothing()) {
+      iter.Remove();
+      continue;
+    }
+
+    // Otherwise we need to clear just the entries that match the site host.
+    // Update in memory state. Skip storage so we can batch the writes later.
+    nsresult rv = stateGlobal->ClearSiteHost(aSiteHost.ref(), true);
+    NS_ENSURE_SUCCESS(rv, rv);
   }
 
   // Update the database.
@@ -135,7 +167,8 @@ nsresult BounceTrackingProtectionStorage::ClearByOriginAttributesPattern(
           nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID) {
     return NS_OK;
   }
-  return DeleteDBEntriesByOriginAttributesPattern(aOriginAttributesPattern);
+  return DeleteDBEntriesByOriginAttributesPattern(aOriginAttributesPattern,
+                                                  aSiteHost);
 }
 
 nsresult BounceTrackingProtectionStorage::UpdateDBEntry(
@@ -144,6 +177,9 @@ nsresult BounceTrackingProtectionStorage::UpdateDBEntry(
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(!aSiteHost.IsEmpty());
   MOZ_ASSERT(aTimeStamp);
+  MOZ_ASSERT(aOriginAttributes.mPrivateBrowsingId ==
+                 nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID,
+             "Must not write private browsing data to disk.");
 
   nsresult rv = WaitForInitialization();
   NS_ENSURE_SUCCESS(rv, rv);
@@ -159,24 +195,149 @@ nsresult BounceTrackingProtectionStorage::UpdateDBEntry(
              static_cast<uint8_t>(aEntryType), aTimeStamp));
   }
 
+  mPendingUpdates.AppendElement(PendingUpdate{
+      aOriginAttributes, nsCString(aSiteHost), aEntryType, aTimeStamp});
+
+  return MaybeFlushPendingUpdates();
+}
+
+nsresult BounceTrackingProtectionStorage::MaybeFlushPendingUpdates() {
+  MOZ_ASSERT(NS_IsMainThread());
+
+  size_t pendingUpdatesCount = mPendingUpdates.Length();
+
+  if (pendingUpdatesCount >=
+      StaticPrefs::
+          privacy_bounceTrackingProtection_storage_maxPendingUpdates()) {
+    return FlushPendingUpdates();
+  }
+
+  if (StaticPrefs::privacy_bounceTrackingProtection_enableTestMode()) {
+    nsCOMPtr<nsIObserverService> observerService =
+        mozilla::services::GetObserverService();
+    if (observerService) {
+      observerService->NotifyObservers(
+          nullptr, "bounce-tracking-protection-storage-flush-skipped",
+          NS_ConvertUTF8toUTF16(nsPrintfCString("%zu", pendingUpdatesCount))
+              .get());
+    }
+  }
+
+  return NS_OK;
+}
+
+nsresult BounceTrackingProtectionStorage::FlushPendingUpdates() {
+  MOZ_ASSERT(NS_IsMainThread());
+
+  if (mPendingUpdates.IsEmpty()) {
+    return NS_OK;
+  }
+  MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
+          ("%s: Flushing %zu pending updates", __FUNCTION__,
+           mPendingUpdates.Length()));
+
   IncrementPendingWrites();
 
   RefPtr<BounceTrackingProtectionStorage> self = this;
-  nsCString siteHost(aSiteHost);
-
   mBackgroundThread->Dispatch(
       NS_NewRunnableFunction(
-          "BounceTrackingProtectionStorage::UpdateEntry",
-          [self, aOriginAttributes, siteHost, aEntryType, aTimeStamp]() {
+          "BounceTrackingProtectionStorage::FlushPendingUpdates",
+          [self, updatesToFlush = std::move(mPendingUpdates)]() {
             nsresult rv =
-                UpsertData(self->mDatabaseConnection, aOriginAttributes,
-                           siteHost, aEntryType, aTimeStamp);
+                UpsertDataBulk(self->mDatabaseConnection, updatesToFlush);
             self->DecrementPendingWrites();
             NS_ENSURE_SUCCESS_VOID(rv);
+
+            // Let automated tests know that the flush has been completed.
+            if (StaticPrefs::
+                    privacy_bounceTrackingProtection_enableTestMode()) {
+              // Can't use the observer service on the background thread.
+              NS_DispatchToMainThread(NS_NewRunnableFunction(
+                  "BounceTrackingProtectionStorage::NotifyFlushComplete", []() {
+                    nsCOMPtr<nsIObserverService> observerService =
+                        mozilla::services::GetObserverService();
+                    if (observerService) {
+                      observerService->NotifyObservers(
+                          nullptr, "bounce-tracking-protection-storage-flushed",
+                          nullptr);
+                    }
+                  }));
+            }
           }),
       NS_DISPATCH_EVENT_MAY_BLOCK);
 
   return NS_OK;
+}
+
+// static
+nsresult BounceTrackingProtectionStorage::UpsertDataBulk(
+    mozIStorageConnection* aDatabaseConnection,
+    const nsTArray<PendingUpdate>& aUpdates) {
+  MOZ_ASSERT(!NS_IsMainThread());
+  MOZ_ASSERT(aDatabaseConnection);
+  MOZ_ASSERT(!aUpdates.IsEmpty());
+
+  // Start a transaction for better performance
+  nsresult rv = aDatabaseConnection->BeginTransaction();
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  // Use a lambda to handle the transaction operations. This means we can easily
+  // rollback the transaction if any error occurs.
+  nsresult result = [&]() {
+    static const nsLiteralCString upsertQuery(
+        "INSERT INTO sites (originAttributeSuffix, siteHost, entryType, "
+        "timeStamp)"
+        "VALUES (:originAttributeSuffix, :siteHost, :entryType, :timeStamp)"
+        "ON CONFLICT (originAttributeSuffix, siteHost)"
+        "DO UPDATE SET entryType = :entryType, timeStamp = :timeStamp;");
+
+    nsCOMPtr<mozIStorageStatement> upsertStmt;
+    nsresult rv = aDatabaseConnection->CreateStatement(
+        upsertQuery, getter_AddRefs(upsertStmt));
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    for (const auto& update : aUpdates) {
+      MOZ_ASSERT(update.mOriginAttributes.mPrivateBrowsingId ==
+                     nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID,
+                 "Must not write private browsing data to disk.");
+
+      // Serialize OriginAttributes
+      nsAutoCString originAttributeSuffix;
+      update.mOriginAttributes.CreateSuffix(originAttributeSuffix);
+
+      rv = upsertStmt->BindUTF8StringByName("originAttributeSuffix"_ns,
+                                            originAttributeSuffix);
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      rv = upsertStmt->BindUTF8StringByName("siteHost"_ns, update.mSiteHost);
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      rv = upsertStmt->BindInt32ByName("entryType"_ns,
+                                       static_cast<int32_t>(update.mEntryType));
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      rv = upsertStmt->BindInt64ByName("timeStamp"_ns, update.mTimeStamp);
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      rv = upsertStmt->Execute();
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      rv = upsertStmt->Reset();
+      NS_ENSURE_SUCCESS(rv, rv);
+    }
+
+    return aDatabaseConnection->CommitTransaction();
+  }();
+
+  // If at any point during building and executing the query we encounter an
+  // error, rollback the transaction.
+  if (NS_FAILED(result)) {
+    NS_WARNING_ASSERTION(
+        NS_SUCCEEDED(aDatabaseConnection->RollbackTransaction()),
+        "Failed to rollback transaction");
+  }
+
+  return result;
 }
 
 nsresult BounceTrackingProtectionStorage::DeleteDBEntries(
@@ -190,6 +351,12 @@ nsresult BounceTrackingProtectionStorage::DeleteDBEntries(
 
   nsresult rv = WaitForInitialization();
   NS_ENSURE_SUCCESS(rv, rv);
+
+  // Flush pending updates to disk before deleting data since pending updates
+  // may be affected by the deletion.
+  rv = FlushPendingUpdates();
+  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                       "DeleteData: FlushPendingUpdates failed");
 
   if (MOZ_LOG_TEST(gBounceTrackingProtectionLog, LogLevel::Debug)) {
     nsAutoCString originAttributeSuffix("*");
@@ -228,6 +395,10 @@ nsresult BounceTrackingProtectionStorage::Clear() {
   // Clear in memory data.
   mStateGlobal.Clear();
 
+  // Clear pending updates. Since we're clearing all data we must not preserve
+  // pending writes.
+  mPendingUpdates.Clear();
+
   // Clear on disk data.
   nsresult rv = WaitForInitialization();
   NS_ENSURE_SUCCESS(rv, rv);
@@ -256,7 +427,14 @@ nsresult BounceTrackingProtectionStorage::DeleteDBEntriesInTimeRange(
   nsresult rv = WaitForInitialization();
   NS_ENSURE_SUCCESS(rv, rv);
 
+  // Flush pending updates to disk before deleting data since pending updates
+  // may be affected by the deletion.
+  rv = FlushPendingUpdates();
+  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                       "DeleteDataInTimeRange: FlushPendingUpdates failed");
+
   RefPtr<BounceTrackingProtectionStorage> self = this;
+
   Maybe<OriginAttributes> originAttributes;
   if (aOriginAttributes) {
     originAttributes.emplace(*aOriginAttributes);
@@ -285,6 +463,12 @@ nsresult BounceTrackingProtectionStorage::DeleteDBEntriesByType(
   nsresult rv = WaitForInitialization();
   NS_ENSURE_SUCCESS(rv, rv);
 
+  // Flush pending updates to disk before deleting data since pending updates
+  // may be affected by the deletion.
+  rv = FlushPendingUpdates();
+  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                       "DeleteDataInTimeRange: FlushPendingUpdates failed");
+
   RefPtr<BounceTrackingProtectionStorage> self = this;
   Maybe<OriginAttributes> originAttributes;
   if (aOriginAttributes) {
@@ -307,25 +491,36 @@ nsresult BounceTrackingProtectionStorage::DeleteDBEntriesByType(
 
 nsresult
 BounceTrackingProtectionStorage::DeleteDBEntriesByOriginAttributesPattern(
-    const OriginAttributesPattern& aOriginAttributesPattern) {
+    const OriginAttributesPattern& aOriginAttributesPattern,
+    const Maybe<nsCString>& aSiteHost) {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(!aOriginAttributesPattern.mPrivateBrowsingId.WasPassed() ||
                  aOriginAttributesPattern.mPrivateBrowsingId.Value() ==
                      nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID,
              "Must not clear private browsing data from the table.");
+  if (aSiteHost.isSome()) {
+    MOZ_ASSERT(!aSiteHost->IsEmpty(), "aSiteHost must not be empty.");
+  }
 
   nsresult rv = WaitForInitialization();
   NS_ENSURE_SUCCESS(rv, rv);
 
+  // Flush pending updates to disk before deleting data since pending updates
+  // may be affected by the deletion.
+  rv = FlushPendingUpdates();
+  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                       "DeleteDataInTimeRange: FlushPendingUpdates failed");
+
   IncrementPendingWrites();
   RefPtr<BounceTrackingProtectionStorage> self = this;
+
   mBackgroundThread->Dispatch(
       NS_NewRunnableFunction(
           "BounceTrackingProtectionStorage::"
           "DeleteEntriesByOriginAttributesPattern",
-          [self, aOriginAttributesPattern]() {
+          [self, aOriginAttributesPattern, siteHost = aSiteHost]() {
             nsresult rv = DeleteDataByOriginAttributesPattern(
-                self->mDatabaseConnection, aOriginAttributesPattern);
+                self->mDatabaseConnection, aOriginAttributesPattern, siteHost);
             self->DecrementPendingWrites();
             NS_ENSURE_SUCCESS_VOID(rv);
           }),
@@ -343,6 +538,12 @@ NS_IMETHODIMP BounceTrackingProtectionStorage::BlockShutdown(
   // need to try to tear down, including removing the shutdown blocker. A
   // failure state shouldn't cause a shutdown hang.
   NS_WARNING_ASSERTION(NS_FAILED(rv), "BlockShutdown: Init failed");
+
+  // Flush pending updates to disk before shutting down.
+  // This will increment mPendingWrites which we will wait for below.
+  rv = FlushPendingUpdates();
+  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                       "BlockShutdown: FlushPendingUpdates failed");
 
   MonitorAutoLock lock(mMonitor);
   mShuttingDown.Flip();
@@ -362,9 +563,6 @@ NS_IMETHODIMP BounceTrackingProtectionStorage::BlockShutdown(
                                    "Failed to close database connection");
               self->mDatabaseConnection = nullptr;
             }
-
-            self->mFinalized.Flip();
-            self->mMonitor.NotifyAll();
 
             nsresult rv = NS_DispatchToMainThread(NS_NewRunnableFunction(
                 "BounceTrackingProtectionStorage::BlockShutdown "
@@ -454,6 +652,16 @@ NS_IMETHODIMP BounceTrackingProtectionStorage::GetName(nsAString& aName) {
 }
 
 nsresult BounceTrackingProtectionStorage::Init() {
+  nsresult rv = InitInternal();
+  if (NS_FAILED(rv)) {
+    MonitorAutoLock lock(mMonitor);
+    mErrored.Flip();
+    mMonitor.NotifyAll();
+  }
+  return rv;
+}
+
+nsresult BounceTrackingProtectionStorage::InitInternal() {
   MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug, ("%s", __FUNCTION__));
 
   // Init shouldn't be called if the feature is disabled.
@@ -470,12 +678,8 @@ nsresult BounceTrackingProtectionStorage::Init() {
 
   bool closed;
   nsresult rv = shutdownBarrier->GetIsClosed(&closed);
-  if (closed || NS_WARN_IF(NS_FAILED(rv))) {
-    MonitorAutoLock lock(mMonitor);
-    mShuttingDown.Flip();
-    mMonitor.NotifyAll();
-    return NS_ERROR_ILLEGAL_DURING_SHUTDOWN;
-  }
+  NS_ENSURE_TRUE(!closed, NS_ERROR_ILLEGAL_DURING_SHUTDOWN);
+  NS_ENSURE_SUCCESS(rv, rv);
 
   rv = shutdownBarrier->AddBlocker(
       this, NS_LITERAL_STRING_FROM_CSTRING(__FILE__), __LINE__, u""_ns);
@@ -505,7 +709,7 @@ nsresult BounceTrackingProtectionStorage::Init() {
 
   RefPtr<BounceTrackingProtectionStorage> self = this;
 
-  mBackgroundThread->Dispatch(
+  return mBackgroundThread->Dispatch(
       NS_NewRunnableFunction("BounceTrackingProtectionStorage::Init",
                              [self]() {
                                MonitorAutoLock lock(self->mMonitor);
@@ -527,11 +731,10 @@ nsresult BounceTrackingProtectionStorage::Init() {
                                self->mMonitor.NotifyAll();
                              }),
       NS_DISPATCH_EVENT_MAY_BLOCK);
-
-  return NS_OK;
 }
 
-nsresult BounceTrackingProtectionStorage::CreateDatabaseConnection() {
+nsresult BounceTrackingProtectionStorage::CreateDatabaseConnection(
+    bool aShouldRetry) {
   MOZ_ASSERT(!NS_IsMainThread());
   NS_ENSURE_TRUE(mDatabaseFile, NS_ERROR_NULL_POINTER);
 
@@ -542,18 +745,31 @@ nsresult BounceTrackingProtectionStorage::CreateDatabaseConnection() {
   nsresult rv = storage->OpenDatabase(mDatabaseFile,
                                       mozIStorageService::CONNECTION_DEFAULT,
                                       getter_AddRefs(mDatabaseConnection));
-  if (rv == NS_ERROR_FILE_CORRUPTED) {
+  if (rv == NS_ERROR_FILE_CORRUPTED && aShouldRetry) {
+    MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
+            ("%s: Database file is corrupted, removing it and retrying",
+             __FUNCTION__));
+
     rv = mDatabaseFile->Remove(false);
     NS_ENSURE_SUCCESS(rv, rv);
-    rv = storage->OpenDatabase(mDatabaseFile,
-                               mozIStorageService::CONNECTION_DEFAULT,
-                               getter_AddRefs(mDatabaseConnection));
+    return CreateDatabaseConnection(false);
   }
   NS_ENSURE_SUCCESS(rv, rv);
 
   NS_ENSURE_TRUE(mDatabaseConnection, NS_ERROR_UNEXPECTED);
   bool ready = false;
   mDatabaseConnection->GetConnectionReady(&ready);
+  // If it fails once remove the db file and try again.
+  if (!ready && aShouldRetry) {
+    MOZ_LOG(gBounceTrackingProtectionLog, LogLevel::Debug,
+            ("%s: Database connection failed (not ready after open), removing "
+             "it and retrying",
+             __FUNCTION__));
+
+    rv = mDatabaseFile->Remove(false);
+    NS_ENSURE_SUCCESS(rv, rv);
+    return CreateDatabaseConnection(false);
+  }
   NS_ENSURE_TRUE(ready, NS_ERROR_UNEXPECTED);
 
   return EnsureTable();
@@ -678,53 +894,6 @@ void BounceTrackingProtectionStorage::DecrementPendingWrites() {
   MonitorAutoLock lock(mMonitor);
   MOZ_ASSERT(mPendingWrites > 0);
   mPendingWrites--;
-}
-
-// static
-nsresult BounceTrackingProtectionStorage::UpsertData(
-    mozIStorageConnection* aDatabaseConnection,
-    const OriginAttributes& aOriginAttributes, const nsACString& aSiteHost,
-    BounceTrackingProtectionStorage::EntryType aEntryType, PRTime aTimeStamp) {
-  MOZ_ASSERT(!NS_IsMainThread(),
-             "Must not write to the table from the main thread.");
-  MOZ_ASSERT(aDatabaseConnection);
-  MOZ_ASSERT(!aSiteHost.IsEmpty());
-  MOZ_ASSERT(aTimeStamp > 0);
-  MOZ_ASSERT(aOriginAttributes.mPrivateBrowsingId ==
-                 nsIScriptSecurityManager::DEFAULT_PRIVATE_BROWSING_ID,
-             "Must not write private browsing data to the table.");
-
-  auto constexpr upsertQuery =
-      "INSERT INTO sites (originAttributeSuffix, siteHost, entryType, "
-      "timeStamp)"
-      "VALUES (:originAttributeSuffix, :siteHost, :entryType, :timeStamp)"
-      "ON CONFLICT (originAttributeSuffix, siteHost)"
-      "DO UPDATE SET entryType = :entryType, timeStamp = :timeStamp;"_ns;
-
-  nsCOMPtr<mozIStorageStatement> upsertStmt;
-  nsresult rv = aDatabaseConnection->CreateStatement(
-      upsertQuery, getter_AddRefs(upsertStmt));
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  // Serialize OriginAttributes.
-  nsAutoCString originAttributeSuffix;
-  aOriginAttributes.CreateSuffix(originAttributeSuffix);
-
-  rv = upsertStmt->BindUTF8StringByName("originAttributeSuffix"_ns,
-                                        originAttributeSuffix);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  rv = upsertStmt->BindUTF8StringByName("siteHost"_ns, aSiteHost);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  rv = upsertStmt->BindInt32ByName("entryType"_ns,
-                                   static_cast<int32_t>(aEntryType));
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  rv = upsertStmt->BindInt64ByName("timeStamp"_ns, aTimeStamp);
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  return upsertStmt->Execute();
 }
 
 // static
@@ -872,10 +1041,25 @@ nsresult BounceTrackingProtectionStorage::DeleteDataByType(
 
 nsresult BounceTrackingProtectionStorage::DeleteDataByOriginAttributesPattern(
     mozIStorageConnection* aDatabaseConnection,
-    const OriginAttributesPattern& aOriginAttributesPattern) {
+    const OriginAttributesPattern& aOriginAttributesPattern,
+    const Maybe<nsCString>& aSiteHost) {
   MOZ_ASSERT(!NS_IsMainThread(),
              "Must not write to the table from the main thread.");
   MOZ_ASSERT(aDatabaseConnection);
+  if (aSiteHost.isSome()) {
+    MOZ_ASSERT(!aSiteHost->IsEmpty(), "aSiteHost must not be empty.");
+  }
+
+  nsAutoCString deleteQuery(
+      "DELETE FROM sites WHERE "
+      "ORIGIN_ATTRS_PATTERN_MATCH_OA_SUFFIX(originAttributeSuffix)");
+
+  // Filtering by site host is optional.
+  if (aSiteHost.isSome()) {
+    deleteQuery.AppendLiteral(" AND siteHost = :siteHost");
+  }
+
+  deleteQuery.AppendLiteral(";");
 
   nsCOMPtr<mozIStorageFunction> patternMatchFunction(
       new OriginAttrsPatternMatchOASuffixSQLFunction(aOriginAttributesPattern));
@@ -884,9 +1068,17 @@ nsresult BounceTrackingProtectionStorage::DeleteDataByOriginAttributesPattern(
       "ORIGIN_ATTRS_PATTERN_MATCH_OA_SUFFIX"_ns, 1, patternMatchFunction);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  rv = aDatabaseConnection->ExecuteSimpleSQL(
-      "DELETE FROM sites WHERE "
-      "ORIGIN_ATTRS_PATTERN_MATCH_OA_SUFFIX(originAttributeSuffix);"_ns);
+  nsCOMPtr<mozIStorageStatement> deleteStmt;
+  rv = aDatabaseConnection->CreateStatement(deleteQuery,
+                                            getter_AddRefs(deleteStmt));
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  if (aSiteHost.isSome()) {
+    rv = deleteStmt->BindUTF8StringByName("siteHost"_ns, aSiteHost.ref());
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  rv = deleteStmt->Execute();
   NS_ENSURE_SUCCESS(rv, rv);
 
   return aDatabaseConnection->RemoveFunction(

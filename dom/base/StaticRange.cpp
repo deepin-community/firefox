@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/StaticRange.h"
+
 #include "mozilla/dom/StaticRangeBinding.h"
 #include "nsContentUtils.h"
 #include "nsINode.h"
@@ -86,14 +87,15 @@ already_AddRefed<StaticRange> StaticRange::Create(
     const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
     const RangeBoundaryBase<EPT, ERT>& aEndBoundary, ErrorResult& aRv) {
   RefPtr<StaticRange> staticRange =
-      StaticRange::Create(aStartBoundary.Container());
+      StaticRange::Create(aStartBoundary.GetContainer());
   staticRange->DoSetRange(aStartBoundary, aEndBoundary, nullptr);
 
   return staticRange.forget();
 }
 
 StaticRange::~StaticRange() {
-  DoSetRange(RawRangeBoundary(), RawRangeBoundary(), nullptr);
+  DoSetRange(RawRangeBoundary(mStart.GetTreeKind()),
+             RawRangeBoundary(mEnd.GetTreeKind()), nullptr);
 }
 
 bool StaticRange::IsValid() const {
@@ -102,8 +104,8 @@ bool StaticRange::IsValid() const {
   }
 
   MOZ_ASSERT(mAreStartAndEndInSameTree ==
-             (RangeUtils::ComputeRootNode(mStart.Container()) ==
-              RangeUtils::ComputeRootNode(mEnd.Container())));
+             (RangeUtils::ComputeRootNode(mStart.GetContainer()) ==
+              RangeUtils::ComputeRootNode(mEnd.GetContainer())));
   if (!mAreStartAndEndInSameTree) {
     return false;
   }
@@ -117,8 +119,9 @@ void StaticRange::DoSetRange(const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
                              const RangeBoundaryBase<EPT, ERT>& aEndBoundary,
                              nsINode* aRootNode) {
   bool checkCommonAncestor =
-      IsInAnySelection() && (mStart.Container() != aStartBoundary.Container() ||
-                             mEnd.Container() != aEndBoundary.Container());
+      IsInAnySelection() &&
+      (mStart.GetContainer() != aStartBoundary.GetContainer() ||
+       mEnd.GetContainer() != aEndBoundary.GetContainer());
   mStart.CopyFrom(aStartBoundary, mIsMutationObserved);
   mEnd.CopyFrom(aEndBoundary, mIsMutationObserved);
   MOZ_ASSERT(mStart.IsSet() == mEnd.IsSet());
@@ -128,8 +131,9 @@ void StaticRange::DoSetRange(const RangeBoundaryBase<SPT, SRT>& aStartBoundary,
     UpdateCommonAncestorIfNecessary();
   }
 
-  mAreStartAndEndInSameTree = RangeUtils::ComputeRootNode(mStart.Container()) ==
-                              RangeUtils::ComputeRootNode(mEnd.Container());
+  mAreStartAndEndInSameTree =
+      RangeUtils::ComputeRootNode(mStart.GetContainer()) ==
+      RangeUtils::ComputeRootNode(mEnd.GetContainer());
 }
 
 /* static */

@@ -255,7 +255,11 @@ void SetUnclonedSelfHostedCanonicalName(JSFunction* fun, JSAtom* name);
 
 bool IsCallSelfHostedNonGenericMethod(NativeImpl impl);
 
-bool ReportIncompatibleSelfHostedMethod(JSContext* cx, Handle<Value> thisValue);
+enum class IncompatibleContext { Regular, RegExpExec };
+
+bool ReportIncompatibleSelfHostedMethod(
+    JSContext* cx, Handle<Value> thisValue,
+    IncompatibleContext incompatibleContext);
 
 /* Get the compile options used when compiling self hosted code. */
 void FillSelfHostingCompileOptions(JS::CompileOptions& options);
@@ -286,18 +290,6 @@ bool intrinsic_NewStringIterator(JSContext* cx, unsigned argc, JS::Value* vp);
 
 bool intrinsic_NewRegExpStringIterator(JSContext* cx, unsigned argc,
                                        JS::Value* vp);
-
-#ifdef ENABLE_RECORD_TUPLE
-bool IsTupleUnchecked(JSContext* cx, const CallArgs& args);
-bool intrinsic_IsTuple(JSContext* cx, unsigned argc, JS::Value* vp);
-#endif
-
-bool intrinsic_ReportUsageCounter(JSContext* cx, unsigned argc, JS::Value* vp);
-
-// The arguments to this are defined in SelfHostingDefines.h
-bool ReportUsageCounter(JSContext* cx, HandleObject constructor,
-                        int32_t builtin, int32_t type);
-
 } /* namespace js */
 
 #endif /* vm_SelfHosting_h_ */

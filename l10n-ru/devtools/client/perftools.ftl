@@ -33,6 +33,7 @@ perftools-description-local-build =
     Если вы профилируете сборку, которую скомпилировали самостоятельно на этой
     машине, добавьте objdir вашей сборки в список ниже, чтобы
     её можно было использовать в поиске символьной информации.
+perftools-pick-local-build-directory = Выберите каталог для сборки
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -69,6 +70,14 @@ perftools-button-add-directory = Добавить каталог
 perftools-button-remove-directory = Удалить выбранное
 perftools-button-edit-settings = Изменить настройки…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Другие действия
+perftools-menu-more-actions-restart-with-profiling = Перезапустить { -brand-shorter-name } с включённым профилированием запуска
+perftools-menu-more-actions-copy-for-startup = Скопировать переменные среды для профилирования при запуске
+perftools-menu-more-actions-copy-for-perf-tests = Копировать параметры для тестов производительности
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -76,7 +85,7 @@ perftools-thread-gecko-main =
 perftools-thread-compositor =
     .title = Объединяет различные отрисованные элементы на странице
 perftools-thread-dom-worker =
-    .title = Обрабатывает как web worker'ы, так и service worker'ы
+    .title = Обрабатывает как Веб-обработчики, так и Обработчики
 perftools-thread-renderer =
     .title = Когда WebRender включён, этот поток выполняет вызовы OpenGL
 perftools-thread-render-backend =
@@ -117,7 +126,7 @@ perftools-tools-threads-input-label =
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
 
-perftools-onboarding-message = <b>Новое</b>:  В Инструменты разработчика теперь интегрирован { -profiler-brand-name }. <a>Узнайте больше</a> об этом новом, мощном инструменте.
+perftools-onboarding-message = <b>Новое</b>:  В инструменты разработчика теперь интегрирован «{ -profiler-brand-name }». <a>Узнайте больше</a> об этом новом, мощном инструменте.
 perftools-onboarding-close-button =
     .aria-label = Закрыть приветственное сообщение
 
@@ -141,6 +150,8 @@ perftools-presets-graphics-label = Графика
 perftools-presets-graphics-description = Настройки для выявления ошибок графики в { -brand-shorter-name }.
 perftools-presets-media-label = Медиа
 perftools-presets-media-description2 = Настройки для выявления ошибок аудио и видео в { -brand-shorter-name }.
+perftools-presets-ml-label = Машинное обучение
+perftools-presets-ml-description2 = Настройки для выявления ошибок машинного обучения в { -brand-shorter-name }.
 perftools-presets-networking-label = Сеть
 perftools-presets-networking-description = Настройки для выявления сетевых ошибок в { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +159,6 @@ perftools-presets-power-label = Электропитание
 perftools-presets-power-description = Настройки для выявления ошибок потребления энергии в { -brand-shorter-name }, с небольшими накладными расходами.
 perftools-presets-debug-label = Отладка
 perftools-presets-debug-description = Предустановка для отладки в { -brand-shorter-name }. Большие накладные расходы, не используйте для работы с производительностью, а используйте для понимания поведения браузера.
+perftools-presets-web-compat-label = Веб-совместимость
+perftools-presets-web-compat-description = Рекомендуемые преднастройки для отладки проблем веб-совместимости на веб-сайтах, а не для отслеживания производительности.
 perftools-presets-custom-label = Персональный
-
-##
-

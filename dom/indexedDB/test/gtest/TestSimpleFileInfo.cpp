@@ -2,17 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <array>
+
 #include "FileInfo.h"
 #include "FileInfoImpl.h"
 #include "FileInfoManager.h"
-
 #include "gtest/gtest.h"
-
 #include "mozilla/ArrayAlgorithm.h"
 #include "mozilla/StaticMutex.h"
 #include "nsTArray.h"
-
-#include <array>
 
 using namespace mozilla;
 using namespace mozilla::dom::indexedDB;
@@ -38,7 +36,7 @@ class SimpleFileManager final : public FileInfoManager<SimpleFileManager>,
   // SimpleFileManager functions that are used by SimpleFileInfo
 
   [[nodiscard]] nsresult AsyncDeleteFile(const int64_t aFileId) {
-    MOZ_RELEASE_ASSERT(!mFileInfos.Contains(aFileId));
+    MOZ_RELEASE_ASSERT(!ContainsFileInfo(aFileId));
 
     if (mStats) {
       ++mStats->mAsyncDeleteFileCalls;
@@ -48,7 +46,7 @@ class SimpleFileManager final : public FileInfoManager<SimpleFileManager>,
   }
 
   [[nodiscard]] nsresult SyncDeleteFile(const int64_t aFileId) {
-    MOZ_RELEASE_ASSERT(!mFileInfos.Contains(aFileId));
+    MOZ_RELEASE_ASSERT(!ContainsFileInfo(aFileId));
 
     if (mStats) {
       ++mStats->mSyncDeleteFileCalls;
@@ -64,16 +62,13 @@ class SimpleFileManager final : public FileInfoManager<SimpleFileManager>,
     for (const auto id : kDBOnlyFileInfoIds) {
       // Copied from within DatabaseFileManager::Init.
 
-      mFileInfos.InsertOrUpdate(
-          id, MakeNotNull<SimpleFileInfo*>(FileInfoManagerGuard{},
-                                           SafeRefPtrFromThis(), id,
-                                           static_cast<nsrefcnt>(1)));
-
-      mLastFileId = std::max(id, mLastFileId);
+      MOZ_RELEASE_ASSERT(CreateFileInfo(Some(id), static_cast<nsrefcnt>(1)));
     }
   }
 
-  static MutexType& Mutex() { return sMutex; }
+  static MutexType& MutexInstance() MOZ_RETURN_CAPABILITY(sMutex) {
+    return sMutex;
+  }
 
   static constexpr auto kDBOnlyFileInfoIds =
       std::array<int64_t, 3>{{10, 20, 30}};
@@ -229,7 +224,7 @@ TEST(DOM_IndexedDB_SimpleFileInfo, Invalidate_CreateFileInfo)
     fileManager->Invalidate();
 
     const auto fileInfo = fileManager->CreateFileInfo();
-    Unused << fileInfo;
+    (void)fileInfo;
 
     ASSERT_EQ(nullptr, fileInfo);
   }
@@ -246,7 +241,7 @@ TEST(DOM_IndexedDB_SimpleFileInfo, Invalidate_Release)
     const auto fileManager = MakeSafeRefPtr<SimpleFileManager>(&stats);
 
     const auto fileInfo = fileManager->CreateFileInfo();
-    Unused << fileInfo;
+    (void)fileInfo;
 
     fileManager->Invalidate();
 

@@ -8,7 +8,7 @@
 "use strict";
 
 // The following tests ensure we properly clear (partitioned/unpartitioned)
-// localStorage and indexedDB when using deleteDataFromBaseDomain,
+// localStorage and indexedDB when using deleteDataFromSite,
 // deleteDataFromHost and deleteDataFromPrincipal.
 
 // Skip localStorage tests when using legacy localStorage. The legacy
@@ -20,11 +20,12 @@ const skipLocalStorageTests = Services.prefs.getBoolPref(
 
 /**
  * Create an origin with partitionKey.
- * @param {String} host - Host portion of origin to create.
- * @param {String} [topLevelBaseDomain] - Optional first party base domain to use for partitionKey.
- * @param {Object} [originAttributes] - Optional object of origin attributes to
+ *
+ * @param {string} host - Host portion of origin to create.
+ * @param {string} [topLevelBaseDomain] - Optional first party base domain to use for partitionKey.
+ * @param {object} [originAttributes] - Optional object of origin attributes to
  * set. If topLevelBaseDomain is passed, the partitionKey will be overwritten.
- * @returns {String} Origin with suffix.
+ * @returns {string} Origin with suffix.
  */
 function getOrigin(host, topLevelBaseDomain, originAttributes = {}) {
   return getPrincipal(host, topLevelBaseDomain, originAttributes).origin;
@@ -124,6 +125,7 @@ async function setTestEntries(storageType) {
 
 /**
  * Run the base domain test with either localStorage or indexedDB.
+ *
  * @param {('localStorage'|'indexedDB')} storageType
  */
 async function runTestBaseDomain(storageType) {
@@ -137,8 +139,9 @@ async function runTestBaseDomain(storageType) {
 
   // Clear entries of example.net including partitions.
   await new Promise(aResolve => {
-    Services.clearData.deleteDataFromBaseDomain(
+    Services.clearData.deleteDataFromSite(
       "example.net",
+      {},
       false,
       Ci.nsIClearDataService.CLEAR_DOM_QUOTA,
       aResolve
@@ -190,6 +193,7 @@ async function runTestBaseDomain(storageType) {
 
 /**
  * Run the host test with either localStorage or indexedDB.
+ *
  * @param {('localStorage'|'indexedDB')} storageType
  */
 async function runTestHost(storageType) {
@@ -258,6 +262,7 @@ async function runTestHost(storageType) {
 
 /**
  * Run the principal test with either localStorage or indexedDB.
+ *
  * @param {('localStorage'|'indexedDB')} storageType
  */
 async function runTestPrincipal(storageType) {

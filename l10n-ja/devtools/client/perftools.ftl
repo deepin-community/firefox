@@ -26,6 +26,7 @@ perftools-heading-local-build = ローカルビルド
 
 perftools-description-intro = 記録したデータは新しいタブの <a>profiler.firefox.com</a> で開きます。データはすべてローカルに保存されますが、アップロードして共有することもできます。
 perftools-description-local-build = この端末で自身でコンパイルしたビルドをプロファイリングする場合は、ビルドの objdir を以下のリストに追加して、シンボル情報の検索に利用できるようにしてください。
+perftools-pick-local-build-directory = ビルドディレクトリーを選択
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -61,6 +62,14 @@ perftools-button-restart = 再開
 perftools-button-add-directory = ディレクトリーを追加
 perftools-button-remove-directory = 選択したディレクトリーを削除
 perftools-button-edit-settings = 設定を編集...
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = 他の操作
+perftools-menu-more-actions-restart-with-profiling = 起動時プロファイリングを有効にして { -brand-shorter-name } を再起動
+perftools-menu-more-actions-copy-for-startup = 起動時プロファイリングのための環境変数をコピー
+perftools-menu-more-actions-copy-for-perf-tests = パフォーマンステストのためのパラメーターをコピー
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -128,6 +137,8 @@ perftools-presets-graphics-label = グラフィック
 perftools-presets-graphics-description = { -brand-shorter-name } のグラフィックバグを調査するための推奨プリセットです。
 perftools-presets-media-label = メディア
 perftools-presets-media-description2 = { -brand-shorter-name } の音声と動画のバグを調査するための推奨プリセットです。
+perftools-presets-ml-label = 機械学習
+perftools-presets-ml-description2 = { -brand-shorter-name } の機械学習のバグを調査するための推奨プリセットです。
 perftools-presets-networking-label = ネットワーク
 perftools-presets-networking-description = { -brand-shorter-name } のネットワークバグを調査するための推奨プリセットです。
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -135,6 +146,8 @@ perftools-presets-power-label = 消費電力
 perftools-presets-power-description = { -brand-shorter-name } の消費電力のバグを少ないオーバーヘッドで調査するための推奨プリセットです。
 perftools-presets-debug-label = デバッグ
 perftools-presets-debug-description = { -brand-shorter-name } のデバッグ用プリセットです。オーバーヘッドが高いため、パフォーマンスが求められる作業を避け、ブラウザーの動作を調査する目的で使用してください。
+perftools-presets-web-compat-label = ウェブ互換性
+perftools-presets-web-compat-description = パフォーマンスを追跡するのではなく、ウェブ互換性の問題をデバッグするための推奨プリセットです。
 perftools-presets-custom-label = カスタム
 
 ##

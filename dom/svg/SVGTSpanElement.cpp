@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGTSpanElement.h"
+
 #include "mozilla/dom/SVGTSpanElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(TSpan)
@@ -24,12 +25,12 @@ SVGTSpanElement::SVGTSpanElement(
     : SVGTSpanElementBase(std::move(aNodeInfo)) {}
 
 SVGElement::EnumAttributesInfo SVGTSpanElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::LengthAttributesInfo SVGTSpanElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 //----------------------------------------------------------------------

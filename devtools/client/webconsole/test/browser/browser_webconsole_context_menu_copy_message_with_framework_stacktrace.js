@@ -5,6 +5,7 @@
 
 const httpServer = createTestHTTPServer();
 httpServer.registerPathHandler(`/`, function (request, response) {
+  response.setHeader("Content-Type", "text/html");
   response.setStatusLine(request.httpVersion, 200, "OK");
   response.write(`
     <meta charset=utf8>
@@ -76,7 +77,7 @@ add_task(async function () {
   info("Expand the React group");
   const getFrames = () => messageEl.querySelectorAll(".frame");
   const frames = getFrames().length;
-  messageEl.querySelector(".frames .group").click();
+  messageEl.querySelector(".frames .frames-group").click();
   // Let's wait until all React frames are displayed.
   await waitFor(() => getFrames().length > frames);
 

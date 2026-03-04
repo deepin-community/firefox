@@ -263,14 +263,6 @@ typedef enum JSGCParamKey {
   JSGC_MIN_EMPTY_CHUNK_COUNT = 21,
 
   /**
-   * We never keep more than this many unused chunks in the free chunk pool.
-   *
-   * Pref: javascript.options.mem.gc_max_empty_chunk_count
-   * Default: MaxEmptyChunkCount
-   */
-  JSGC_MAX_EMPTY_CHUNK_COUNT = 22,
-
-  /**
    * Whether compacting GC is enabled.
    *
    * Pref: javascript.options.mem.gc_compacting
@@ -502,6 +494,36 @@ typedef enum JSGCParamKey {
    * collections is less than that specified by JSGC_HIGH_FREQUENCY_TIME_LIMIT.
    */
   JSGC_HIGH_FREQUENCY_MODE = 56,
+
+  /**
+   * The engine attempts to keep nursery collection time less than this limit by
+   * restricting the size of the nursery.
+   *
+   * This only happens in optimized builds. It does not happen during pageload
+   * (as indicated by js::gc::SetPerformanceHint).
+   *
+   * Setting this to zero disables this feature.
+   *
+   * Default: 4
+   * Pref: javascript.options.mem.nursery_max_time_goal_ms
+   */
+  JSGC_NURSERY_MAX_TIME_GOAL_MS = 57,
+
+  /*
+   * Sets the size of the store buffers used for generational GC.
+   *
+   * The JSGC_STORE_BUFFER_ENTRIES parameter sets the number of store buffer
+   * entries that will be used for a nursery size of 16MB. This is further
+   * scaled based on the actual nursery size and the JSGC_STORE_BUFFER_SCALING
+   * parameter according to the formula:
+   *
+   *    size
+   * ( (---- - 1) * JSGC_STORE_BUFFER_SCALING + 1 ) * JSGC_STORE_BUFFER_ENTRIES
+   *    16MB
+   *
+   */
+  JSGC_STORE_BUFFER_ENTRIES = 58,
+  JSGC_STORE_BUFFER_SCALING = 59,
 } JSGCParamKey;
 
 /*
@@ -615,6 +637,7 @@ namespace JS {
   D(RESET, 9)                                                          \
   D(OUT_OF_NURSERY, 10)                                                \
   D(EVICT_NURSERY, 11)                                                 \
+  D(FULL_CELL_PTR_GETTER_SETTER_BUFFER, 12)                            \
   D(SHARED_MEMORY_LIMIT, 13)                                           \
   D(EAGER_NURSERY_COLLECTION, 14)                                      \
   D(BG_TASK_FINISHED, 15)                                              \
@@ -633,7 +656,7 @@ namespace JS {
   D(FULL_CELL_PTR_STR_BUFFER, 28)                                      \
   D(TOO_MUCH_JIT_CODE, 29)                                             \
   D(FULL_CELL_PTR_BIGINT_BUFFER, 30)                                   \
-  D(NURSERY_TRAILERS, 31)                                              \
+  D(UNUSED4, 31)                                                       \
   D(NURSERY_MALLOC_BUFFERS, 32)                                        \
                                                                        \
   /*                                                                   \
@@ -665,7 +688,7 @@ namespace JS {
   D(DOCSHELL, 54)                                                      \
   D(HTML_PARSER, 55)                                                   \
   D(DOM_TESTUTILS, 56)                                                 \
-  D(PREPARE_FOR_PAGELOAD, 57)                                          \
+  D(PREPARE_FOR_PAGELOAD, LAST_FIREFOX_REASON)                         \
                                                                        \
   /* Reasons reserved for embeddings. */                               \
   D(RESERVED1, FIRST_RESERVED_REASON)                                  \
@@ -680,6 +703,7 @@ namespace JS {
 
 enum class GCReason {
   FIRST_FIREFOX_REASON = 33,
+  LAST_FIREFOX_REASON = 57,
   FIRST_RESERVED_REASON = 90,
 
 #define MAKE_REASON(name, val) name = val,
@@ -705,6 +729,18 @@ extern JS_PUBLIC_API const char* ExplainGCReason(JS::GCReason reason);
  * Return true if the GC reason is internal to the JS engine.
  */
 extern JS_PUBLIC_API bool InternalGCReason(JS::GCReason reason);
+
+/**
+ * Get a statically allocated C string explaining the given Abort reason.
+ * Input is the integral value of the enum.
+ */
+extern JS_PUBLIC_API const char* ExplainGCAbortReason(uint32_t reason);
+
+/**
+ * Get a statically allocated C string describing the Phase.
+ * Input is the integral value of the enum.
+ */
+extern JS_PUBLIC_API const char* GetGCPhaseName(uint32_t phase);
 
 /*
  * Zone GC:

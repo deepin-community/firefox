@@ -17,7 +17,7 @@
 }
 
 /* Hides the tab strip in the TabBar */
-div[hidetabs=true] .tabs .tabs-navigation {
+div[hidetabs="true"] .tabs .tabs-navigation {
   display: none;
 }
 
@@ -58,14 +58,25 @@ div[hidetabs=true] .tabs .tabs-navigation {
   margin: 0;
   padding: 0;
   color: var(--theme-toolbar-color);
-}
 
-.tabs .tabs-menu-item.is-active {
-  color: var(--theme-toolbar-selected-color);
+  a {
+    color: currentColor;
+  }
 }
 
 .tabs .tabs-menu-item:hover {
   background-color: var(--theme-toolbar-hover);
+  color: var(--theme-toolbar-hover-color);
+}
+
+.tabs .tabs-menu-item.is-active {
+  color: var(--theme-toolbar-selected-color);
+  background-color: var(--theme-toolbar-selected-background);
+
+  &:hover {
+    background-color: var(--theme-toolbar-selected-hover);
+    color: var(--theme-toolbar-selected-hover-color);
+  }
 }
 
 .tabs .tabs-menu-item:hover:active:not(.is-active) {
@@ -92,6 +103,14 @@ div[hidetabs=true] .tabs .tabs-navigation {
   cursor: default;
   user-select: none;
   text-align: center;
+}
+
+.tabs .tabs-menu-item a:focus-visible {
+  /* Override the box-shadow from the `:focus-visible` style of common.css. In
+     the tabbar, the focus ring should always be visible so we don't need to
+     force a box-shadow, which will otherwise overlap with the siblings of the
+     focused tab. */
+  box-shadow: unset;
 }
 
 .tabs .tabs-navigation .tabs-menu-item > a {

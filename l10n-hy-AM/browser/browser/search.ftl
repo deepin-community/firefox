@@ -30,6 +30,49 @@ searchbar-icon =
 ## $oldEngine (String) - the search engine to be removed.
 ## $newEngine (String) - the search engine to replace the removed search engine.
 
-removed-search-engine-message = <strong>Ձեր սկզբնադիր որոնիչը փոխվել է:</strong> { $oldEngine }-ն այլևս չի հանդիսանում սկզբնադիր որոնիչ { -brand-short-name }-ում: { $newEngine }-ն այժմ Ձեր սկզբնադիր որոնիչն է: Որոնիչը մեկ այլով փոխելու համար՝ գնացեք կարգավորումներ: <label data-l10n-name="remove-search-engine-article">Իմանալ ավելին</label>
-removed-search-engine-message2 = <strong>Ձեր որոնիչը համակարգը փոխվել է:</strong> { $oldEngine }-ն այլևս չի հանդիսանում սկզբնադիր որոնիչ { -brand-short-name }-ում: { $newEngine }-ն այժմ Ձեր սկզբնադիր որոնիչն է: Որոնիչը մեկ այլով փոխելու համար՝ գնացեք կարգավորումներ:
+removed-search-engine-message = <strong>Ձեր սկզբնադիր որոնողական համակարգը փոխվել է:</strong> { $oldEngine }-ն այլևս չի հանդիսանում սկզբնադիր որոնիչը { -brand-short-name }-ում: { $newEngine }-ն այժմ Ձեր սկզբնադիր որոնիչն է: Որոնողական համակարգը մեկ այլով փոխելու համար՝ գնացեք կարգավորումներ: <label data-l10n-name="remove-search-engine-article">Իմանալ ավելին</label>
+removed-search-engine-message2 = <strong>Ձեր սկզբնադիր որոնողական համակարգը փոխվել է:</strong> { $oldEngine }-ն այլևս չի հանդիսանում սկզբնադիր որոնիչը { -brand-short-name }-ում: { $newEngine }-ն այժմ Ձեր սկզբնադիր որոնիչն է: Որոնողական համակարգը մեկ այլով փոխելու համար՝ գնացեք կարգավորումներ:
 remove-search-engine-button = Լավ
+
+## Infobar shown when user is prompted to install search engine.
+## Variables
+## $engineName (String) - the name of the search engine to install.
+
+install-search-engine-add = Հավելել
+install-search-engine-no = Ոչ
+
+## The following strings are used as input labels.
+
+add-engine-window =
+    .title = Ավելացնել որոնիչ
+    .style = min-width: 32em;
+edit-engine-window =
+    .title = Խմբագրել որոնիչը
+    .style = min-width: 32em;
+add-engine-button = Ավելացնել հարմարեցված որոնիչ
+add-engine-name = Որոնիչի անունը
+add-engine-keyword2 = Հիմնաբառ (ըստ ցանկության)
+
+## The following placeholders are shown in the inputs when adding a new engine.
+
+add-engine-keyword-placeholder =
+    .placeholder = օրինակ՝ @mdn
+
+## The following strings are used as error messages.
+
+add-engine-no-url = Խնդրում ենք մուտքագրել URL։
+
+## The following strings are used as labels for the dialog's buttons.
+
+# buttonlabelextra1 is the label of a button to open the advanced section
+# of the dialog.
+add-engine-dialog2 =
+    .buttonlabelaccept = Հավելել որոնիչ
+    .buttonaccesskeyaccept = A
+    .buttonlabelextra1 = Լրացուցիչ
+# buttonlabelextra1 is the label of a button to open the advanced section
+# of the dialog.
+edit-engine-dialog =
+    .buttonlabelaccept = Պահել որոնիչը
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra1 = Ընդլայնված

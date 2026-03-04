@@ -7,12 +7,20 @@ import pathlib
 import platform
 import shutil
 import signal
+import sys
 import time
 
 import mozprocess
 
 from mozperftest.layers import Layer
-from mozperftest.utils import ON_TRY, archive_folder, temp_dir
+from mozperftest.utils import ON_TRY, archive_folder, install_package, temp_dir
+
+"""
+Python dependencies needed for mozperftest have to be installed when running
+via shellscript there is an issue with the way the shellscript runner does
+not have all of the environment variables and system settings
+"""
+DEPENDENCIES = ["opencv-python==4.10.0.84"]
 
 
 class UnknownScriptError(Exception):
@@ -62,10 +70,15 @@ class ShellScriptRunner(Layer):
     }
 
     def __init__(self, env, mach_cmd):
-        super(ShellScriptRunner, self).__init__(env, mach_cmd)
+        super().__init__(env, mach_cmd)
         self.metrics = []
         self.timed_out = False
         self.output_timed_out = False
+
+    def setup(self):
+        # Install dependencies
+        for dep in DEPENDENCIES:
+            install_package(self.mach_cmd.virtualenv_manager, dep)
 
     def kill(self, proc):
         if "win" in platform.system().lower():
@@ -135,6 +148,28 @@ class ShellScriptRunner(Layer):
             os.environ["APP"] = self.get_arg("app")
             os.environ["TESTING_DIR"] = testing_dir
             os.environ["BROWSER_BINARY"] = metadata.binary
+            os.environ["PYTHON_PATH_SHELL_SCRIPT"] = sys.executable
+
+            # Setup a python packages path for python scripts. This is required since
+            # the sys.path modifications made by mozperftest don't get propagated
+            # to the scripts. Furthermore, PYTHONPATH can't be used here since it
+            # gets overrided by something like a ._pth file somewhere along the way.
+            venv_site_lib = str(
+                pathlib.Path(
+                    self.mach_cmd.virtualenv_manager.bin_path, "..", "lib"
+                ).resolve()
+            )
+            venv_site_packages = pathlib.Path(
+                venv_site_lib,
+                f"python{sys.version_info.major}.{sys.version_info.minor}",
+                "site-packages",
+            )
+            if not venv_site_packages.exists():
+                venv_site_packages = pathlib.Path(
+                    venv_site_lib,
+                    "site-packages",
+                )
+            os.environ["PYTHON_PACKAGES"] = str(venv_site_packages)
 
             mozprocess.run_and_wait(
                 cmd,
@@ -163,15 +198,14 @@ class ShellScriptRunner(Layer):
                     )
                     self.info(f"Copying testing directory to {output_dir}")
                     shutil.copytree(testing_dir, output_dir)
+                    self.env.set_arg("output", output_dir)
 
-        metadata.add_result(
-            {
-                "name": test["name"],
-                "framework": {"name": "mozperftest"},
-                "transformer": "mozperftest.test.shellscript:ShellScriptData",
-                "shouldAlert": True,
-                "results": self.parse_metrics(),
-            }
-        )
+        metadata.add_result({
+            "name": test["name"],
+            "framework": {"name": "mozperftest"},
+            "transformer": "mozperftest.test.shellscript:ShellScriptData",
+            "shouldAlert": True,
+            "results": self.parse_metrics(),
+        })
 
         return metadata

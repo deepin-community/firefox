@@ -8,25 +8,23 @@
 #define mozilla_net_CookieJarSettings_h
 
 #include "mozilla/Maybe.h"
+#include "mozilla/net/NeckoChannelParams.h"
 
 #include "nsICookieJarSettings.h"
+#include "nsIPermission.h"
 #include "nsTArray.h"
 
 #define COOKIEJARSETTINGS_CONTRACTID "@mozilla.org/cookieJarSettings;1"
 // 4ce234f1-52e8-47a9-8c8d-b02f815733c7
-#define COOKIEJARSETTINGS_CID                        \
-  {                                                  \
-    0x4ce234f1, 0x52e8, 0x47a9, {                    \
-      0x8c, 0x8d, 0xb0, 0x2f, 0x81, 0x57, 0x33, 0xc7 \
-    }                                                \
-  }
-
-class nsIPermission;
+#define COOKIEJARSETTINGS_CID \
+  {0x4ce234f1, 0x52e8, 0x47a9, {0x8c, 0x8d, 0xb0, 0x2f, 0x81, 0x57, 0x33, 0xc7}}
 
 namespace mozilla {
 namespace net {
 
 class CookieJarSettingsArgs;
+
+using CookiePermissionsArgsData = nsTArray<net::CookiePermissionData>;
 
 /**
  * CookieJarSettings
@@ -147,12 +145,23 @@ class CookieJarSettings final : public nsICookieJarSettings {
     return static_cast<CookieJarSettings*>(aCS);
   }
 
+  already_AddRefed<CookieJarSettings> Clone() {
+    RefPtr<CookieJarSettings> clone = new CookieJarSettings(*this);
+    return clone.forget();
+  }
+
   void Serialize(CookieJarSettingsArgs& aData);
 
   static void Deserialize(const CookieJarSettingsArgs& aData,
                           nsICookieJarSettings** aCookieJarSettings);
 
-  void Merge(const CookieJarSettingsArgs& aData);
+  static CookiePermissionList DeserializeCookiePermissions(
+      const CookiePermissionsArgsData& aPermissionData);
+
+  // Merge the current CookieJarSettings with the new CookieJarSettingsArgs. It
+  // returns a new merged CookieJarSettings.
+  already_AddRefed<nsICookieJarSettings> Merge(
+      const CookieJarSettingsArgs& aData);
 
   // We don't want to send this object from parent to child process if there are
   // no reasons. HasBeenChanged() returns true if the object has changed its
@@ -160,8 +169,11 @@ class CookieJarSettings final : public nsICookieJarSettings {
   bool HasBeenChanged() const { return mToBeMerged; }
 
   void UpdateIsOnContentBlockingAllowList(nsIChannel* aChannel);
+  void SetIsOnContentBlockingAllowList(bool aIsOnContentBlockingAllowList) {
+    mIsOnContentBlockingAllowList = aIsOnContentBlockingAllowList;
+  }
 
-  void SetPartitionKey(nsIURI* aURI, bool aForeignByAncestorContext);
+  void SetPartitionKey(nsIURI* aURI);
   void SetPartitionKey(const nsAString& aPartitionKey) {
     mPartitionKey = aPartitionKey;
   }
@@ -198,15 +210,41 @@ class CookieJarSettings final : public nsICookieJarSettings {
 
   CookieJarSettings(uint32_t aCookieBehavior, bool aIsFirstPartyIsolated,
                     bool aShouldResistFingerprinting, State aState);
+
+  CookieJarSettings(const CookieJarSettings& aOther) {
+    mCookieBehavior = aOther.mCookieBehavior;
+    mIsFirstPartyIsolated = aOther.mIsFirstPartyIsolated;
+    mCookiePermissions = aOther.mCookiePermissions.Clone();
+
+    mIsOnContentBlockingAllowList = aOther.mIsOnContentBlockingAllowList;
+    mIsOnContentBlockingAllowListUpdated =
+        aOther.mIsOnContentBlockingAllowListUpdated;
+
+    mPartitionKey = aOther.mPartitionKey;
+    mState = aOther.mState;
+    mToBeMerged = aOther.mToBeMerged;
+
+    mShouldResistFingerprinting = aOther.mShouldResistFingerprinting;
+    if (aOther.mFingerprintingRandomKey.isSome()) {
+      mFingerprintingRandomKey =
+          Some(aOther.mFingerprintingRandomKey.ref().Clone());
+    }
+
+    mTopLevelWindowContextId = aOther.mTopLevelWindowContextId;
+  }
+
+  CookiePermissionList& GetCookiePermissionsListRef();
+
   ~CookieJarSettings();
 
   uint32_t mCookieBehavior;
   bool mIsFirstPartyIsolated;
   CookiePermissionList mCookiePermissions;
+  CookiePermissionsArgsData mIPCCookiePermissions;
+
   bool mIsOnContentBlockingAllowList;
   bool mIsOnContentBlockingAllowListUpdated;
   nsString mPartitionKey;
-
   State mState;
 
   bool mToBeMerged;

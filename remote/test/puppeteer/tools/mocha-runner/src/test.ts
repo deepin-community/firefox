@@ -35,7 +35,7 @@ describe('getTestResultForFailure', () => {
   it('should get a test result for a mocha failure', () => {
     assert.equal(
       getTestResultForFailure({err: {code: 'ERR_MOCHA_TIMEOUT'}}),
-      'TIMEOUT'
+      'TIMEOUT',
     );
     assert.equal(getTestResultForFailure({err: {code: 'ERROR'}}), 'FAIL');
   });
@@ -54,12 +54,12 @@ describe('filterByParameters', () => {
     ];
     assert.equal(
       filterByParameters(expectations, ['firefox', 'headless']).length,
-      1
+      1,
     );
     assert.equal(filterByParameters(expectations, ['firefox']).length, 0);
     assert.equal(
       filterByParameters(expectations, ['firefox', 'headless', 'other']).length,
-      1
+      1,
     );
     assert.equal(filterByParameters(expectations, ['other']).length, 0);
   });
@@ -79,7 +79,7 @@ describe('isWildCardPattern', () => {
     assert.equal(isWildCardPattern('[queryHandler.spec] Page *'), true);
     assert.equal(
       isWildCardPattern('[queryHandler.spec] Page Page.goto *'),
-      true
+      true,
     );
   });
 });
@@ -116,7 +116,7 @@ describe('testIdMatchesExpectationPattern', () => {
       assert.equal(
         testIdMatchesExpectationPattern(test, pattern),
         expected,
-        `Expected "${pattern}" to yield "${expected}"`
+        `Expected "${pattern}" to yield "${expected}"`,
       );
     }
   });
@@ -132,7 +132,7 @@ describe('testIdMatchesExpectationPattern', () => {
       assert.equal(
         testIdMatchesExpectationPattern(test, pattern),
         expected,
-        `Expected "${pattern}" to yield "${expected}"`
+        `Expected "${pattern}" to yield "${expected}"`,
       );
     }
   });
@@ -160,10 +160,15 @@ describe('getExpectationUpdates', () => {
         expectations: ['FAIL' as const],
       },
     ];
-    const updates = getExpectationUpdates(mochaResults, expectations, {
-      platforms: ['darwin'] as Platform[],
-      parameters: ['test'],
-    });
+    const updates = getExpectationUpdates(
+      mochaResults,
+      expectations,
+      {
+        platforms: ['darwin'] as Platform[],
+        parameters: ['test'],
+      },
+      false,
+    );
     assert.deepEqual(updates, [
       {
         action: 'remove',
@@ -181,6 +186,39 @@ describe('getExpectationUpdates', () => {
         },
       },
     ]);
+  });
+
+  it('should not generate an update for expectations if a test passed with a fail expectation when passing are ingored', () => {
+    const mochaResults = {
+      stats: {tests: 1},
+      pending: [],
+      passes: [
+        {
+          fullTitle: 'Page Page.setContent should work',
+          title: 'should work',
+          file: 'page.spec.ts',
+        },
+      ],
+      failures: [],
+    };
+    const expectations = [
+      {
+        testIdPattern: '[page.spec] Page Page.setContent should work',
+        platforms: ['darwin'] as Platform[],
+        parameters: ['test'],
+        expectations: ['FAIL' as const],
+      },
+    ];
+    const updates = getExpectationUpdates(
+      mochaResults,
+      expectations,
+      {
+        platforms: ['darwin'] as Platform[],
+        parameters: ['test'],
+      },
+      true,
+    );
+    assert.deepEqual(updates, []);
   });
 
   it('should not generate an update for successful retries', () => {
@@ -203,10 +241,15 @@ describe('getExpectationUpdates', () => {
         },
       ],
     };
-    const updates = getExpectationUpdates(mochaResults, [], {
-      platforms: ['darwin'],
-      parameters: ['test'],
-    });
+    const updates = getExpectationUpdates(
+      mochaResults,
+      [],
+      {
+        platforms: ['darwin'],
+        parameters: ['test'],
+      },
+      false,
+    );
     assert.deepEqual(updates, []);
   });
 });

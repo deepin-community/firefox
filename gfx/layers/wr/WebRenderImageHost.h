@@ -12,7 +12,6 @@
 
 #include "CompositableHost.h"               // for CompositableHost
 #include "mozilla/layers/ImageComposite.h"  // for ImageComposite
-#include "mozilla/WeakPtr.h"
 #include "mozilla/webrender/RenderTextureHost.h"
 
 namespace mozilla {
@@ -33,6 +32,8 @@ class WebRenderImageHost : public CompositableHost, public ImageComposite {
 
   void UseTextureHost(const nsTArray<TimedTexture>& aTextures) override;
   void RemoveTextureHost(TextureHost* aTexture) override;
+
+  void ClearImages(ClearImagesType aType) override;
 
   void Dump(std::stringstream& aStream, const char* aPrefix = "",
             bool aDumpHtml = false) override;

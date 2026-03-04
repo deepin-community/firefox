@@ -5,14 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SVGDataParser.h"
-#include "nsContentUtils.h"
+
 #include "SVGContentUtils.h"
+#include "nsContentUtils.h"
 
 namespace mozilla {
 
-SVGDataParser::SVGDataParser(const nsAString& aValue)
-    : mIter(SVGContentUtils::GetStartRangedPtr(aValue)),
-      mEnd(SVGContentUtils::GetEndRangedPtr(aValue)) {}
+SVGDataParser::SVGDataParser(const nsAString& aValue) {
+  aValue.BeginReading(mIter);
+  aValue.EndReading(mEnd);
+}
 
 bool SVGDataParser::SkipCommaWsp() {
   if (!SkipWsp()) {

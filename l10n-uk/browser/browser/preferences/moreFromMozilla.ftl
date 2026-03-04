@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Ознайомтеся з іншими продуктами від { -vendor-short-name }, які підтримують здоровий інтернет.
 more-from-moz-firefox-mobile-title = { -brand-product-name } для мобільного
 more-from-moz-firefox-mobile-description = Мобільний браузер, який поважає вашу приватність.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } для мобільних пристроїв
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Відкрийте для себе додатковий рівень анонімного перегляду та захисту.
 more-from-moz-qr-code-box-firefox-mobile-title = Завантажте за допомогою мобільного пристрою. Наведіть камеру на QR-код. Торкніться до посилання, коли воно з'явиться.
@@ -32,3 +33,16 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Автоматично відкликайте свою розкриту особисту інформацію.
 more-from-moz-mozilla-monitor-global-description = Отримуйте сповіщення, коли ваші дані було розкрито.
 more-from-moz-mozilla-monitor-button = Отримати { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = ШІ { -solo-ai-brand-name }
+more-from-moz-solo-description = Миттєво створіть свій сайт і під'єднайте власний домен безплатно.
+more-from-moz-solo-button = Спробуйте { -solo-ai-brand-name }
+more-from-moz-solo-title-2 = { -solo-ai-brand-name } ШІ творець вебсайтів
+
+## These strings are for the MDN card in about:preferences moreFromMozilla page
+
+more-from-moz-mdn-title = Веб-документація MDN
+more-from-moz-mdn-description = Вивчайте веброзробку за допомогою безплатних, вичерпних посібників та довідників.
+more-from-moz-mdn-button = Вивчення веброзробки

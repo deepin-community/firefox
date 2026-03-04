@@ -10,7 +10,7 @@
 
 extern crate wgpu_hal as hal;
 
-#[cfg(not(any(windows, target_arch = "wasm32", target_os = "ios")))]
+#[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "visionos")))]
 fn main() {
     use std::{ffi::CString, num::NonZeroU32};
 
@@ -31,7 +31,7 @@ fn main() {
     // Other platforms don't really need one.
     let window_builder = cfg!(windows).then(|| {
         winit::window::WindowBuilder::new()
-            .with_title("WGPU raw GLES example (press Escape to exit)")
+            .with_title("wgpu raw GLES example (press Escape to exit)")
     });
 
     // The template will match only the configurations supporting rendering
@@ -70,7 +70,7 @@ fn main() {
 
     // Glutin tries to create an OpenGL context by default.  Force it to use any version of GLES.
     let context_attributes = glutin::context::ContextAttributesBuilder::new()
-        // WGPU expects GLES 3.0+.
+        // wgpu expects GLES 3.0+.
         .with_context_api(glutin::context::ContextApi::Gles(Some(Version::new(3, 0))))
         .build(raw_window_handle);
 
@@ -112,7 +112,7 @@ fn main() {
                 Event::Resumed => {
                     let window = window.take().unwrap_or_else(|| {
                         let window_builder = winit::window::WindowBuilder::new()
-                            .with_title("WGPU raw GLES example (press Escape to exit)");
+                            .with_title("wgpu raw GLES example (press Escape to exit)");
                         glutin_winit::finalize_window(window_target, window_builder, &gl_config)
                             .unwrap()
                     });
@@ -138,12 +138,15 @@ fn main() {
                     println!("Hooking up to wgpu-hal");
                     exposed.get_or_insert_with(|| {
                         unsafe {
-                            <hal::api::Gles as hal::Api>::Adapter::new_external(|name| {
-                                // XXX: On WGL this should only be called after the context was made current
-                                gl_config
-                                    .display()
-                                    .get_proc_address(&CString::new(name).expect(name))
-                            })
+                            <hal::api::Gles as hal::Api>::Adapter::new_external(
+                                |name| {
+                                    // XXX: On WGL this should only be called after the context was made current
+                                    gl_config
+                                        .display()
+                                        .get_proc_address(&CString::new(name).expect(name))
+                                },
+                                wgpu_types::GlBackendOptions::default(),
+                            )
                         }
                         .expect("GL adapter can't be initialized")
                     });
@@ -255,32 +258,32 @@ fn main() {
 }
 
 #[cfg(any(
-    windows,
     all(target_arch = "wasm32", not(target_os = "emscripten")),
-    target_os = "ios"
+    target_os = "ios",
+    target_os = "visionos"
 ))]
 fn main() {
     eprintln!("This example is not supported on Windows and non-emscripten wasm32")
 }
 
 #[cfg(not(any(
-    windows,
     all(target_arch = "wasm32", not(target_os = "emscripten")),
-    target_os = "ios"
+    target_os = "ios",
+    target_os = "visionos"
 )))]
 fn fill_screen(exposed: &hal::ExposedAdapter<hal::api::Gles>, width: u32, height: u32) {
     use hal::{Adapter as _, CommandEncoder as _, Device as _, Queue as _};
 
     let od = unsafe {
         exposed.adapter.open(
-            wgt::Features::empty(),
-            &wgt::Limits::downlevel_defaults(),
-            &wgt::MemoryHints::default(),
+            wgpu_types::Features::empty(),
+            &wgpu_types::Limits::downlevel_defaults(),
+            &wgpu_types::MemoryHints::default(),
         )
     }
     .unwrap();
 
-    let format = wgt::TextureFormat::Rgba8UnormSrgb;
+    let format = wgpu_types::TextureFormat::Rgba8UnormSrgb;
     let texture = <hal::api::Gles as hal::Api>::Texture::default_framebuffer(format);
     let view = unsafe {
         od.device
@@ -289,9 +292,9 @@ fn fill_screen(exposed: &hal::ExposedAdapter<hal::api::Gles>, width: u32, height
                 &hal::TextureViewDescriptor {
                     label: None,
                     format,
-                    dimension: wgt::TextureViewDimension::D2,
-                    usage: hal::TextureUses::COLOR_TARGET,
-                    range: wgt::ImageSubresourceRange::default(),
+                    dimension: wgpu_types::TextureViewDimension::D2,
+                    usage: wgpu_types::TextureUses::COLOR_TARGET,
+                    range: wgpu_types::ImageSubresourceRange::default(),
                 },
             )
             .unwrap()
@@ -309,7 +312,7 @@ fn fill_screen(exposed: &hal::ExposedAdapter<hal::api::Gles>, width: u32, height
     let mut fence = unsafe { od.device.create_fence().unwrap() };
     let rp_desc = hal::RenderPassDescriptor {
         label: None,
-        extent: wgt::Extent3d {
+        extent: wgpu_types::Extent3d {
             width,
             height,
             depth_or_array_layers: 1,
@@ -318,20 +321,21 @@ fn fill_screen(exposed: &hal::ExposedAdapter<hal::api::Gles>, width: u32, height
         color_attachments: &[Some(hal::ColorAttachment {
             target: hal::Attachment {
                 view: &view,
-                usage: hal::TextureUses::COLOR_TARGET,
+                usage: wgpu_types::TextureUses::COLOR_TARGET,
             },
+            depth_slice: None,
             resolve_target: None,
-            ops: hal::AttachmentOps::STORE,
-            clear_value: wgt::Color::BLUE,
+            ops: hal::AttachmentOps::STORE | hal::AttachmentOps::LOAD_CLEAR,
+            clear_value: wgpu_types::Color::BLUE,
         })],
         depth_stencil_attachment: None,
-        multiview: None,
+        multiview_mask: None,
         timestamp_writes: None,
         occlusion_query_set: None,
     };
     unsafe {
         encoder.begin_encoding(None).unwrap();
-        encoder.begin_render_pass(&rp_desc);
+        encoder.begin_render_pass(&rp_desc).unwrap();
         encoder.end_render_pass();
         let cmd_buf = encoder.end_encoding().unwrap();
         od.queue.submit(&[&cmd_buf], &[], (&mut fence, 0)).unwrap();

@@ -41,7 +41,7 @@ site-permission-install-first-prompt-midi-message = Ndoje’ekuaái ndéve ko je
 
 xpinstall-disabled-locked = Apopyvusu ñangarekohára ombotove Software ñemohenda.
 xpinstall-disabled-by-policy = Pe software ñemohenda oipe’aitéma ne mba’apohaguasu.
-xpinstall-disabled = Software ñemohenda oñembogue ko’ág̃a. Ejopy Myandy ha upéi eha’ãjey.
+xpinstall-disabled = Software ñemohenda oñembogue ko’ág̃a. Ejopy Myandy ha upéi eha’ã jey.
 xpinstall-disabled-button =
     .label = Myandy
     .accesskey = n
@@ -81,6 +81,8 @@ addon-removal-title = ¿Emboguete { $name }?
 addon-removal-message = ¿Embogue { $name } { -brand-shorter-name }-gui?
 addon-removal-button = Mboguete
 addon-removal-abuse-report-checkbox = Emomarandu ko jepysokue rehegua { -vendor-short-name }-pe
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Oiporúramo tembiapoite térã jepysokue oiporúva koichagua, oñembojuaju jeýta.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = Pe moĩmbaha oñemboguejýva ko tendágui nda
 addon-install-error-file-access = { $addonName } noñemohendakuaái ndaikatúigui { -brand-short-name } omoambue marandurenda tekotevẽva.
 addon-install-error-not-signed = { -brand-short-name } ojoko ko tendágui omboguejy guive pe add-on ojehechajey’ỹva.
 addon-install-error-invalid-domain = Pe moĩmbaha { $addonName } noñemohendakuaái ko tendaite rupive.
+addon-install-error-no-addon-name-file-access = { -brand-short-name } nomohendakuaái moĩmbaha ndaikatúigui omoambue marandurenda tekotevẽva.
 addon-local-install-error-network-failure = Ko moĩmbaha ndaikatúi oñemohenda oĩgui jejavy apopyvusúpe.
 addon-local-install-error-incorrect-hash = Ko moĩmbaha ndaikatúi oñemohenda ndojokupytýi rupi moĩmbaha { -brand-short-name } oñeha’ãrõvare.
 addon-local-install-error-corrupt-file = Pe moĩmbaha ndaikatúi oñemohenda noĩporãmbái rupi.
 addon-local-install-error-file-access = { $addonName } noñemohendakuaái ndaikatúigui { -brand-short-name } omoambue marandurenda tekotevẽva.
 addon-local-install-error-not-signed = Ko moĩmbaha ndaikatúi oñemohenda ndojehechajeýi rupi.
+addon-local-install-no-addon-name-error-file-access = { -brand-short-name } nomohendakuaái moĩmbaha ndaikatúigui omoambue marandurenda tekotevẽva.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } ndaikatúi oñemohenda ndojokupytýi rupi { -brand-short-name } { $appVersion } ndive.
+addon-install-error-hard-blocked = { $addonName } omomarã Mozilla porureko ha ndaikatúi emohenda { -brand-short-name } rupive.
+addon-install-error-soft-blocked2 = { $addonName } ojokohína ha nomohendakuaái { -brand-short-name }-pe.
 addon-install-error-blocklisted = { $addonName } ndaikatúi oñemohenda ikatúgui omoapañuái mba’apoporã térã tekorosã rehegua.
+addon-install-error-soft-blocked = { $addonName } omomarã Mozilla porureko ha ndaikatúi emohenda { -brand-short-name } rupive.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Ndaikatúi emohenda { $addonName } poruhára paháramo, omohendakuaa tendaguasu oiporúva mba’apohaguasu porureko.

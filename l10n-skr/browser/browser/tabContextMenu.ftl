@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = نواں ٹیب
     .accesskey = w
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = ٹیباں کوں کھٻے پاسوں بند کرو
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = اُتے ٹیباں بند کرو
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = ٹیباں کوں سڄے پاسوں بند کرو
     .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = تلے ٹیباں بند کرو
+    .accesskey = l
 close-other-tabs =
     .label = ٻیاں ٹیباں بند کرو
     .accesskey = o
@@ -78,6 +88,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = سانجھا کرو
     .accesskey = h
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = نویں ٹیب کھٻے پاسے
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = نویں ٹیب تلے
+    .accesskey = w
+tab-context-new-group =
+    .label = نواں گروپ
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.

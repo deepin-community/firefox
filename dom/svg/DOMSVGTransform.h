@@ -8,14 +8,13 @@
 #define DOM_SVG_DOMSVGTRANSFORM_H_
 
 #include "DOMSVGTransformList.h"
+#include "SVGTransform.h"
 #include "gfxMatrix.h"
+#include "mozilla/UniquePtr.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsDebug.h"
 #include "nsID.h"
-#include "SVGTransform.h"
 #include "nsWrapperCache.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/UniquePtr.h"
 
 #define MOZ_SVG_LIST_INDEX_BIT_COUNT 31  // supports > 2 billion list items
 
@@ -51,7 +50,7 @@ class DOMSVGTransform final : public nsWrapperCache {
    */
   DOMSVGTransform();
   explicit DOMSVGTransform(const gfxMatrix& aMatrix);
-  DOMSVGTransform(const DOMMatrix2DInit& aMatrix, ErrorResult& rv);
+  DOMSVGTransform(const DOMMatrix2DInit& aMatrix, ErrorResult& aRv);
 
   /**
    * Ctor for creating an unowned copy. Used with Clone().
@@ -118,12 +117,12 @@ class DOMSVGTransform final : public nsWrapperCache {
   uint16_t Type() const;
   dom::SVGMatrix* GetMatrix();
   float Angle() const;
-  void SetMatrix(const DOMMatrix2DInit& matrix, ErrorResult& rv);
-  void SetTranslate(float tx, float ty, ErrorResult& rv);
-  void SetScale(float sx, float sy, ErrorResult& rv);
-  void SetRotate(float angle, float cx, float cy, ErrorResult& rv);
-  void SetSkewX(float angle, ErrorResult& rv);
-  void SetSkewY(float angle, ErrorResult& rv);
+  void SetMatrix(const DOMMatrix2DInit& matrix, ErrorResult& aRv);
+  void SetTranslate(float tx, float ty, ErrorResult& aRv);
+  void SetScale(float sx, float sy, ErrorResult& aRv);
+  void SetRotate(float angle, float cx, float cy, ErrorResult& aRv);
+  void SetSkewX(float angle, ErrorResult& aRv);
+  void SetSkewY(float angle, ErrorResult& aRv);
 
  protected:
   ~DOMSVGTransform();

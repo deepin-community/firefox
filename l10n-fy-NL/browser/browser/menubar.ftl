@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Skiednis
 menu-view-synced-tabs-sidebar =
     .label = Syngronisearre ljepblêden
-menu-view-megalist-sidebar =
-    .label = Wachtwurden
 menu-view-full-zoom =
     .label = Zoome
     .accesskey = Z
@@ -255,6 +241,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobyl-blêdwizers
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profilen
+menu-profiles-manage-profiles =
+    .label = Profilen beheare
+menu-profiles-new-profile =
+    .label = Nij profyl
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (aktuele)
+menu-profiles-menu =
+    .label = Profilen
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +265,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Downloads
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Utwreidingen en Tema’s
+    .accesskey = U
 menu-tools-addons-and-themes =
     .label = Add-ons en tema’s
     .accesskey = A

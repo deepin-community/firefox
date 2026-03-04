@@ -30,6 +30,10 @@ options-context-inspector = Trình kiểm tra
 options-show-user-agent-styles-label = Hiển thị kiểu của trình duyệt
 options-show-user-agent-styles-tooltip =
     .title = Bật tính năng này sẽ hiển thị các kiểu mặc định được tải bởi trình duyệt.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Hiển thị Shadow DOM của trình duyệt
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Bật tính năng này sẽ hiển thị các phần tử Shadow DOM được trình duyệt xử lý.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Cắt bớt các thuộc tính DOM
 options-collapse-attrs-tooltip =
@@ -60,7 +64,7 @@ options-default-color-unit-name = Tên màu
 ## Web Console section
 
 # The heading
-options-webconsole-label = Bảng điều khiển Web
+options-webconsole-label = Web Console
 # The label for the checkbox that toggle whether the Split console is enabled
 options-webconsole-split-console-label = Bật bảng điều khiển chia tách
 options-webconsole-split-console-tooltip =
@@ -114,6 +118,8 @@ options-disable-http-cache-label = Vô hiệu hóa bộ đệm HTTP (khi hộp c
 options-disable-http-cache-tooltip =
     .title = Bật tùy chọn này sẽ vô hiệu hóa bộ đệm HTTP cho tất cả các thẻ có hộp công cụ mở. Service Worker không bị ảnh hưởng bởi tùy chọn này.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Vô hiệu hóa JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Tắt JavaScript *
 options-disable-javascript-tooltip =
     .title = Bật tùy chọn này sẽ vô hiệu hóa JavaScript cho thẻ hiện tại. Nếu thẻ hoặc hộp công cụ bị đóng thì sẽ tự động tắt tùy chọn này.
@@ -141,5 +147,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Bật bản đồ nguồn
 options-source-maps-tooltip =
     .title = Nếu bạn bật tùy chọn này, các nguồn sẽ được ánh xạ trong các công cụ.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (chỉ phiên hiện tại, tải lại trang)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Chỉ phiên hiện tại, tải lại trang
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (tải lại trang)

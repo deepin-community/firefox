@@ -17,8 +17,7 @@
 #include "mozilla/gfx/Matrix.h"
 #include "mozilla/gfx/Point.h"  // for IntSize, IntPoint
 #include "mozilla/gfx/Rect.h"
-#include "mozilla/gfx/Types.h"  // for SurfaceFormat, etc
-#include "mozilla/ipc/FileDescriptor.h"
+#include "mozilla/gfx/Types.h"               // for SurfaceFormat, etc
 #include "mozilla/layers/CompositorTypes.h"  // for TextureFlags, etc
 #include "mozilla/layers/LayersTypes.h"      // for LayerRenderState, etc
 #include "mozilla/layers/LayersMessages.h"
@@ -26,7 +25,8 @@
 #include "mozilla/layers/TextureSourceProvider.h"
 #include "mozilla/mozalloc.h"  // for operator delete
 #include "mozilla/Range.h"
-#include "mozilla/UniquePtr.h"  // for UniquePtr
+#include "mozilla/UniquePtr.h"            // for UniquePtr
+#include "mozilla/UniquePtrExtensions.h"  // for UniqueFileHandle
 #include "mozilla/webrender/WebRenderTypes.h"
 #include "nsCOMPtr.h"         // for already_AddRefed
 #include "nsDebug.h"          // for NS_WARNING
@@ -63,6 +63,8 @@ class CompositableParentManager;
 class ReadLockDescriptor;
 class CompositorBridgeParent;
 class DXGITextureHostD3D11;
+class DXGIYCbCrTextureHostD3D11;
+class Fence;
 class SurfaceDescriptor;
 class HostIPCAllocator;
 class ISurfaceAllocator;
@@ -626,6 +628,10 @@ class TextureHost : public AtomicRefCountedWithFinalize<TextureHost> {
 
   virtual DXGITextureHostD3D11* AsDXGITextureHostD3D11() { return nullptr; }
 
+  virtual DXGIYCbCrTextureHostD3D11* AsDXGIYCbCrTextureHostD3D11() {
+    return nullptr;
+  }
+
   virtual bool IsWrappingSurfaceTextureHost() { return false; }
 
   // Create the corresponding RenderTextureHost type of this texture, and
@@ -695,14 +701,6 @@ class TextureHost : public AtomicRefCountedWithFinalize<TextureHost> {
 
   virtual bool NeedsYFlip() const;
 
-  virtual void SetAcquireFence(mozilla::ipc::FileDescriptor&& aFenceFd) {}
-
-  virtual void SetReleaseFence(mozilla::ipc::FileDescriptor&& aFenceFd) {}
-
-  virtual mozilla::ipc::FileDescriptor GetAndResetReleaseFence() {
-    return mozilla::ipc::FileDescriptor();
-  }
-
   virtual AndroidHardwareBuffer* GetAndroidHardwareBuffer() const {
     return nullptr;
   }
@@ -712,6 +710,8 @@ class TextureHost : public AtomicRefCountedWithFinalize<TextureHost> {
   }
 
   virtual TextureHostType GetTextureHostType() { return mTextureHostType; }
+
+  virtual void SetReadFence(Fence* aReadFence) {}
 
   // Our WebRender backend may impose restrictions on whether textures are
   // prepared as native textures or not, or it may have no restriction at
@@ -796,9 +796,9 @@ class BufferTextureHost : public TextureHost {
 
   virtual ~BufferTextureHost();
 
-  virtual uint8_t* GetBuffer() = 0;
+  virtual uint8_t* GetBuffer() const = 0;
 
-  virtual size_t GetBufferSize() = 0;
+  virtual size_t GetBufferSize() const = 0;
 
   void UnbindTextureSource() override;
 
@@ -888,9 +888,9 @@ class ShmemTextureHost : public BufferTextureHost {
 
   void ForgetSharedData() override;
 
-  uint8_t* GetBuffer() override;
+  uint8_t* GetBuffer() const override;
 
-  size_t GetBufferSize() override;
+  size_t GetBufferSize() const override;
 
   const char* Name() override { return "ShmemTextureHost"; }
 
@@ -922,9 +922,9 @@ class MemoryTextureHost : public BufferTextureHost {
 
   void ForgetSharedData() override;
 
-  uint8_t* GetBuffer() override;
+  uint8_t* GetBuffer() const override;
 
-  size_t GetBufferSize() override;
+  size_t GetBufferSize() const override;
 
   const char* Name() override { return "MemoryTextureHost"; }
 

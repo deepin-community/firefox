@@ -11,7 +11,6 @@
 #include <mozilla/jni/Refs.h>
 
 #include "AndroidVsync.h"
-#include "mozilla/Atomics.h"
 #include "mozilla/java/GeckoAppShellWrappers.h"
 #include "mozilla/java/ScreenManagerHelperNatives.h"
 #include "mozilla/widget/ScreenManager.h"
@@ -38,7 +37,7 @@ static already_AddRefed<Screen> MakePrimaryScreen() {
   uint32_t depth = java::GeckoAppShell::GetScreenDepth();
   float density = java::GeckoAppShell::GetDensity();
   float dpi = java::GeckoAppShell::GetDpi();
-  bool isHDR = false;  // Bug 1884960: report this accurately
+  bool isHDR = java::GeckoAppShell::HasHDRScreen();
   auto orientation =
       hal::ScreenOrientation(java::GeckoAppShell::GetScreenOrientation());
   uint16_t angle = java::GeckoAppShell::GetScreenAngle();

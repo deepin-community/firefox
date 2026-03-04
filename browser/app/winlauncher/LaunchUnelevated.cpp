@@ -9,7 +9,6 @@
 #include "mozilla/Assertions.h"
 #include "mozilla/CmdLineAndEnvUtils.h"
 #include "mozilla/mscom/ProcessRuntime.h"
-#include "mozilla/RefPtr.h"
 #include "mozilla/ShellHeaderOnlyUtils.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
 #include "../BrowserDefines.h"
@@ -109,7 +108,7 @@ static mozilla::LauncherResult<bool> IsAdminByAppCompat(
   wchar_t* tokenContext = nullptr;
   const wchar_t* token = wcstok_s(valueData.get(), kDelimiters, &tokenContext);
   while (token) {
-    if (!_wcsnicmp(token, kRunAsAdmin, mozilla::ArrayLength(kRunAsAdmin))) {
+    if (!_wcsnicmp(token, kRunAsAdmin, std::size(kRunAsAdmin))) {
       return true;
     }
     token = wcstok_s(nullptr, kDelimiters, &tokenContext);

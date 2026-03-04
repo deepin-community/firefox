@@ -5,13 +5,20 @@
 package mozilla.components.service.sync.logins
 
 import android.content.Context
-import androidx.annotation.GuardedBy
+import android.content.SharedPreferences
+import androidx.core.content.edit
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mozilla.appservices.logins.DatabaseLoginsStorage
-import mozilla.components.concept.storage.EncryptedLogin
+import mozilla.appservices.logins.KeyRegenerationEventReason
+import mozilla.appservices.logins.recordKeyRegenerationEvent
+import mozilla.components.concept.storage.KeyGenerationReason
 import mozilla.components.concept.storage.Login
 import mozilla.components.concept.storage.LoginEntry
 import mozilla.components.concept.storage.LoginsStorage
@@ -19,7 +26,6 @@ import mozilla.components.concept.sync.SyncableStore
 import mozilla.components.lib.dataprotect.SecureAbove22Preferences
 import mozilla.components.support.base.log.logger.Logger
 import mozilla.components.support.utils.logElapsedTime
-import java.io.Closeable
 
 // Current database
 const val DB_NAME = "logins2.sqlite"
@@ -27,13 +33,8 @@ const val DB_NAME = "logins2.sqlite"
 // Name of our preferences file
 const val PREFS_NAME = "logins"
 
-// SQLCipher migration status.
-//   - 0 / unset: We haven't done the SQLCipher migration
-//   - 1: We performed v1 of the SQLCipher migration
-//
-// We no longer migrate SQLCipher, if the user hasn't
-// successfully migrated - we delete the DB
-const val SQL_CIPHER_MIGRATION = "sql-cipher-migration"
+// Name of key that checks if we've cleaned undecryptable keys
+const val UNDECRYPTABLE_LOGINS_CLEANED_KEY = "logins_undecryptable_cleaned"
 
 /**
  * The telemetry ping from a successful sync
@@ -80,7 +81,7 @@ typealias InvalidRecordException = mozilla.appservices.logins.LoginsApiException
 /**
  * Error encrypting/decrypting logins data
  */
-typealias IncorrectKey = mozilla.appservices.logins.LoginsApiException.IncorrectKey
+typealias InvalidKey = mozilla.appservices.logins.LoginsApiException.InvalidKey
 
 /**
  * Implements [LoginsStorage] and [SyncableStore] using the application-services logins library.
@@ -90,26 +91,46 @@ typealias IncorrectKey = mozilla.appservices.logins.LoginsApiException.Incorrect
 class SyncableLoginsStorage(
     private val context: Context,
     private val securePrefs: Lazy<SecureAbove22Preferences>,
+    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : LoginsStorage, SyncableStore, AutoCloseable {
-    private val plaintextPrefs by lazy { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
     private val logger = Logger("SyncableLoginsStorage")
-    private val coroutineContext by lazy { Dispatchers.IO }
+    private val coroutineContext by lazy { coroutineDispatcher }
+    private val prefs: SharedPreferences by lazy {
+        context.getSharedPreferences(
+            "sync.logins.prefs",
+            Context.MODE_PRIVATE,
+        )
+    }
     val crypto by lazy { LoginsCrypto(context, securePrefs.value, this) }
 
-    internal val conn by lazy {
-        // We do not migrate SQLCipher anymore, we should delete it if it exists
-        runBlocking(coroutineContext) {
-            deleteSQLCipherDBIfNeeded()
+    private val conn: Deferred<DatabaseLoginsStorage> = CoroutineScope(coroutineContext).async {
+        val managedKey = crypto.getOrGenerateKey()
+        val key = managedKey.key
+        val keyManager = object : mozilla.appservices.logins.KeyManager {
+            override fun getKey(): ByteArray {
+                return key.toByteArray()
+            }
         }
-        LoginStorageConnection.init(dbPath = context.getDatabasePath(DB_NAME).absolutePath)
-        LoginStorageConnection
+        val path = context.getDatabasePath(DB_NAME)
+        val pathExisted = path.exists()
+        val storage = DatabaseLoginsStorage(path.absolutePath, keyManager)
+        // If the path existed, but we generated a new key, then the key can't decrypt any existing
+        // logins.  Run wipeLocal, to try to recover
+        // (https://bugzilla.mozilla.org/show_bug.cgi?id=1970409)
+        if (managedKey.wasGenerated == KeyGenerationReason.New && pathExisted) {
+            recordKeyRegenerationEvent(KeyRegenerationEventReason.Other)
+            tryWithStorageOr(Unit) { wipeLocal() }
+        }
+        storage
     }
+
+    internal suspend fun getStorage(): DatabaseLoginsStorage = conn.await()
 
     /**
      * "Warms up" this storage layer by establishing the database connection.
      */
     suspend fun warmUp() = withContext(coroutineContext) {
-        logElapsedTime(logger, "Warming up storage") { conn }
+        logElapsedTime(logger, "Warming up storage") { conn.await() }
         Unit
     }
 
@@ -119,7 +140,7 @@ class SyncableLoginsStorage(
      */
     @Throws(LoginsApiException::class)
     override suspend fun wipeLocal() = withContext(coroutineContext) {
-        conn.getStorage().wipeLocal()
+         tryWithStorageOr(Unit) { wipeLocal() }
     }
 
     /**
@@ -128,7 +149,7 @@ class SyncableLoginsStorage(
      */
     @Throws(LoginsApiException::class)
     override suspend fun delete(guid: String): Boolean = withContext(coroutineContext) {
-        conn.getStorage().delete(guid)
+        tryWithStorageOr(false) { delete(guid) }
     }
 
     /**
@@ -137,7 +158,7 @@ class SyncableLoginsStorage(
      */
     @Throws(LoginsApiException::class)
     override suspend fun get(guid: String): Login? = withContext(coroutineContext) {
-        conn.getStorage().get(guid)?.toEncryptedLogin()?.let { crypto.decryptLogin(it) }
+        tryWithStorageOr(null) { get(guid)?.toLogin() }
     }
 
     /**
@@ -147,7 +168,7 @@ class SyncableLoginsStorage(
      */
     @Throws(NoSuchRecordException::class, LoginsApiException::class)
     override suspend fun touch(guid: String) = withContext(coroutineContext) {
-        conn.getStorage().touch(guid)
+        tryWithStorageOr(Unit) { touch(guid) }
     }
 
     /**
@@ -156,51 +177,55 @@ class SyncableLoginsStorage(
      */
     @Throws(LoginsApiException::class)
     override suspend fun list(): List<Login> = withContext(coroutineContext) {
-        val key = crypto.getOrGenerateKey()
-        conn.getStorage().list().map { crypto.decryptLogin(it.toEncryptedLogin(), key) }
+        tryWithStorageOr(listOf()) { list().map { it.toLogin() } }
     }
 
     /**
      * @throws [InvalidRecordException] if the record is invalid.
-     * @throws [IncorrectKey] if the encryption key can't decrypt the login
+     * @throws [InvalidKey] if the encryption key can't decrypt the login
      * @throws [LoginsApiException] if the storage is locked, and on unexpected
      *              errors (IO failure, rust panics, etc)
      */
-    @Throws(IncorrectKey::class, InvalidRecordException::class, LoginsApiException::class)
+    @Throws(InvalidKey::class, InvalidRecordException::class, LoginsApiException::class)
     override suspend fun add(entry: LoginEntry) = withContext(coroutineContext) {
-        conn.getStorage().add(entry.toLoginEntry(), crypto.getOrGenerateKey().key).toEncryptedLogin()
+        getStorage().add(entry.toLoginEntry()).toLogin()
     }
 
     /**
      * @throws [NoSuchRecordException] if the login does not exist.
-     * @throws [IncorrectKey] if the encryption key can't decrypt the login
+     * @throws [InvalidKey] if the encryption key can't decrypt the login
      * @throws [InvalidRecordException] if the update would create an invalid record.
      * @throws [LoginsApiException] if the storage is locked, and on unexpected
      *              errors (IO failure, rust panics, etc)
      */
     @Throws(
-        IncorrectKey::class,
+        InvalidKey::class,
         NoSuchRecordException::class,
         InvalidRecordException::class,
         LoginsApiException::class,
     )
     override suspend fun update(guid: String, entry: LoginEntry) = withContext(coroutineContext) {
-        conn.getStorage().update(guid, entry.toLoginEntry(), crypto.getOrGenerateKey().key).toEncryptedLogin()
+        getStorage().update(guid, entry.toLoginEntry()).toLogin()
     }
 
     /**
      * @throws [InvalidRecordException] if the update would create an invalid record.
-     * @throws [IncorrectKey] if the encryption key can't decrypt the login
+     * @throws [InvalidKey] if the encryption key can't decrypt the login
      * @throws [LoginsApiException] if the storage is locked, and on unexpected
      *              errors (IO failure, rust panics, etc)
      */
-    @Throws(IncorrectKey::class, InvalidRecordException::class, LoginsApiException::class)
+    @Throws(InvalidKey::class, InvalidRecordException::class, LoginsApiException::class)
     override suspend fun addOrUpdate(entry: LoginEntry) = withContext(coroutineContext) {
-        conn.getStorage().addOrUpdate(entry.toLoginEntry(), crypto.getOrGenerateKey().key).toEncryptedLogin()
+        getStorage().addOrUpdate(entry.toLoginEntry()).toLogin()
     }
 
     override fun registerWithSyncManager() {
-        conn.getStorage().registerWithSyncManager()
+        CoroutineScope(coroutineContext).launch {
+            // before registering with the syncmanager we should delete undecryptable logins
+            // sync will do the right thing and get them from the server if any were still valid
+            runUndecryptableCleanupIfNeeded()
+            tryWithStorageOr(Unit) { registerWithSyncManager() }
+        }
     }
 
     /**
@@ -208,73 +233,51 @@ class SyncableLoginsStorage(
      */
     @Throws(LoginsApiException::class)
     override suspend fun getByBaseDomain(origin: String): List<Login> = withContext(coroutineContext) {
-        val key = crypto.getOrGenerateKey()
-        conn.getStorage().getByBaseDomain(origin).map { crypto.decryptLogin(it.toEncryptedLogin(), key) }
+        tryWithStorageOr(listOf()) { getByBaseDomain(origin).map { it.toLogin() } }
     }
 
     /**
-     * @throws [IncorrectKey] if the encryption key can't decrypt the login
+     * @throws [InvalidKey] if the encryption key can't decrypt the login
      * @throws [LoginsApiException] On unexpected errors (IO failure, rust panics, etc)
      */
     @Throws(LoginsApiException::class)
     override suspend fun findLoginToUpdate(entry: LoginEntry): Login? = withContext(coroutineContext) {
-        conn.getStorage().findLoginToUpdate(entry.toLoginEntry(), crypto.getOrGenerateKey().key)?.toLogin()
+        tryWithStorageOr(null) { findLoginToUpdate(entry.toLoginEntry())?.toLogin() }
+    }
+
+    override fun close() {
+        CoroutineScope(coroutineContext).launch {
+            tryWithStorageOr(Unit) { close() }
+            this.cancel()
+        }
+    }
+
+    private suspend fun <T> tryWithStorageOr(default: T, operation: DatabaseLoginsStorage.() -> T): T {
+        return try {
+            getStorage().operation()
+        } catch (e: LoginsApiException) {
+            logger.error("Error during logins operation", e)
+            default
+        }
     }
 
     /**
-     * @throws [IncorrectKey] if the encryption key can't decrypt the login
+     * If we've lost the encryption key or other issues that prevent us from decrypting
+     * existing logins, we run a cleanup to purge those records. We only need to do
+     * this once for existing undecryptable records and if ever user needs
+     * new keys, the new generation flow will automatically do this for us
+     * @throws [LoginsApiException] On unexpected errors (IO failure, rust panics, etc)
      */
-    override suspend fun decryptLogin(login: EncryptedLogin) = crypto.decryptLogin(login)
-
-    override fun close() {
-        coroutineContext.cancel()
-        conn.close()
-    }
-
-    /*
-     * We not longer migrate SQLCipher, we delete the DB, key and any
-     * associated prefs
-     */
-    private suspend fun deleteSQLCipherDBIfNeeded() {
-        // Older database that was encrypted using SQLCipher
-        val dbNameSqlCipher = "logins.sqlite"
-        // Prefs key that we stored the old SQLCipher encryption key
-        val encryptionKeySqlCipher = "passwords"
-
-        val version = plaintextPrefs.getInt(SQL_CIPHER_MIGRATION, 0)
-        if (version == 0) {
-            // Older database that was encrypted using SQLCipher, majority of clients won't
-            // have anything to actually delete
-            securePrefs.value.remove(encryptionKeySqlCipher)
-            val file = context.getDatabasePath(dbNameSqlCipher)
-            file.delete()
+    @Throws(LoginsApiException::class)
+    suspend fun runUndecryptableCleanupIfNeeded() = withContext(coroutineContext) {
+        // We use an int preference here to track if we've already ran the cleanup,
+        // and to allow us to run it again by bumping the value of the check
+        var cleanedPref = prefs.getInt(UNDECRYPTABLE_LOGINS_CLEANED_KEY, 0)
+        if (cleanedPref < 1) {
+            tryWithStorageOr(Unit) {
+                deleteUndecryptableLoginsAndRecordMetrics()
+            }
+            prefs.edit { putInt(UNDECRYPTABLE_LOGINS_CLEANED_KEY, ++cleanedPref) }
         }
-        plaintextPrefs.edit().putInt(SQL_CIPHER_MIGRATION, 1).apply()
-    }
-}
-
-/**
- * A singleton wrapping a [LoginsStorage] connection.
- */
-internal object LoginStorageConnection : Closeable {
-    @GuardedBy("this")
-    private var storage: DatabaseLoginsStorage? = null
-
-    internal fun init(dbPath: String = DB_NAME) = synchronized(this) {
-        if (storage == null) {
-            storage = DatabaseLoginsStorage(dbPath)
-        }
-        storage
-    }
-
-    internal fun getStorage(): DatabaseLoginsStorage = synchronized(this) {
-        check(storage != null) { "must call init first" }
-        return storage!!
-    }
-
-    override fun close() = synchronized(this) {
-        check(storage != null) { "must call init first" }
-        storage!!.close()
-        storage = null
     }
 }

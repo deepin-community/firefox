@@ -10,10 +10,11 @@ These transforms are useful when follow-up tasks are needed for some
 indeterminate subset of existing tasks. For example, running a signing task
 after each build task, whatever builds may exist.
 """
+
 from copy import deepcopy
 from textwrap import dedent
 
-from voluptuous import Any, Extra, Optional, Required
+from voluptuous import ALLOW_EXTRA, Any, Optional, Required
 
 from taskgraph.transforms.base import TransformSequence
 from taskgraph.transforms.run import fetches_schema
@@ -22,6 +23,7 @@ from taskgraph.util.dependencies import GROUP_BY_MAP, get_dependencies
 from taskgraph.util.schema import Schema, validate_schema
 from taskgraph.util.set_name import SET_NAME_MAP
 
+#: Schema for from_deps transforms
 FROM_DEPS_SCHEMA = Schema(
     {
         Required("from-deps"): {
@@ -37,7 +39,7 @@ FROM_DEPS_SCHEMA = Schema(
                 and copy attributes (if `copy-attributes` is True).
                 """.lstrip()
                 ),
-            ): list,
+            ): [str],
             Optional(
                 "set-name",
                 description=dedent(
@@ -47,6 +49,7 @@ FROM_DEPS_SCHEMA = Schema(
                 ),
             ): Any(
                 None,
+                False,
                 *SET_NAME_MAP,
                 {Any(*SET_NAME_MAP): object},
             ),
@@ -106,10 +109,9 @@ FROM_DEPS_SCHEMA = Schema(
                 ),
             ): {str: [fetches_schema]},
         },
-        Extra: object,
     },
+    extra=ALLOW_EXTRA,
 )
-"""Schema for from_deps transforms."""
 
 transforms = TransformSequence()
 transforms.add_validate(FROM_DEPS_SCHEMA)
@@ -199,11 +201,12 @@ def from_deps(config, tasks):
             else:
                 raise Exception("Could not detect primary kind!")
 
-            new_task.setdefault("attributes", {})[
-                "primary-kind-dependency"
-            ] = primary_kind
+            new_task.setdefault("attributes", {})["primary-kind-dependency"] = (
+                primary_kind
+            )
 
             primary_dep = [dep for dep in group if dep.kind == primary_kind][0]
+            new_task["attributes"]["primary-dependency-label"] = primary_dep.label
 
             if set_name:
                 func = SET_NAME_MAP[set_name]
@@ -238,6 +241,7 @@ def from_deps(config, tasks):
                                 )
                             fetches_from_dep.append(entry)
 
-                    task_fetches[dep_task.label] = fetches_from_dep
+                    key = dep_task.kind if unique_kinds else dep_task.label
+                    task_fetches[key] = fetches_from_dep
 
             yield new_task

@@ -7,11 +7,10 @@
 #ifndef mozilla_dom_FetchUtil_h
 #define mozilla_dom_FetchUtil_h
 
-#include "nsString.h"
-#include "nsError.h"
-
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/FormData.h"
+#include "nsError.h"
+#include "nsString.h"
 
 #define WASM_CONTENT_TYPE "application/wasm"
 
@@ -28,6 +27,7 @@ class WorkerPrivate;
 
 class FetchUtil final {
  private:
+  static nsCString WasmAltDataType;
   FetchUtil() = delete;
 
  public:
@@ -55,9 +55,12 @@ class FetchUtil final {
    * The WebAssembly alt data type includes build-id, cpu-id and other relevant
    * state that is necessary to ensure the validity of caching machine code and
    * metadata in alt data. InitWasmAltDataType() must be called during startup
-   * before the first fetch(), ensuring that !WasmAltDataType.IsEmpty().
+   * before the first fetch(), ensuring that GetWasmAltDataType() is valid.
    */
-  static const nsCString WasmAltDataType;
+  static inline const nsCString& GetWasmAltDataType() {
+    MOZ_ASSERT(!WasmAltDataType.IsEmpty());
+    return WasmAltDataType;
+  }
   static void InitWasmAltDataType();
 
   /**

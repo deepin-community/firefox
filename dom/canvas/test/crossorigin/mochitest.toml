@@ -14,8 +14,8 @@ prefs = [
 
 ["test_canvas2d_crossorigin.html"]
 skip-if = [
-  "http3",
   "http2",
+  "http3",
 ]
 
 ["test_video_crossorigin.html"]
@@ -23,4 +23,3 @@ subsuite = "gpu"
 
 ["test_webgl_crossorigin_textures.html"]
 subsuite = "gpu"
-

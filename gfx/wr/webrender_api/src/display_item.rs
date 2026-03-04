@@ -6,7 +6,7 @@ use euclid::{SideOffsets2D, Angle};
 use peek_poke::PeekPoke;
 use std::ops::Not;
 // local imports
-use crate::font;
+use crate::{font, SnapshotImageKey};
 use crate::{APZScrollGeneration, HasScrollLinkedEffect, PipelineId, PropertyBinding};
 use crate::serde::{Serialize, Deserialize};
 use crate::color::ColorF;
@@ -164,7 +164,6 @@ pub enum SpatialTreeItem {
 pub enum DisplayItem {
     // These are the "real content" display items
     Rectangle(RectangleDisplayItem),
-    ClearRectangle(ClearRectangleDisplayItem),
     HitTest(HitTestDisplayItem),
     Text(TextDisplayItem),
     Line(LineDisplayItem),
@@ -195,7 +194,6 @@ pub enum DisplayItem {
     SetGradientStops,
     SetFilterOps,
     SetFilterData,
-    SetFilterPrimitives,
     SetPoints,
 
     // These marker items terminate a scope introduced by a previous item.
@@ -205,6 +203,9 @@ pub enum DisplayItem {
 
     ReuseItems(ItemKey),
     RetainedItems(ItemKey),
+
+    // For debugging purposes.
+    DebugMarker(u32),
 }
 
 /// This is a "complete" version of the DisplayItem, with all implicit trailing
@@ -214,7 +215,6 @@ pub enum DisplayItem {
 #[cfg_attr(feature = "deserialize", derive(Deserialize))]
 pub enum DebugDisplayItem {
     Rectangle(RectangleDisplayItem),
-    ClearRectangle(ClearRectangleDisplayItem),
     HitTest(HitTestDisplayItem),
     Text(TextDisplayItem, Vec<font::GlyphInstance>),
     Line(LineDisplayItem),
@@ -241,12 +241,13 @@ pub enum DebugDisplayItem {
     SetGradientStops(Vec<GradientStop>),
     SetFilterOps(Vec<FilterOp>),
     SetFilterData(FilterData),
-    SetFilterPrimitives(Vec<FilterPrimitive>),
     SetPoints(Vec<LayoutPoint>),
 
     PopReferenceFrame,
     PopStackingContext,
     PopAllShadows,
+
+    DebugMarker(u32)
 }
 
 #[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize, PeekPoke)]
@@ -273,7 +274,7 @@ pub struct RoundedRectClipDisplayItem {
 
 /// The minimum and maximum allowable offset for a sticky frame in a single dimension.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize, PeekPoke)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, MallocSizeOf, PartialEq, Serialize, PeekPoke)]
 pub struct StickyOffsetBounds {
     /// The minimum offset for this frame, typically a negative value, which specifies how
     /// far in the negative direction the sticky frame can offset its contents in this
@@ -359,14 +360,6 @@ pub struct RectangleDisplayItem {
     pub common: CommonItemProperties,
     pub bounds: LayoutRect,
     pub color: PropertyBinding<ColorF>,
-}
-
-/// Clears all colors from the area, making it possible to cut holes in the window.
-/// (useful for things like the macos frosted-glass effect).
-#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize, PeekPoke)]
-pub struct ClearRectangleDisplayItem {
-    pub common: CommonItemProperties,
-    pub bounds: LayoutRect,
 }
 
 /// A minimal hit-testable item for the parent browser's convenience, and is
@@ -779,7 +772,7 @@ pub struct ReferenceFrameDescriptor {
     pub reference_frame: ReferenceFrame,
 }
 
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize, PeekPoke)]
+#[derive(Clone, Copy, Debug, Deserialize, MallocSizeOf, PartialEq, Serialize, PeekPoke)]
 pub enum ReferenceFrameKind {
     /// A normal transform matrix, may contain perspective (the CSS transform property)
     Transform {
@@ -876,10 +869,40 @@ pub struct ReferenceFrame {
     pub key: SpatialTreeItemKey,
 }
 
+/// If passed in a stacking context display item, inform WebRender that
+/// the contents of the stacking context should be retained into a texture
+/// and associated to an image key.
+///
+/// Image display items can then display the cached snapshot using the
+/// same image key.
+///
+/// The flow for creating/using/deleting snapshots is the same as with
+/// regular images:
+///  - The image key must have been created with `Transaction::add_snapshot_image`.
+///  - The current scene must not contain references to the snapshot when
+///    `Transaction::delete_snapshot_image` is called.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize, PeekPoke)]
+pub struct SnapshotInfo {
+    /// The image key to associate the snapshot with.
+    pub key: SnapshotImageKey,
+    /// The bounds of the snapshot in local space.
+    ///
+    /// This rectangle is relative to the same coordinate space as the
+    /// child items of the stacking context.
+    pub area: LayoutRect,
+    /// If true, detach the stacking context from the scene and only
+    /// render it into the snapshot.
+    /// If false, the stacking context rendered in the frame normally
+    /// in addition to being cached into the snapshot.
+    pub detached: bool,
+}
+
 #[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize, PeekPoke)]
 pub struct PushStackingContextDisplayItem {
     pub origin: LayoutPoint,
     pub spatial_id: SpatialId,
+    pub snapshot: Option<SnapshotInfo>,
     pub prim_flags: PrimitiveFlags,
     pub ref_frame_offset: LayoutVector2D,
     pub stacking_context: StackingContext,
@@ -896,7 +919,7 @@ pub struct StackingContext {
 // IMPLICIT: filters: Vec<FilterOp>, filter_datas: Vec<FilterData>, filter_primitives: Vec<FilterPrimitive>
 
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize, PeekPoke)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, MallocSizeOf, PartialEq, Serialize, PeekPoke)]
 pub enum TransformStyle {
     Flat = 0,
     Preserve3D = 1,
@@ -961,6 +984,8 @@ bitflags! {
         /// a clip-mask). This is needed to allow the correct selection of a backdrop root
         /// since a clip-mask stacking context creates a parent surface.
         const WRAPS_BACKDROP_FILTER = 1 << 1;
+        /// If true, this stacking context must be isolated from parent by a surface.
+        const FORCED_ISOLATION = 1 << 2;
     }
 }
 
@@ -1077,10 +1102,10 @@ pub struct FloodPrimitive {
 
 impl FloodPrimitive {
     pub fn sanitize(&mut self) {
-        self.color.r = self.color.r.min(1.0).max(0.0);
-        self.color.g = self.color.g.min(1.0).max(0.0);
-        self.color.b = self.color.b.min(1.0).max(0.0);
-        self.color.a = self.color.a.min(1.0).max(0.0);
+        self.color.r = self.color.r.clamp(0.0, 1.0);
+        self.color.g = self.color.g.clamp(0.0, 1.0);
+        self.color.b = self.color.b.clamp(0.0, 1.0);
+        self.color.a = self.color.a.clamp(0.0, 1.0);
     }
 }
 
@@ -1101,7 +1126,7 @@ pub struct OpacityPrimitive {
 
 impl OpacityPrimitive {
     pub fn sanitize(&mut self) {
-        self.opacity = self.opacity.min(1.0).max(0.0);
+        self.opacity = self.opacity.clamp(0.0, 1.0);
     }
 }
 
@@ -1242,6 +1267,12 @@ pub struct FilterOpGraphNode {
     /// rect this node will render into, in filter space
     pub subregion: LayoutRect,
 }
+
+/// Maximum number of SVGFE filters in one graph, this is constant size to avoid
+/// allocating anything, and the SVG spec allows us to drop all filters on an
+/// item if the graph is excessively complex - a graph this large will never be
+/// a good user experience, performance-wise.
+pub const SVGFE_GRAPH_MAX: usize = 256;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PeekPoke)]
@@ -2037,22 +2068,30 @@ impl BorderRadius {
         }
     }
 
-    pub fn is_uniform(&self) -> Option<f32> {
-        match self.is_uniform_size() {
-            Some(radius) if radius.width == radius.height => Some(radius.width),
-            _ => None,
-        }
+    pub fn all_sides_uniform(&self) -> bool {
+        let corner_is_uniform = |corner: &LayoutSize| corner.width == corner.height;
+        corner_is_uniform(&self.top_left) &&
+        corner_is_uniform(&self.top_right) &&
+        corner_is_uniform(&self.bottom_right) &&
+        corner_is_uniform(&self.bottom_left)
     }
 
-    pub fn is_uniform_size(&self) -> Option<LayoutSize> {
-        let uniform_radius = self.top_left;
-        if self.top_right == uniform_radius && self.bottom_left == uniform_radius &&
-            self.bottom_right == uniform_radius
-        {
-            Some(uniform_radius)
-        } else {
-            None
+    pub fn can_use_fast_path_in(&self, rect: &LayoutRect) -> bool {
+        if !self.all_sides_uniform() {
+            // The fast path needs uniform sides.
+            return false;
         }
+        // The shader code that evaluates the rounded corners in the fast path relies on each
+        // corner fitting into their quadrant of the quad. In other words the radius cannot
+        // exceed half of the length of the sides they are on. That necessarily holds if all the
+        // radii are the same.
+        let tl = self.top_left.width;
+        if tl == self.bottom_right.width && tl == self.top_right.width && tl == self.bottom_left.width {
+            return true;
+        }
+        let half_size = rect.size() * 0.5;
+        let fits = |v: f32| v <= half_size.width && v <= half_size.height;
+        fits(tl) && fits(self.bottom_right.width) && fits(self.top_right.width) && fits(self.bottom_left.width)
     }
 
     /// Return whether, in each corner, the radius in *either* direction is zero.
@@ -2170,7 +2209,7 @@ impl ClipId {
 }
 
 /// A reference to a spatial node defining item positioning.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Hash, PartialEq, Serialize, PeekPoke)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Hash, MallocSizeOf, PartialEq, Serialize, PeekPoke)]
 pub struct SpatialId(pub usize, PipelineId);
 
 const ROOT_REFERENCE_FRAME_SPATIAL_ID: usize = 0;
@@ -2201,7 +2240,7 @@ impl SpatialId {
 ///
 /// When setting display lists with the `preserve_frame_state` this id is used to preserve scroll
 /// offsets between different sets of SpatialNodes which are ScrollFrames.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Hash, PartialEq, Serialize, PeekPoke)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, Hash, MallocSizeOf, PartialEq, Serialize, PeekPoke)]
 #[repr(C)]
 pub struct ExternalScrollId(pub u64, pub PipelineId);
 
@@ -2220,7 +2259,6 @@ impl DisplayItem {
         match *self {
             DisplayItem::Border(..) => "border",
             DisplayItem::BoxShadow(..) => "box_shadow",
-            DisplayItem::ClearRectangle(..) => "clear_rectangle",
             DisplayItem::HitTest(..) => "hit_test",
             DisplayItem::RectClip(..) => "rect_clip",
             DisplayItem::RoundedRectClip(..) => "rounded_rect_clip",
@@ -2240,7 +2278,6 @@ impl DisplayItem {
             DisplayItem::PushStackingContext(..) => "push_stacking_context",
             DisplayItem::SetFilterOps => "set_filter_ops",
             DisplayItem::SetFilterData => "set_filter_data",
-            DisplayItem::SetFilterPrimitives => "set_filter_primitives",
             DisplayItem::SetPoints => "set_points",
             DisplayItem::RadialGradient(..) => "radial_gradient",
             DisplayItem::Rectangle(..) => "rectangle",
@@ -2250,6 +2287,7 @@ impl DisplayItem {
             DisplayItem::Text(..) => "text",
             DisplayItem::YuvImage(..) => "yuv_image",
             DisplayItem::BackdropFilter(..) => "backdrop_filter",
+            DisplayItem::DebugMarker(..) => "debug",
         }
     }
 }

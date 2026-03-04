@@ -5,9 +5,6 @@
 about-reader-loading = Iyalayisha…
 about-reader-load-error = Ayikwazanga kulowuda inqaku ngokusuka kwiphepha
 
-## These are used as tooltips in Type Control
-
-
 ## These are the styles of typeface that are options in the reader view controls.
 
 about-reader-font-type-serif = Iserifu

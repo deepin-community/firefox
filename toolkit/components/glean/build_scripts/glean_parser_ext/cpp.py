@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,39 +6,10 @@
 Outputter to generate C++ code for metrics.
 """
 
-import json
-
 import jinja2
 from glean_parser import metrics, util
+from mozbuild.util import memoize
 from util import generate_metric_ids, generate_ping_ids, get_metrics
-
-
-def cpp_datatypes_filter(value):
-    """
-    A Jinja2 filter that renders C++ literals.
-
-    Based on Python's JSONEncoder, but overrides:
-      - lists to array literals {}
-      - strings to "value"
-    """
-
-    class CppEncoder(json.JSONEncoder):
-        def iterencode(self, value):
-            if isinstance(value, list):
-                yield "{"
-                first = True
-                for subvalue in list(value):
-                    if not first:
-                        yield ", "
-                    yield from self.iterencode(subvalue)
-                    first = False
-                yield "}"
-            elif isinstance(value, str):
-                yield '"' + value + '"'
-            else:
-                yield from super().iterencode(value)
-
-    return "".join(CppEncoder().iterencode(value))
 
 
 def type_name(obj):
@@ -53,6 +22,8 @@ def type_name(obj):
         label_enum = "DynamicLabel"
         if obj.labels and len(obj.labels):
             label_enum = f"{util.Camelize(obj.name)}Label"
+        if class_name == "Counter":
+            return f"Labeled<impl::{class_name}Metric<impl::CounterType::eBaseOrLabeled>, {label_enum}>"
         return f"Labeled<impl::{class_name}Metric, {label_enum}>"
     generate_enums = getattr(obj, "_generate_enums", [])  # Extra Keys? Reasons?
     if len(generate_enums):
@@ -63,15 +34,20 @@ def type_name(obj):
                 # we always use the `extra` suffix,
                 # because we only expose the new event API
                 suffix = "Extra"
-                return "{}Metric<{}>".format(
-                    util.Camelize(obj.type), util.Camelize(obj.name) + suffix
-                )
+                return f"{util.Camelize(obj.type)}Metric<{util.Camelize(obj.name) + suffix}>"
+    generate_structure = getattr(obj, "_generate_structure", [])  # Object metric?
+    if len(generate_structure):
+        generic = util.Camelize(obj.name) + "Object"
+        tag = generic + "Tag"
+        return f"ObjectMetric<{generic}, struct {tag}>"
+    if obj.type == "counter":
+        return "CounterMetric<impl::CounterType::eBaseOrLabeled>"
     return util.Camelize(obj.type) + "Metric"
 
 
 def extra_type_name(typ: str) -> str:
     """
-    Returns the corresponding Rust type for event's extra key types.
+    Returns the corresponding C++ type for event's extra key types.
     """
 
     if typ == "boolean":
@@ -84,6 +60,63 @@ def extra_type_name(typ: str) -> str:
         return "UNSUPPORTED"
 
 
+def structure_type_name(typ: str) -> str:
+    """
+    Returns the corresponding C++ type for objects' structure types.
+    """
+
+    if typ == "boolean":
+        return "bool"
+    elif typ == "string":
+        return "nsCString"
+    elif typ == "number":
+        return "int64_t"
+    else:
+        return "UNSUPPORTED"
+
+
+def jsonwriter_prefix(typ: str) -> str:
+    """
+    Returns the JSONWriter function prefix for a given structure type.
+    """
+
+    if typ == "boolean":
+        return "Bool"
+    elif typ == "string":
+        return "String"
+    elif typ == "number":
+        return "Int"
+    else:
+        return "UNSUPPORTED"
+
+
+def has_structure(all_objs) -> bool:
+    """
+    Returns true if there's a metric in objs that needs a generated structure.
+    """
+    for _, objs in all_objs.items():
+        for metric in objs.values():
+            if hasattr(metric, "_generate_structure"):
+                return True
+    return False
+
+
+@memoize
+def get_metrics_template(get_metric_id):
+    return util.get_jinja2_template(
+        "cpp.jinja2",
+        filters=(
+            ("snake_case", lambda value: value.replace(".", "_").replace("-", "_")),
+            ("type_name", type_name),
+            ("extra_type_name", extra_type_name),
+            ("structure_type_name", structure_type_name),
+            ("jsonwriter_prefix", jsonwriter_prefix),
+            ("has_structure", has_structure),
+            ("metric_id", get_metric_id),
+        ),
+    )
+
+
 def output_cpp(objs, output_fd, options={}):
     """
     Given a tree of objects, output C++ code to the file-like object `output_fd`.
@@ -94,8 +127,6 @@ def output_cpp(objs, output_fd, options={}):
     :param options: options dictionary.
     """
 
-    # Monkeypatch util.snake_case for the templates to use
-    util.snake_case = lambda value: value.replace(".", "_").replace("-", "_")
     # Monkeypatch util.get_jinja2_template to find templates nearby
 
     def get_local_template(template_name, filters=()):
@@ -111,29 +142,21 @@ def output_cpp(objs, output_fd, options={}):
         return env.get_template(template_name)
 
     util.get_jinja2_template = get_local_template
-    get_metric_id = generate_metric_ids(objs)
-    get_ping_id = generate_ping_ids(objs)
 
     if "pings" in objs:
-        template_filename = "cpp_pings.jinja2"
+        template = util.get_jinja2_template(
+            "cpp_pings.jinja2",
+            filters=(("ping_id", generate_ping_ids(objs)),),
+        )
         if objs.get("tags"):
             del objs["tags"]
     else:
-        template_filename = "cpp.jinja2"
+        template = get_metrics_template(
+            options["get_metric_id"]
+            if "get_metric_id" in options
+            else generate_metric_ids(objs, options)
+        )
         objs = get_metrics(objs)
 
-    template = util.get_jinja2_template(
-        template_filename,
-        filters=(
-            ("cpp", cpp_datatypes_filter),
-            ("snake_case", util.snake_case),
-            ("type_name", type_name),
-            ("extra_type_name", extra_type_name),
-            ("metric_id", get_metric_id),
-            ("ping_id", get_ping_id),
-            ("Camelize", util.Camelize),
-        ),
-    )
-
-    output_fd.write(template.render(all_objs=objs))
+    output_fd.write(template.render(all_objs=objs, options=options))
     output_fd.write("\n")

@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "base64.h"
+#include "certdb.h"
 #include "mozilla/Sprintf.h"
 #include "nspr.h"
 #include "nss.h"
@@ -41,8 +42,8 @@ SSLAntiReplayContext* antiReplay = nullptr;
 DebugLevel gDebugLevel = DEBUG_ERRORS;
 uint16_t gCallbackPort = 0;
 
-const std::string kPEMBegin = "-----BEGIN ";
-const std::string kPEMEnd = "-----END ";
+static const char kPEMBegin[] = "-----BEGIN ";
+static const char kPEMEnd[] = "-----END ";
 const char DEFAULT_CERT_NICKNAME[] = "default-ee";
 
 struct Connection {
@@ -88,7 +89,8 @@ static bool DecodePEMFile(const std::string& filename, SECItem* item) {
     return false;
   }
 
-  if (strncmp(buf, kPEMBegin.c_str(), kPEMBegin.size()) != 0) {
+  if (strncmp(buf, kPEMBegin, std::string::traits_type::length(kPEMBegin)) !=
+      0) {
     return false;
   }
 
@@ -99,7 +101,7 @@ static bool DecodePEMFile(const std::string& filename, SECItem* item) {
       return false;
     }
 
-    if (strncmp(buf, kPEMEnd.c_str(), kPEMEnd.size()) == 0) {
+    if (strncmp(buf, kPEMEnd, std::string::traits_type::length(kPEMEnd)) == 0) {
       break;
     }
 
@@ -187,6 +189,30 @@ static SECStatus AddCertificateFromFile(const std::string& path,
   if (rv != SECSuccess) {
     PrintPRError("PK11_ImportCert failed");
     return rv;
+  }
+
+  // By convention, the file `test-ca.pem` is a trust anchor.
+  if (!filename.compare("test-ca.pem")) {
+    if (PK11_NeedUserInit(slot.get())) {
+      rv = PK11_InitPin(slot.get(), nullptr, nullptr);
+      if (rv != SECSuccess) {
+        PrintPRError("PK11_InitPin failed");
+        return rv;
+      }
+    }
+    rv = PK11_CheckUserPassword(slot.get(), "");
+    if (rv != SECSuccess) {
+      PrintPRError("PK11_CheckUserPassword failed");
+      return rv;
+    }
+    CERTCertTrust trust{
+        CERTDB_TERMINAL_RECORD | CERTDB_TRUSTED_CA | CERTDB_TRUSTED_CLIENT_CA,
+        0, 0};
+    rv = CERT_ChangeCertTrust(nullptr, cert.get(), &trust);
+    if (rv != SECSuccess) {
+      PrintPRError("CERT_ChangeCertTrust failed");
+      return rv;
+    }
   }
 
   return SECSuccess;
@@ -553,7 +579,8 @@ int StartServer(int argc, char* argv[], SSLSNISocketConfig sniSocketConfig,
     return 1;
   }
 
-  NSS_SetAlgorithmPolicy(SEC_OID_XYBER768D00, NSS_USE_ALG_IN_SSL_KX, 0);
+  /* Disabling NSS_KEY_SIZE_POLICY as we operate with short keys. */
+  NSS_OptionSet(NSS_KEY_SIZE_POLICY_FLAGS, 0);
 
   if (SSL_ConfigServerSessionIDCache(0, 0, 0, nullptr) != SECSuccess) {
     PrintPRError("SSL_ConfigServerSessionIDCache failed");

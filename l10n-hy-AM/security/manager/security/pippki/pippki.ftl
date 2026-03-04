@@ -10,7 +10,7 @@ change-device-password-window =
     .title = Փոխել գաղտնաբառը
 # Variables:
 # $tokenName (String) - Security device of the change password dialog
-change-password-token = Անվտանգության Սարք: { $tokenName }
+change-password-token = Անվտանգության սարք: { $tokenName }
 change-password-old = Գործող գաղտնաբառը.
 change-password-new = Նոր Գաղտնաբառը.
 change-password-reenter = Նոր գաղտնաբառ (կրկին) ՝
@@ -28,7 +28,7 @@ reset-primary-password-window2 =
     .style = min-width: 40em
 reset-password-button-label =
     .label = Վերակայել
-reset-primary-password-text = Եթե մաքրեք Ձեր Հիմնական գաղտնաբառը, ապա բոլոր պահպանված Վեբ և Էլ. Փոստ գաղտնաբառերը, անհատական հավատարմագրերը, անձնական բանալիները կմոռացվեն: Համոզվա՞ծ եք, որ ցանկանում եք վերակայել Հիմնական գաղտնաբառը:
+reset-primary-password-text = Եթե մաքրեք Ձեր Հիմնական գաղտնաբառը, ապա բոլոր պահված Վեբ և Էլ. Փոստ գաղտնաբառերը, անհատական հավատարմագրերը, անձնական բանալիները կմոռացվեն: Համոզվա՞ծ եք, որ ցանկանում եք վերակայել Հիմնական գաղտնաբառը:
 pippki-reset-password-confirmation-title = Վերակայել Հիմնական գաղտնաբառը
 pippki-reset-password-confirmation-message = Ձեր հիմնական գաղտնաբառը վերակայվել է:
 
@@ -46,9 +46,6 @@ download-cert-message-desc = Նախքան ՎԱ (CA)-ին որևէ նպատակո
 download-cert-view-cert =
     .label = Տեսք
 download-cert-view-text = Ոսումնասիրել ԱՀ (CA) Վկայագիրը
-
-## Client Authorization Ask dialog
-
 
 ## Client Authentication Ask dialog
 
@@ -82,8 +79,7 @@ client-auth-cert-details-issued-by = Թողարկող՝ { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Տեղադրությունը՝ { $storedOn }
-client-auth-cert-remember-box =
-    .label = Հիշել այս որոշումը
+client-auth-cert-remember-label = Հիշել այս որոշումը․
 
 ## Set password (p12) dialog
 
@@ -95,6 +91,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Վկայագրի Կրկնօրինակի Գաղտնաբառը (նորից).
 set-password-reminder = Կարևոր է. Եթե մոռանաք ձեր Վկայագրի կրկնօրինակի գաղտնաբառը. ի վիճակի չեք լինի այս կրկնօրինակն օգտագործել: Խնդրեմ, այն գրի առեք և ապահով տեղ պահեք:
-
-## Protected authentication alert
-

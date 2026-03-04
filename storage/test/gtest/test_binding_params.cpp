@@ -6,7 +6,6 @@
 
 #include "storage_test_harness.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozStorageHelper.h"
 
 using namespace mozilla;
@@ -69,8 +68,8 @@ TEST(storage_binding_params, CString)
   // Roundtrip a string through the table, and ensure it comes out as expected.
   static const char sCharArray[] =
       "I'm not a \xff\x00\xac\xde\xbb ASCII string!";
-  nsAutoCString inserted(sCharArray, ArrayLength(sCharArray) - 1);
-  do_check_true(inserted.Length() == ArrayLength(sCharArray) - 1);
+  nsAutoCString inserted(sCharArray, std::size(sCharArray) - 1);
+  do_check_true(inserted.Length() == std::size(sCharArray) - 1);
   {
     mozStorageStatementScoper scoper(insert);
     bool hasResult;
@@ -109,8 +108,8 @@ TEST(storage_binding_params, UTFStrings)
 
   // Roundtrip a UTF8 string through the table, using UTF8 input and output.
   static const char sCharArray[] = R"(I'm a ûüâäç UTF8 string!)";
-  nsAutoCString insertedUTF8(sCharArray, ArrayLength(sCharArray) - 1);
-  do_check_true(insertedUTF8.Length() == ArrayLength(sCharArray) - 1);
+  nsAutoCString insertedUTF8(sCharArray, std::size(sCharArray) - 1);
+  do_check_true(insertedUTF8.Length() == std::size(sCharArray) - 1);
   NS_ConvertUTF8toUTF16 insertedUTF16(insertedUTF8);
   do_check_true(insertedUTF8 == NS_ConvertUTF16toUTF8(insertedUTF16));
   {

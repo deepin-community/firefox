@@ -72,9 +72,22 @@ protections-panel-blocking-label = Blokkert
 protections-panel-not-blocking-label = Tillate
 protections-panel-not-found-label = Ingen oppdaga
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } blokkerer sporings-innhald medan du er på denne nettstaden, med mindre du tillèt det.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Tillat { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = { $trackername } sporarar og innhald blokkert
+smartblock-placeholder-desc = { -brand-short-name }-innstillingane dine sperra dette innhaldet frå å spore deg på tvers av nettstadar eller bli brukt til annonser.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Tillat på { $websitehost }
+
 ##
 
-protections-panel-settings-label = Innstillingar for vern
+protections-panel-settings-label = Verneinnstillingar
 protections-panel-protectionsdashboard-label = Tryggingsoversyn
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -103,7 +116,7 @@ protections-panel-description-shim-allowed-learn-more = Les meir
 protections-panel-shim-allowed-indicator =
     .tooltiptext = Sporing delvis avblokkert
 protections-panel-content-blocking-manage-settings =
-    .label = Handsam instillingar for vern
+    .label = Handsam verneinnstillingar
     .accesskey = n
 protections-panel-content-blocking-breakage-report-view =
     .title = Rapporter problem med ein nettstad

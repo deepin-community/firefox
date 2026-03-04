@@ -7,8 +7,7 @@
 #include "HttpLog.h"
 
 #include "mozilla/StaticPrefs_network.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "nsSocketTransportService2.h"
 
 namespace mozilla {
@@ -23,9 +22,8 @@ static constexpr nsLiteralCString gKeyName[] = {
 };
 #undef DEFINE_CATEGORY
 
-#define DEFINE_CATEGORY(_name, _idx) \
-  Telemetry::LABELS_HTTP_TRAFFIC_ANALYSIS_3::Y##_idx##_##_name,
-static const Telemetry::LABELS_HTTP_TRAFFIC_ANALYSIS_3 gTelemetryLabel[] = {
+#define DEFINE_CATEGORY(_name, _idx) "Y##_idx##_##_name"_ns,
+static const nsLiteralCString gTelemetryLabel[] = {
 #include "HttpTrafficAnalyzer.inc"
 };
 #undef DEFINE_CATEGORY
@@ -186,8 +184,9 @@ void HttpTrafficAnalyzer::IncrementHttpTransaction(
   LOG(("HttpTrafficAnalyzer::IncrementHttpTransaction [%s] [this=%p]\n",
        gKeyName[aCategory].get(), this));
 
-  Telemetry::AccumulateCategoricalKeyed("Transaction"_ns,
-                                        gTelemetryLabel[aCategory]);
+  glean::http::traffic_analysis
+      .Get("Transaction"_ns, gTelemetryLabel[aCategory])
+      .Add();
 }
 
 void HttpTrafficAnalyzer::IncrementHttpConnection(
@@ -199,8 +198,8 @@ void HttpTrafficAnalyzer::IncrementHttpConnection(
   LOG(("HttpTrafficAnalyzer::IncrementHttpConnection [%s] [this=%p]\n",
        gKeyName[aCategory].get(), this));
 
-  Telemetry::AccumulateCategoricalKeyed("Connection"_ns,
-                                        gTelemetryLabel[aCategory]);
+  glean::http::traffic_analysis.Get("Connection"_ns, gTelemetryLabel[aCategory])
+      .Add();
 }
 
 void HttpTrafficAnalyzer::IncrementHttpConnection(
@@ -245,7 +244,7 @@ void HttpTrafficAnalyzer::IncrementHttpConnection(
 }
 
 #define CLAMP_U32(num) \
-  Clamp<uint32_t>(num, 0, std::numeric_limits<uint32_t>::max())
+  std::clamp<uint32_t>(num, 0, std::numeric_limits<uint32_t>::max())
 
 void HttpTrafficAnalyzer::AccumulateHttpTransferredSize(
     HttpTrafficCategory aCategory, uint64_t aBytesRead, uint64_t aBytesSent) {
@@ -260,8 +259,8 @@ void HttpTrafficAnalyzer::AccumulateHttpTransferredSize(
   // Telemetry supports uint32_t only, and we send KB here.
   auto total = CLAMP_U32((aBytesRead >> 10) + (aBytesSent >> 10));
   if (aBytesRead || aBytesSent) {
-    Telemetry::ScalarAdd(Telemetry::ScalarID::NETWORKING_DATA_TRANSFERRED_V3_KB,
-                         NS_ConvertUTF8toUTF16(gKeyName[aCategory]), total);
+    glean::networking::data_transferred_v3_kb.Get(gKeyName[aCategory])
+        .Add(total);
   }
 }
 

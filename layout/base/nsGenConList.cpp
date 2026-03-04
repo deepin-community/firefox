@@ -7,6 +7,7 @@
 /* base class for nsCounterList and nsQuoteList */
 
 #include "nsGenConList.h"
+
 #include "nsContentUtils.h"
 #include "nsIContent.h"
 #include "nsIFrame.h"
@@ -144,9 +145,13 @@ nsGenConNode* nsGenConList::BinarySearch(
   while (first != last) {
     uint32_t test = first + (last - first) / 2;
     if (last == curIndex) {
-      for (; curIndex != test; --curIndex) curNode = Prev(curNode);
+      for (; curIndex != test; --curIndex) {
+        curNode = Prev(curNode);
+      }
     } else {
-      for (; curIndex != test; ++curIndex) curNode = Next(curNode);
+      for (; curIndex != test; ++curIndex) {
+        curNode = Next(curNode);
+      }
     }
 
     if (aIsAfter(curNode)) {

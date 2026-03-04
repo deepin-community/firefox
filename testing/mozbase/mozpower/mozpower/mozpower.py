@@ -6,8 +6,6 @@ import platform
 import re
 import subprocess
 
-import six
-
 from .macintelpower import MacIntelPower
 from .mozpowerutils import average_summary, frequency_summary, get_logger, sum_summary
 
@@ -45,7 +43,7 @@ class MissingProcessorInfoError(Exception):
     pass
 
 
-class MozPower(object):
+class MozPower:
     """MozPower provides an OS and CPU independent interface
     for initializing, finalizing, and gathering power measurement
     data from OS+CPU combo-dependent measurement classes. The combo
@@ -79,7 +77,7 @@ class MozPower(object):
         android=False,
         logger_name="mozpower",
         output_file_path="power-testing",
-        **kwargs
+        **kwargs,
     ):
         """Initializes the MozPower object, detects OS and CPU (if not android),
         and instatiates the appropriate combo-dependent class for measurements.
@@ -105,7 +103,7 @@ class MozPower(object):
             raise NotImplementedError
         else:
             self._os = self._get_os().lower()
-            cpu = six.text_type(self._get_processor_info().lower())
+            cpu = str(self._get_processor_info().lower())
 
             if "intel" in cpu:
                 self._cpu = "intel"

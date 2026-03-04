@@ -4,13 +4,15 @@
 
 #include "MFCDMSession.h"
 
-#include <limits>
 #include <vcruntime.h>
 #include <winerror.h>
 
-#include "MFMediaEngineUtils.h"
+#include <limits>
+
 #include "GMPUtils.h"  // ToHexString
+#include "MFMediaEngineUtils.h"
 #include "mozilla/EMEUtils.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/MediaKeyMessageEventBinding.h"
 #include "mozilla/dom/MediaKeyStatusMapBinding.h"
@@ -138,7 +140,7 @@ HRESULT MFCDMSession::GenerateRequest(const nsAString& aInitDataType,
       NS_ConvertUTF16toUTF8(aInitDataType).get(), aInitDataSize);
   RETURN_IF_FAILED(mSession->GenerateRequest(
       InitDataTypeToString(aInitDataType), aInitData, aInitDataSize));
-  Unused << RetrieveSessionId();
+  (void)RetrieveSessionId();
   return S_OK;
 }
 
@@ -163,10 +165,16 @@ HRESULT MFCDMSession::Update(const nsTArray<uint8_t>& aMessage) {
   return S_OK;
 }
 
-HRESULT MFCDMSession::Close() {
+HRESULT MFCDMSession::Close(dom::MediaKeySessionClosedReason aReason) {
   AssertOnManagerThread();
+  if (mIsClosed) {
+    LOG("Close, session is already closed");
+    return S_OK;
+  }
   LOG("Close");
   RETURN_IF_FAILED(mSession->Close());
+  mIsClosed = true;
+  mClosedEvent.Notify(MFCDMSessionClosedResult{*mSessionId, aReason});
   return S_OK;
 }
 
@@ -233,14 +241,21 @@ void MFCDMSession::OnSessionKeysChange() {
   };
 
   CopyableTArray<MFCDMKeyInformation> keyInfos;
+  const bool isInTesting =
+      StaticPrefs::media_eme_wmf_use_mock_cdm_for_external_cdms();
   for (uint32_t idx = 0; idx < count; idx++) {
     const MFMediaKeyStatus& keyStatus = keyStatuses[idx];
-    if (keyStatus.cbKeyId != sizeof(GUID)) {
+    CopyableTArray<uint8_t> keyId;
+    if (isInTesting && keyStatus.cbKeyId != sizeof(GUID)) {
+      // Not a GUID, no need to convert it from GUID.
+      keyId.AppendElements(keyStatus.pbKeyId, keyStatus.cbKeyId);
+    } else if (keyStatus.cbKeyId == sizeof(GUID)) {
+      ByteArrayFromGUID(*reinterpret_cast<const GUID*>(keyStatus.pbKeyId),
+                        keyId);
+    } else {
       LOG("Key ID with unsupported size ignored");
       continue;
     }
-    CopyableTArray<uint8_t> keyId;
-    ByteArrayFromGUID(reinterpret_cast<REFGUID>(keyStatus.pbKeyId), keyId);
 
     nsAutoCString keyIdString(ToHexString(keyId));
     LOG("Append keyid-sz=%u, keyid=%s, status=%s", keyStatus.cbKeyId,

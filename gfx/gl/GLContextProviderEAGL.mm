@@ -142,7 +142,7 @@ already_AddRefed<GLContext> GLContextProviderEAGL::CreateHeadless(
   return CreateEAGLContext(desc, GetGlobalContextEAGL()).forget();
 }
 
-static RefPtr<GLContext> gGlobalContext;
+constinit static RefPtr<GLContext> gGlobalContext;
 
 GLContext* GLContextProviderEAGL::GetGlobalContext() {
   static bool triedToCreateContext = false;

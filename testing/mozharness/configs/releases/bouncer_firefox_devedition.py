@@ -11,8 +11,8 @@ config = {
         "installer": {
             "product-name": "Devedition-%(version)s",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -22,8 +22,8 @@ config = {
         "installer-latest": {
             "product-name": "Firefox-devedition-latest",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -33,8 +33,8 @@ config = {
         "installer-ssl": {
             "product-name": "Devedition-%(version)s-SSL",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -44,8 +44,8 @@ config = {
         "installer-latest-ssl": {
             "product-name": "Firefox-devedition-latest-SSL",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -101,8 +101,8 @@ config = {
         "complete-mar": {
             "product-name": "Devedition-%(version)s-Complete",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",
@@ -114,8 +114,8 @@ config = {
         "releases-dir": {
             "product-name": "Devedition-%(version)s-Partial-%(prev_version)s",
             "platforms": [
-                "linux",
                 "linux64",
+                "linux64-aarch64",
                 "osx",
                 "win",
                 "win64",

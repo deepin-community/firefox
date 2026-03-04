@@ -6,8 +6,7 @@ add_task(async function test_fetch_existent() {
   await PlacesUtils.bookmarks.eraseEverything();
 
   // Populate places and historyvisits.
-  let uriString = `http://mozilla.com/test_browserhistory/test_fetch`;
-  let uri = NetUtil.newURI(uriString);
+  let uri = NetUtil.newURI(`http://mozilla.com/test_browserhistory/test_fetch`);
   let title = `Test Visit ${Math.random()}`;
   let dates = [];
   let visits = [];
@@ -43,7 +42,7 @@ add_task(async function test_fetch_existent() {
 
   // Initialize the objects to compare against.
   let idealPageInfo = {
-    url: new URL(uriString),
+    url: URL.fromURI(uri),
     guid,
     title,
   };
@@ -71,7 +70,7 @@ add_task(async function test_fetch_existent() {
       }
 
       // Since idealPageInfo doesn't contain a frecency, check it and delete.
-      Assert.ok(typeof pageInfo.frecency === "number");
+      Assert.strictEqual(typeof pageInfo.frecency, "number");
       delete pageInfo.frecency;
 
       // Visits should be from newer to older.

@@ -15,6 +15,10 @@ support-addons-type = Tipo
 support-addons-enabled = Activado
 support-addons-version = Versión
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Localización
 legacy-user-stylesheets-title = Follas de estilo de usuario herdadas
 legacy-user-stylesheets-enabled = Activo
 legacy-user-stylesheets-stylesheet-types = Follas de estilo
@@ -181,6 +185,8 @@ media-capabilities-enumerate = Enumerar a base de datos
 
 media-codec-support-sw-decoding = Decodificación por software
 media-codec-support-hw-decoding = Decodificación por hardware
+media-codec-support-sw-encoding = Codificación por software
+media-codec-support-hw-encoding = Codificación por hardware
 media-codec-support-codec-name = Nome do códec
 media-codec-support-supported = Compatible
 media-codec-support-unsupported = Non compatible
@@ -191,9 +197,15 @@ media-codec-support-lack-of-extension = Instalar extensión
 ## See EME Spec for more explanation for following technical terms
 ## https://w3c.github.io/encrypted-media/
 
+media-content-decryption-modules-title = Información dos módulos de descifrado de contido
+media-key-system-name = Nome do sistema de claves
 media-video-robustness = Robusteza do vídeo
 media-audio-robustness = Robusteza do audio
 media-cdm-capabilities = Capacidades
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Inicio limpo
 # We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
 # HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
 media-hdcp-22-compatible = Compatible con HDCP 2.2
@@ -276,6 +288,7 @@ try-newer-driver = Bloqueada para a versión do seu controlador gráfico. Tente 
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Parámetros de ClearType
 compositing = Composición
+support-font-determination = Información de depuración da visibilidade das fontes
 hardware-h264 = Descodificación por hardware H264
 main-thread-no-omtc = fío principal, sen OMTC
 yes = Si
@@ -337,6 +350,9 @@ has-seccomp-bpf = Seccomp-BPF (Filtrado de chamadas do sistema)
 has-seccomp-tsync = Sincronización de fíos seccomp
 has-user-namespaces = Espazos de nome do usuario
 has-privileged-user-namespaces = Espazos de nome do usuario para procesos privilexiados
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Esta función non está permitida polo teu sistema. Isto pode restrinxir as funcións de seguranza de { -brand-short-name }.
 can-sandbox-content = Illamento (sandbox) para o proceso do contido
 can-sandbox-media = Illamento (sandbox) para os engadidos multimedia
 content-sandbox-level = Nivel de illamento (sandbox) para o proceso do contido
@@ -405,6 +421,20 @@ support-printing-modified-settings = Configuración de impresión modificada
 support-printing-prefs-name = Nome
 support-printing-prefs-value = Valor
 
+## Remote Settings sections
+
+support-remote-settings-title = Configuración remota
+support-remote-settings-status = Estado
+support-remote-settings-status-ok = Aceptar
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Non funciona
+support-remote-settings-last-check = Última comprobación
+support-remote-settings-local-timestamp = Marca de tempo local
+support-remote-settings-sync-history = Historial
+support-remote-settings-sync-history-status = Estado
+support-remote-settings-sync-history-datetime = Data
+support-remote-settings-sync-history-infos = Informacións
+
 ## Normandy sections
 
 support-remote-experiments-title = Experimentos remotos
@@ -421,3 +451,15 @@ pointing-device-mouse = Rato
 pointing-device-touchscreen = Pantalla táctil
 pointing-device-pen-digitizer = Bolígrafo dixitalizador
 pointing-device-none = Sen dispositivos apuntadores
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = Análise de contido (DLP)
+content-analysis-active = Activo
+content-analysis-connected-to-agent = Conectado ao axente
+content-analysis-agent-path = Ruta do axente
+content-analysis-agent-failed-signature-verification = Fallou a verificación da sinatura do axente
+content-analysis-request-count = Reconto de solicitudes

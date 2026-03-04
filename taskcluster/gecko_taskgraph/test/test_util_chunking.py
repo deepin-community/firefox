@@ -182,14 +182,14 @@ def mock_mozinfo():
         [("linux", "1804", 64, "debug"), None],
         [("macosx", "1015", 64, "debug"), None],
         [("macosx", "1100", 64, "opt"), None],
-        [("android", "", 64, "debug"), None],
+        [("android", "13.0", 64, "debug"), None],
         [("and", "", 64, "debug"), ValueError],
         [("", "", 64, "opt"), ValueError],
         [("linux", "1804", 64, "opt", ["ccov"]), None],
         [("linux", "1804", 64, "opt", ["asan"]), None],
         [("win", "10", 64, "opt", ["tsan"]), None],
         [("mac", "1100", 64, "opt", ["ccov"]), None],
-        [("android", "", 64, "opt", None, ["fission"]), None],
+        [("android", "13.0", 64, "opt", None, ["fission"]), None],
         [("win", "10", "aarch64", "opt"), None],
     ],
 )
@@ -239,8 +239,6 @@ def test_get_runtimes(platform, suite):
 @pytest.mark.parametrize(
     "platform,suite,exception",
     [
-        ("nonexistent_platform", "nonexistent_suite", KeyError),
-        ("unix", "nonexistent_suite", KeyError),
         ("unix", "", TypeError),
         ("", "", TypeError),
         ("", "nonexistent_suite", TypeError),
@@ -367,12 +365,10 @@ def test_get_manifests(suite, platform, mock_mozinfo):
     if suite == "xpcshell":
         assert all([re.search(r"xpcshell(.*)?(.ini|.toml)", m) for m in items])
     if "mochitest" in suite:
-        assert all(
-            [
-                re.search(r"(perftest|mochitest|chrome|browser).*(.ini|.toml)", m)
-                for m in items
-            ]
-        )
+        assert all([
+            re.search(r"(perftest|mochitest|chrome|browser).*(.ini|.toml)", m)
+            for m in items
+        ])
     if "web-platform" in suite:
         assert all([m.startswith("/") and m.count("/") <= 4 for m in items])
 

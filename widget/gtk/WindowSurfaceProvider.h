@@ -14,7 +14,6 @@
 #include "mozilla/layers/LayersTypes.h"
 #include "mozilla/widget/WindowSurface.h"
 #include "Units.h"
-#include "mozilla/ScopeExit.h"
 
 #ifdef MOZ_X11
 #  include <X11/Xlib.h>  // for Window, Display, Visual, etc.
@@ -61,8 +60,7 @@ class WindowSurfaceProvider final {
   void CleanupResources();
 
   already_AddRefed<gfx::DrawTarget> StartRemoteDrawingInRegion(
-      const LayoutDeviceIntRegion& aInvalidRegion,
-      layers::BufferMode* aBufferMode);
+      const LayoutDeviceIntRegion& aInvalidRegion);
   void EndRemoteDrawingInRegion(gfx::DrawTarget* aDrawTarget,
                                 const LayoutDeviceIntRegion& aInvalidRegion);
 

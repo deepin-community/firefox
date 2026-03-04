@@ -18,11 +18,11 @@ MARIONETTE_MANIFESTS += ["marionette/manifest.toml"]
 
 XPCSHELL_TESTS_MANIFESTS += [
     "unit_aus_update/xpcshell.toml",
-    "unit_base_updater/xpcshell.toml",
+    "unit_update_binary/xpcshell_base.toml",
 ]
 
 if CONFIG["MOZ_MAINTENANCE_SERVICE"]:
-    XPCSHELL_TESTS_MANIFESTS += ["unit_service_updater/xpcshell.toml"]
+    XPCSHELL_TESTS_MANIFESTS += ["unit_update_binary/xpcshell_service.toml"]
 
 if CONFIG["MOZ_BUILD_APP"] == "browser" and CONFIG["MOZ_UPDATE_AGENT"]:
     XPCSHELL_TESTS_MANIFESTS += ["unit_background_update/xpcshell.toml"]
@@ -33,6 +33,9 @@ SimplePrograms(
         "TestAUSReadStrings",
     ]
 )
+
+if CONFIG["OS_ARCH"] == "WINNT":
+    SimplePrograms(["test_file_change_mtime", "test_file_hold_open"])
 
 LOCAL_INCLUDES += [
     "/toolkit/mozapps/update",
@@ -69,7 +72,7 @@ if CONFIG["CC_TYPE"] == "clang-cl":
 if CONFIG["OS_ARCH"] == "WINNT":
     DEFINES["UNICODE"] = True
     DEFINES["_UNICODE"] = True
-    USE_STATIC_LIBS = True
+    USE_STATIC_MSVCRT = True
     if CONFIG["CC_TYPE"] in ("clang", "gcc"):
         WIN32_EXE_LDFLAGS += ["-municode"]
 
@@ -103,9 +106,12 @@ FINAL_TARGET_FILES += [
     "data/partial_removed-files",
     "data/partial_removed-files_mac",
     "data/partial_update_manifest",
+    "data/partial_zucchini.mar",
+    "data/partial_zucchini_mac.mar",
     "data/replace_log_success",
     "data/simple.mar",
     "data/syncManagerTestChild.js",
+    "data/updateMutexTestChild.js",
     "TestAUSReadStrings1.ini",
     "TestAUSReadStrings2.ini",
     "TestAUSReadStrings3.ini",
@@ -115,6 +121,11 @@ FINAL_TARGET_FILES += [
 FINAL_TARGET_PP_FILES += [
     "data/xpcshellConstantsPP.js",
 ]
+
+if CONFIG["MOZ_DEBUG"]:
+    WINCONSOLE = True
+else:
+    WINCONSOLE = False
 
 with Files("browser/browser_telemetry_updatePing_*_ready.js"):
     BUG_COMPONENT = ("Toolkit", "Telemetry")

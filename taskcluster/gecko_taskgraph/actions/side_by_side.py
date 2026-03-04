@@ -46,9 +46,9 @@ def side_by_side_modifier(task, input):
 
     # Make side-by-side job searchable by the platform, test name, and revisions
     # it was triggered for
-    task.task["metadata"][
-        "name"
-    ] = f"{input['platform']} {input['test_name']} {input['base_revision'][:12]} {input['new_revision'][:12]}"
+    task.task["metadata"]["name"] = (
+        f"{input['platform']} {input['test_name']} {input['base_revision'][:12]} {input['new_revision'][:12]}"
+    )
     # Use a job symbol to include the symbol of the job the side-by-side
     # is running for
     task.task["extra"]["treeherder"]["symbol"] += f"-{input['symbol']}"
@@ -93,7 +93,7 @@ def side_by_side_action(parameters, graph_config, input, task_group_id, task_id)
     pageload job (via support action).
 
     To execute this action locally follow the documentation here:
-    https://firefox-source-docs.mozilla.org/taskcluster/actions.html#testing-the-action-locally
+    https://taskcluster-taskgraph.readthedocs.io/en/latest/howto/create-actions.html#testing-actions
     """
     task = get_task_definition(task_id)
     decision_task_id, full_task_graph, label_to_taskid, _ = fetch_graph_and_labels(

@@ -233,6 +233,7 @@ BrowserTabList.prototype.destroy = function () {
 
 /**
  * Get the selected browser for the given navigator:browser window.
+ *
  * @private
  * @param window nsIChromeWindow
  *        The navigator:browser window for which you want the selected browser.
@@ -330,7 +331,7 @@ BrowserTabList.prototype._getActorForBrowser = async function (browser) {
  * - for the tab matching a browserId if one is passed
  * - OR the currently selected tab if no browserId is passed.
  *
- * @param {Number} browserId: use to match any tab
+ * @param {number} browserId: use to match any tab
  */
 BrowserTabList.prototype.getTab = function ({ browserId }) {
   if (typeof browserId == "number") {
@@ -469,7 +470,7 @@ BrowserTabList.prototype._checkListening = function () {
   );
 };
 
-/*
+/**
  * Add or remove event listeners for all XUL windows.
  *
  * @param shouldListen boolean
@@ -568,8 +569,7 @@ BrowserTabList.prototype.handleEvent = DevToolsUtils.makeInfallible(function (
       break;
     }
   }
-},
-"BrowserTabList.prototype.handleEvent");
+}, "BrowserTabList.prototype.handleEvent");
 
 /*
  * If |shouldListen| is true, ensure we've registered a listener with the
@@ -633,8 +633,7 @@ BrowserTabList.prototype.onOpenWindow = DevToolsUtils.makeInfallible(function (
     .getInterface(Ci.nsIDOMWindow);
 
   window.addEventListener("load", handleLoad);
-},
-"BrowserTabList.prototype.onOpenWindow");
+}, "BrowserTabList.prototype.onOpenWindow");
 
 BrowserTabList.prototype.onCloseWindow = DevToolsUtils.makeInfallible(function (
   window
@@ -666,8 +665,7 @@ BrowserTabList.prototype.onCloseWindow = DevToolsUtils.makeInfallible(function (
       }
     }, "BrowserTabList.prototype.onCloseWindow's delayed body")
   );
-},
-"BrowserTabList.prototype.onCloseWindow");
+}, "BrowserTabList.prototype.onCloseWindow");
 
 exports.BrowserTabList = BrowserTabList;
 

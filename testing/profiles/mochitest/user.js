@@ -9,11 +9,6 @@ user_pref("browser.sessionstore.resume_from_crash", false);
 // Better stacks for errors.
 user_pref("javascript.options.asyncstack_capture_debuggee_only", false);
 
-// Don't enable paint suppression when the background is unknown. While paint
-// is suppressed, synthetic click events and co. go to the old page, which can
-// be confusing for tests that send click events before the first paint.
-user_pref("nglayout.initialpaint.unsuppress_with_no_background", true);
-
 // Disable prefers-reduced-motion to ensure that smooth scrolls can be tested.
 user_pref("general.smoothScroll", true);
 
@@ -22,6 +17,11 @@ user_pref("general.smoothScroll", true);
 // Plan to remove this pref since all tests must be compliant with the
 // storage access API spec for secure contexts.
 user_pref("dom.storage_access.dont_grant_insecure_contexts", false);
+
+// Many mochitests rely upon this behavior (which is being deprecated)
+// while testing other behaviors. We plan to update all tests to not
+// rely upon it, remove this pref, then roll out to release.
+user_pref("privacy.restrict3rdpartystorage.heuristic.window_open", true);
 
 // Turn off update
 user_pref("app.update.disabledForTesting", true);

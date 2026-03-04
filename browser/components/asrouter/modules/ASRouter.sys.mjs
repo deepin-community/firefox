@@ -34,15 +34,18 @@ ChromeUtils.defineESModuleGetters(lazy, {
   ASRouterTargeting: "resource:///modules/asrouter/ASRouterTargeting.sys.mjs",
   ASRouterTriggerListeners:
     "resource:///modules/asrouter/ASRouterTriggerListeners.sys.mjs",
-  AttributionCode: "resource:///modules/AttributionCode.sys.mjs",
+  AttributionCode:
+    "moz-src:///browser/components/attribution/AttributionCode.sys.mjs",
   BookmarksBarButton: "resource:///modules/asrouter/BookmarksBarButton.sys.mjs",
-  Downloader: "resource://services-settings/Attachments.sys.mjs",
+  UnstoredDownloader: "resource://services-settings/Attachments.sys.mjs",
   ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
   FeatureCalloutBroker:
     "resource:///modules/asrouter/FeatureCalloutBroker.sys.mjs",
   InfoBar: "resource:///modules/asrouter/InfoBar.sys.mjs",
   KintoHttpClient: "resource://services-common/kinto-http-client.sys.mjs",
-  MacAttribution: "resource:///modules/MacAttribution.sys.mjs",
+  MacAttribution:
+    "moz-src:///browser/components/attribution/MacAttribution.sys.mjs",
+  MenuMessage: "resource:///modules/asrouter/MenuMessage.sys.mjs",
   MomentsPageHub: "resource:///modules/asrouter/MomentsPageHub.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   PanelTestProvider: "resource:///modules/asrouter/PanelTestProvider.sys.mjs",
@@ -57,16 +60,26 @@ ChromeUtils.defineESModuleGetters(lazy, {
   Spotlight: "resource:///modules/asrouter/Spotlight.sys.mjs",
   ToastNotification: "resource:///modules/asrouter/ToastNotification.sys.mjs",
   ToolbarBadgeHub: "resource:///modules/asrouter/ToolbarBadgeHub.sys.mjs",
+  AIWindow:
+    "moz-src:///browser/components/aiwindow/ui/modules/AIWindow.sys.mjs",
 });
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "messagingProfileId",
+  "messaging-system.profile.messagingProfileId",
+  ""
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "disableSingleProfileMessaging",
+  "messaging-system.profile.singleProfileMessaging.disable",
+  false
+);
+
 XPCOMUtils.defineLazyServiceGetters(lazy, {
-  BrowserHandler: ["@mozilla.org/browser/clh;1", "nsIBrowserHandler"],
-});
-ChromeUtils.defineLazyGetter(lazy, "log", () => {
-  const { Logger } = ChromeUtils.importESModule(
-    "resource://messaging-system/lib/Logger.sys.mjs"
-  );
-  return new Logger("ASRouter");
+  BrowserHandler: ["@mozilla.org/browser/clh;1", Ci.nsIBrowserHandler],
 });
 import { MESSAGING_EXPERIMENTS_DEFAULT_FEATURES } from "resource:///modules/asrouter/MessagingExperimentConstants.sys.mjs";
 import { CFRMessageProvider } from "resource:///modules/asrouter/CFRMessageProvider.sys.mjs";
@@ -80,6 +93,7 @@ const DEFAULT_ALLOWLIST_HOSTS = {
 };
 // Max possible impressions cap for any message
 const MAX_MESSAGE_LIFETIME_CAP = 100;
+const SIX_MONTHS_MS = (60 * 60 * 24 * 365 * 1000) / 2; // six months in milliseconds
 
 const LOCAL_MESSAGE_PROVIDERS = {
   OnboardingMessageProvider,
@@ -106,10 +120,17 @@ const TOPIC_EXPERIMENT_ENROLLMENT_CHANGED = "nimbus:enrollments-updated";
 const USE_REMOTE_L10N_PREF =
   "browser.newtabpage.activity-stream.asrouter.useRemoteL10n";
 
-const REACH_EVENT_CATEGORY = "messaging_experiments";
-const REACH_EVENT_METHOD = "reach";
+const MULTIPROFILE_DATA_UPDATED = "sps-profiles-updated";
+
 // Reach for the pbNewtab feature will be added in bug 1755401
 const NO_REACH_EVENT_GROUPS = ["pbNewtab"];
+
+// Profile scope values to show a message with multi-profile feature
+const PROFILE_MESSAGE_SCOPE = {
+  NONE: "",
+  SINGLE: "single",
+  SHARED: "shared",
+};
 
 export const MessageLoaderUtils = {
   STARTPAGE_VERSION,
@@ -264,8 +285,8 @@ export const MessageLoaderUtils = {
    * "ms-language-packs" collection. E.g. for "en-US" with version "v1",
    * the Fluent file is attched to the record with ID "cfr-v1-en-US".
    *
-   * 2). The Remote Settings downloader is able to detect the duplicate download
-   * requests for the same attachment and ignore the redundent requests automatically.
+   * 2). To prevent duplicate downloads, we verify that the local file matches
+   * the attachment on the Remote Settings record.
    *
    * @param {object} provider An AS router provider
    * @param {string} provider.id The id of the provider
@@ -299,16 +320,29 @@ export const MessageLoaderUtils = {
             .collection(RS_COLLECTION_L10N)
             .getRecord(recordId);
           if (record && record.data) {
-            const downloader = new lazy.Downloader(
-              RS_MAIN_BUCKET,
-              RS_COLLECTION_L10N,
-              "browser",
-              "newtab"
-            );
-            // Await here in order to capture the exceptions for reporting.
-            await downloader.downloadToDisk(record.data, {
-              retries: RS_DOWNLOAD_MAX_RETRIES,
-            });
+            // Check that the file on disk is the same as the one on the server.
+            // If the file is the same, we don't need to download it again.
+            const localFile = lazy.RemoteL10n.cfrFluentFilePath;
+            const { size: remoteSize } = record.data.attachment;
+            if (
+              !(await IOUtils.exists(localFile)) ||
+              (await IOUtils.stat(localFile)).size !== remoteSize
+            ) {
+              // Here we are using the UnstoredDownloader to download the attachment
+              // because we don't want to store it in the (default) IndexedDB cache.
+              const downloader = new lazy.UnstoredDownloader(
+                RS_MAIN_BUCKET,
+                RS_COLLECTION_L10N
+              );
+              // Await here in order to capture the exceptions for reporting.
+              const { buffer } = await downloader.download(record.data, {
+                retries: RS_DOWNLOAD_MAX_RETRIES,
+              });
+              // Write on disk.
+              await IOUtils.write(localFile, new Uint8Array(buffer), {
+                tmpPath: `${localFile}.tmp`,
+              });
+            }
             lazy.RemoteL10n.reloadL10n();
           } else {
             MessageLoaderUtils._handleRemoteSettingsUndesiredEvent(
@@ -363,16 +397,11 @@ export const MessageLoaderUtils = {
     let experiments = [];
     for (const featureId of featureIds) {
       const featureAPI = lazy.NimbusFeatures[featureId];
-      const experimentData = lazy.ExperimentAPI.getExperimentMetaData({
-        featureId,
-      });
+      const enrollmentData = featureAPI.getEnrollmentMetadata();
 
       // We are not enrolled in any experiment or rollout for this feature, so
       // we can skip the feature.
-      if (
-        !experimentData &&
-        !lazy.ExperimentAPI.getRolloutMetaData({ featureId })
-      ) {
+      if (!enrollmentData) {
         continue;
       }
 
@@ -400,7 +429,7 @@ export const MessageLoaderUtils = {
       if (
         NO_REACH_EVENT_GROUPS.includes(featureId) ||
         !MESSAGING_EXPERIMENTS_DEFAULT_FEATURES.includes(featureId) ||
-        !experimentData
+        enrollmentData.isRollout
       ) {
         continue;
       }
@@ -409,10 +438,10 @@ export const MessageLoaderUtils = {
       // if found any. The `forReachEvent` label is used to identify those
       // branches so that they would only be used to record the Reach event.
       const branches =
-        (await lazy.ExperimentAPI.getAllBranches(experimentData.slug)) || [];
+        (await lazy.ExperimentAPI.getAllBranches(enrollmentData.slug)) || [];
       for (const branch of branches) {
         let branchValue = branch[featureId].value;
-        if (!branchValue || branch.slug === experimentData.branch.slug) {
+        if (!branchValue || branch.slug === enrollmentData.branch) {
           continue;
         }
         const branchMessages =
@@ -426,7 +455,7 @@ export const MessageLoaderUtils = {
           }
           experiments.push({
             forReachEvent: { sent: false, group: featureId },
-            experimentSlug: experimentData.slug,
+            experimentSlug: enrollmentData.slug,
             branchSlug: branch.slug,
             ...message,
           });
@@ -544,7 +573,7 @@ export const MessageLoaderUtils = {
             try {
               return this._delocalizeValues(message);
             } catch (e) {
-              lazy.log.error(
+              lazy.ASRouterPreferences.console.error(
                 `Failed to delocalize message ${message.id}:`,
                 e.message,
                 e.cause
@@ -668,6 +697,7 @@ export class _ASRouter {
     this._state = {
       providers: [],
       messageBlockList: [],
+      multiProfileMessageBlocklist: [],
       messageImpressions: {},
       screenImpressions: {},
       messages: [],
@@ -691,7 +721,7 @@ export class _ASRouter {
     this._onExperimentEnrollmentsUpdated =
       this._onExperimentEnrollmentsUpdated.bind(this);
     this.forcePBWindow = this.forcePBWindow.bind(this);
-    Services.telemetry.setEventRecordingEnabled(REACH_EVENT_CATEGORY, true);
+    this._updateMultiprofileData = this._updateMultiprofileData.bind(this);
     this.messagesEnabledInAutomation = [];
   }
 
@@ -806,11 +836,12 @@ export class _ASRouter {
   }
 
   /**
-   * _resetInitialization - adds the following to the instance:
+   * Adds the following to the instance:
    *  .initialized {bool}            Has AS Router been initialized?
    *  .waitForInitialized {Promise}  A promise that resolves when initializion is complete
    *  ._finishInitializing {func}    A function that, when called, resolves the .waitForInitialized
    *                                 promise and sets .initialized to true.
+   *
    * @memberof _ASRouter
    */
   _resetInitialization() {
@@ -827,6 +858,7 @@ export class _ASRouter {
 
   /**
    * Check all provided groups are enabled.
+   *
    * @param groups Set of groups to verify
    * @returns bool
    */
@@ -838,6 +870,7 @@ export class _ASRouter {
 
   /**
    * Verify that the provider block the message through the `exclude` field
+   *
    * @param message Message to verify
    * @returns bool
    */
@@ -904,8 +937,9 @@ export class _ASRouter {
   }
 
   /**
-   * loadMessagesFromAllProviders - Loads messages from all providers if they require updates.
-   *                                Checks the .lastUpdated field on each provider to see if updates are needed
+   * Loads messages from all providers if they require updates. Checks the
+   * .lastUpdated field on each provider to see if updates are needed
+   *
    * @param toUpdate  An optional list of providers to update. This overrides
    *                  the checks to determine which providers to update.
    * @memberof _ASRouter
@@ -949,12 +983,18 @@ export class _ASRouter {
 
       // Some messages have triggers that require us to initalise trigger listeners
       const unseenListeners = new Set(lazy.ASRouterTriggerListeners.keys());
-      for (const { trigger } of newState.messages) {
-        if (trigger && lazy.ASRouterTriggerListeners.has(trigger.id)) {
+      for (const message of newState.messages) {
+        const { trigger } = message;
+        if (
+          trigger &&
+          lazy.ASRouterTriggerListeners.has(trigger.id) &&
+          !this._shouldSkipForAutomation(message)
+        ) {
           lazy.ASRouterTriggerListeners.get(trigger.id).init(
             this._triggerHandler,
             trigger.params,
-            trigger.patterns
+            trigger.patterns,
+            trigger.regexPatterns
           );
           unseenListeners.delete(trigger.id);
         }
@@ -1086,11 +1126,26 @@ export class _ASRouter {
     const previousSessionEnd =
       (await this._storage.get("previousSessionEnd")) || 0;
 
+    let multiProfileMessageImpressions = {};
+    let multiProfileMessageBlocklist = [];
+
+    if (
+      lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles ||
+      lazy.ASRouterTargeting.Environment.hasSelectableProfiles
+    ) {
+      multiProfileMessageImpressions =
+        (await this._storage.getSharedMessageImpressions()) || {};
+      multiProfileMessageBlocklist =
+        (await this._storage.getSharedMessageBlocklist()) || [];
+    }
+
     await this.setState({
       messageBlockList,
       groupImpressions,
       messageImpressions,
       screenImpressions,
+      multiProfileMessageImpressions,
+      multiProfileMessageBlocklist,
       previousSessionEnd,
       ...(lazy.ASRouterPreferences.specialConditions || {}),
       initialized: false,
@@ -1104,6 +1159,10 @@ export class _ASRouter {
     Services.obs.addObserver(
       this._onExperimentEnrollmentsUpdated,
       TOPIC_EXPERIMENT_ENROLLMENT_CHANGED
+    );
+    Services.obs.addObserver(
+      this._updateMultiprofileData,
+      MULTIPROFILE_DATA_UPDATED
     );
     Services.prefs.addObserver(USE_REMOTE_L10N_PREF, this);
     // sets .initialized to true and resolves .waitForInitialized promise
@@ -1136,6 +1195,10 @@ export class _ASRouter {
     Services.obs.removeObserver(
       this._onExperimentEnrollmentsUpdated,
       TOPIC_EXPERIMENT_ENROLLMENT_CHANGED
+    );
+    Services.obs.removeObserver(
+      this._updateMultiprofileData,
+      MULTIPROFILE_DATA_UPDATED
     );
     Services.prefs.removeObserver(USE_REMOTE_L10N_PREF, this);
     // If we added any CFR recommendations, they need to be removed
@@ -1192,6 +1255,26 @@ export class _ASRouter {
         PanelTestProvider: lazy.PanelTestProvider,
       };
     }
+  }
+
+  async _updateMultiprofileData(aSubject, aTopic, aSource) {
+    // Return early if sharedDb update event source is from the local profile
+    if (aSource === "local" && aTopic === MULTIPROFILE_DATA_UPDATED) {
+      return;
+    }
+    // wait to ensure storage has been initialized before accessing _storage
+    if (!this.initialized) {
+      await this.waitForInitialized;
+    }
+    const multiProfileMessageImpressions =
+      (await this._storage.getSharedMessageImpressions()) || {};
+    const multiProfileMessageBlocklist =
+      (await this._storage.getSharedMessageBlocklist()) || [];
+
+    this.setState({
+      multiProfileMessageImpressions,
+      multiProfileMessageBlocklist,
+    });
   }
 
   /**
@@ -1292,10 +1375,33 @@ export class _ASRouter {
     return this.setState({ messageBlockList: [] });
   }
 
+  hasValidProfileScope(message) {
+    // Return early if a message doesn't need profile scope check
+    if (
+      !message.profileScope ||
+      message.profileScope === PROFILE_MESSAGE_SCOPE.NONE
+    ) {
+      return true;
+    }
+    const { state } = this;
+    // For single profile scope filter out message which is in
+    // profileMessageImpression and not in indexedDb message impressions
+    // that means message is seen by a user in one of the profiles
+    if (
+      message.profileScope === PROFILE_MESSAGE_SCOPE.SINGLE &&
+      message.id in state.multiProfileMessageImpressions &&
+      !(message.id in state.messageImpressions)
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   isUnblockedMessage(message) {
     const { state } = this;
     return (
       !state.messageBlockList.includes(message.id) &&
+      !state.multiProfileMessageBlocklist.includes(message.id) &&
       (!message.campaign ||
         !state.messageBlockList.includes(message.campaign)) &&
       this.hasGroupsEnabled(message.groups) &&
@@ -1376,6 +1482,17 @@ export class _ASRouter {
     return true;
   }
 
+  _shouldSkipForAutomation(message) {
+    return (
+      message.skip_in_tests &&
+      // `this.messagesEnabledInAutomation` should be stubbed in tests
+      !this.messagesEnabledInAutomation?.includes(message.id) &&
+      (Cu.isInAutomation ||
+        Services.env.exists("XPCSHELL_TEST_PROFILE_DIR") ||
+        Services.env.get("MOZ_AUTOMATION"))
+    );
+  }
+
   _findProvider(providerID) {
     return this._localProviders[
       this.state.providers.find(i => i.id === providerID).localProvider
@@ -1384,21 +1501,6 @@ export class _ASRouter {
 
   routeCFRMessage(message, browser, trigger, force = false) {
     if (!message) {
-      return { message: {} };
-    }
-
-    // filter out messages we want to exclude from tests
-    if (
-      message.skip_in_tests &&
-      // `this.messagesEnabledInAutomation` should be stubbed in tests
-      !this.messagesEnabledInAutomation?.includes(message.id) &&
-      (Cu.isInAutomation ||
-        Services.env.exists("XPCSHELL_TEST_PROFILE_DIR") ||
-        Services.env.get("MOZ_AUTOMATION"))
-    ) {
-      lazy.log.debug(
-        `Skipping message ${message.id} because ${message.skip_in_tests}`
-      );
       return { message: {} };
     }
 
@@ -1481,12 +1583,31 @@ export class _ASRouter {
       case "bookmarks_bar_button":
         lazy.BookmarksBarButton.showBookmarksBarButton(browser, message);
         break;
+      case "menu_message":
+        lazy.MenuMessage.showMenuMessage(browser, message, trigger, force);
+        break;
+      case "newtab_message": {
+        let targetBrowser = force ? null : browser;
+        let messageWithBrowser = {
+          targetBrowser,
+          message,
+          dispatch: this.dispatchCFRAction,
+        };
+        Services.obs.notifyObservers(messageWithBrowser, "newtab-message");
+        break;
+      }
     }
 
     return { message };
   }
 
-  addScreenImpression(screen) {
+  async addScreenImpression(screen) {
+    // wait to ensure storage has been intialized before setting
+    // screenImpression
+    if (!this.initialized) {
+      await this.waitForInitialized;
+    }
+
     lazy.ASRouterPreferences.console.debug(
       `entering addScreenImpression for ${screen.id}`
     );
@@ -1538,7 +1659,25 @@ export class _ASRouter {
           );
         }
 
-        return { messageImpressions, groupImpressions };
+        let { multiProfileMessageImpressions } = state;
+
+        if (
+          message.profileScope === PROFILE_MESSAGE_SCOPE.SINGLE &&
+          lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles
+        ) {
+          multiProfileMessageImpressions = this._addImpressionForItem(
+            state.multiProfileMessageImpressions,
+            message,
+            "multiProfileMessageImpressions",
+            time
+          );
+        }
+
+        return {
+          messageImpressions,
+          groupImpressions,
+          multiProfileMessageImpressions,
+        };
       });
     }
     return Promise.resolve();
@@ -1559,7 +1698,15 @@ export class _ASRouter {
         impressions[item.id]
       );
 
-      this._storage.set(impressionsString, impressions);
+      if (impressionsString === "multiProfileMessageImpressions") {
+        // Update shared db impressions for a message
+        this._storage.setSharedMessageImpressions(
+          item.id,
+          impressions[item.id]
+        );
+      } else {
+        this._storage.set(impressionsString, impressions);
+      }
     }
     return impressions;
   }
@@ -1589,9 +1736,19 @@ export class _ASRouter {
    *    will be cleared.
    * 2. If the item has time-bound frequency caps but no lifetime cap, any item impressions older
    *    than the longest time period will be cleared.
+   * 3. For multi-profile environments, shared message impressions are cleaned up separately and stored
+   *    in a shared database accessible across profiles.
    */
   cleanupImpressions() {
     return this.setState(state => {
+      let multiProfileMessageImpressions = {};
+      if (lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles) {
+        multiProfileMessageImpressions = this._cleanupMultiProfileImpressions(
+          state,
+          state.messages,
+          "multiProfileMessageImpressions"
+        );
+      }
       const messageImpressions = this._cleanupImpressionsForItems(
         state,
         state.messages,
@@ -1602,15 +1759,21 @@ export class _ASRouter {
         state.groups,
         "groupImpressions"
       );
-      return { messageImpressions, groupImpressions };
+
+      return {
+        messageImpressions,
+        groupImpressions,
+        multiProfileMessageImpressions,
+      };
     });
   }
 
-  /** _cleanupImpressionsForItems - Helper for cleanupImpressions - calculate the updated
-  /*                                impressions object for the given items, then store it and return it
+  /**
+   * Helper for cleanupImpressions - calculate the updated impressions object
+   * for the given items, then store it and return it.
    *
    * @param {obj} state Reference to ASRouter internal state
-   * @param {array} items Can be messages, providers or groups that we count impressions for
+   * @param {Array} items Can be messages, providers or groups that we count impressions for
    * @param {string} impressionsString Key name for entry in state where impressions are stored
    */
   _cleanupImpressionsForItems(state, items, impressionsString) {
@@ -1651,6 +1814,78 @@ export class _ASRouter {
     return impressions;
   }
 
+  /**
+   * Helper for cleanupImpressions. This method handles cleanup of impression data in
+   * multi-profile environments where impression data is shared across all user profiles.
+   * It performs the following cleanup:
+   * - For deleted/invalid items: Removes impressions older than 6 months (gradual cleanup)
+   * - For items with custom frequency caps: Removes impressions older than the longest period
+   * - Handles corrupted or malformed impression data
+   * - Updates the shared database after each cleanup operation
+   *
+   * @param {obj} state Reference to ASRouter internal state
+   * @param {Array} items are messages that we count impressions for
+   * @param {string} impressionsString Key name for entry in state where impressions are stored
+   * @returns {obj} Updated impressions object with cleaned data
+   */
+  _cleanupMultiProfileImpressions(state, items, impressionsString) {
+    const impressions = { ...state[impressionsString] };
+    const now = Date.now();
+    Object.keys(impressions).forEach(id => {
+      const [item] = items.filter(x => x.id === id);
+      // Remove impressions older than six months for items that no longer exist
+      if (!item || !item.frequency || !Array.isArray(impressions[id])) {
+        lazy.ASRouterPreferences.console.debug(
+          "_cleanupMultiProfileImpressions: removing impressions older than six months for deleted or changed item: ",
+          item
+        );
+        lazy.ASRouterPreferences.console.trace();
+        impressions[id] = impressions[id].filter(t => now - t < SIX_MONTHS_MS);
+
+        this._storage.setSharedMessageImpressions(id, impressions[id]);
+        return;
+      }
+      if (!impressions[id].length) {
+        return;
+      }
+      // We don't want to store impressions older than the longest period
+      if (item?.frequency?.custom && !item.frequency.lifetime) {
+        lazy.ASRouterPreferences.console.debug(
+          "_cleanupMultiProfileImpressions: removing impressions older than longest period for item: ",
+          item
+        );
+        impressions[id] = impressions[id].filter(
+          t => now - t < this.getLongestPeriod(item)
+        );
+        this._storage.setSharedMessageImpressions(id, impressions[id]);
+      }
+    });
+    return impressions;
+  }
+
+  // Determine whether the current profile is using Selectable profiles;
+  // if yes, ensure we only message a single profile in the group.
+  shouldShowMessagesToProfile() {
+    // If the pref for this mitigation is disabled, skip these checks.
+    if (lazy.disableSingleProfileMessaging) {
+      return true;
+    }
+    // If multiple profiles aren't enabled or aren't being used,
+    // then always show messages.
+    if (
+      !lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles ||
+      !lazy.ASRouterTargeting.Environment.hasSelectableProfiles
+    ) {
+      return true;
+    }
+    // if multiple profiles exist and messagingProfileID is set,
+    // then show messages when profileID matches.
+    return (
+      lazy.messagingProfileId ===
+      lazy.ASRouterTargeting.Environment.currentProfileId
+    );
+  }
+
   handleMessageRequest({
     messages: candidates,
     triggerId,
@@ -1661,6 +1896,13 @@ export class _ASRouter {
     ordered = false,
     returnAll = false,
   }) {
+    // If using a selectable profile, return no messages
+    if (!this.shouldShowMessagesToProfile()) {
+      lazy.ASRouterPreferences.console.debug(
+        "Selectable profile in use; skip loading messages"
+      );
+      return returnAll ? [] : null;
+    }
     let shouldCache;
     lazy.ASRouterPreferences.console.debug(
       "in handleMessageRequest, arguments = ",
@@ -1670,6 +1912,13 @@ export class _ASRouter {
     const messages =
       candidates ||
       this.state.messages.filter(m => {
+        if (this._shouldSkipForAutomation(m)) {
+          lazy.ASRouterPreferences.console.debug(
+            m.id,
+            ` filtered in tests because ${m.skip_in_tests}`
+          );
+          return false;
+        }
         if (provider && m.provider !== provider) {
           lazy.ASRouterPreferences.console.debug(m.id, " filtered by provider");
           return false;
@@ -1686,6 +1935,14 @@ export class _ASRouter {
           lazy.ASRouterPreferences.console.debug(
             m.id,
             " filtered by triggerId"
+          );
+          return false;
+        }
+        // Show message after checking it's  profile scope.
+        if (!this.hasValidProfileScope(m)) {
+          lazy.ASRouterPreferences.console.debug(
+            m.id,
+            " filtered because of invalid multi profile scope"
           );
           return false;
         }
@@ -1750,6 +2007,12 @@ export class _ASRouter {
     return this.setState(state => {
       const messageBlockList = [...state.messageBlockList];
       const messageImpressions = { ...state.messageImpressions };
+      const multiProfileMessageBlocklist = [
+        ...state.multiProfileMessageBlocklist,
+      ];
+      const multiProfileMessageImpressions = {
+        ...state.multiProfileMessageImpressions,
+      };
 
       idsToBlock.forEach(id => {
         const message = state.messages.find(m => m.id === id);
@@ -1757,14 +2020,33 @@ export class _ASRouter {
         if (!messageBlockList.includes(idToBlock)) {
           messageBlockList.push(idToBlock);
         }
-
         // When a message is blocked, its impressions should be cleared as well
         delete messageImpressions[id];
+        // If selectable profiles are enabled && the message has a
+        // profile scope set, block it in all profiles
+        if (
+          lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles &&
+          message.profileScope === PROFILE_MESSAGE_SCOPE.SINGLE
+        ) {
+          // Update sharedDb by adding the messageId to the MessageBlocklist
+          // and deleting the messageId impressions from MessageImpressions
+          this._storage.setSharedMessageBlocked(idToBlock);
+          if (!multiProfileMessageBlocklist.includes(idToBlock)) {
+            multiProfileMessageBlocklist.push(idToBlock);
+          }
+          // Clear profile Impression of blocked messageId
+          delete multiProfileMessageImpressions[idToBlock];
+        }
       });
 
       this._storage.set("messageBlockList", messageBlockList);
       this._storage.set("messageImpressions", messageImpressions);
-      return { messageBlockList, messageImpressions };
+      return {
+        messageBlockList,
+        messageImpressions,
+        multiProfileMessageBlocklist,
+        multiProfileMessageImpressions,
+      };
     });
   }
 
@@ -1773,6 +2055,9 @@ export class _ASRouter {
 
     return this.setState(state => {
       const messageBlockList = [...state.messageBlockList];
+      const multiProfileMessageBlocklist = [
+        ...state.multiProfileMessageBlocklist,
+      ];
       idsToUnblock
         .map(id => state.messages.find(m => m.id === id))
         // Remove all `id`s from the message block list
@@ -1780,10 +2065,20 @@ export class _ASRouter {
           const idToUnblock =
             message && message.campaign ? message.campaign : message.id;
           messageBlockList.splice(messageBlockList.indexOf(idToUnblock), 1);
+          if (
+            lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles &&
+            message.profileScope === PROFILE_MESSAGE_SCOPE.SINGLE
+          ) {
+            this._storage.setSharedMessageBlocked(idToUnblock, false);
+            multiProfileMessageBlocklist.splice(
+              multiProfileMessageBlocklist.indexOf(idToUnblock),
+              1
+            );
+          }
         });
 
       this._storage.set("messageBlockList", messageBlockList);
-      return { messageBlockList };
+      return { messageBlockList, multiProfileMessageBlocklist };
     });
   }
 
@@ -1803,6 +2098,10 @@ export class _ASRouter {
     const newMessageImpressions = {};
     for (let { id } of this.state.messages) {
       newMessageImpressions[id] = [];
+      // Update shared storage if needed
+      if (lazy.ASRouterTargeting.Environment.canCreateSelectableProfiles) {
+        this._storage.setSharedMessageImpressions(id, null);
+      }
     }
     // Update storage
     this._storage.set("messageImpressions", newMessageImpressions);
@@ -1820,6 +2119,7 @@ export class _ASRouter {
   /**
    * Edit the ASRouter state directly. For use by the ASRouter devtools.
    * Requires browser.newtabpage.activity-stream.asrouter.devtoolsEnabled
+   *
    * @param {string} key Key of the property to edit, one of:
    *   | "groupImpressions"
    *   | "messageImpressions"
@@ -1887,7 +2187,8 @@ export class _ASRouter {
     return this.sendTriggerMessage({ ...trigger, browser });
   }
 
-  /** Simple wrapper to make test mocking easier
+  /**
+   * Simple wrapper to make test mocking easier
    *
    * @returns {Promise} resolves when the attribution string has been set
    * succesfully.
@@ -1901,6 +2202,7 @@ export class _ASRouter {
    * It forces the browser attribution to be set to something specified in asrouter admin
    * tools, and reloads the providers in order to get messages that are dependant on this
    * attribution data (see Return to AMO flow in bug 1475354 for example). Note - OSX and Windows only
+   *
    * @param {data} Object an object containing the attribtion data that came from asrouter admin page
    */
   async forceAttribution(data) {
@@ -1927,7 +2229,7 @@ export class _ASRouter {
     return this.loadMessagesFromAllProviders();
   }
 
-  async sendPBNewTabMessage({ tabId, hideDefault }) {
+  async sendPBNewTabMessage({ hideDefault }) {
     let message = null;
     const PromoInfo = {
       FOCUS: { enabledPref: "browser.promo.focus.enabled" },
@@ -1961,12 +2263,11 @@ export class _ASRouter {
       ),
     }));
 
-    const telemetryObject = { tabId };
-    TelemetryStopwatch.start("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    const timerId = Glean.messagingSystem.messageRequestTime.start();
     message = await this.handleMessageRequest({
       template: "pb_newtab",
     });
-    TelemetryStopwatch.finish("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    Glean.messagingSystem.messageRequestTime.stopAndAccumulate(timerId);
 
     // Format urls if any are defined
     ["infoLinkUrl"].forEach(key => {
@@ -1981,22 +2282,39 @@ export class _ASRouter {
   }
 
   _recordReachEvent(message) {
-    const messageGroup = message.forReachEvent.group;
-    // Events telemetry only accepts understores for the event `object`
-    const underscored = messageGroup.split("-").join("_");
-    const extra = { branches: message.branchSlug };
-    Services.telemetry.recordEvent(
-      REACH_EVENT_CATEGORY,
-      REACH_EVENT_METHOD,
-      underscored,
-      message.experimentSlug,
-      extra
+    lazy.ASRouterPreferences.console.log(
+      "In ASRouter._recordReachEvent for message: ",
+      message
     );
+
+    try {
+      const messageGroup = message.forReachEvent.group;
+      // Keeping parity with legacy event telemetry values that only accepted
+      // underscores in featureID passed to event telemetry.
+      // Glean expects the metric name in camelCase.
+      const name = messageGroup
+        .replace(/-/g, "_")
+        .split("_")
+        .map(word => word[0].toUpperCase() + word.slice(1))
+        .join("");
+      const extra = {
+        value: message.experimentSlug,
+        branches: message.branchSlug,
+      };
+      Glean.messagingExperiments[`reach${name}`].record(extra);
+    } catch (ex) {
+      // XXX ideally send this to telemetry, maybe along with a stack trace
+      lazy.ASRouterPreferences.console.error(
+        "Error recording reach event: ",
+        ex
+      );
+    }
   }
 
   /**
    * Fire a trigger, look for a matching message, and route it to the
    * appropriate message handler/messaging surface.
+   *
    * @param {object} trigger
    * @param {string} trigger.id the name of the trigger, e.g. "openURL"
    * @param {object} [trigger.param] an object with host, url, type, etc. keys
@@ -2004,18 +2322,19 @@ export class _ASRouter {
    * @param {object} [trigger.context] an object with data about the source of
    *   the trigger, matched against the message's targeting expression
    * @param {MozBrowser} trigger.browser the browser to route messages to
-   * @param {number} [trigger.tabId] identifier used only for exposure testing
    * @param {boolean} [skipLoadingMessages=false] pass true to skip looking for
    *   new messages. use when calling from loadMessagesFromAllProviders to avoid
    *   recursion. we call this from loadMessagesFromAllProviders in order to
    *   fire the messagesLoaded trigger.
    * @returns {Promise<object>}
-   * @resolves {message} an object with the routed message
+   *   Resolves to an object with the routed message.
    */
   async sendTriggerMessage(
-    { tabId, browser, ...trigger },
+    { browser, ...trigger },
     skipLoadingMessages = false
   ) {
+    lazy.ASRouterPreferences.console.debug("entering sendTriggerMessage");
+    lazy.ASRouterPreferences.console.debug("trigger.id = ", trigger.id);
     if (!skipLoadingMessages) {
       await this.loadMessagesFromAllProviders();
     }
@@ -2025,13 +2344,15 @@ export class _ASRouter {
         trigger.context = {};
       }
       if (typeof trigger.context === "object") {
+        trigger.context.isAIWindow = !!lazy.AIWindow?.isAIWindowActive?.(
+          browser.ownerGlobal
+        );
         trigger.context.browserIsSelected =
           trigger.context.browserIsSelected ||
           browser === browser.ownerGlobal.gBrowser?.selectedBrowser;
       }
     }
-    const telemetryObject = { tabId };
-    TelemetryStopwatch.start("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    const timerId = Glean.messagingSystem.messageRequestTime.start();
     // Return all the messages so that it can record the Reach event
     const messages =
       (await this.handleMessageRequest({
@@ -2040,7 +2361,7 @@ export class _ASRouter {
         triggerContext: trigger.context,
         returnAll: true,
       })) || [];
-    TelemetryStopwatch.finish("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    Glean.messagingSystem.messageRequestTime.stopAndAccumulate(timerId);
 
     // Record the Reach event for all the messages with `forReachEvent`,
     // only send the first message without forReachEvent to the target
@@ -2052,6 +2373,10 @@ export class _ASRouter {
           message.forReachEvent.sent = true;
         }
       } else {
+        lazy.ASRouterPreferences.console.debug(
+          "about to push a nonReachMessage: ",
+          message
+        );
         nonReachMessages.push(message);
       }
     }
@@ -2093,7 +2418,6 @@ export class _ASRouter {
             private: true,
             triggeringPrincipal:
               Services.scriptSecurityManager.getSystemPrincipal({}),
-            csp: null,
             resolveOnContentBrowserCreated,
             opener: "devtools",
           }
@@ -2105,7 +2429,7 @@ export class _ASRouter {
       privateBrowserOpener.browsingContext.currentWindowGlobal
         .getActor("AboutPrivateBrowsing")
         .sendAsyncMessage("ShowDevToolsMessage", msg);
-    }, 100);
+    }, 200);
 
     return privateBrowserOpener;
   }

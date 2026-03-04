@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -147,8 +135,6 @@ menu-view-history-button =
     .label = Журнал
 menu-view-synced-tabs-sidebar =
     .label = Облачные вкладки
-menu-view-megalist-sidebar =
-    .label = Пароли
 menu-view-full-zoom =
     .label = Масштаб
     .accesskey = ш
@@ -256,6 +242,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Мобильные закладки
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Профили
+menu-profiles-manage-profiles =
+    .label = Управление профилями
+menu-profiles-new-profile =
+    .label = Новый профиль
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (текущий)
+menu-profiles-menu =
+    .label = Профили
+    .accesskey = З
+
 ## Tools Menu
 
 menu-tools =
@@ -264,6 +266,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Загрузки
     .accesskey = З
+menu-tools-extensions-and-themes =
+    .label = Расширения и темы
+    .accesskey = У
 menu-tools-addons-and-themes =
     .label = Дополнения и темы
     .accesskey = п
@@ -289,7 +294,7 @@ menu-tools-page-source =
     .label = Исходный код страницы
     .accesskey = х
 menu-tools-page-info =
-    .label = Сведения о странице
+    .label = Информация о странице
     .accesskey = в
 menu-settings =
     .label = Настройки

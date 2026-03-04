@@ -17,6 +17,8 @@ about-logging-set-log-file = Танзими файли сабти рӯйдодҳ
 about-logging-set-log-modules = Танзими модули сабти рӯйдодҳо
 about-logging-start-logging = Оғоз кардани сабти рӯйдодҳо
 about-logging-stop-logging = Анҷом додани сабти рӯйдодҳо
+about-logging-copy-as-url = Нусха бардоштани танзимоти ҷорӣ ҳамчун нишонии «URL»
+about-logging-url-copied = Танзимоти сабти рӯйдодҳо ба ҳофизаи муваққатӣ ҳамчун нишонии «URL»-и пешбинишуда нусха бардошта шуд
 about-logging-buttons-disabled = Сабти рӯйдодҳо тавассути тағйирёбандаҳои муҳитӣ танзим шудааст, танзимоти серамал дастнорас аст.
 about-logging-some-elements-disabled = Сабти рӯйдодҳо тавассути нишонии URL танзим шудааст, баъзе имконоти танзимот дастнорасанд.
 about-logging-info = Маълумот:
@@ -29,6 +31,9 @@ about-logging-no-log-modules = Ҳеҷ
 about-logging-no-log-file = Ҳеҷ
 about-logging-logging-preset-selector-text = Сабти рӯйдодҳои пешфарз:
 about-logging-with-profiler-stacks-checkbox = Фаъол кардани пайгирии даста барои паёмҳои сабти рӯйдодҳо
+about-logging-with-javascript-tracing-checkbox = Фаъол кардани пайгирии «JavaScript»
+about-logging-menu =
+    .title = Имконоти иловагӣ
 
 ## Logging presets
 
@@ -46,6 +51,13 @@ about-logging-preset-media-playback-label = Пахши расона
 about-logging-preset-media-playback-description = Модулҳои сабти рӯйдодҳо барои ташхиси масъалаҳои пахши расона (масъалаҳо ба ғайр аз конфронсҳои видеоӣ)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Модулҳои сабти рӯйдодҳо барои ташхиси дархостҳои «WebRTC»
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = Модулҳои сабти рӯйдодҳо барои ташхиси масъалаҳои марбут ба василаҳои рамзёбӣ ва рамзгузории аудио/видеои «WebCodecs» ва василаҳои рамзёбии тасвирҳо
+about-logging-preset-ml-label = Омӯзиши мошинӣ
+about-logging-preset-ml-description = Модулҳои сабти рӯйдодҳо барои ташхиси масъалаҳои омӯзиши мошинӣ
+about-logging-preset-web-compat-label = Мутобиқати веб
+about-logging-preset-web-compat-description = Модулҳои сабти рӯйдодҳо барои ташхиси масъалаҳои мутобиқати веб
+about-logging-preset-navigation = Паймоиш
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Модулҳои сабти рӯйдодҳо барои ташхиси масъалаҳои «WebGPU»
 about-logging-preset-gfx-label = Графика
@@ -58,9 +70,7 @@ about-logging-preset-custom-description = Модулҳои сабти рӯйдо
 # Error handling
 about-logging-error = Хато:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Қимати «{ $v }» барои калиди «{ $k }» нодуруст аст
 about-logging-unknown-logging-preset = Танзими пешфарз барои сабти рӯйдодҳои «{ $v }» номаълум аст
@@ -68,4 +78,53 @@ about-logging-unknown-profiler-preset = Танзими пешфарз барои
 about-logging-unknown-option = Имкони about:logging барои «{ $k }» номаълум аст
 about-logging-configuration-url-ignored = Нишонии URL-и танзимот рад карда шуд
 about-logging-file-and-profiler-override = Дар як вақт ба таври маҷбурӣ баровардани сабт ба файл ва аз нав танзим кардани имконоти профилсоз ғайриимкон аст
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = Хато ба миён омад: { $errorText }
 about-logging-configured-via-url = Имкон тавассути нишонии URL танзим шуд
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = Маълумоти профил забт карда шудааст. Шумо мехоҳед, ки онро нигоҳ доред ё бор кунед?
+about-logging-save-button = Нигоҳ доштан
+about-logging-upload-button = Бор кардан
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = Дар { $path } нигоҳ дошта шуд
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = Боркунии маълумоти профил: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = Ба <a data-l10n-name="uploaded-message-url">{ $url }</a> бор карда шуд
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> Мубодилаи нишонии «URL»
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = Ҳангоми боркунии профил хато ба миён омад: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = Ҳангоми нигоҳдории профили боршуда хато ба миён омад: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = Ҳангоми нигоҳ доштани файл хато ба миён омад: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = Профили { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = Профилҳои боршуда
+about-logging-no-uploaded-profiles = То ҳол ягон профил бор карда нашудааст.
+about-logging-delete-uploaded-profile = Нест кардан
+about-logging-view-uploaded-profile = Дидани профил
+about-logging-delete-profile-confirm-title = Нест кардани профил
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = Шумо мутмаин ҳастед, ки мехоҳед профили «{ $profileName }»-ро нест кунед? Ин амал бекор карда намешавад.
+about-logging-deleting-profile = Нест карда мешавад…

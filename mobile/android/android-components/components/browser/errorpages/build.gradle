@@ -6,37 +6,21 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    namespace 'mozilla.components.browser.errorpages'
+    namespace = 'mozilla.components.browser.errorpages'
 }
 
 dependencies {
-    implementation ComponentsDependencies.androidx_annotation
+    implementation project(':components:support-ktx')
+    implementation project(':components:ui-icons')
 
-    implementation project(':support-ktx')
+    implementation libs.androidx.annotation
 
-    implementation project(':ui-icons')
+    testImplementation project(':components:support-test')
 
-    testImplementation project(':support-test')
-
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation ComponentsDependencies.testing_robolectric
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.robolectric
 }
 
-apply from: '../../../android-lint.gradle'
+apply from: '../../../common-config.gradle'
 apply from: '../../../publish.gradle'
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

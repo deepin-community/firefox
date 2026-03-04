@@ -11,28 +11,26 @@
 #include "mozilla/UniquePtr.h"
 
 // Keep others in (case-insensitive) order:
+#include "CSSFilterInstance.h"
 #include "FilterSupport.h"
 #include "ImgDrawResult.h"
 #include "SVGContentUtils.h"
+#include "SVGIntegrationUtils.h"
 #include "gfx2DGlue.h"
 #include "gfxContext.h"
 #include "gfxPlatform.h"
-
 #include "gfxUtils.h"
-#include "mozilla/Unused.h"
+#include "mozilla/ISVGDisplayableFrame.h"
+#include "mozilla/SVGFilterInstance.h"
+#include "mozilla/SVGObserverUtils.h"
+#include "mozilla/SVGUtils.h"
+#include "mozilla/StaticPrefs_gfx.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/gfx/Filters.h"
 #include "mozilla/gfx/Helpers.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/gfx/PatternHelpers.h"
-#include "mozilla/ISVGDisplayableFrame.h"
-#include "mozilla/StaticPrefs_gfx.h"
-#include "mozilla/SVGFilterInstance.h"
-#include "mozilla/SVGObserverUtils.h"
-#include "mozilla/SVGUtils.h"
-#include "mozilla/dom/Document.h"
 #include "nsLayoutUtils.h"
-#include "CSSFilterInstance.h"
-#include "SVGIntegrationUtils.h"
 
 using namespace mozilla::dom;
 using namespace mozilla::gfx;
@@ -42,7 +40,7 @@ namespace mozilla {
 
 FilterDescription FilterInstance::GetFilterDescription(
     nsIContent* aFilteredElement, Span<const StyleFilter> aFilterChain,
-    nsISupports* aFiltersObserverList, bool aFilterInputIsTainted,
+    ISVGFilterObserverList* aFiltersObserverList, bool aFilterInputIsTainted,
     const UserSpaceMetrics& aMetrics, const gfxRect& aBBox,
     nsTArray<RefPtr<SourceSurface>>& aOutAdditionalImages) {
   gfxMatrix identity;
@@ -296,9 +294,7 @@ WrFiltersStatus FilterInstance::BuildWebRenderFiltersImpl(
 
       sRGBColor color = shadow.mColor;
       if (!primNeedsSrgb) {
-        color = sRGBColor(gsRGBToLinearRGBMap[uint8_t(color.r * 255)],
-                          gsRGBToLinearRGBMap[uint8_t(color.g * 255)],
-                          gsRGBToLinearRGBMap[uint8_t(color.b * 255)], color.a);
+        color = FilterWrappers::SRGBToLinearRGB(color);
       }
       wr::Shadow wrShadow;
       wrShadow.offset = {shadow.mOffset.x, shadow.mOffset.y};
@@ -323,8 +319,7 @@ WrFiltersStatus FilterInstance::BuildWebRenderFiltersImpl(
       wr::FilterOp filterOp = {wr::FilterOp::Tag::ComponentTransfer};
       wr::WrFilterData filterData;
       aWrFilters.values.AppendElement(nsTArray<float>());
-      nsTArray<float>* values =
-          &aWrFilters.values[aWrFilters.values.Length() - 1];
+      nsTArray<float>* values = &aWrFilters.values.LastElement();
       values->SetCapacity(numValues);
 
       filterData.funcR_type = FuncTypeToWr(attributes.mTypes[0]);
@@ -366,7 +361,7 @@ WrFiltersStatus FilterInstance::BuildWebRenderFiltersImpl(
       return WrFiltersStatus::BLOB_FALLBACK;
     }
 
-    if (filterIsNoop && aWrFilters.filters.Length() > 0 &&
+    if (filterIsNoop && !aWrFilters.filters.IsEmpty() &&
         (aWrFilters.filters.LastElement().tag ==
              wr::FilterOp::Tag::SrgbToLinear ||
          aWrFilters.filters.LastElement().tag ==
@@ -378,7 +373,7 @@ WrFiltersStatus FilterInstance::BuildWebRenderFiltersImpl(
       // css/filter-effects/filter-scale-001.html for which the needless
       // sRGB->linear->no-op->sRGB roundtrip introduces a slight error and we
       // cannot add fuzziness to the test.
-      Unused << aWrFilters.filters.PopLastElement();
+      (void)aWrFilters.filters.PopLastElement();
       srgb = previousSrgb;
     }
 
@@ -645,7 +640,7 @@ static WrFiltersStatus WrFilterOpSVGFEComponentTransfer(
     }
   }
   aWrFilters.values.AppendElement(nsTArray<float>());
-  nsTArray<float>& values = aWrFilters.values[aWrFilters.values.Length() - 1];
+  nsTArray<float>& values = aWrFilters.values.LastElement();
   values.SetCapacity(stops * 4);
 
   // Set the FilterData funcs for whether or not to interpolate the values
@@ -687,11 +682,10 @@ static WrFiltersStatus WrFilterOpSVGFEComponentTransfer(
   // This builds a single interleaved RGBA table as it is well suited to GPU
   // texture fetches without any dynamic component indexing in the shader which
   // can confuse buggy shader compilers.
-  float invScale = 1.0f / (float)(stops - 1);
   for (size_t c = 0; c < 4; c++) {
     auto f = aAttributes.mTypes[c];
     // Check if there's no data (we have crashtests for this).
-    if (aAttributes.mValues[c].Length() < 1 &&
+    if (aAttributes.mValues[c].IsEmpty() &&
         f != SVG_FECOMPONENTTRANSFER_SAME_AS_R) {
       f = SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY;
     }
@@ -701,65 +695,65 @@ static WrFiltersStatus WrFilterOpSVGFEComponentTransfer(
     }
     switch (f) {
       case SVG_FECOMPONENTTRANSFER_TYPE_DISCRETE: {
-        size_t length1 = (size_t)aAttributes.mValues[c].Length() - 1;
+        size_t length = (size_t)aAttributes.mValues[c].Length();
+        size_t length1 = length - 1;
+        float step = (float)length / (float)stops;
         for (size_t i = 0; i < stops; i++) {
           // find the corresponding color in the table
           // this can not overflow due to the length check
-          float kf = (float)i * invScale * (float)length1;
+          float kf = (float)i * step;
           float floorkf = floor(kf);
           size_t k = (size_t)floorkf;
           k = std::min(k, length1);
           float v = aAttributes.mValues[c][k];
-          v = mozilla::clamped(v, 0.0f, 1.0f);
+          v = std::clamp(v, 0.0f, 1.0f);
           values[i * 4 + c] = v;
         }
         break;
       }
       case SVG_FECOMPONENTTRANSFER_TYPE_GAMMA: {
-        float slope = invScale;
-        float intercept = 0.0f;
+        float step = 1.0f / (float)(stops - 1);
         float amplitude = aAttributes.mValues[c][0];
         float exponent = aAttributes.mValues[c][1];
         float offset = aAttributes.mValues[c][2];
         for (size_t i = 0; i < stops; i++) {
-          float v =
-              amplitude * pow((float)i * slope + intercept, exponent) + offset;
-          v = mozilla::clamped(v, 0.0f, 1.0f);
+          float v = amplitude * pow((float)i * step, exponent) + offset;
+          v = std::clamp(v, 0.0f, 1.0f);
           values[i * 4 + c] = v;
         }
         break;
       }
       case SVG_FECOMPONENTTRANSFER_TYPE_IDENTITY: {
-        float slope = invScale;
-        float intercept = 0.0f;
+        float step = 1.0f / (float)(stops - 1);
         for (size_t i = 0; i < stops; i++) {
-          float v = (float)i * slope + intercept;
-          v = mozilla::clamped(v, 0.0f, 1.0f);
+          float v = (float)i * step;
+          v = std::clamp(v, 0.0f, 1.0f);
           values[i * 4 + c] = v;
         }
         break;
       }
       case SVG_FECOMPONENTTRANSFER_TYPE_LINEAR: {
-        float slope = aAttributes.mValues[c][0] * invScale;
+        float step = aAttributes.mValues[c][0] / (float)(stops - 1);
         float intercept = aAttributes.mValues[c][1];
         for (size_t i = 0; i < stops; i++) {
-          float v = (float)i * slope + intercept;
-          v = mozilla::clamped(v, 0.0f, 1.0f);
+          float v = (float)i * step + intercept;
+          v = std::clamp(v, 0.0f, 1.0f);
           values[i * 4 + c] = v;
         }
         break;
       }
       case SVG_FECOMPONENTTRANSFER_TYPE_TABLE: {
         size_t length1 = (size_t)aAttributes.mValues[c].Length() - 1;
+        float step = (float)length1 / (float)(stops - 1);
         for (size_t i = 0; i < stops; i++) {
           // Find the corresponding color in the table and interpolate
-          float kf = (float)i * invScale * (float)length1;
+          float kf = (float)i * step;
           float floorkf = floor(kf);
           size_t k = (size_t)floorkf;
           float v1 = aAttributes.mValues[c][k];
           float v2 = aAttributes.mValues[c][(k + 1 <= length1) ? k + 1 : k];
           float v = v1 + (v2 - v1) * (kf - floorkf);
-          v = mozilla::clamped(v, 0.0f, 1.0f);
+          v = std::clamp(v, 0.0f, 1.0f);
           values[i * 4 + c] = v;
         }
         break;
@@ -1171,8 +1165,12 @@ static WrFiltersStatus WrFilterOpSVGFETurbulence(
   // for setting up the seed.
   int32_t m1 = 2147483647 - 1;
   int32_t seed = (int32_t)((uint32_t)aAttributes.mSeed);
-  if (seed <= 0) seed = -(seed % m1) + 1;
-  if (seed > m1) seed = m1;
+  if (seed <= 0) {
+    seed = -(seed % m1) + 1;
+  }
+  if (seed > m1) {
+    seed = m1;
+  }
   switch (aAttributes.mType) {
     case SVG_TURBULENCE_TYPE_FRACTALNOISE:
       if (aAttributes.mStitchable) {
@@ -1261,7 +1259,7 @@ WrFiltersStatus FilterInstance::BuildWebRenderSVGFiltersImpl(
 
   // We have to remap the input nodes to a possibly larger number of output
   // nodes due to expanding feMerge.
-  static constexpr size_t maxFilters = 256;
+  static constexpr size_t maxFilters = wr::SVGFE_GRAPH_MAX;
   int16_t bufferIdMapping[maxFilters];
   // Just drop the graph if there are too many filters to process.
   if (instance.mFilterDescription.mPrimitives.Length() > maxFilters) {
@@ -1646,17 +1644,16 @@ nsresult FilterInstance::BuildPrimitives(
 
   uint32_t filterIndex = 0;
 
-  for (uint32_t i = 0; i < aFilterChain.Length(); i++) {
-    if (aFilterChain[i].IsUrl() && aFilterFrames.IsEmpty()) {
+  for (const auto& filter : aFilterChain) {
+    if (filter.IsUrl() && aFilterFrames.IsEmpty()) {
       return NS_ERROR_FAILURE;
     }
-    auto* filterFrame =
-        aFilterChain[i].IsUrl() ? aFilterFrames[filterIndex++] : nullptr;
+    auto* filterFrame = filter.IsUrl() ? aFilterFrames[filterIndex++] : nullptr;
     bool inputIsTainted = primitiveDescriptions.IsEmpty()
                               ? aFilterInputIsTainted
                               : primitiveDescriptions.LastElement().IsTainted();
-    nsresult rv = BuildPrimitivesForFilter(
-        aFilterChain[i], filterFrame, inputIsTainted, primitiveDescriptions);
+    nsresult rv = BuildPrimitivesForFilter(filter, filterFrame, inputIsTainted,
+                                           primitiveDescriptions);
     if (NS_FAILED(rv)) {
       return rv;
     }
@@ -1706,6 +1703,10 @@ nsresult FilterInstance::BuildPrimitivesForFilter(
 static void UpdateNeededBounds(const nsIntRegion& aRegion, nsIntRect& aBounds) {
   aBounds = aRegion.GetBounds();
 
+  if (aBounds.IsEmpty()) {
+    return;
+  }
+
   bool overflow;
   IntSize surfaceSize =
       SVGUtils::ConvertToSurfaceSize(SizeDouble(aBounds.Size()), &overflow);
@@ -1727,7 +1728,7 @@ void FilterInstance::ComputeNeededBoxes() {
       mFilterDescription, mPostFilterDirtyRegion, sourceGraphicNeededRegion,
       fillPaintNeededRegion, strokePaintNeededRegion);
 
-  sourceGraphicNeededRegion.And(sourceGraphicNeededRegion, mTargetBounds);
+  sourceGraphicNeededRegion.AndWith(mTargetBounds);
 
   UpdateNeededBounds(sourceGraphicNeededRegion, mSourceGraphic.mNeededBounds);
   UpdateNeededBounds(fillPaintNeededRegion, mFillPaint.mNeededBounds);
@@ -1942,12 +1943,11 @@ nsRect FilterInstance::ComputeSourceNeededRect() {
 }
 
 nsIntRect FilterInstance::OutputFilterSpaceBounds() const {
-  uint32_t numPrimitives = mFilterDescription.mPrimitives.Length();
-  if (numPrimitives <= 0) {
+  if (mFilterDescription.mPrimitives.IsEmpty()) {
     return nsIntRect();
   }
 
-  return mFilterDescription.mPrimitives[numPrimitives - 1].PrimitiveSubregion();
+  return mFilterDescription.mPrimitives.LastElement().PrimitiveSubregion();
 }
 
 nsIntRect FilterInstance::FrameSpaceToFilterSpace(const nsRect* aRect) const {
@@ -1988,7 +1988,7 @@ nsIntRegion FilterInstance::FrameSpaceToFilterSpace(
   for (auto iter = aRegion->RectIter(); !iter.Done(); iter.Next()) {
     // FrameSpaceToFilterSpace rounds out, so this works.
     nsRect rect = iter.Get();
-    result.Or(result, FrameSpaceToFilterSpace(&rect));
+    result.OrWith(FrameSpaceToFilterSpace(&rect));
   }
   return result;
 }
@@ -1998,7 +1998,7 @@ nsRegion FilterInstance::FilterSpaceToFrameSpace(
   nsRegion result;
   for (auto iter = aRegion.RectIter(); !iter.Done(); iter.Next()) {
     // FilterSpaceToFrameSpace rounds out, so this works.
-    result.Or(result, FilterSpaceToFrameSpace(iter.Get()));
+    result.OrWith(FilterSpaceToFrameSpace(iter.Get()));
   }
   return result;
 }

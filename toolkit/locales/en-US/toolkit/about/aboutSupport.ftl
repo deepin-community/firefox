@@ -19,6 +19,10 @@ support-addons-type = Type
 support-addons-enabled = Enabled
 support-addons-version = Version
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Location
 legacy-user-stylesheets-title = Legacy User Stylesheets
 legacy-user-stylesheets-enabled = Active
 legacy-user-stylesheets-stylesheet-types = Stylesheets
@@ -29,10 +33,6 @@ security-software-name = Name
 security-software-antivirus = Antivirus
 security-software-antispyware = Antispyware
 security-software-firewall = Firewall
-features-title = { -brand-short-name } Features
-features-name = Name
-features-version = Version
-features-id = ID
 processes-title = Remote Processes
 processes-type = Type
 processes-count = Count
@@ -97,9 +97,6 @@ show-dir-label =
 environment-variables-title = Environment Variables
 environment-variables-name = Name
 environment-variables-value = Value
-experimental-features-title = Experimental Features
-experimental-features-name = Name
-experimental-features-value = Value
 modified-key-prefs-title = Important Modified Preferences
 modified-prefs-name = Name
 modified-prefs-value = Value
@@ -134,6 +131,10 @@ place-database-stats-efficiency-perc = Efficiency (%)
 place-database-stats-sequentiality-perc = Sequentiality (%)
 place-database-integrity = Integrity
 place-database-verify-integrity = Verify Integrity
+place-database-last-idle-maintenance-data = Last Idle Maintenance Date
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Last Vacuum Date
+place-database-last-integrity-corruption-date = Last Integrity Corruption Date
 a11y-title = Accessibility
 a11y-activated = Activated
 a11y-force-disabled = Prevent Accessibility
@@ -186,6 +187,8 @@ media-capabilities-enumerate = Enumerate database
 
 media-codec-support-sw-decoding = Software Decoding
 media-codec-support-hw-decoding = Hardware Decoding
+media-codec-support-sw-encoding = Software Encoding
+media-codec-support-hw-encoding = Hardware Encoding
 media-codec-support-codec-name = Codec Name
 media-codec-support-supported = Supported
 media-codec-support-unsupported = Unsupported
@@ -205,9 +208,6 @@ media-cdm-capabilities = Capabilities
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
 media-cdm-clear-lead = Clear Lead
-# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
-# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
-media-hdcp-22-compatible = HDCP 2.2 Compatible
 
 ##
 
@@ -397,8 +397,6 @@ multi-process-windows = { $remoteWindows }/{ $totalWindows }
 # $fissionWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 fission-windows = { $fissionWindows }/{ $totalWindows }
-fission-status-experiment-control = Disabled by experiment
-fission-status-experiment-treatment = Enabled by experiment
 fission-status-disabled-by-e10s-env = Disabled by environment
 fission-status-enabled-by-env = Enabled by environment
 fission-status-disabled-by-env = Disabled by environment
@@ -407,7 +405,6 @@ fission-status-disabled-by-default = Disabled by default
 fission-status-enabled-by-user-pref = Enabled by user
 fission-status-disabled-by-user-pref = Disabled by user
 fission-status-disabled-by-e10s-other = E10s disabled
-fission-status-enabled-by-rollout = Enabled by phased rollout
 
 async-pan-zoom = Asynchronous Pan/Zoom
 apz-none = none

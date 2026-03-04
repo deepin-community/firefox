@@ -14,8 +14,19 @@ urlbar-translations-button2 =
 # un-localized BETA icon that is in the panel.
 urlbar-translations-button-intro =
     .tooltiptext = Փորձեք գաղտնի թարգմանությունները { -brand-shorter-name }. Beta-ում
+# If your language requires declining the language name, a possible solution
+# is to adapt the structure of the phrase, or use a support noun, e.g.
+# `Page translated from: { $fromLanguage }. Current target language: { $toLanguage }`
+#
+# Variables:
+#   $fromLanguage (string) - The original language of the document.
+#   $toLanguage (string) - The target language of the translation.
+urlbar-translations-button-translated =
+    .tooltiptext = Էջը թարգմանվեց { $fromLanguage }ից { $toLanguage }
 urlbar-translations-button-loading =
     .tooltiptext = Թարգմանությունն ընթացքի մեջ է
+translations-panel-settings-button =
+    .aria-label = Կառավարել թարգմանության կարգավորումները
 # Text displayed on a language dropdown when the language is in beta
 # Variables:
 #   $language (string) - The localized display name of the detected language
@@ -86,7 +97,7 @@ translations-panel-error-unsupported-hint-unknown = Ներողություն, մ
 ## translate them as `Source language:` and `Target language:`
 
 translations-panel-from-label = Թարգմանել հետևյալից
-translations-panel-to-label = Թարգմանել հետևյալով
+translations-panel-to-label = Թարգմանել հետևյալի՝
 
 ## The translation panel appears from the url bar, and this view is the "restore" view
 ## that lets a user restore a page to the original language, or translate into another
@@ -115,14 +126,7 @@ translations-manage-description = Ներբեռնել լեզուներ անցան
 translations-manage-all-language = Բոլոր լեզուները
 translations-manage-download-button = Ներբեռնել
 translations-manage-delete-button = Ջնջել
-translations-manage-intro = Սահմանեք լեզվի և կայքի թարգմանության Ձեր նախընտրանքները և կառավարեք անցանց թարգմանության համար տեղադրված լեզուները:
-translations-manage-install-description = Տեղադրել լեզուներ անցանց թարգմանության համար
-translations-manage-language-install-button =
-    .label = Տեղադրել
-translations-manage-language-install-all-button =
-    .label = Տեղադրել բոլորը
-    .accesskey = Տ
-translations-manage-intro-2 = Դրեք Ձեր լեզվի և կայքի թարգմանության նախըտրանքները և կառավարեք անցանց թարգմանության համար ներբեռնված լեզուները:
+translations-manage-intro-2 = Սահմանեք Ձեր լեզվի և կայքի թարգմանության նախըտրանքները և կառավարեք անցանց թարգմանության համար ներբեռնված լեզուները:
 translations-manage-download-description = Ներբեռնել լեզուներ անցանց թարգմանության համար
 translations-manage-language-download-button =
     .label = Ներբեռնել
@@ -134,7 +138,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Հեռացնել բոլորը
     .accesskey = e
-translations-manage-error-install = Լեզուների ֆայլերը տեղադրելիս խնդիր առաջացավ: Խնդրում ենք կրկին փորձել.
 translations-manage-error-download = Լեզուների ֆայլերը ներբեռնելիս խնդիր առաջացավ: Խնդրում ենք կրկին փորձել.
 translations-manage-error-delete = Լեզուների ֆայլերը ջնջելիս սխալ տեղի ունեցավ: Խնդրում ենք կրկին փորձել.
 translations-manage-error-remove = Լեզուների ֆայլերը հեռացնելիս սխալ տեղի ունեցավ: Խնդրում ենք կրկին փորձել.
@@ -238,3 +241,5 @@ select-translations-panel-unsupported-language-message-unknown =
 # Text displayed on the menuitem that opens the Translation Settings page.
 select-translations-panel-open-translations-settings-menuitem =
     .label = Թարգմանության կարգավորումներ
+# An announcement made to assistive technology when the translation is complete
+select-translations-panel-translation-complete-announcement = Թարգմանությունն ավարտվեց

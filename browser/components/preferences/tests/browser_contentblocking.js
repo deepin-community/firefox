@@ -13,10 +13,14 @@ const NCBP_PREF = "network.cookie.cookieBehavior.pbmode";
 const CAT_PREF = "browser.contentblocking.category";
 const FP_PREF = "privacy.trackingprotection.fingerprinting.enabled";
 const STP_PREF = "privacy.trackingprotection.socialtracking.enabled";
-const CM_PREF = "privacy.trackingprotection.cryptomining.enabled";
+const CRYPTO_TP_PREF = "privacy.trackingprotection.cryptomining.enabled";
 const EMAIL_TP_PREF = "privacy.trackingprotection.emailtracking.enabled";
 const EMAIL_TP_PBM_PREF =
   "privacy.trackingprotection.emailtracking.pbmode.enabled";
+const CONSENTMANAGER_SKIP_PREF =
+  "privacy.trackingprotection.consentmanager.skip.enabled";
+const CONSENTMANAGER_SKIP_PBM_PREF =
+  "privacy.trackingprotection.consentmanager.skip.pbmode.enabled";
 const LEVEL2_PREF = "privacy.annotate_channels.strict_list.enabled";
 const REFERRER_PREF = "network.http.referer.disallowCrossSiteRelaxingDefault";
 const REFERRER_TOP_PREF =
@@ -35,13 +39,23 @@ const FPP_PREF = "privacy.fingerprintingProtection";
 const FPP_PBM_PREF = "privacy.fingerprintingProtection.pbmode";
 const THIRD_PARTY_COOKIE_DEPRECATION_PREF =
   "network.cookie.cookieBehavior.optInPartitioning";
+const BTP_PREF = "privacy.bounceTrackingProtection.mode";
+const LNA_PREF = "network.lna.blocking";
+const LNA_ETP_PREF = "network.lna.etp.enabled";
 
 const { EnterprisePolicyTesting, PoliciesPrefTracker } =
   ChromeUtils.importESModule(
     "resource://testing-common/EnterprisePolicyTesting.sys.mjs"
   );
 
-requestLongerTimeout(2);
+requestLongerTimeout(3);
+
+// Enable LNA ETP integration for all tests so lna rules are processed
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [[LNA_ETP_PREF, true]],
+  });
+});
 
 add_task(async function testListUpdate() {
   SpecialPowers.pushPrefEnv({ set: [[PREF_TEST_NOTIFICATIONS, true]] });
@@ -330,9 +344,11 @@ add_task(async function testContentBlockingStandardCategory() {
     [NCBP_PREF]: null,
     [FP_PREF]: null,
     [STP_PREF]: null,
-    [CM_PREF]: null,
+    [CRYPTO_TP_PREF]: null,
     [EMAIL_TP_PREF]: null,
     [EMAIL_TP_PBM_PREF]: null,
+    [CONSENTMANAGER_SKIP_PREF]: null,
+    [CONSENTMANAGER_SKIP_PBM_PREF]: null,
     [LEVEL2_PREF]: null,
     [REFERRER_PREF]: null,
     [REFERRER_TOP_PREF]: null,
@@ -342,6 +358,8 @@ add_task(async function testContentBlockingStandardCategory() {
     [FPP_PREF]: null,
     [FPP_PBM_PREF]: null,
     [THIRD_PARTY_COOKIE_DEPRECATION_PREF]: null,
+    [BTP_PREF]: null,
+    [LNA_PREF]: null,
   };
 
   for (let pref in prefs) {
@@ -373,7 +391,10 @@ add_task(async function testContentBlockingStandardCategory() {
   );
   Services.prefs.setBoolPref(STP_PREF, !Services.prefs.getBoolPref(STP_PREF));
   Services.prefs.setBoolPref(FP_PREF, !Services.prefs.getBoolPref(FP_PREF));
-  Services.prefs.setBoolPref(CM_PREF, !Services.prefs.getBoolPref(CM_PREF));
+  Services.prefs.setBoolPref(
+    CRYPTO_TP_PREF,
+    !Services.prefs.getBoolPref(CRYPTO_TP_PREF)
+  );
   Services.prefs.setBoolPref(
     EMAIL_TP_PREF,
     !Services.prefs.getBoolPref(EMAIL_TP_PREF)
@@ -381,6 +402,14 @@ add_task(async function testContentBlockingStandardCategory() {
   Services.prefs.setBoolPref(
     EMAIL_TP_PBM_PREF,
     !Services.prefs.getBoolPref(EMAIL_TP_PBM_PREF)
+  );
+  Services.prefs.setBoolPref(
+    CONSENTMANAGER_SKIP_PREF,
+    !Services.prefs.getBoolPref(CONSENTMANAGER_SKIP_PREF)
+  );
+  Services.prefs.setBoolPref(
+    CONSENTMANAGER_SKIP_PBM_PREF,
+    !Services.prefs.getBoolPref(CONSENTMANAGER_SKIP_PBM_PREF)
   );
   Services.prefs.setBoolPref(
     LEVEL2_PREF,
@@ -411,6 +440,10 @@ add_task(async function testContentBlockingStandardCategory() {
   Services.prefs.setBoolPref(
     THIRD_PARTY_COOKIE_DEPRECATION_PREF,
     !Services.prefs.getBoolPref(THIRD_PARTY_COOKIE_DEPRECATION_PREF)
+  );
+  Services.prefs.setIntPref(
+    BTP_PREF,
+    Ci.nsIBounceTrackingProtection.MODE_ENABLED
   );
 
   for (let pref in prefs) {
@@ -474,6 +507,8 @@ add_task(async function testContentBlockingStrictCategory() {
   Services.prefs.setBoolPref(TP_PBM_PREF, false);
   Services.prefs.setBoolPref(EMAIL_TP_PREF, false);
   Services.prefs.setBoolPref(EMAIL_TP_PBM_PREF, false);
+  Services.prefs.setBoolPref(CONSENTMANAGER_SKIP_PREF, false);
+  Services.prefs.setBoolPref(CONSENTMANAGER_SKIP_PBM_PREF, false);
   Services.prefs.setBoolPref(LEVEL2_PREF, false);
   Services.prefs.setBoolPref(REFERRER_PREF, false);
   Services.prefs.setBoolPref(REFERRER_TOP_PREF, false);
@@ -491,6 +526,11 @@ add_task(async function testContentBlockingStrictCategory() {
     Ci.nsICookieService.BEHAVIOR_LIMIT_FOREIGN
   );
   Services.prefs.setBoolPref(THIRD_PARTY_COOKIE_DEPRECATION_PREF, false);
+  Services.prefs.setIntPref(
+    BTP_PREF,
+    Ci.nsIBounceTrackingProtection.MODE_ENABLED_DRY_RUN
+  );
+  Services.prefs.setBoolPref(LNA_PREF, false);
   let strict_pref = Services.prefs.getStringPref(STRICT_PREF).split(",");
 
   await openPreferencesViaOpenPreferencesAPI("privacy", { leaveOpen: true });
@@ -563,18 +603,18 @@ add_task(async function testContentBlockingStrictCategory() {
           `${STP_PREF} has been set to false`
         );
         break;
-      case "cm":
+      case "cryptoTP":
         is(
-          Services.prefs.getBoolPref(CM_PREF),
+          Services.prefs.getBoolPref(CRYPTO_TP_PREF),
           true,
-          `${CM_PREF} has been set to true`
+          `${CRYPTO_TP_PREF} has been set to true`
         );
         break;
-      case "-cm":
+      case "-cryptoTP":
         is(
-          Services.prefs.getBoolPref(CM_PREF),
+          Services.prefs.getBoolPref(CRYPTO_TP_PREF),
           false,
-          `${CM_PREF} has been set to false`
+          `${CRYPTO_TP_PREF} has been set to false`
         );
         break;
       case "emailTP":
@@ -605,18 +645,46 @@ add_task(async function testContentBlockingStrictCategory() {
           `${EMAIL_TP_PBM_PREF} has been set to false`
         );
         break;
+      case "consentmanagerSkip":
+        is(
+          Services.prefs.getBoolPref(CONSENTMANAGER_SKIP_PREF),
+          true,
+          `${CONSENTMANAGER_SKIP_PREF} has been set to true`
+        );
+        break;
+      case "-consentmanagerSkip":
+        is(
+          Services.prefs.getBoolPref(CONSENTMANAGER_SKIP_PREF),
+          false,
+          `${CONSENTMANAGER_SKIP_PREF} has been set to false`
+        );
+        break;
+      case "consentmanagerSkipPrivate":
+        is(
+          Services.prefs.getBoolPref(CONSENTMANAGER_SKIP_PBM_PREF),
+          true,
+          `${CONSENTMANAGER_SKIP_PBM_PREF} has been set to true`
+        );
+        break;
+      case "-consentmanagerSkipPrivate":
+        is(
+          Services.prefs.getBoolPref(CONSENTMANAGER_SKIP_PBM_PREF),
+          false,
+          `${CONSENTMANAGER_SKIP_PBM_PREF} has been set to false`
+        );
+        break;
       case "lvl2":
         is(
           Services.prefs.getBoolPref(LEVEL2_PREF),
           true,
-          `${CM_PREF} has been set to true`
+          `${CRYPTO_TP_PREF} has been set to true`
         );
         break;
       case "-lvl2":
         is(
           Services.prefs.getBoolPref(LEVEL2_PREF),
           false,
-          `${CM_PREF} has been set to false`
+          `${CRYPTO_TP_PREF} has been set to false`
         );
         break;
       case "rp":
@@ -815,6 +883,34 @@ add_task(async function testContentBlockingStrictCategory() {
           `${THIRD_PARTY_COOKIE_DEPRECATION_PREF} has been set to false`
         );
         break;
+      case "btp":
+        is(
+          Services.prefs.getIntPref(BTP_PREF),
+          Ci.nsIBounceTrackingProtection.MODE_ENABLED,
+          `${BTP_PREF} has been set to MODE_ENABLED`
+        );
+        break;
+      case "-btp":
+        is(
+          Services.prefs.getIntPref(BTP_PREF),
+          Ci.nsIBounceTrackingProtection.MODE_ENABLED_DRY_RUN,
+          `${BTP_PREF} has been set to MODE_ENABLED_DRY_RUN`
+        );
+        break;
+      case "lna":
+        is(
+          Services.prefs.getBoolPref(LNA_PREF),
+          true,
+          `${LNA_PREF} has been set to true`
+        );
+        break;
+      case "-lna":
+        is(
+          Services.prefs.getBoolPref(LNA_PREF),
+          false,
+          `${LNA_PREF} has been set to false`
+        );
+        break;
       default:
         ok(false, "unknown option was added to the strict pref");
         break;
@@ -833,7 +929,7 @@ add_task(async function testContentBlockingCustomCategory() {
     NCBP_PREF,
     FP_PREF,
     STP_PREF,
-    CM_PREF,
+    CRYPTO_TP_PREF,
     REFERRER_PREF,
     REFERRER_TOP_PREF,
     OCSP_PREF,
@@ -882,7 +978,7 @@ add_task(async function testContentBlockingCustomCategory() {
   for (let pref of [
     FP_PREF,
     STP_PREF,
-    CM_PREF,
+    CRYPTO_TP_PREF,
     TP_PREF,
     TP_PBM_PREF,
     REFERRER_PREF,

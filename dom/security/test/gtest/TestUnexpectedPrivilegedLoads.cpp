@@ -4,21 +4,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <string.h>
+
+#include "TelemetryFixture.h"
+#include "TelemetryTestHelpers.h"
 #include "core/TelemetryEvent.h"
 #include "gtest/gtest.h"
 #include "js/Array.h"               // JS::GetArrayLength
 #include "js/PropertyAndElement.h"  // JS_GetElement, JS_GetProperty
 #include "js/TypeDecls.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/Maybe.h"
+#include "mozilla/Preferences.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
-#include "TelemetryFixture.h"
-#include "TelemetryTestHelpers.h"
-
-#include <string.h>
-#include <stdlib.h>
 #include "nsContentSecurityManager.h"
 #include "nsContentSecurityUtils.h"
 #include "nsContentUtils.h"
@@ -36,6 +34,12 @@ extern Atomic<bool, mozilla::Relaxed> sCSSHacksChecked;
 extern Atomic<bool, mozilla::Relaxed> sCSSHacksPresent;
 
 TEST_F(TelemetryTestFixture, UnexpectedPrivilegedLoadsTelemetryTest) {
+  // Enable telemetry pref.
+  bool prefDefault = Preferences::GetBool(
+      "dom.security.unexpected_system_load_telemetry_enabled");
+  Preferences::SetBool("dom.security.unexpected_system_load_telemetry_enabled",
+                       true);
+
   // Disable JS/CSS Hacks Detection, which would consider this current profile
   // as uninteresting for our measurements:
   bool origJSHacksPresent = sJSHacksPresent;
@@ -64,7 +68,7 @@ TEST_F(TelemetryTestFixture, UnexpectedPrivilegedLoadsTelemetryTest) {
 
   AutoJSContextWithGlobal cx(mCleanGlobal);
   // Make sure we don't look at events from other tests.
-  Unused << mTelemetry->ClearEvents();
+  (void)mTelemetry->ClearEvents();
 
   // required for telemetry lookups
   constexpr auto category = "security"_ns;
@@ -188,9 +192,9 @@ TEST_F(TelemetryTestFixture, UnexpectedPrivilegedLoadsTelemetryTest) {
       nsCOMPtr<nsIPrincipal> redirPrincipal =
           BasePrincipal::CreateContentPrincipal(redirUri, OriginAttributes());
       nsCOMPtr<nsIChannel> redirectChannel;
-      Unused << service->NewChannelFromURI(redirUri, nullptr, redirPrincipal,
-                                           nullptr, 0, currentTest.contentType,
-                                           getter_AddRefs(redirectChannel));
+      (void)service->NewChannelFromURI(redirUri, nullptr, redirPrincipal,
+                                       nullptr, 0, currentTest.contentType,
+                                       getter_AddRefs(redirectChannel));
 
       mockLoadInfo->AppendRedirectHistoryEntry(redirectChannel, false);
     }
@@ -302,4 +306,8 @@ TEST_F(TelemetryTestFixture, UnexpectedPrivilegedLoadsTelemetryTest) {
   sJSHacksChecked = origJSHacksChecked;
   sCSSHacksPresent = origCSSHacksPresent;
   sCSSHacksChecked = origCSSHacksChecked;
+
+  // Restore telemetry pref
+  Preferences::SetBool("dom.security.unexpected_system_load_telemetry_enabled",
+                       prefDefault);
 }

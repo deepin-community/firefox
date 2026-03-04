@@ -5,22 +5,32 @@
 
 #include "Instance.h"
 
-#include "Adapter.h"
-#include "nsIGlobalObject.h"
-#include "ipc/WebGPUChild.h"
-#include "ipc/WebGPUTypes.h"
-#include "mozilla/webgpu/ffi/wgpu.h"
-#include "mozilla/dom/Promise.h"
-#include "mozilla/gfx/CanvasManagerChild.h"
-#include "mozilla/gfx/gfxVars.h"
-#include "mozilla/StaticPrefs_dom.h"
-
 #include <optional>
 #include <string_view>
 
+#include "Adapter.h"
+#include "ipc/WebGPUChild.h"
+#include "ipc/WebGPUTypes.h"
+#include "js/Value.h"
+#include "mozilla/Assertions.h"
+#include "mozilla/ErrorResult.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/dom/WorkerPrivate.h"
+#include "mozilla/gfx/CanvasManagerChild.h"
+#include "mozilla/gfx/Logging.h"
+#include "mozilla/gfx/gfxVars.h"
+#include "mozilla/webgpu/ffi/wgpu.h"
+#include "nsDebug.h"
+#include "nsIGlobalObject.h"
+#include "nsString.h"
+#include "nsStringFwd.h"
+
 namespace mozilla::webgpu {
 
-GPU_IMPL_CYCLE_COLLECTION(Instance, mOwner)
+GPU_IMPL_CYCLE_COLLECTION(WGSLLanguageFeatures, mParent)
+
+GPU_IMPL_CYCLE_COLLECTION(Instance, mOwner, mWgslLanguageFeatures)
 
 static inline nsDependentCString ToCString(const std::string_view s) {
   return {s.data(), s.length()};
@@ -35,7 +45,17 @@ static inline nsDependentCString ToCString(const std::string_view s) {
     return true;
   }
 
-  return StaticPrefs::dom_webgpu_workers_enabled();
+  dom::WorkerPrivate* wp = dom::GetCurrentThreadWorkerPrivate();
+  if (wp && wp->IsServiceWorker()) {
+    return StaticPrefs::dom_webgpu_service_workers_enabled();
+  }
+
+  return true;
+}
+
+/* static */ bool Instance::ExternalTexturePrefEnabled(JSContext* aCx,
+                                                       JSObject* aObj) {
+  return StaticPrefs::dom_webgpu_external_texture_enabled_AtStartup();
 }
 
 /*static*/
@@ -44,11 +64,34 @@ already_AddRefed<Instance> Instance::Create(nsIGlobalObject* aOwner) {
   return result.forget();
 }
 
-Instance::Instance(nsIGlobalObject* aOwner) : mOwner(aOwner) {}
-
-Instance::~Instance() { Cleanup(); }
-
-void Instance::Cleanup() {}
+Instance::Instance(nsIGlobalObject* aOwner)
+    : mOwner(aOwner), mWgslLanguageFeatures(new WGSLLanguageFeatures(this)) {
+  // Populate `mWgslLanguageFeatures`.
+  IgnoredErrorResult rv;
+  nsCString wgslFeature;
+  for (size_t i = 0;; ++i) {
+    wgslFeature.Truncate(0);
+    ffi::wgpu_client_instance_get_wgsl_language_feature(&wgslFeature, i);
+    if (wgslFeature.IsEmpty()) {
+      break;
+    }
+    NS_ConvertASCIItoUTF16 feature{wgslFeature};
+    this->mWgslLanguageFeatures->Add(feature, rv);
+    if (rv.Failed()) {
+      if (rv.ErrorCodeIs(NS_ERROR_UNEXPECTED)) {
+        // This is fine; something went wrong with the JS scope we're in, and we
+        // can just let that happen.
+        NS_WARNING(
+            "`Instance::Instance`: failed to append WGSL language feature: got "
+            "`NS_ERROR_UNEXPECTED`");
+      } else {
+        MOZ_CRASH_UNSAFE_PRINTF(
+            "`Instance::Instance`: failed to append WGSL language feature: %d",
+            rv.ErrorCodeAsInt());
+      }
+    }
+  }
+}
 
 JSObject* Instance::WrapObject(JSContext* cx,
                                JS::Handle<JSObject*> givenProto) {
@@ -62,25 +105,48 @@ already_AddRefed<dom::Promise> Instance::RequestAdapter(
     return nullptr;
   }
 
+  if (NS_IsMainThread()) {
+    JSObject* obj = mOwner->GetGlobalJSObject();
+    if (obj) {
+      dom::SetUseCounter(obj, eUseCounter_custom_WebgpuRequestAdapter);
+    }
+  } else {
+    dom::SetUseCounter(UseCounterWorker::Custom_WebgpuRequestAdapter);
+  }
+
   // -
   // Check if we should allow the request.
 
-  const auto errStr = [&]() -> std::optional<std::string_view> {
-#ifdef RELEASE_OR_BETA
-    if (true) {
-      return "WebGPU is not yet available in Release or Beta builds.";
+  std::optional<std::string_view> rejectionMessage = {};
+  const auto rejectIf = [&rejectionMessage](bool condition,
+                                            const char* message) {
+    if (condition && !rejectionMessage.has_value()) {
+      rejectionMessage = message;
     }
+  };
+
+  rejectIf(!gfx::gfxVars::AllowWebGPU(), "WebGPU is disabled by blocklist.");
+  rejectIf(!StaticPrefs::dom_webgpu_enabled(),
+           "WebGPU is disabled because the `dom.webgpu.enabled` pref. is set "
+           "to `false`.");
+#ifdef WIN32
+#  ifndef MOZ_DXCOMPILER
+  rejectIf(true,
+           "WebGPU is disabled because dxcompiler is unavailable with this "
+           "build configuration");
+#  endif
 #endif
-    if (!gfx::gfxVars::AllowWebGPU()) {
-      return "WebGPU is disabled by blocklist.";
-    }
-    if (!StaticPrefs::dom_webgpu_enabled()) {
-      return "WebGPU is disabled by dom.webgpu.enabled:false.";
-    }
-    return {};
-  }();
-  if (errStr) {
-    promise->MaybeRejectWithNotSupportedError(ToCString(*errStr));
+
+  // Check if WebGPU is blocked for this global's domain.
+  {
+    const auto prefLock = mozilla::StaticPrefs::dom_webgpu_blocked_domains();
+    rejectIf(nsContentUtils::IsURIInList(mOwner->GetBaseURI(), *prefLock),
+             "WebGPU is blocked for this domain by the "
+             "`dom.webgpu.blocked-domains` pref.");
+  }
+
+  if (rejectionMessage) {
+    promise->MaybeRejectWithNotSupportedError(ToCString(*rejectionMessage));
     return promise.forget();
   }
 
@@ -94,30 +160,72 @@ already_AddRefed<dom::Promise> Instance::RequestAdapter(
     return promise.forget();
   }
 
-  RefPtr<WebGPUChild> bridge = canvasManager->GetWebGPUChild();
-  if (!bridge) {
+  RefPtr<WebGPUChild> child = canvasManager->GetWebGPUChild();
+  if (!child) {
     promise->MaybeRejectWithInvalidStateError("Failed to create WebGPUChild");
     return promise.forget();
   }
 
-  RefPtr<Instance> instance = this;
+  if (aOptions.mFeatureLevel.EqualsASCII("core")) {
+    // Good! That's all we support.
+  } else if (aOptions.mFeatureLevel.EqualsASCII("compatibility")) {
+    dom::AutoJSAPI api;
+    if (api.Init(mOwner)) {
+      JS::WarnUTF8(api.cx(),
+                   "User requested a WebGPU adapter with `featureLevel: "
+                   "\"compatibility\"`, which is not yet supported; returning "
+                   "a \"core\"-defaulting adapter for now. Subscribe to "
+                   "<https://bugzilla.mozilla.org/show_bug.cgi?id=1905951>"
+                   " for updates on its development in Firefox.");
+    }
+  } else {
+    NS_ConvertUTF16toUTF8 featureLevel(aOptions.mFeatureLevel);
+    dom::AutoJSAPI api;
+    if (api.Init(mOwner)) {
+      JS::WarnUTF8(api.cx(),
+                   "expected one of `\"core\"` or `\"compatibility\"` for "
+                   "`GPUAdapter.featureLevel`, got %s",
+                   featureLevel.get());
+    }
+    promise->MaybeResolve(JS::NullValue());
+    return promise.forget();
+  }
 
-  bridge->InstanceRequestAdapter(aOptions)->Then(
-      GetCurrentSerialEventTarget(), __func__,
-      [promise, instance, bridge](ipc::ByteBuf aInfoBuf) {
-        auto info = std::make_shared<ffi::WGPUAdapterInformation>();
-        ffi::wgpu_client_adapter_extract_info(ToFFI(&aInfoBuf), info.get());
-        MOZ_ASSERT(info->id != 0);
-        RefPtr<Adapter> adapter = new Adapter(instance, bridge, info);
-        promise->MaybeResolve(adapter);
-      },
-      [promise](const Maybe<ipc::ResponseRejectReason>& aResponseReason) {
-        if (aResponseReason.isSome()) {
-          promise->MaybeRejectWithAbortError("Internal communication error!");
-        } else {
-          promise->MaybeResolve(JS::NullHandleValue);
-        }
-      });
+  if (aOptions.mXrCompatible) {
+    dom::AutoJSAPI api;
+    if (api.Init(mOwner)) {
+      JS::WarnUTF8(
+          api.cx(),
+          "User requested a WebGPU adapter with `xrCompatible: true`, "
+          "but WebXR sessions are not yet supported in WebGPU. Returning "
+          "a regular adapter for now. Subscribe to "
+          "<https://bugzilla.mozilla.org/show_bug.cgi?id=1963829>"
+          " for updates on its development in Firefox.");
+    }
+  }
+
+  ffi::WGPUPowerPreference power_preference;
+  if (aOptions.mPowerPreference.WasPassed()) {
+    switch (aOptions.mPowerPreference.Value()) {
+      case dom::GPUPowerPreference::Low_power:
+        power_preference = ffi::WGPUPowerPreference_LowPower;
+        break;
+      case dom::GPUPowerPreference::High_performance:
+        power_preference = ffi::WGPUPowerPreference_HighPerformance;
+        break;
+      default:
+        MOZ_CRASH("Unexpected `dom::GPUPowerPreference`");
+    }
+  } else {
+    power_preference = ffi::WGPUPowerPreference_None;
+  }
+
+  RawId adapter_id = ffi::wgpu_client_request_adapter(
+      child->GetClient(), power_preference, aOptions.mForceFallbackAdapter);
+
+  auto pending_promise = WebGPUChild::PendingRequestAdapterPromise{
+      RefPtr(promise), RefPtr(this), adapter_id};
+  child->mPendingRequestAdapterPromises.push_back(std::move(pending_promise));
 
   return promise.forget();
 }

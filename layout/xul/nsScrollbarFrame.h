@@ -31,21 +31,11 @@ nsIFrame* NS_NewScrollbarFrame(mozilla::PresShell* aPresShell,
 class nsScrollbarFrame final : public nsContainerFrame,
                                public nsIAnonymousContentCreator {
   using Element = mozilla::dom::Element;
+  using CSSIntCoord = mozilla::CSSIntCoord;
 
  public:
   explicit nsScrollbarFrame(ComputedStyle* aStyle, nsPresContext* aPresContext)
-      : nsContainerFrame(aStyle, aPresContext, kClassID),
-        mSmoothScroll(false),
-        mScrollUnit(mozilla::ScrollUnit::DEVICE_PIXELS),
-        mDirection(0),
-        mIncrement(0),
-        mScrollbarMediator(nullptr),
-        mUpTopButton(nullptr),
-        mDownTopButton(nullptr),
-        mSlider(nullptr),
-        mThumb(nullptr),
-        mUpBottomButton(nullptr),
-        mDownBottomButton(nullptr) {}
+      : nsContainerFrame(aStyle, aPresContext, kClassID) {}
 
   NS_DECL_QUERYFRAME
   NS_DECL_FRAMEARENA_HELPERS(nsScrollbarFrame)
@@ -57,9 +47,6 @@ class nsScrollbarFrame final : public nsContainerFrame,
 #endif
 
   // nsIFrame overrides
-  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
-
   NS_IMETHOD HandlePress(nsPresContext* aPresContext,
                          mozilla::WidgetGUIEvent* aEvent,
                          nsEventStatus* aEventStatus) override;
@@ -92,52 +79,62 @@ class nsScrollbarFrame final : public nsContainerFrame,
               const ReflowInput& aReflowInput,
               nsReflowStatus& aStatus) override;
 
-  void SetScrollbarMediatorContent(nsIContent* aMediator);
+  void SetOverrideScrollbarMediator(nsIScrollbarMediator*);
   nsIScrollbarMediator* GetScrollbarMediator();
+  void WillBecomeActive();
 
-  /**
-   * The following three methods set the value of mIncrement when a
-   * scrollbar button is pressed.
-   */
-  void SetIncrementToLine(int32_t aDirection);
-  void SetIncrementToPage(int32_t aDirection);
-  void SetIncrementToWhole(int32_t aDirection);
-
-  /**
-   * If aImplementsScrollByUnit is Yes then this uses mSmoothScroll,
-   * mScrollUnit, and mDirection and calls ScrollByUnit on the
-   * nsIScrollbarMediator. The return value is 0. This is better because it is
-   * more modern and the scroll frame can perform the scroll via apz for
-   * example. The old way below is still supported for xul trees. If
-   * aImplementsScrollByUnit is No this adds mIncrement to the current
-   * position and updates the curpos attribute obeying mSmoothScroll.
-   * @returns The new position after clamping, in CSS Pixels
-   * @note This method might destroy the frame, pres shell, and other objects.
-   */
-  enum class ImplementsScrollByUnit { Yes, No };
-  int32_t MoveToNewPosition(ImplementsScrollByUnit aImplementsScrollByUnit);
-  int32_t GetIncrement() { return mIncrement; }
+  void MoveToNewPosition();
+  int32_t GetButtonScrollDirection() const { return mButtonScrollDirection; }
+  void SetButtonScrollDirectionAndUnit(int32_t aDirection,
+                                       mozilla::ScrollUnit aUnit) {
+    mButtonScrollDirection = aDirection;
+    mButtonScrollUnit = aUnit;
+  }
 
   // nsIAnonymousContentCreator
   nsresult CreateAnonymousContent(nsTArray<ContentInfo>& aElements) override;
   void AppendAnonymousContentTo(nsTArray<nsIContent*>& aElements,
                                 uint32_t aFilter) override;
 
-  void UpdateChildrenAttributeValue(nsAtom* aAttribute, bool aNotify);
+  void ElementStateChanged(mozilla::dom::ElementState) override;
+  bool HasBeenHovered() const { return mHasBeenHovered; }
+
+  // If we're an horizontal scrollbar, get the vertical one, or viceversa.
+  nsScrollbarFrame* GetOppositeScrollbar() const;
+  void ActivityChanged(bool aIsNowActive);
+
+  // Sets the current scrollbar position. Returns true if the value changed.
+  bool SetCurPos(CSSIntCoord);
+  CSSIntCoord GetCurPos() const { return mCurPos; }
+  bool SetMaxPos(CSSIntCoord);
+  CSSIntCoord GetMaxPos() const { return mMaxPos; }
+  bool SetPageIncrement(CSSIntCoord);
+  CSSIntCoord GetPageIncrement() const { return mPageIncrement; }
+
+  bool SetEnabled(bool);
+  bool IsEnabled() const;
+  bool IsDisabled() const { return !IsEnabled(); }
 
  protected:
-  bool mSmoothScroll;
-  mozilla::ScrollUnit mScrollUnit;
-  // Direction and multiple to scroll
-  int32_t mDirection;
+  void InvalidateForHoverChange(bool aIsNowHovered);
+  void RequestSliderReflow();
 
-  // Amount to scroll, in CSSPixels
-  // Ignored in favour of mScrollUnit/mDirection for regular scroll frames.
-  // Trees use this though.
-  int32_t mIncrement;
+  // TODO(emilio): These probably shouldn't be CSSIntCoords (could just be
+  // nscoords).
+  CSSIntCoord mCurPos = 0;
+  CSSIntCoord mMaxPos = 0;
+  CSSIntCoord mPageIncrement = 0;
+
+  // Direction and unit that our button scrolled us to.
+  // TODO(emilio): Find a better place to store this?
+  int32_t mButtonScrollDirection = 0;
+  mozilla::ScrollUnit mButtonScrollUnit = mozilla::ScrollUnit::DEVICE_PIXELS;
+  // On macOS, overlay scrollbar hover state should be sticky (remain hovered
+  // while we've been hovered at least once).
+  bool mHasBeenHovered = false;
 
  private:
-  nsCOMPtr<nsIContent> mScrollbarMediator;
+  WeakFrame mOverriddenScrollbarMediator;
 
   nsCOMPtr<Element> mUpTopButton;
   nsCOMPtr<Element> mDownTopButton;

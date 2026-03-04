@@ -47,15 +47,14 @@ download-cert-view-cert =
     .label = දකින්න
 download-cert-view-text = CA සහතිකය පිරික්සන්න
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = පරිශීලක හඳුනාගැනීමේ ඉල්ලීම
 client-auth-site-description = ඔබ විසින්ම සහතිකයක් ආධාරයෙන් හඳුන්වා දෙන ලෙස මෙම අඩවිය ඉල්ලා සිටියි:
 client-auth-choose-cert = හඳුනාගැනීමක් ලෙස ඉදිරිපත් කිරීමට සහතිකයක් තෝරන්න:
+client-auth-send-no-certificate =
+    .label = සහතිකයක් යවන්න එපා
 client-auth-cert-details = තේරූ සහතිකයේ තොරතුරු:
 # Variables:
 # $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
@@ -79,8 +78,6 @@ client-auth-cert-details-issued-by = නිකුත් කළේ: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = ගබඩා කළේ: { $storedOn }
-client-auth-cert-remember-box =
-    .label = තීරණය මතක තබා ගන්න
 
 ## Set password (p12) dialog
 
@@ -92,6 +89,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = සහතිකයේ උපස්ථ මුරපදය (නැවත):
 set-password-reminder = වැදගත්: ඔබගේ සහතිකයේ උපස්ථ මුරපදය අමතක වුවහොත්, මෙම උපස්ථය පසුව ප්‍රත්‍යර්පණය කිරීමට නොහැකි වනු ඇත. එය ආරක්‍ෂිත ස්ථානයක සටහන් කරන්න.
-
-## Protected authentication alert
-

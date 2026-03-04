@@ -1,5 +1,6 @@
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
+  NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   TestUtils: "resource://testing-common/TestUtils.sys.mjs",
 });
@@ -7,14 +8,19 @@ ChromeUtils.defineESModuleGetters(lazy, {
 ChromeUtils.defineLazyGetter(lazy, "PlacesFrecencyRecalculator", () => {
   return Cc["@mozilla.org/places/frecency-recalculator;1"].getService(
     Ci.nsIObserver
+    // @ts-ignore
   ).wrappedJSObject;
 });
+
+/**
+ * @import {OpenedConnection} from "resource://gre/modules/Sqlite.sys.mjs"
+ */
 
 export var PlacesTestUtils = Object.freeze({
   /**
    * Asynchronously adds visits to a page.
    *
-   * @param {*} aPlaceInfo
+   * @param {*} placeInfo
    *        A string URL, nsIURI, Window.URL object, info object (explained
    *        below), or an array of any of those.  Info objects describe the
    *        visits to add more fully than URLs/URIs alone and look like this:
@@ -27,9 +33,8 @@ export var PlacesTestUtils = Object.freeze({
    *            [optional] referrer: nsIURI of the referrer for this visit
    *          }
    *
-   * @return {Promise}
-   * @resolves When all visits have been added successfully.
-   * @rejects JavaScript exception.
+   * @returns {Promise<void>}
+   *   Resolves When all visits have been added successfully.
    */
   async addVisits(placeInfo) {
     let places = [];
@@ -116,7 +121,7 @@ export var PlacesTestUtils = Object.freeze({
     }
   },
 
-  /*
+  /**
    * Add Favicons
    *
    * @param {Map} faviconURLs  keys are page URLs, values are their
@@ -134,63 +139,158 @@ export var PlacesTestUtils = Object.freeze({
       if (!val) {
         throw new Error("URL does not exist");
       }
+
+      let uri = Services.io.newURI(key);
+      let faviconURI = Services.io.newURI(val);
+      if (!faviconURI.schemeIs("data")) {
+        throw new Error(`Favicon URL should be data URL [${faviconURI.spec}]`);
+      }
+
       faviconPromises.push(
-        new Promise((resolve, reject) => {
-          let uri = Services.io.newURI(key);
-          let faviconURI = Services.io.newURI(val);
-          try {
-            lazy.PlacesUtils.favicons.setAndFetchFaviconForPage(
-              uri,
-              faviconURI,
-              false,
-              lazy.PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE,
-              resolve,
-              Services.scriptSecurityManager.getSystemPrincipal()
-            );
-          } catch (ex) {
-            reject(ex);
-          }
-        })
+        lazy.PlacesUtils.favicons.setFaviconForPage(uri, faviconURI, faviconURI)
       );
     }
     await Promise.all(faviconPromises);
   },
 
-  /*
+  /**
    * Helper function to call PlacesUtils.favicons.setFaviconForPage() and waits
    * finishing setting. This function throws an error if the status of
    * PlacesUtils.favicons.setFaviconForPage() is not success.
    *
-   * @param {string or nsIURI} pageURI
-   * @param {string or nsIURI} faviconURI
-   * @param {string or nsIURI} faviconDataURL
-   * @param {Number} [optional] expiration
-   * @return {Promise} waits for finishing setting
+   * @param {string|nsIURI} pageURI
+   * @param {string|nsIURI} faviconURI
+   * @param {string|nsIURI} faviconDataURL
+   * @param {number} [expiration]
+   * @param {boolean} [isRichIcon]
+   * @returns {Promise<void>} waits for finishing setting
    */
-  setFaviconForPage(pageURI, faviconURI, faviconDataURL, expiration = 0) {
-    return new Promise((resolve, reject) => {
-      lazy.PlacesUtils.favicons.setFaviconForPage(
-        pageURI instanceof Ci.nsIURI ? pageURI : Services.io.newURI(pageURI),
-        faviconURI instanceof Ci.nsIURI
-          ? faviconURI
-          : Services.io.newURI(faviconURI),
-        faviconDataURL instanceof Ci.nsIURI
-          ? faviconDataURL
-          : Services.io.newURI(faviconDataURL),
-        expiration,
-        status => {
-          if (Components.isSuccessCode(status)) {
-            resolve(status);
-          } else {
-            reject(
-              new Error(
-                `Failed to process setFaviconForPage(): status code = ${status}`
-              )
-            );
-          }
-        }
-      );
+  setFaviconForPage(
+    pageURI,
+    faviconURI,
+    faviconDataURL,
+    expiration = 0,
+    isRichIcon = false
+  ) {
+    return lazy.PlacesUtils.favicons.setFaviconForPage(
+      lazy.PlacesUtils.toURI(pageURI),
+      lazy.PlacesUtils.toURI(faviconURI),
+      lazy.PlacesUtils.toURI(faviconDataURL),
+      expiration,
+      isRichIcon
+    );
+  },
+
+  /**
+   * Helper function to call PlacesUtils.favicons.getFaviconForPage(). This
+   * function throws an error if the status of
+   * PlacesUtils.favicons.setFaviconForPage() is not success.
+   *
+   * @param {string|URL|nsIURI} pageURI
+   * @param {number} [preferredWidth]
+   * @returns {Promise<nsIFavicon>}
+   *   Resolved with the favicon data.
+   */
+  getFaviconForPage(pageURI, preferredWidth = 0) {
+    return lazy.PlacesUtils.favicons.getFaviconForPage(
+      lazy.PlacesUtils.toURI(pageURI),
+      preferredWidth
+    );
+  },
+
+  /**
+   * Get favicon data for given URL from database.
+   *
+   * @param {string|nsIURI} faviconURI
+   *        uri for the favicon
+   * @returns {Promise<nsIURI>} data URL
+   */
+  async getFaviconDataURLFromDB(faviconURI) {
+    let uri = lazy.PlacesUtils.toURI(faviconURI);
+
+    const db = await lazy.PlacesUtils.promiseDBConnection();
+    const rows = await db.executeCached(
+      `SELECT data, width
+       FROM moz_icons
+       WHERE fixed_icon_url_hash = hash(fixup_url(:url))
+       AND icon_url = :url
+       ORDER BY width DESC`,
+      { url: uri.spec }
+    );
+
+    if (!rows.length) {
+      return null;
+    }
+
+    const row = rows[0];
+    const data = row.getResultByName("data");
+    if (!data.length) {
+      return null;
+    }
+
+    const UINT64_MAX = 65535;
+    const width = row.getResultByName("width");
+    const contentType = width === UINT64_MAX ? "image/svg+xml" : "image/png";
+
+    return await PlacesTestUtils.fileDataToDataURL(data, contentType);
+  },
+
+  /**
+   * Get favicon data for given URL from network.
+   *
+   * Note: This fetching code is for test-code only and should not be copied to
+   *       production code, as a proper principal and loadGroup, or ohttp, should
+   *       be used by the browser when fetching from the network.
+   *
+   * @param {string|nsIURI} faviconURI
+   *        nsIURI for the favicon.
+   * @param {nsIPrincipal} [loadingPrincipal]
+   *        The principal to load from network. If no, use system principal.
+   * @returns {Promise<nsIURI>} data URL
+   */
+  async getFaviconDataURLFromNetwork(
+    faviconURI,
+    loadingPrincipal = Services.scriptSecurityManager.getSystemPrincipal()
+  ) {
+    let uri = lazy.PlacesUtils.toURI(faviconURI);
+    if (uri.schemeIs("data")) {
+      return uri;
+    }
+
+    let channel = lazy.NetUtil.newChannel({
+      uri: faviconURI,
+      loadingPrincipal,
+      securityFlags:
+        Ci.nsILoadInfo.SEC_REQUIRE_CORS_INHERITS_SEC_CONTEXT |
+        Ci.nsILoadInfo.SEC_ALLOW_CHROME |
+        Ci.nsILoadInfo.SEC_DISALLOW_SCRIPT,
+      contentPolicyType: Ci.nsIContentPolicy.TYPE_INTERNAL_IMAGE_FAVICON,
     });
+
+    let resolver = Promise.withResolvers();
+
+    lazy.NetUtil.asyncFetch(channel, async (input, status, request) => {
+      if (!Components.isSuccessCode(status)) {
+        resolver.reject(status);
+        return;
+      }
+
+      try {
+        let data = lazy.NetUtil.readInputStream(input, input.available());
+        let contentType = request.QueryInterface(Ci.nsIChannel).contentType;
+        input.close();
+
+        let dataURL = await PlacesTestUtils.fileDataToDataURL(
+          data,
+          contentType
+        );
+        resolver.resolve(dataURL);
+      } catch (e) {
+        resolver.reject(e);
+      }
+    });
+
+    return resolver.promise;
   },
 
   /**
@@ -207,11 +307,44 @@ export var PlacesTestUtils = Object.freeze({
   },
 
   /**
+   * Converts the given data to the data URL.
+   *
+   * @param {ArrayBufferLike} data
+   *   The file data.
+   * @param {string} mimeType
+   *   The mime type of the file content.
+   * @returns {Promise<nsIURI>}
+   *   The data URL.
+   */
+  async fileDataToDataURL(data, mimeType) {
+    const dataURL = await new Promise(resolve => {
+      const buffer = new Uint8ClampedArray(data);
+      const blob = new Blob([buffer], { type: mimeType });
+      const reader = new FileReader();
+      /** @type {(e: ProgressEvent) => void} */
+      reader.onload = () => {
+        resolve(
+          Services.io.newURI(
+            // When used with readAsDataURL, `reader.result` is a base64 string.
+            /** @type {string} */ (reader.result)
+          )
+        );
+      };
+      reader.readAsDataURL(blob);
+    });
+    return dataURL;
+  },
+
+  /**
    * Adds a bookmark to the database. This should only be used when you need to
    * add keywords. Otherwise, use `PlacesUtils.bookmarks.insert()`.
-   * @param {string} aBookmarkObj.uri
+   *
+   * @param {object} aBookmarkObj
+   * @param {string|nsIURI} aBookmarkObj.uri
    * @param {string} [aBookmarkObj.title]
    * @param {string} [aBookmarkObj.keyword]
+   * @param {string} [aBookmarkObj.postData]
+   * @param {string[]} [aBookmarkObj.tags]
    */
   async addBookmarkWithDetails(aBookmarkObj) {
     await lazy.PlacesUtils.bookmarks.insert({
@@ -243,15 +376,13 @@ export var PlacesTestUtils = Object.freeze({
   /**
    * Waits for all pending async statements on the default connection.
    *
-   * @return {Promise}
-   * @resolves When all pending async statements finished.
-   * @rejects Never.
+   * Note: The result is achieved by asynchronously executing a query requiring
+   * a write lock.  Since all statements on the same connection are serialized,
+   * the end of this write operation means that all writes are complete.  Note
+   * that WAL makes so that writers don't block readers, but this is a problem
+   * only across different connections.
    *
-   * @note The result is achieved by asynchronously executing a query requiring
-   *       a write lock.  Since all statements on the same connection are
-   *       serialized, the end of this write operation means that all writes are
-   *       complete.  Note that WAL makes so that writers don't block readers, but
-   *       this is a problem only across different connections.
+   * @returns {Promise<void>}
    */
   promiseAsyncUpdates() {
     return lazy.PlacesUtils.withConnectionWrapper(
@@ -270,12 +401,11 @@ export var PlacesTestUtils = Object.freeze({
 
   /**
    * Asynchronously checks if an address is found in the database.
-   * @param aURI
-   *        nsIURI or address to look for.
    *
-   * @return {Promise}
-   * @resolves Returns true if the page is found.
-   * @rejects JavaScript exception.
+   * @param {string|nsIURI|URL} aURI
+   *   The URI to look for.
+   * @returns {Promise<boolean>}
+   *   Returns true if the page is found.
    */
   async isPageInDB(aURI) {
     return (
@@ -286,12 +416,11 @@ export var PlacesTestUtils = Object.freeze({
 
   /**
    * Asynchronously checks how many visits exist for a specified page.
-   * @param aURI
-   *        nsIURI or address to look for.
    *
-   * @return {Promise}
-   * @resolves Returns the number of visits found.
-   * @rejects JavaScript exception.
+   * @param {string|nsIURI|URL} aURI
+   *   The URI to look for.
+   * @returns {Promise<boolean>}
+   *   Returns the number of visits found.
    */
   async visitsInDB(aURI) {
     let url = aURI instanceof Ci.nsIURI ? aURI.spec : aURI;
@@ -311,8 +440,7 @@ export var PlacesTestUtils = Object.freeze({
    * Used by tests to avoid calling `PlacesSyncUtils.bookmarks.pullChanges`
    * and `PlacesSyncUtils.bookmarks.pushChanges`.
    *
-   * @resolves When all bookmarks have been updated.
-   * @rejects JavaScript exception.
+   * @returns {Promise<void>}
    */
   markBookmarksAsSynced() {
     return lazy.PlacesUtils.withConnectionWrapper(
@@ -343,17 +471,17 @@ export var PlacesTestUtils = Object.freeze({
 
   /**
    * Sets sync fields for multiple bookmarks.
-   * @param aStatusInfos
-   *        One or more objects with the following properties:
-   *          { [required] guid: The bookmark's GUID,
-   *            syncStatus: An `nsINavBookmarksService::SYNC_STATUS_*` constant,
-   *            syncChangeCounter: The sync change counter value,
-   *            lastModified: The last modified time,
-   *            dateAdded: The date added time.
-   *          }
    *
-   * @resolves When all bookmarks have been updated.
-   * @rejects JavaScript exception.
+   * @param {object} aFieldInfos
+   *   One or more objects with the following properties:
+   *   { [required] guid: The bookmark's GUID,
+   *     syncStatus: An `nsINavBookmarksService::SYNC_STATUS_*` constant,
+   *     syncChangeCounter: The sync change counter value,
+   *     lastModified: The last modified time,
+   *     dateAdded: The date added time.
+   *   }
+   *
+   * @returns {Promise<void>}
    */
   setBookmarkSyncFields(...aFieldInfos) {
     return lazy.PlacesUtils.withConnectionWrapper(
@@ -436,31 +564,14 @@ export var PlacesTestUtils = Object.freeze({
    * Returns a promise that waits until happening Places events specified by
    * notification parameter.
    *
-   * @param {string} notification
-   *        Available values are:
-   *          bookmark-added
-   *          bookmark-removed
-   *          bookmark-moved
-   *          bookmark-guid_changed
-   *          bookmark-keyword_changed
-   *          bookmark-tags_changed
-   *          bookmark-time_changed
-   *          bookmark-title_changed
-   *          bookmark-url_changed
-   *          favicon-changed
-   *          history-cleared
-   *          page-removed
-   *          page-title-changed
-   *          page-visited
-   *          pages-rank-changed
-   *          purge-caches
-   * @param {Function} conditionFn [optional]
-   *        If need some more condition to wait, please use conditionFn.
-   *        This is an optional, but if set, should returns true when the wait
-   *        condition is met.
-   * @return {Promise}
-   *         A promise that resolved if the wait condition is met.
-   *         The resolved value is an array of PlacesEvent object.
+   * @param {PlacesEventType} notification
+   *   The Notification to wait for.
+   * @param {(events: PlacesEventType) => boolean} [conditionFn]
+   *   If need some more condition to wait, please use conditionFn. This is an
+   *   optional, but if set, should returns true when the wait condition is met.
+   * @returns {Promise<PlacesEvent>}
+   *   A promise that resolved if the wait condition is met. The resolved value
+   *   is an array of PlacesEvent object.
    */
   waitForNotification(notification, conditionFn) {
     return new Promise(resolve => {
@@ -477,12 +588,13 @@ export var PlacesTestUtils = Object.freeze({
   /**
    * A debugging helper that dumps the contents of an SQLite table.
    *
-   * @param {String} table
-   *        The table name.
-   * @param {Sqlite.OpenedConnection} [db]
-   *        The mirror database connection.
-   * @param {String[]} [columns]
-   *        Clumns to be printed, defaults to all.
+   * @param {object} options
+   * @param {string} options.table
+   *   The table name.
+   * @param {OpenedConnection} [options.db]
+   *   The mirror database connection.
+   * @param {string[]} [options.columns]
+   *   Columns to be printed, defaults to all.
    */
   async dumpTable({ table, db, columns }) {
     if (!table) {
@@ -567,16 +679,20 @@ export var PlacesTestUtils = Object.freeze({
 
   /**
    * Compares 2 place: URLs ignoring the order of their params.
-   * @param url1 First URL to compare
-   * @param url2 Second URL to compare
-   * @return whether the URLs are the same
+   *
+   * @param {string} a
+   *   First URL to compare.
+   * @param {string} b
+   *   Second URL to compare.
+   * @returns {boolean}
+   *   Whether the URLs are the same.
    */
-  ComparePlacesURIs(url1, url2) {
-    url1 = url1 instanceof Ci.nsIURI ? url1.spec : new URL(url1);
+  ComparePlacesURIs(a, b) {
+    let url1 = new URL(a);
     if (url1.protocol != "place:") {
       throw new Error("Expected a place: uri, got " + url1.href);
     }
-    url2 = url2 instanceof Ci.nsIURI ? url2.spec : new URL(url2);
+    let url2 = new URL(b);
     if (url2.protocol != "place:") {
       throw new Error("Expected a place: uri, got " + url2.href);
     }
@@ -592,14 +708,15 @@ export var PlacesTestUtils = Object.freeze({
   /**
    * Retrieves a single value from a specified field in a database table, based
    * on the given conditions.
+   *
    * @param {string} table - The name of the database table to query.
    * @param {string} field - The name of the field to retrieve a value from.
-   * @param {Object} [conditions] - An object containing the conditions to
+   * @param {object} [conditions] - An object containing the conditions to
    * filter the query results. The keys represent the names of the columns to
    * filter by, and the values represent the filter values.  It's possible to
    * pass an array as value where the first element is an operator
    * (e.g. "<", ">") and the second element is the actual value.
-   * @return {Promise} A Promise that resolves to the value of the specified
+   * @returns {Promise} A Promise that resolves to the value of the specified
    * field from the database table, or null if the query returns no results.
    * @throws If more than one result is found for the given conditions.
    */
@@ -619,14 +736,15 @@ export var PlacesTestUtils = Object.freeze({
   /**
    * Updates specified fields in a database table, based on the given
    * conditions.
+   *
    * @param {string} table - The name of the database table to add to.
    * @param {string} fields - an object with field, value pairs
-   * @param {Object} [conditions] - An object containing the conditions to
+   * @param {object} [conditions] - An object containing the conditions to
    * filter the query results. The keys represent the names of the columns to
    * filter by, and the values represent the filter values. It's possible to
    * pass an array as value where the first element is an operator
    * (e.g. "<", ">") and the second element is the actual value.
-   * @return {Promise} A Promise that resolves to the number of affected rows.
+   * @returns {Promise} A Promise that resolves to the number of affected rows.
    * @throws If no rows were affected.
    */
   async updateDatabaseValues(table, fields, conditions = {}) {

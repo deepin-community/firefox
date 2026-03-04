@@ -9,13 +9,18 @@
 
 #include "jit/BaselineFrameInfo.h"
 #include "jit/BytecodeAnalysis.h"
+#include "jit/CompileWrappers.h"
 #include "jit/FixedList.h"
 #include "jit/MacroAssembler.h"
 #include "jit/PerfSpewer.h"
 
 namespace js {
 
+class NamedLambdaObject;
+
 namespace jit {
+
+class BaselineSnapshot;
 
 enum class ScriptGCThingType {
   Atom,
@@ -36,8 +41,8 @@ class BaselineCodeGen {
  protected:
   Handler handler;
 
-  JSContext* cx;
-  StackMacroAssembler masm;
+  CompileRuntime* runtime;
+  MacroAssembler& masm;
 
   typename Handler::FrameInfoT& frame;
 
@@ -66,8 +71,8 @@ class BaselineCodeGen {
 #endif
 
   template <typename... HandlerArgs>
-  explicit BaselineCodeGen(JSContext* cx, TempAllocator& alloc,
-                           HandlerArgs&&... args);
+  explicit BaselineCodeGen(TempAllocator& alloc, MacroAssembler& masmArg,
+                           CompileRuntime* runtimeArg, HandlerArgs&&... args);
 
   template <typename T>
   void pushArg(const T& t) {
@@ -84,6 +89,8 @@ class BaselineCodeGen {
   // stored in the script) as argument for a VM function.
   void loadScriptGCThing(ScriptGCThingType type, Register dest,
                          Register scratch);
+  void loadScriptGCThingInternal(ScriptGCThingType type, Register dest,
+                                 Register scratch);
   void pushScriptGCThingArg(ScriptGCThingType type, Register scratch1,
                             Register scratch2);
   void pushScriptNameArg(Register scratch1, Register scratch2);
@@ -97,12 +104,17 @@ class BaselineCodeGen {
 
   // Loads the current JSScript* in dest.
   void loadScript(Register dest);
+  // Loads the current JitScript* in dest
+  void loadJitScript(Register dest);
 
   void saveInterpreterPCReg();
   void restoreInterpreterPCReg();
 
   // Subtracts |script->nslots() * sizeof(Value)| from reg.
   void subtractScriptSlotsSize(Register reg, Register scratch);
+
+  // Loads the resume entries of the current BaselineScript* in dest
+  void loadBaselineScriptResumeEntries(Register dest, Register scratch);
 
   // Jump to the script's resume entry indicated by resumeIndex.
   void jumpToResumeEntry(Register resumeIndex, Register scratch1,
@@ -135,6 +147,13 @@ class BaselineCodeGen {
     return callVM<Fn, fn>(RetAddrEntry::Kind::NonOpCallVM, phase);
   }
 
+  template <typename T>
+  void emitGuardedCallPreBarrierAnyZone(const T& address, MIRType type,
+                                        Register scratch) {
+    MOZ_ASSERT_IF(handler.realmIndependentJitcode(), !masm.maybeRealm());
+    masm.guardedCallPreBarrierAnyZone(address, type, scratch);
+  }
+
   // ifDebuggee should be a function emitting code for when the script is a
   // debuggee script. ifNotDebuggee (if present) is called to emit code for
   // non-debuggee scripts.
@@ -148,9 +167,8 @@ class BaselineCodeGen {
 
   bool emitSuspend(JSOp op);
 
-  template <typename F>
-  [[nodiscard]] bool emitAfterYieldDebugInstrumentation(const F& ifDebuggee,
-                                                        Register scratch);
+  [[nodiscard]] bool emitAfterYieldDebugInstrumentation(Register scratch);
+  [[nodiscard]] bool emitDebugAfterYield();
 
   // ifSet should be a function emitting code for when the script has |flag|
   // set. ifNotSet emits code for when the flag isn't set.
@@ -185,6 +203,9 @@ class BaselineCodeGen {
   [[nodiscard]] bool emitInterruptCheck();
   [[nodiscard]] bool emitWarmUpCounterIncrement();
 
+  [[nodiscard]] bool emitTrialInliningCheck(Register count, Register icScript,
+                                            Register scratch);
+
 #define EMIT_OP(op, ...) bool emit_##op();
   FOR_EACH_OPCODE(EMIT_OP)
 #undef EMIT_OP
@@ -197,6 +218,8 @@ class BaselineCodeGen {
 
   // Handles JSOp::Lt, JSOp::Gt, and friends
   [[nodiscard]] bool emitCompare();
+
+  [[nodiscard]] bool emitConstantStrictEq(JSOp op);
 
   // Handles JSOp::NewObject and JSOp::NewInit.
   [[nodiscard]] bool emitNewObject();
@@ -231,9 +254,9 @@ class BaselineCodeGen {
   [[nodiscard]] bool emitSetElemSuper(bool strict);
   [[nodiscard]] bool emitSetPropSuper(bool strict);
 
-  // Try to bake in the result of BindGName instead of using an IC.
+  // Try to bake in the result of BindUnqualifiedGName instead of using an IC.
   // Return true if we managed to optimize the op.
-  bool tryOptimizeBindGlobalName();
+  bool tryOptimizeBindUnqualifiedGlobalName();
 
   [[nodiscard]] bool emitInitPropGetterSetter();
   [[nodiscard]] bool emitInitElemGetterSetter();
@@ -251,7 +274,6 @@ class BaselineCodeGen {
 
   [[nodiscard]] bool emitPrologue();
   [[nodiscard]] bool emitEpilogue();
-  [[nodiscard]] bool emitOutOfLinePostBarrierSlot();
   [[nodiscard]] bool emitStackCheck();
   [[nodiscard]] bool emitDebugPrologue();
   [[nodiscard]] bool emitDebugEpilogue();
@@ -266,9 +288,12 @@ class BaselineCodeGen {
 
   void emitProfilerEnterFrame();
   void emitProfilerExitFrame();
+
+  void emitOutOfLinePostBarrierSlot();
 };
 
 using RetAddrEntryVector = js::Vector<RetAddrEntry, 16, SystemAllocPolicy>;
+using AllocSiteIndexVector = js::Vector<uint32_t, 16, SystemAllocPolicy>;
 
 // Interface used by BaselineCodeGen for BaselineCompiler.
 class BaselineCompilerHandler {
@@ -280,6 +305,7 @@ class BaselineCompilerHandler {
 #endif
   FixedList<Label> labels_;
   RetAddrEntryVector retAddrEntries_;
+  AllocSiteIndexVector allocSiteIndices_;
 
   // Native code offsets for OSR at JSOp::LoopHead ops.
   using OSREntryVector =
@@ -289,19 +315,33 @@ class BaselineCompilerHandler {
   JSScript* script_;
   jsbytecode* pc_;
 
+  size_t nargs_;
+
+  JSObject* globalLexicalEnvironment_;
+  JSObject* globalThis_;
+
+  CallObject* callObjectTemplate_;
+  NamedLambdaObject* namedLambdaTemplate_;
+
   // Index of the current ICEntry in the script's JitScript.
   uint32_t icEntryIndex_;
+
+  uint32_t baseWarmUpThreshold_;
 
   bool compileDebugInstrumentation_;
   bool ionCompileable_;
 
+  bool compilingOffThread_ = false;
+
+  bool needsEnvAllocSite_ = false;
+
  public:
   using FrameInfoT = CompilerFrameInfo;
 
-  BaselineCompilerHandler(JSContext* cx, MacroAssembler& masm,
-                          TempAllocator& alloc, JSScript* script);
+  BaselineCompilerHandler(MacroAssembler& masm, TempAllocator& alloc,
+                          BaselineSnapshot* snapshot);
 
-  [[nodiscard]] bool init(JSContext* cx);
+  [[nodiscard]] bool init();
 
   CompilerFrameInfo& frame() { return frame_; }
 
@@ -323,17 +363,25 @@ class BaselineCompilerHandler {
   JSScript* script() const { return script_; }
   JSScript* maybeScript() const { return script_; }
 
-  JSFunction* function() const { return script_->function(); }
-  JSFunction* maybeFunction() const { return function(); }
+  size_t nargs() const {
+    MOZ_ASSERT(isFunction());
+    return nargs_;
+  }
+  CallObject* callObjectTemplate() const { return callObjectTemplate_; }
+  NamedLambdaObject* namedLambdaTemplate() const {
+    return namedLambdaTemplate_;
+  }
+
+  bool isFunction() const { return !!script_->function(); }
 
   ModuleObject* module() const { return script_->module(); }
 
-  void setCompileDebugInstrumentation() { compileDebugInstrumentation_ = true; }
   bool compileDebugInstrumentation() const {
     return compileDebugInstrumentation_;
   }
 
   bool maybeIonCompileable() const { return ionCompileable_; }
+  void setIonCompileable(bool value) { ionCompileable_ = value; }
 
   uint32_t icEntryIndex() const { return icEntryIndex_; }
   void moveToNextICEntry() { icEntryIndex_++; }
@@ -343,7 +391,7 @@ class BaselineCompilerHandler {
   RetAddrEntryVector& retAddrEntries() { return retAddrEntries_; }
   OSREntryVector& osrEntries() { return osrEntries_; }
 
-  [[nodiscard]] bool recordCallRetAddr(JSContext* cx, RetAddrEntry::Kind kind,
+  [[nodiscard]] bool recordCallRetAddr(RetAddrEntry::Kind kind,
                                        uint32_t retOffset);
 
   // If a script has more |nslots| than this the stack check must account
@@ -354,6 +402,33 @@ class BaselineCompilerHandler {
   }
 
   bool canHaveFixedSlots() const { return script()->nfixed() != 0; }
+
+  JSObject* maybeGlobalLexicalEnvironment() const {
+    return globalLexicalEnvironment_;
+  }
+  JSObject* globalThis() const { return globalThis_; }
+
+  uint32_t baseWarmUpThreshold() const { return baseWarmUpThreshold_; }
+
+  void maybeDisableIon();
+
+  [[nodiscard]] bool addAllocSiteIndex(uint32_t entryIndex) {
+    return allocSiteIndices_.append(entryIndex);
+  }
+  void createAllocSites();
+
+  bool compilingOffThread() const { return compilingOffThread_; }
+  void setCompilingOffThread() { compilingOffThread_ = true; }
+
+  bool addEnvAllocSite() {
+    needsEnvAllocSite_ = true;
+    return true;
+  }
+
+  bool realmIndependentJitcode() const {
+    return JS::Prefs::experimental_self_hosted_cache() &&
+           script()->selfHosted();
+  }
 };
 
 using BaselineCompilerCodeGen = BaselineCodeGen<BaselineCompilerHandler>;
@@ -373,20 +448,26 @@ class BaselineCompiler final : private BaselineCompilerCodeGen {
   BaselinePerfSpewer perfSpewer_;
 
  public:
-  BaselineCompiler(JSContext* cx, TempAllocator& alloc, JSScript* script);
+  BaselineCompiler(TempAllocator& alloc, CompileRuntime* runtime,
+                   MacroAssembler& masm, BaselineSnapshot* snapshot);
   [[nodiscard]] bool init();
 
-  MethodStatus compile();
+  static bool PrepareToCompile(JSContext* cx, Handle<JSScript*> script,
+                               bool compileDebugInstrumentation);
+
+  MethodStatus compile(JSContext* cx);
+  MethodStatus compileOffThread();
+
+  bool finishCompile(JSContext* cx);
 
   bool compileDebugInstrumentation() const {
     return handler.compileDebugInstrumentation();
   }
-  void setCompileDebugInstrumentation() {
-    handler.setCompileDebugInstrumentation();
-  }
 
  private:
-  MethodStatus emitBody();
+  bool compileImpl();
+
+  bool emitBody();
 
   [[nodiscard]] bool emitDebugTrap();
 };
@@ -424,7 +505,7 @@ class BaselineInterpreterHandler {
  public:
   using FrameInfoT = InterpreterFrameInfo;
 
-  explicit BaselineInterpreterHandler(JSContext* cx, MacroAssembler& masm);
+  explicit BaselineInterpreterHandler(MacroAssembler& masm);
 
   InterpreterFrameInfo& frame() { return frame_; }
 
@@ -451,7 +532,6 @@ class BaselineInterpreterHandler {
   jsbytecode* maybePC() const { return nullptr; }
   bool isDefinitelyLastOp() const { return false; }
   JSScript* maybeScript() const { return nullptr; }
-  JSFunction* maybeFunction() const { return nullptr; }
 
   bool shouldEmitDebugEpilogueAtReturnOp() const {
     // The interpreter doesn't use the return address -> pc mapping and doesn't
@@ -460,14 +540,13 @@ class BaselineInterpreterHandler {
     return false;
   }
 
-  [[nodiscard]] bool addDebugInstrumentationOffset(JSContext* cx,
-                                                   CodeOffset offset);
+  [[nodiscard]] bool addDebugInstrumentationOffset(CodeOffset offset);
 
   const BaselineInterpreter::CallVMOffsets& callVMOffsets() const {
     return callVMOffsets_;
   }
 
-  [[nodiscard]] bool recordCallRetAddr(JSContext* cx, RetAddrEntry::Kind kind,
+  [[nodiscard]] bool recordCallRetAddr(RetAddrEntry::Kind kind,
                                        uint32_t retOffset);
 
   bool maybeIonCompileable() const { return true; }
@@ -477,6 +556,11 @@ class BaselineInterpreterHandler {
   bool mustIncludeSlotsInStackCheck() const { return true; }
 
   bool canHaveFixedSlots() const { return true; }
+  JSObject* maybeGlobalLexicalEnvironment() const { return nullptr; }
+
+  bool addEnvAllocSite() { return false; }  // Not supported.
+
+  bool realmIndependentJitcode() const { return true; }
 };
 
 using BaselineInterpreterCodeGen = BaselineCodeGen<BaselineInterpreterHandler>;
@@ -504,9 +588,10 @@ class BaselineInterpreterGenerator final : private BaselineInterpreterCodeGen {
   BaselineInterpreterPerfSpewer perfSpewer_;
 
  public:
-  explicit BaselineInterpreterGenerator(JSContext* cx, TempAllocator& alloc);
+  explicit BaselineInterpreterGenerator(JSContext* cx, TempAllocator& alloc,
+                                        MacroAssembler& masm);
 
-  [[nodiscard]] bool generate(BaselineInterpreter& interpreter);
+  [[nodiscard]] bool generate(JSContext* cx, BaselineInterpreter& interpreter);
 
  private:
   [[nodiscard]] bool emitInterpreterLoop();

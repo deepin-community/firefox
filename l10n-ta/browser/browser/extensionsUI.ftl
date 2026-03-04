@@ -8,4 +8,3 @@ webext-default-search-yes =
 webext-default-search-no =
     .label = வேண்டாம்
     .accesskey = வே
-

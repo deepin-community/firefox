@@ -39,18 +39,20 @@ support-files = [
 
 ["test_bug_1364262.html"]
 
+["test_console_messages.html"]
+
 ["test_script_crossdomain.html"]
 skip-if = [
-  "http3",
   "http2",
+  "http3",
 ]
 
 ["test_script_sameorigin.html"]
 
 ["test_style_crossdomain.html"]
 skip-if = [
-  "http3",
   "http2",
+  "http3",
 ]
 
 ["test_style_sameorigin.html"]

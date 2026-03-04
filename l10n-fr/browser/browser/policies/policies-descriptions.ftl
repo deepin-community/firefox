@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Activer le remplissage automatique des adresses.
 policy-AutofillCreditCardEnabled = Activer le remplissage automatique des moyens de paiement.
 policy-AutoLaunchProtocolsFromOrigins = Définir une liste de protocoles externes qui peuvent être utilisés à partir d’origines répertoriées sans demander à l’utilisateur.
 policy-BackgroundAppUpdate2 = Activer ou désactiver la mise à jour en arrière-plan.
+policy-Backup = Désactiver la sauvegarde ou la restauration des données de profil.
 policy-BlockAboutAddons = Bloquer l’accès au gestionnaire de modules (about:addons).
 policy-BlockAboutConfig = Bloquer l’accès à la page about:config.
 policy-BlockAboutProfiles = Bloquer l’accès à la page about:profiles.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Désactiver la fonctionnalité d’enregistrement de pag
 policy-DisablePrivateBrowsing = Désactiver la navigation privée.
 policy-DisableProfileImport = Désactiver la commande de menu permettant d’importer des données à partir d’un autre navigateur.
 policy-DisableProfileRefresh = Désactiver le bouton Réparer { -brand-short-name } dans la page about:support.
+policy-DisableRemoteImprovements = Empêcher { -brand-short-name } d’appliquer des modifications de performances, de stabilité et de fonctionnalités entre les mises à jour.
 policy-DisableSafeMode = Désactiver le redémarrage en mode sans échec. Note : sous Windows, le passage en mode sans échec via la touche Majuscule ne peut être désactivé qu’à l’aide d’une stratégie de groupe.
 policy-DisableSecurityBypass = Empêcher l’utilisateur de contourner certains avertissements de sécurité.
 policy-DisableSetAsDesktopBackground = Désactiver la commande contextuelle Choisir l’image comme fond d’écran pour les images.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Gérer tous les aspects de l’installation d’exten
 policy-ExtensionUpdate = Activer ou désactiver la mise à jour automatique des extensions.
 policy-FirefoxHome2 = Configurer la { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configurer { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configurer les fonctionnalités d’IA générative
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Forcer directement la navigation dans le site intranet plutôt que vers la recherche quand des entrées ne comprenant qu’un seul mot sont saisies dans la barre d’adresse.
 policy-Handlers = Configurer les gestionnaires d’applications par défaut.
 policy-HardwareAcceleration = Positionner à false pour désactiver l’accélération matérielle.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Revenir au comportemen
 ##
 
 policy-LocalFileLinks = Autoriser des sites précis à utiliser des liens vers des fichiers locaux.
+policy-LocalNetworkAccess = Activer ou désactiver les vérifications d’accès au réseau local.
 policy-ManagedBookmarks = Configurer une liste de marque-pages gérés par un administrateur qui ne peut pas être modifiée par l’utilisateur.
 policy-ManualAppUpdateOnly = Autoriser uniquement les mises à jour manuelles et ne pas informer l’utilisateur ou l’utilisatrice de la disponibilité de mises à jour.
 policy-PrimaryPassword = Exiger ou empêcher l’utilisation d’un mot de passe principal.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Activer l’acceptation de clé post-qua
 policy-PDFjs = Désactiver ou configurer PDF.js, la visionneuse PDF intégrée dans { -brand-short-name }.
 policy-Permissions2 = Configurer les permissions pour la caméra, le microphone, la localisation, les notifications et la lecture automatique.
 policy-PictureInPicture = Activer ou désactiver l’incrustation vidéo
+policy-PopupBlocking2 = Autoriser certains sites web à afficher des popups et à être redirigés par des cadres tiers.
 policy-PopupBlocking = Autoriser certains sites web à afficher des popups par défaut.
 policy-Preferences = Définir et verrouiller la valeur d’un sous-ensemble de préférences.
 policy-PrivateBrowsingModeAvailability = Définir la disponibilité du mode de navigation privée.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Activer ou désactiver les suggestions de recherch
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Ajouter ou supprimer des modules PKCS #11.
 policy-ShowHomeButton = Afficher le bouton d’accueil dans la barre d’outils.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Ne pas afficher les conditions d’utilisation et la politique de confidentialité au démarrage. Vous déclarez accepter et avoir l’autorité pour accepter les conditions d’utilisation au nom de toutes les personnes à qui vous donnez accès à ce navigateur.
 policy-SSLVersionMax = Définir la version maximale de SSL à utiliser.
 policy-SSLVersionMin = Définir la version minimale de SSL à utiliser.
 policy-StartDownloadsInTempDirectory = Forcer les téléchargements à démarrer dans un emplacement temporaire local plutôt que dans le dossier de téléchargement par défaut.
@@ -137,6 +144,9 @@ policy-SupportMenu = Ajouter une entrée personnalisée au menu d’aide pour l�
 policy-TranslateEnabled = Activer ou désactiver la traduction des pages web.
 policy-UserMessaging = Masquer certains messages à destination de l’utilisateur.
 policy-UseSystemPrintDialog = Imprimer en utilisant la boîte de dialogue système.
+policy-VisualSearchEnabled = Activer ou désactiver la recherche visuelle.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bloquer l’accès à des sites web. Voir la documentation pour plus de détails sur le format.
 policy-Windows10SSO = Autoriser l’authentification unique de Windows pour les comptes Microsoft, professionnels et scolaires.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Autoriser l’authentification unique pour les comptes Microsoft Entra.

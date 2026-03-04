@@ -120,16 +120,14 @@ export const LoginBreaches = {
         breachesByLoginGUID.set(login.guid, breach);
       }
     }
-    Services.telemetry.scalarSet(
-      "pwmgr.potentially_breached_passwords",
-      breachesByLoginGUID.size
-    );
+    Glean.pwmgr.potentiallyBreachedPasswords.set(breachesByLoginGUID.size);
     return breachesByLoginGUID;
   },
 
   /**
    * Return information about logins using passwords that were potentially in a
    * breach.
+   *
    * @see the caveats in the documentation for `getPotentialBreachesByLoginGUID`.
    *
    * @param {nsILoginInfo[]} logins to check the passwords of.

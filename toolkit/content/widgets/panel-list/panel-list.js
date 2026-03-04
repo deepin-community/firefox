@@ -186,6 +186,7 @@
 
     async setAlign() {
       const hostElement = this.parentElement || this.getRootNode().host;
+
       if (!hostElement) {
         // This could get called before we're added to the DOM.
         // Nothing to do in that case.
@@ -216,7 +217,9 @@
 
         requestAnimationFrame(() =>
           setTimeout(() => {
-            let target = this.getTargetForEvent(this.triggeringEvent);
+            let target =
+              this.lastAnchorNode ||
+              this.getTargetForEvent(this.triggeringEvent);
             let anchorElement = target || hostElement;
             // It's possible this is being used in a context where windowUtils is
             // not available. In that case, fallback to using the element.
@@ -228,6 +231,10 @@
             let anchorBounds = getBounds(anchorElement);
             let panelBounds = getBounds(this);
             let clientWidth = document.scrollingElement.clientWidth;
+            let panelHeight =
+              this.scrollHeight > panelBounds.height
+                ? this.scrollHeight
+                : panelBounds.height;
 
             resolve({
               anchorBottom: anchorBounds.bottom,
@@ -235,7 +242,7 @@
               anchorLeft: anchorBounds.left,
               anchorTop: anchorBounds.top,
               anchorWidth: anchorBounds.width,
-              panelHeight: panelBounds.height,
+              panelHeight,
               panelWidth: panelBounds.width,
               winHeight: innerHeight,
               winScrollX: scrollX,
@@ -273,7 +280,7 @@
         // If there's more space between the bottom of the anchor element and the bottom of the viewport, we valign bottom.
         if (
           anchorBottom > bottomSpaceY &&
-          anchorBottom + panelHeight > winHeight
+          anchorBottom + panelHeight + VIEWPORT_PANEL_MIN_MARGIN > winHeight
         ) {
           // Never want to have a negative value for topOffset, so ensure it's at least 10px.
           topOffset = Math.max(
@@ -295,9 +302,19 @@
         this.setAttribute("align", align);
         this.setAttribute("valign", valign);
         hostElement.style.overflow = "";
-
-        this.style.left = `${leftOffset + winScrollX}px`;
-        this.style.top = `${topOffset + winScrollY}px`;
+        // Decide positioning based on where this panel will be rendered
+        const offsetParentIsBody =
+          this.offsetParent === document?.body || !this.offsetParent;
+        if (offsetParentIsBody) {
+          // viewport-based
+          this.style.left = `${leftOffset + winScrollX}px`;
+          this.style.top = `${topOffset + winScrollY}px`;
+        } else {
+          // container-relative
+          const offsetParentRect = this.offsetParent.getBoundingClientRect();
+          this.style.left = `${leftOffset - offsetParentRect.left}px`;
+          this.style.top = `${topOffset - offsetParentRect.top}px`;
+        }
       }
 
       this.style.minWidth = this.hasAttribute("min-width-from-anchor")
@@ -600,7 +617,7 @@
     #defaultSlot;
 
     static get observedAttributes() {
-      return ["accesskey"];
+      return ["accesskey", "type", "disabled"];
     }
 
     constructor() {
@@ -612,7 +629,8 @@
       style.href = "chrome://global/content/elements/panel-item.css";
 
       this.button = document.createElement("button");
-      this.button.setAttribute("role", "menuitem");
+      this.#setButtonAttributes();
+
       this.button.setAttribute("part", "button");
       // Use a XUL label element if possible to show the accesskey.
       this.label = document.createXULElement
@@ -741,7 +759,20 @@
         } else {
           this._accessKey = null;
         }
+      } else if (name === "type" || name === "disabled") {
+        this.#setButtonAttributes();
       }
+    }
+
+    #setButtonAttributes() {
+      if (this.type == "checkbox") {
+        this.button.setAttribute("role", "menuitemcheckbox");
+        this.button.setAttribute("aria-checked", this.checked);
+      } else {
+        this.button.setAttribute("role", "menuitem");
+        this.button.removeAttribute("aria-checked");
+      }
+      this.button.toggleAttribute("disabled", this.disabled);
     }
 
     #setLabelContents() {
@@ -759,19 +790,33 @@
     }
 
     get disabled() {
-      return this.button.hasAttribute("disabled");
+      return this.hasAttribute("disabled");
     }
 
     set disabled(val) {
-      this.button.toggleAttribute("disabled", val);
+      this.toggleAttribute("disabled", val);
     }
 
     get checked() {
+      if (this.type !== "checkbox") {
+        return false;
+      }
       return this.hasAttribute("checked");
     }
 
     set checked(val) {
-      this.toggleAttribute("checked", val);
+      if (this.type == "checkbox") {
+        this.toggleAttribute("checked", val);
+        this.button.setAttribute("aria-checked", !!val);
+      }
+    }
+
+    get type() {
+      return this.getAttribute("type") || "button";
+    }
+
+    set type(val) {
+      this.setAttribute("type", val);
     }
 
     focus() {
@@ -811,7 +856,7 @@
         case "mouseleave":
           this.submenuPanel.toggle(e);
           break;
-        case "keydown":
+        case "keydown": {
           let [arrowOpenKey, arrowCloseKey] = this.setArrowKeyRTL();
           if (e.key === arrowOpenKey) {
             this.submenuPanel.show(e, e.target);
@@ -822,6 +867,7 @@
             e.stopPropagation();
           }
           break;
+        }
       }
     }
   }

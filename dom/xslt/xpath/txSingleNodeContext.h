@@ -6,8 +6,8 @@
 #ifndef __TX_XPATH_SINGLENODE_CONTEXT
 #define __TX_XPATH_SINGLENODE_CONTEXT
 
-#include "mozilla/Attributes.h"
 #include "txIXPathContext.h"
+#include "txXPathNode.h"
 
 class txSingleNodeContext : public txIEvalContext {
  public:
@@ -57,7 +57,7 @@ class txSingleNodeContext : public txIEvalContext {
   uint32_t position() override { return 1; }
 
  private:
-  const txXPathNode& mNode;
+  txXPathNode mNode;
   txIMatchContext* mInner;
 };
 

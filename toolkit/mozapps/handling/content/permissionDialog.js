@@ -5,6 +5,20 @@
 const { EnableDelayHelper } = ChromeUtils.importESModule(
   "resource://gre/modules/PromptUtils.sys.mjs"
 );
+const { XPCOMUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/XPCOMUtils.sys.mjs"
+);
+
+// These schemes are for digital identitity documents.
+// We show a warning card for them in the permission dialog,
+// so the user is made aware the site may be requesting a real
+// identity.
+const lazy = {};
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "walletSchemes",
+  "privacy.wallet_schemes"
+);
 
 let dialog = {
   /**
@@ -62,22 +76,27 @@ let dialog = {
   },
 
   /**
-   * Checks whether the principal that triggered this dialog is top level
-   * (not embedded in a frame).
-   * @returns {boolean} - true if principal is top level, false otherwise.
+   * We only show the website address if the origin is not user-readable
+   * in the address bar.
+   *
+   * @returns {boolean} - true if principal is top level and user-readable,
+   *                      false otherwise.
    * If the triggering principal is null this method always returns false.
    */
-  triggeringPrincipalIsTop() {
+  shouldShowPrincipal() {
     if (!this._principal) {
       return false;
     }
 
     let topContentPrincipal =
       this._browsingContext?.top.embedderElement?.contentPrincipal;
-    if (!topContentPrincipal) {
-      return false;
-    }
-    return this._principal.equals(topContentPrincipal);
+
+    let shownScheme = this._browsingContext.currentURI.scheme;
+    return (
+      !topContentPrincipal ||
+      !topContentPrincipal.equals(this._principal) ||
+      !["http", "https", "file"].includes(shownScheme)
+    );
   },
 
   /**
@@ -92,7 +111,7 @@ let dialog = {
       return "permission-dialog-description-extension";
     }
 
-    if (this._principal?.schemeIs("file")) {
+    if (this._principal?.schemeIs("file") && !this.shouldShowPrincipal()) {
       if (this._preferredHandlerName) {
         return "permission-dialog-description-file-app";
       }
@@ -107,10 +126,7 @@ let dialog = {
       return "permission-dialog-description-system-noapp";
     }
 
-    // We only show the website address if the request didn't come from the top
-    // level frame. If we can't get a host to display, fall back to the copy
-    // without host.
-    if (!this.triggeringPrincipalIsTop() && this.displayPrePath) {
+    if (this.shouldShowPrincipal() && this.userReadablePrincipal) {
       if (this._preferredHandlerName) {
         return "permission-dialog-description-host-app";
       }
@@ -144,23 +160,56 @@ let dialog = {
   },
 
   /**
-   * Computes the prePath to show in the prompt. It's the prePath of the site
-   * that wants to navigate to the external protocol.
-   * @returns {string|null} - prePath to show, or null if we can't derive an
-   * exposable prePath from the triggering principal.
+   * Determines the l10n ID to use for the dangerous scheme warning,
+   * depending on the triggering principal and the preferred application
+   * handler.
    */
-  get displayPrePath() {
+  get walletWarningL10nId() {
+    if (this.shouldShowPrincipal() && this.userReadablePrincipal) {
+      if (this._preferredHandlerName) {
+        return "wallet-custom-scheme-warning-host-app";
+      }
+      return "wallet-custom-scheme-warning-host";
+    }
+
+    if (this._preferredHandlerName) {
+      return "wallet-custom-scheme-warning-app";
+    }
+
+    return "wallet-custom-scheme-warning";
+  },
+
+  /**
+   * Computes text to show in the prompt that is a user-understandable
+   * version of what is asking to open the external protocol.
+   * It's usually the prePath of the site that wants to navigate to
+   * the external protocol, though we use the OS syntax for paths if
+   * the request comes from `file://`.
+   *
+   * @returns {string|null} - text to show, or null if we can't derive an
+   * readable string from the triggering principal.
+   */
+  get userReadablePrincipal() {
     if (!this._principal) {
       return null;
     }
 
     // NullPrincipals don't expose a meaningful prePath. Instead use the
     // precursorPrincipal, which the NullPrincipal was derived from.
-    if (this._principal.isNullPrincipal) {
-      return this._principal.precursorPrincipal?.exposablePrePath;
+    let p = this._principal.isNullPrincipal
+      ? this._principal.precursorPrincipal
+      : this._principal;
+    // Files have `file://` and nothing else as the prepath. Showing the
+    // full path seems more useful for users:
+    if (p?.schemeIs("file")) {
+      try {
+        let { file } = p.URI.QueryInterface(Ci.nsIFileURL);
+        return file.path;
+      } catch (_ex) {
+        return p.spec;
+      }
     }
-
-    return this._principal?.exposablePrePath;
+    return p?.exposablePrePath;
   },
 
   initL10n() {
@@ -184,7 +233,7 @@ let dialog = {
 
     let description = document.getElementById("description");
 
-    let host = this.displayPrePath;
+    let host = this.userReadablePrincipal;
     let scheme = this._handlerInfo.type;
 
     document.l10n.setAttributes(description, this.l10nDescriptionId, {
@@ -200,6 +249,23 @@ let dialog = {
         host,
         scheme,
       });
+    }
+
+    let walletSchemeList = lazy.walletSchemes.split(",");
+    if (walletSchemeList.includes(scheme)) {
+      let warning = document.getElementById("warning-bar");
+      document.l10n.setAttributes(
+        warning,
+        "wallet-custom-scheme-warning-heading"
+      );
+      warning.messageL10nId = this.walletWarningL10nId;
+      warning.messageL10nArgs = {
+        host,
+        scheme,
+        appName: this._preferredHandlerName,
+      };
+      warning.hidden = false;
+      description.hidden = true;
     }
   },
 

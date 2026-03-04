@@ -4,13 +4,12 @@
 
 sidebar-menu-bookmarks =
     .label = Cytańske znamjenja
+sidebar-menu-bookmarks-2 = Cytańske znamjenja
 sidebar-menu-history =
     .label = Historija
 sidebar-menu-synced-tabs =
     .label = Synchronizěrowane rejtariki
-sidebar-menu-megalist =
-    .label = Gronidła
 sidebar-menu-close =
-    .label = Bócnicu zacyniś
+    .label = Bocnicu zacyniś
 sidebar-close-button =
-    .tooltiptext = Bócnicu zacyniś
+    .tooltiptext = Bocnicu zacyniś

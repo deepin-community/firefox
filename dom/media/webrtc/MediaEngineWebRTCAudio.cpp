@@ -5,24 +5,26 @@
 
 #include "MediaEngineWebRTCAudio.h"
 
-#include <stdio.h>
 #include <algorithm>
 
 #include "AudioConverter.h"
 #include "MediaManager.h"
-#include "MediaTrackGraph.h"
 #include "MediaTrackConstraints.h"
+#include "MediaTrackGraph.h"
+#include "Tracing.h"
+#include "api/audio/builtin_audio_processing_builder.h"
+#include "api/audio/echo_canceller3_factory.h"
+#include "api/environment/environment_factory.h"
+#include "common_audio/include/audio_util.h"
+#include "libwebrtcglue/WebrtcEnvironmentWrapper.h"
+#include "modules/audio_processing/include/audio_processing.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/ErrorNames.h"
+#include "mozilla/Logging.h"
+#include "mozilla/Sprintf.h"
+#include "nsGlobalWindowInner.h"
 #include "nsIDUtils.h"
 #include "transport/runnable_utils.h"
-#include "Tracing.h"
-#include "mozilla/Sprintf.h"
-#include "mozilla/Logging.h"
-
-#include "api/audio/echo_canceller3_factory.h"
-#include "common_audio/include/audio_util.h"
-#include "modules/audio_processing/include/audio_processing.h"
 
 using namespace webrtc;
 
@@ -56,6 +58,13 @@ MediaEngineWebRTCMicrophoneSource::MediaEngineWebRTCMicrophoneSource(
           new media::Refcountable<dom::MediaTrackSettings>(),
           // Non-strict means it won't assert main thread for us.
           // It would be great if it did but we're already on the media thread.
+          /* aStrict = */ false)),
+      mCapabilities(new nsMainThreadPtrHolder<
+                    media::Refcountable<dom::MediaTrackCapabilities>>(
+          "MediaEngineWebRTCMicrophoneSource::mCapabilities",
+          new media::Refcountable<dom::MediaTrackCapabilities>(),
+          // Non-strict means it won't assert main thread for us.
+          // It would be great if it did but we're already on the media thread.
           /* aStrict = */ false)) {
   MOZ_ASSERT(aMediaDevice->mMediaSource == MediaSourceEnum::Microphone);
 #ifndef ANDROID
@@ -69,6 +78,48 @@ MediaEngineWebRTCMicrophoneSource::MediaEngineWebRTCMicrophoneSource(
   mSettings->mChannelCount.Construct(0);
 
   mState = kReleased;
+
+  // Set mMaxChannelsCapablitiy on main thread.
+  NS_DispatchToMainThread(NS_NewRunnableFunction(
+      __func__, [capabilities = mCapabilities,
+                 deviceMaxChannelCount = mDeviceMaxChannelCount] {
+        nsTArray<bool> echoCancellation;
+        echoCancellation.AppendElement(true);
+        echoCancellation.AppendElement(false);
+        capabilities->mEchoCancellation.Reset();
+        capabilities->mEchoCancellation.Construct(std::move(echoCancellation));
+
+        nsTArray<bool> autoGainControl;
+        autoGainControl.AppendElement(true);
+        autoGainControl.AppendElement(false);
+        capabilities->mAutoGainControl.Reset();
+        capabilities->mAutoGainControl.Construct(std::move(autoGainControl));
+
+        nsTArray<bool> noiseSuppression;
+        noiseSuppression.AppendElement(true);
+        noiseSuppression.AppendElement(false);
+        capabilities->mNoiseSuppression.Reset();
+        capabilities->mNoiseSuppression.Construct(std::move(noiseSuppression));
+
+        if (deviceMaxChannelCount) {
+          dom::ULongRange channelCountRange;
+          channelCountRange.mMax.Construct(deviceMaxChannelCount);
+          channelCountRange.mMin.Construct(1);
+          capabilities->mChannelCount.Reset();
+          capabilities->mChannelCount.Construct(channelCountRange);
+        }
+      }));
+}
+
+/*static*/ already_AddRefed<MediaEngineWebRTCMicrophoneSource>
+MediaEngineWebRTCMicrophoneSource::CreateFrom(
+    const MediaEngineWebRTCMicrophoneSource* aSource,
+    const MediaDevice* aMediaDevice) {
+  auto src = MakeRefPtr<MediaEngineWebRTCMicrophoneSource>(aMediaDevice);
+  *static_cast<dom::MediaTrackSettings*>(src->mSettings) = *aSource->mSettings;
+  *static_cast<dom::MediaTrackCapabilities*>(src->mCapabilities) =
+      *aSource->mCapabilities;
+  return src.forget();
 }
 
 nsresult MediaEngineWebRTCMicrophoneSource::EvaluateSettings(
@@ -104,7 +155,7 @@ nsresult MediaEngineWebRTCMicrophoneSource::EvaluateSettings(
   // Get the number of channels asked for by content, and clamp it between the
   // pref and the maximum number of channels that the device supports.
   prefs.mChannels = c.mChannelCount.Get(std::min(prefs.mChannels, maxChannels));
-  prefs.mChannels = std::max(1, std::min(prefs.mChannels, maxChannels));
+  prefs.mChannels = std::clamp(prefs.mChannels, 1, maxChannels);
 
   LOG("Mic source %p Audio config: aec: %s, agc: %s, noise: %s, channels: %d",
       this, prefs.mAecOn ? "on" : "off", prefs.mAgcOn ? "on" : "off",
@@ -148,7 +199,7 @@ nsresult MediaEngineWebRTCMicrophoneSource::Reconfigure(
 }
 
 AudioProcessing::Config AudioInputProcessing::ConfigForPrefs(
-    const MediaEnginePrefs& aPrefs) const {
+    MediaTrackGraph* aGraph, const MediaEnginePrefs& aPrefs) const {
   AudioProcessing::Config config;
 
   config.pipeline.multi_channel_render = true;
@@ -207,9 +258,12 @@ AudioProcessing::Config AudioInputProcessing::ConfigForPrefs(
 
   config.high_pass_filter.enabled = aPrefs.mHPFOn;
 
-  if (mPlatformProcessingSetParams &
-      CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION) {
-    config.echo_canceller.enabled = false;
+  if ((mPlatformProcessingSetParams &
+       CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION)) {
+    // Platform processing (VPIO on macOS) will cancel echo from the output
+    // device used as the output stream. Leave it on here when rendering audio
+    // to another output device.
+    config.echo_canceller.enabled = !aGraph->OutputForAECIsPrimary();
   }
   if (mPlatformProcessingSetParams &
       CUBEB_INPUT_PROCESSING_PARAM_AUTOMATIC_GAIN_CONTROL) {
@@ -409,6 +463,12 @@ void MediaEngineWebRTCMicrophoneSource::GetSettings(
     dom::MediaTrackSettings& aOutSettings) const {
   MOZ_ASSERT(NS_IsMainThread());
   aOutSettings = *mSettings;
+}
+
+void MediaEngineWebRTCMicrophoneSource::GetCapabilities(
+    dom::MediaTrackCapabilities& aOutCapabilities) const {
+  MOZ_ASSERT(NS_IsMainThread());
+  aOutCapabilities = *mCapabilities;
 }
 
 AudioInputProcessing::AudioInputProcessing(uint32_t aMaxChannelCount)
@@ -684,6 +744,14 @@ void AudioInputProcessing::Process(AudioProcessingTrack* aTrack,
   MOZ_ASSERT(aInput->GetDuration() == need,
              "Wrong data length from input port source");
 
+  if (mSettings.mAecOn &&
+      (mPlatformProcessingSetParams &
+       CUBEB_INPUT_PROCESSING_PARAM_ECHO_CANCELLATION) &&
+      mAppliedConfig.echo_canceller.enabled ==
+          aTrack->Graph()->OutputForAECIsPrimary()) {
+    ApplySettingsInternal(aTrack->Graph(), mSettings);
+  }
+
   if (IsPassThrough(graph)) {
     LOG_FRAME(
         "(Graph %p, Driver %p) AudioInputProcessing %p Forwarding %" PRId64
@@ -738,7 +806,11 @@ void AudioInputProcessing::ProcessOutputData(AudioProcessingTrack* aTrack,
   MOZ_ASSERT(aChunk.ChannelCount() > 0);
   aTrack->AssertOnGraphThread();
 
-  if (!mEnabled || IsPassThrough(aTrack->Graph())) {
+  if (!mEnabled) {
+    return;
+  }
+
+  if (IsPassThrough(aTrack->Graph())) {
     return;
   }
 
@@ -1101,8 +1173,9 @@ void AudioInputProcessing::ApplySettingsInternal(
   bool wasPassThrough = IsPassThrough(aGraph);
 
   mSettings = aSettings;
+  mAppliedConfig = ConfigForPrefs(aGraph, aSettings);
   if (mAudioProcessing) {
-    mAudioProcessing->ApplyConfig(ConfigForPrefs(aSettings));
+    mAudioProcessing->ApplyConfig(mAppliedConfig);
   }
 
   if (wasPassThrough != IsPassThrough(aGraph)) {
@@ -1110,13 +1183,10 @@ void AudioInputProcessing::ApplySettingsInternal(
   }
 }
 
-webrtc::AudioProcessing::Config AudioInputProcessing::AppliedConfig(
+const webrtc::AudioProcessing::Config& AudioInputProcessing::AppliedConfig(
     MediaTrackGraph* aGraph) const {
   aGraph->AssertOnGraphThread();
-  if (mAudioProcessing) {
-    return mAudioProcessing->GetConfig();
-  }
-  return ConfigForPrefs(mSettings);
+  return mAppliedConfig;
 }
 
 void AudioInputProcessing::End() {
@@ -1128,6 +1198,13 @@ TrackTime AudioInputProcessing::NumBufferedFrames(
     MediaTrackGraph* aGraph) const {
   aGraph->AssertOnGraphThread();
   return mSegment.GetDuration();
+}
+
+void AudioInputProcessing::SetEnvironmentWrapper(
+    AudioProcessingTrack* aTrack,
+    RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper) {
+  aTrack->AssertOnGraphThread();
+  mEnvWrapper = std::move(aEnvWrapper);
 }
 
 void AudioInputProcessing::EnsurePacketizer(AudioProcessingTrack* aTrack) {
@@ -1194,9 +1271,10 @@ void AudioInputProcessing::EnsureAudioProcessing(AudioProcessingTrack* aTrack) {
     LOG("Track %p AudioInputProcessing %p creating AudioProcessing. "
         "aec+drift: %s",
         aTrack, this, haveAECAndDrift ? "Y" : "N");
+    MOZ_ASSERT(mEnvWrapper);
     mHadAECAndDrift = haveAECAndDrift;
-    AudioProcessingBuilder builder;
-    builder.SetConfig(ConfigForPrefs(mSettings));
+    BuiltinAudioProcessingBuilder builder;
+    builder.SetConfig(AppliedConfig(graph));
     if (haveAECAndDrift) {
       // Setting an EchoControlFactory always enables AEC, overriding
       // Config::echo_canceller.enabled, so do this only when AEC is enabled.
@@ -1205,7 +1283,7 @@ void AudioInputProcessing::EnsureAudioProcessing(AudioProcessingTrack* aTrack) {
       builder.SetEchoControlFactory(
           std::make_unique<EchoCanceller3Factory>(aec3Config));
     }
-    mAudioProcessing.reset(builder.Create().release());
+    mAudioProcessing.reset(builder.Build(mEnvWrapper->Environment()).release());
   }
 }
 
@@ -1253,10 +1331,16 @@ void AudioProcessingTrack::SetInputProcessing(
   if (IsDestroyed()) {
     return;
   }
+
+  RefPtr<WebrtcEnvironmentWrapper> envWrapper =
+      WebrtcEnvironmentWrapper::Create(dom::RTCStatsTimestampMaker::Create(
+          nsGlobalWindowInner::GetInnerWindowWithId(GetWindowId())));
+
   QueueControlMessageWithNoShutdown(
-      [self = RefPtr{this}, this,
-       inputProcessing = std::move(aInputProcessing)]() mutable {
+      [self = RefPtr{this}, this, inputProcessing = std::move(aInputProcessing),
+       envWrapper = std::move(envWrapper)]() mutable {
         TRACE("AudioProcessingTrack::SetInputProcessingImpl");
+        inputProcessing->SetEnvironmentWrapper(self, std::move(envWrapper));
         SetInputProcessingImpl(std::move(inputProcessing));
       });
 }

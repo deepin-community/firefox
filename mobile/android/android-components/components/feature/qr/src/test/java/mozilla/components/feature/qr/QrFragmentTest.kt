@@ -16,6 +16,7 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.Image
+import android.media.ImageReader
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
@@ -28,6 +29,8 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.WindowMetrics
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatImageButton
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -44,6 +47,7 @@ import mozilla.components.support.test.any
 import mozilla.components.support.test.argumentCaptor
 import mozilla.components.support.test.eq
 import mozilla.components.support.test.mock
+import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.whenever
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -51,6 +55,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
@@ -83,7 +88,8 @@ class QrFragmentTest {
 
     @Test
     fun `onPause closes camera, stops background thread, and shuts down executor service`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         qrFragment.onPause()
 
         verify(qrFragment).stopBackgroundThread()
@@ -93,7 +99,8 @@ class QrFragmentTest {
 
     @Test
     fun `onResume opens camera, starts background thread and starts executor service`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         val context: Context = mock()
         doReturn(PackageManager.PERMISSION_GRANTED)
             .`when`(context).checkPermission(eq(permission.CAMERA), anyInt(), anyInt())
@@ -107,7 +114,8 @@ class QrFragmentTest {
 
     @Test
     fun `onResume avoids starting scanning if the camera permission is missing`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         val context: Context = mock()
         doReturn(PackageManager.PERMISSION_DENIED)
             .`when`(context).checkPermission(eq(permission.CAMERA), anyInt(), anyInt())
@@ -120,49 +128,10 @@ class QrFragmentTest {
     }
 
     @Test
-    @Config(sdk = [Build.VERSION_CODES.N])
-    fun `WHEN running a device lower than P THEN startExecutorService should not be executed`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
-
-        qrFragment.textureView = mock()
-        qrFragment.cameraErrorView = mock()
-        qrFragment.customViewFinder = mock()
-        whenever(qrFragment.textureView.isAvailable).thenReturn(true)
-        doNothing().`when`(qrFragment).maybeStartBackgroundThread()
-        doNothing().`when`(qrFragment).tryOpenCamera(anyInt(), anyInt(), anyBoolean())
-        val context: Context = mock()
-        doReturn(PackageManager.PERMISSION_GRANTED).`when`(context).checkSelfPermission(permission.CAMERA)
-        doReturn(context).`when`(qrFragment).context
-
-        qrFragment.onResume()
-
-        verify(qrFragment, never()).maybeStartExecutorService()
-    }
-
-    @Test
-    @Config(sdk = [Build.VERSION_CODES.N])
-    fun `WHEN calling createCaptureSessionCompat on a device lower than P THEN use older API`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
-        val camera = mock<CameraDevice>()
-        val imageSurface = mock<Surface>()
-        val surface = mock<Surface>()
-        val stateCallback = mock<CameraCaptureSession.StateCallback>()
-
-        qrFragment.textureView = mock()
-        qrFragment.cameraErrorView = mock()
-        qrFragment.customViewFinder = mock()
-        whenever(qrFragment.textureView.isAvailable).thenReturn(true)
-
-        qrFragment.createCaptureSessionCompat(camera, imageSurface, surface, stateCallback)
-
-        @Suppress("DEPRECATION")
-        verify(camera).createCaptureSession(listOf(imageSurface, surface), stateCallback, null)
-    }
-
-    @Test
     @Config(sdk = [Build.VERSION_CODES.P])
     fun `WHEN calling createCaptureSessionCompat on a device higher than P THEN use newer api`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         val camera = mock<CameraDevice>()
         val imageSurface = mock<Surface>()
         val surface = mock<Surface>()
@@ -184,7 +153,8 @@ class QrFragmentTest {
 
     @Test
     fun `onStop resets state`() {
-        val qrFragment = QrFragment.newInstance(mock())
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         QrFragment.qrState = QrFragment.STATE_DECODE_PROGRESS
 
         qrFragment.onStop()
@@ -194,15 +164,20 @@ class QrFragmentTest {
 
     @Test
     fun `onViewCreated sets initial state`() {
-        val qrFragment = QrFragment.newInstance(mock())
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         val view: View = mock()
         val textureView: AutoFitTextureView = mock()
         val viewFinder: CustomViewFinder = mock()
         val cameraErrorView: TextView = mock()
+        val backButtonView: AppCompatImageButton = mock()
+
+        whenever(view.getContext()).thenReturn(testContext)
 
         whenever(view.findViewById<AutoFitTextureView>(R.id.texture)).thenReturn(textureView)
         whenever(view.findViewById<CustomViewFinder>(R.id.view_finder)).thenReturn(viewFinder)
         whenever(view.findViewById<TextView>(R.id.camera_error)).thenReturn(cameraErrorView)
+        whenever(view.findViewById<AppCompatImageButton>(R.id.back_button)).thenReturn(backButtonView)
 
         qrFragment.onViewCreated(view, mock())
         assertEquals(QrFragment.STATE_FIND_QRCODE, QrFragment.qrState)
@@ -325,7 +300,8 @@ class QrFragmentTest {
 
     @Test
     fun `camera is closed on disconnect and error`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
 
         var camera: CameraDevice = mock()
         qrFragment.stateCallback.onDisconnected(camera)
@@ -338,7 +314,8 @@ class QrFragmentTest {
 
     @Test
     fun `catches and handles CameraAccessException when creating preview session`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
 
         val camera: CameraDevice = mock()
         whenever(camera.createCaptureRequest(anyInt())).thenThrow(CameraAccessException(123))
@@ -359,7 +336,8 @@ class QrFragmentTest {
 
     @Test
     fun `catches and handles IllegalStateException when creating preview session`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
 
         val camera: CameraDevice = mock()
         whenever(camera.createCaptureRequest(anyInt())).thenThrow(IllegalStateException("CameraDevice was already closed"))
@@ -380,7 +358,8 @@ class QrFragmentTest {
 
     @Test
     fun `catches and handles CameraAccessException when opening camera`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         whenever(qrFragment.setUpCameraOutputs(anyInt(), anyInt())).then { }
 
         val cameraManager: CameraManager = mock()
@@ -401,7 +380,8 @@ class QrFragmentTest {
 
     @Test
     fun `throws exception on device without camera`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         whenever(qrFragment.setUpCameraOutputs(anyInt(), anyInt())).then { }
 
         val cameraManager: CameraManager = mock()
@@ -509,7 +489,8 @@ class QrFragmentTest {
 
     @Test
     fun `uses square preview of optimal size`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         val textureView: AutoFitTextureView = mock()
         qrFragment.textureView = textureView
 
@@ -542,7 +523,8 @@ class QrFragmentTest {
 
     @Test
     fun `tryOpenCamera displays error message if no camera is available`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
 
         qrFragment.textureView = mock()
         qrFragment.cameraErrorView = mock()
@@ -555,7 +537,8 @@ class QrFragmentTest {
 
     @Test
     fun `tryOpenCamera opens camera if available and hides the error message is shown`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         qrFragment.textureView = mock()
         qrFragment.cameraErrorView = mock()
         qrFragment.customViewFinder = mock()
@@ -570,7 +553,8 @@ class QrFragmentTest {
 
     @Test
     fun `tryOpenCamera displays error message if camera throws exception`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         whenever(qrFragment.setUpCameraOutputs(anyInt(), anyInt())).then { }
 
         qrFragment.textureView = mock()
@@ -813,7 +797,8 @@ class QrFragmentTest {
 
     @Test
     fun `startScanning opens camera, starts background thread and starts executor service`() {
-        val qrFragment = spy(QrFragment.newInstance(mock()))
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
         whenever(qrFragment.setUpCameraOutputs(anyInt(), anyInt())).then { }
         val context: Context = mock()
         doReturn(PackageManager.PERMISSION_GRANTED)
@@ -832,5 +817,31 @@ class QrFragmentTest {
         verify(qrFragment, times(2)).maybeStartBackgroundThread()
         verify(qrFragment, times(2)).maybeStartExecutorService()
         verify(qrFragment).tryOpenCamera(anyInt(), anyInt(), anyBoolean())
+    }
+
+    @Test
+    fun `WHEN image reader's surface is null THEN creating preview session should not crash `() {
+        val scanCompleteListener = mock<QrFragment.OnScanCompleteListener>()
+        val qrFragment = spy(QrFragment.newInstance(scanCompleteListener))
+
+        val camera: CameraDevice = mock()
+        qrFragment.cameraDevice = camera
+
+        val imageReader: ImageReader = mock()
+        qrFragment.imageReader = imageReader
+
+        whenever(imageReader.surface).thenReturn(null)
+
+        val textureView: AutoFitTextureView = mock()
+        whenever(textureView.surfaceTexture).thenReturn(mock())
+        qrFragment.textureView = textureView
+
+        qrFragment.previewSize = mock()
+
+        try {
+            qrFragment.createCameraPreviewSession()
+        } catch (e: NullPointerException) {
+            fail("NullPointerException should not not have been thrown.")
+        }
     }
 }

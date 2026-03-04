@@ -131,7 +131,10 @@ export class AboutLoginsParent extends JSWindowActorParent {
         break;
       }
       case "AboutLogins:PrimaryPasswordRequest": {
-        await this.#primaryPasswordRequest(message.data);
+        await this.#primaryPasswordRequest(
+          message.data.messageId,
+          message.data.reason
+        );
         break;
       }
       case "AboutLogins:Subscribe": {
@@ -139,7 +142,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
         break;
       }
       case "AboutLogins:UpdateLogin": {
-        this.#updateLogin(message.data.login);
+        await this.#updateLogin(message.data.login);
         break;
       }
       case "AboutLogins:ExportPasswords": {
@@ -245,16 +248,14 @@ export class AboutLoginsParent extends JSWindowActorParent {
     this.#ownerGlobal.openPreferences("privacy-logins");
   }
 
-  async #primaryPasswordRequest(messageId) {
+  async #primaryPasswordRequest(messageId, reason) {
     if (!messageId) {
       throw new Error("AboutLogins:PrimaryPasswordRequest: no messageId.");
     }
     let messageText = { value: "NOT SUPPORTED" };
     let captionText = { value: "" };
 
-    const isOSAuthEnabled = lazy.LoginHelper.getOSAuthEnabled(
-      lazy.LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF
-    );
+    const isOSAuthEnabled = lazy.LoginHelper.getOSAuthEnabled();
 
     // This feature is only supported on Windows and macOS
     // but we still call in to OSKeyStore on Linux to get
@@ -277,7 +278,8 @@ export class AboutLoginsParent extends JSWindowActorParent {
       isOSAuthEnabled,
       AboutLogins._authExpirationTime,
       messageText.value,
-      captionText.value
+      captionText.value,
+      reason
     );
     this.sendAsyncMessage("AboutLogins:PrimaryPasswordResponse", {
       result: isAuthorized,
@@ -339,8 +341,8 @@ export class AboutLoginsParent extends JSWindowActorParent {
     }
   }
 
-  #updateLogin(loginUpdates) {
-    let logins = lazy.LoginHelper.searchLoginsWithObject({
+  async #updateLogin(loginUpdates) {
+    let logins = await Services.logins.searchLoginsAsync({
       guid: loginUpdates.guid,
     });
     if (logins.length != 1) {
@@ -358,7 +360,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
       modifiedLogin.password = loginUpdates.password;
     }
     try {
-      Services.logins.modifyLogin(logins[0], modifiedLogin);
+      await Services.logins.modifyLoginAsync(logins[0], modifiedLogin);
     } catch (error) {
       this.#handleLoginStorageErrors(modifiedLogin, error);
     }
@@ -368,9 +370,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
     let messageText = { value: "NOT SUPPORTED" };
     let captionText = { value: "" };
 
-    const isOSAuthEnabled = lazy.LoginHelper.getOSAuthEnabled(
-      lazy.LoginHelper.OS_AUTH_FOR_PASSWORDS_PREF
-    );
+    const isOSAuthEnabled = lazy.LoginHelper.getOSAuthEnabled();
 
     // This feature is only supported on Windows and macOS
     // but we still call in to OSKeyStore on Linux to get
@@ -394,30 +394,38 @@ export class AboutLoginsParent extends JSWindowActorParent {
       ]);
     }
 
+    let reason = "export_logins";
     let { isAuthorized, telemetryEvent } = await lazy.LoginHelper.requestReauth(
       this.browsingContext.embedderElement,
       true,
       null, // Prompt regardless of a recent prompt
       messageText.value,
-      captionText.value
+      captionText.value,
+      reason
     );
 
-    let { method, object, extra = {}, value = null } = telemetryEvent;
-    Services.telemetry.recordEvent("pwmgr", method, object, value, extra);
+    let { name, extra = {}, value = null } = telemetryEvent;
+    if (value) {
+      extra.value = value;
+    }
+    Glean.pwmgr[name].record(extra);
 
     if (!isAuthorized) {
       return;
+    }
+
+    if (!this.browsingContext.canOpenModalPicker) {
+      // Prompting for os auth removed the focus from about:logins.
+      // Waiting for about:logins window to re-gain the focus, because only
+      // active browsing contexts are allowed to open the file picker.
+      await this.sendQuery("AboutLogins:WaitForFocus");
     }
 
     let fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
     function fpCallback(aResult) {
       if (aResult != Ci.nsIFilePicker.returnCancel) {
         lazy.LoginExport.exportAsCSV(fp.file.path);
-        Services.telemetry.recordEvent(
-          "pwmgr",
-          "mgmt_menu_item_used",
-          "export_complete"
-        );
+        Glean.pwmgr.mgmtMenuItemUsedExportComplete.record();
       }
     }
     let [title, defaultFilename, okButtonLabel, csvFilterTitle] =
@@ -489,11 +497,7 @@ export class AboutLoginsParent extends JSWindowActorParent {
       }
       if (summary) {
         this.sendAsyncMessage("AboutLogins:ImportPasswordsDialog", summary);
-        Services.telemetry.recordEvent(
-          "pwmgr",
-          "mgmt_menu_item_used",
-          "import_csv_complete"
-        );
+        Glean.pwmgr.mgmtMenuItemUsedImportCsvComplete.record();
       }
     }
   }
@@ -829,9 +833,8 @@ class AboutLoginsInternal {
     // by other more Sync-specific pages.
     const loggedIn = state.status != lazy.UIState.STATUS_NOT_CONFIGURED;
     const passwordSyncEnabled = state.syncEnabled && lazy.PASSWORD_SYNC_ENABLED;
-    const accountURL = await lazy.FxAccounts.config.promiseManageURI(
-      "password-manager"
-    );
+    const accountURL =
+      await lazy.FxAccounts.config.promiseManageURI("password-manager");
 
     return {
       loggedIn,

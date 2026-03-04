@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+use crate::derives::*;
+
 /// Gecko's pseudo-element definition.
 ///
 /// We intentionally double-box legacy ::-moz-tree pseudo-elements to keep the
@@ -14,6 +16,8 @@ pub enum PseudoElement {
         ${pseudo.capitalized_pseudo()}(thin_vec::ThinVec<Atom>),
         % elif pseudo.pseudo_ident == "highlight":
         ${pseudo.capitalized_pseudo()}(AtomIdent),
+        % elif pseudo.is_named_view_transition_pseudo():
+        ${pseudo.capitalized_pseudo()}(PtNameAndClassSelector),
         % else:
         ${pseudo.capitalized_pseudo()},
         % endif
@@ -27,6 +31,7 @@ pub enum PseudoElement {
 /// nsCSSPseudoElements::IsEagerlyCascadedInServo.
 <% EAGER_PSEUDOS = ["Before", "After", "FirstLine", "FirstLetter"] %>
 <% TREE_PSEUDOS = [pseudo for pseudo in PSEUDOS if pseudo.is_tree_pseudo_element()] %>
+<% NAMED_VT_PSEUDOS = [pseudo for pseudo in PSEUDOS if pseudo.is_named_view_transition_pseudo()] %>
 <% SIMPLE_PSEUDOS = [pseudo for pseudo in PSEUDOS if pseudo.is_simple_pseudo_element()] %>
 
 /// The number of eager pseudo-elements.
@@ -104,6 +109,17 @@ impl PseudoElement {
         }
     }
 
+    /// Whether this pseudo-element is a named view transition pseudo-element.
+    #[inline]
+    pub fn is_named_view_transition_pseudo_element(&self) -> bool {
+        match *self {
+            % for pseudo in NAMED_VT_PSEUDOS:
+            ${pseudo_element_variant(pseudo)} => true,
+            % endfor
+            _ => false,
+        }
+    }
+
     /// Whether this pseudo-element is an unknown Webkit-prefixed pseudo-element.
     #[inline]
     pub fn is_unknown_webkit_pseudo_element(&self) -> bool {
@@ -138,29 +154,32 @@ impl PseudoElement {
                     debug_assert!(functional_pseudo_parameter.is_none());
                     Some(${pseudo_element_variant(pseudo)})
                 },
+            % elif pseudo.is_named_view_transition_pseudo():
+                PseudoStyleType::${pseudo.pseudo_ident} => functional_pseudo_parameter.map(|p| {
+                    PseudoElement::${pseudo.capitalized_pseudo()}(PtNameAndClassSelector::from_name(p.0))
+                }),
             % endif
             % endfor
-            PseudoStyleType::highlight => {
-                match functional_pseudo_parameter {
-                    Some(p) => Some(PseudoElement::Highlight(p)),
-                    None => None
-                }
-            }
+            PseudoStyleType::highlight => functional_pseudo_parameter.map(PseudoElement::Highlight),
             _ => None,
         }
     }
 
     /// Construct a `PseudoStyleType` from a pseudo-element
+    // FIXME: we probably have to return the arguments of -moz-tree. However, they are multiple
+    // names, so we skip them for now (until we really need them).
     #[inline]
-    pub fn pseudo_type(&self) -> PseudoStyleType {
+    pub fn pseudo_type_and_argument(&self) -> (PseudoStyleType, Option<&Atom>) {
         match *self {
             % for pseudo in PSEUDOS:
             % if pseudo.is_tree_pseudo_element():
-                PseudoElement::${pseudo.capitalized_pseudo()}(..) => PseudoStyleType::XULTree,
+                PseudoElement::${pseudo.capitalized_pseudo()}(..) => (PseudoStyleType::XULTree, None),
             % elif pseudo.pseudo_ident == "highlight":
-                PseudoElement::${pseudo.capitalized_pseudo()}(..) => PseudoStyleType::${pseudo.pseudo_ident},
+                PseudoElement::${pseudo.capitalized_pseudo()}(ref value) => (PseudoStyleType::${pseudo.pseudo_ident}, Some(&value.0)),
+            % elif pseudo.is_named_view_transition_pseudo():
+                PseudoElement::${pseudo.capitalized_pseudo()}(ref value) => (PseudoStyleType::${pseudo.pseudo_ident}, Some(value.name())),
             % else:
-                PseudoElement::${pseudo.capitalized_pseudo()} => PseudoStyleType::${pseudo.pseudo_ident},
+                PseudoElement::${pseudo.capitalized_pseudo()} => (PseudoStyleType::${pseudo.pseudo_ident}, None),
             % endif
             % endfor
             PseudoElement::UnknownWebkit(..) => unreachable!(),
@@ -169,7 +188,7 @@ impl PseudoElement {
 
     /// Get the argument list of a tree pseudo-element.
     #[inline]
-    pub fn tree_pseudo_args(&self) -> Option<<&[Atom]> {
+    pub fn tree_pseudo_args(&self) -> Option<&[Atom]> {
         match *self {
             % for pseudo in TREE_PSEUDOS:
             PseudoElement::${pseudo.capitalized_pseudo()}(ref args) => Some(args),
@@ -199,7 +218,7 @@ impl PseudoElement {
         // We don't need to support tree pseudos because functional
         // pseudo-elements needs arguments, and thus should be created
         // via other methods.
-        ascii_case_insensitive_phf_map! {
+        cssparser::ascii_case_insensitive_phf_map! {
             pseudo -> PseudoElement = {
                 % for pseudo in SIMPLE_PSEUDOS:
                 "${pseudo.value[1:]}" => ${pseudo_element_variant(pseudo)},
@@ -240,6 +259,24 @@ impl PseudoElement {
         % endfor
         None
     }
+
+    /// Returns true if this pseudo-element matches the given selector.
+    pub fn matches(
+        &self,
+        pseudo_selector: &PseudoElement,
+        element: &super::wrapper::GeckoElement,
+    ) -> bool {
+        if *self == *pseudo_selector {
+            return true;
+        }
+
+        if std::mem::discriminant(self) != std::mem::discriminant(pseudo_selector) {
+            return false;
+        }
+
+        // Check named view transition pseudo-elements.
+        self.matches_named_view_transition_pseudo_element(pseudo_selector, element)
+    }
 }
 
 impl ToCss for PseudoElement {
@@ -247,7 +284,15 @@ impl ToCss for PseudoElement {
         dest.write_char(':')?;
         match *self {
             % for pseudo in (p for p in PSEUDOS if p.pseudo_ident != "highlight"):
+            %if pseudo.is_named_view_transition_pseudo():
+                PseudoElement::${pseudo.capitalized_pseudo()}(ref name_and_class) => {
+                    dest.write_str("${pseudo.value}(")?;
+                    name_and_class.to_css(dest)?;
+                    dest.write_char(')')?;
+                }
+            %else:
                 ${pseudo_element_variant(pseudo)} => dest.write_str("${pseudo.value}")?,
+            %endif
             % endfor
             PseudoElement::Highlight(ref name) => {
                 dest.write_str(":highlight(")?;

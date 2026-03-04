@@ -22,6 +22,7 @@
 #include "mozilla/StaticPtr.h"
 #include "mozilla/StaticPrefs_browser.h"
 #include "xpcpublic.h"
+#include "nsIGIOService.h"
 
 static bool sInitializedOurData = false;
 mozilla::StaticRefPtr<nsIFile> sOurAppFile;
@@ -216,7 +217,7 @@ nsMIMEInfoBase::SetFileExtensions(const nsACString& aExtensions) {
   aExtensions.EndReading(end);
   while (start != end) {
     nsACString::const_iterator cursor = start;
-    mozilla::Unused << FindCharInReadable(',', cursor, end);
+    (void)FindCharInReadable(',', cursor, end);
     AddUniqueExtension(Substring(start, cursor));
     // If a comma was found, skip it for the next search.
     start = cursor != end ? ++cursor : cursor;
@@ -326,6 +327,13 @@ nsMIMEInfoBase::LaunchWithFile(nsIFile* aFile) {
   if (mPreferredAction == useHelperApp) {
     if (!mPreferredApplication) return NS_ERROR_FILE_NOT_FOUND;
 
+#ifdef XP_UNIX
+    nsCOMPtr<nsIGIOHandlerApp> handler =
+        do_QueryInterface(mPreferredApplication, &rv);
+    if (NS_SUCCEEDED(rv)) {
+      return handler->LaunchFile(aFile->NativePath());
+    }
+#endif
     // at the moment, we only know how to hand files off to local handlers
     nsCOMPtr<nsILocalHandlerApp> localHandler =
         do_QueryInterface(mPreferredApplication, &rv);

@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Golwg
 download-cert-view-text = Archwilio tystysgrif Awdurdod Tystysgrifo
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Cyhoeddwyd gan: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Storiwyd ar: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Cofio'r penderfyniad yma
+client-auth-cert-remember-label = Cofiwch y penderfyniad hwn:
+client-auth-cert-remember-never =
+    .label = Unwaith
+client-auth-cert-remember-always =
+    .label = Yn barhaol
+client-auth-cert-remember-temporarily =
+    .label = Ar gyfer y sesiwn hon
 
 ## Set password (p12) dialog
 

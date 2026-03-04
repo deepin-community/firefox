@@ -6,10 +6,11 @@
 #include "VideoUtils.h"
 #include "base/message_loop.h"
 #include "gtest/gtest.h"
+#include "mozilla/ChaosMode.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/SharedThreadPool.h"
+#include "mozilla/SpinEventLoopUntil.h"
 #include "mozilla/TaskQueue.h"
-#include "mozilla/Unused.h"
 #include "nsISupportsImpl.h"
 
 using namespace mozilla;
@@ -72,10 +73,22 @@ class DelayedResolveOrReject : public Runnable {
   int mIterations;
 };
 
+struct DtorTracker {
+  DtorTracker(nsTArray<size_t>& aList, size_t aId) : mList(aList), mId(aId) {}
+
+  DtorTracker(DtorTracker&& aOther) = delete;
+  DtorTracker& operator=(DtorTracker&&) = delete;
+
+  ~DtorTracker() { mList.AppendElement(mId); }
+
+  nsTArray<size_t>& mList;
+  const size_t mId;
+};
+
 template <typename FunctionType>
 void RunOnTaskQueue(TaskQueue* aQueue, FunctionType aFun) {
   nsCOMPtr<nsIRunnable> r = NS_NewRunnableFunction("RunOnTaskQueue", aFun);
-  Unused << aQueue->Dispatch(r.forget());
+  (void)aQueue->Dispatch(r.forget());
 }
 
 // std::function can't come soon enough. :-(
@@ -167,11 +180,11 @@ TEST(MozPromise, AsyncResolve)
         new DelayedResolveOrReject(queue, p, RRValue::MakeReject(32.0), 7);
 
     nsCOMPtr<nsIRunnable> ref = a.get();
-    Unused << queue->Dispatch(ref.forget());
+    (void)queue->Dispatch(ref.forget());
     ref = b.get();
-    Unused << queue->Dispatch(ref.forget());
+    (void)queue->Dispatch(ref.forget());
     ref = c.get();
-    Unused << queue->Dispatch(ref.forget());
+    (void)queue->Dispatch(ref.forget());
 
     p->Then(
         queue, __func__,
@@ -213,7 +226,7 @@ TEST(MozPromise, CompletionPromises)
                   new TestPromise::Private(__func__);
               nsCOMPtr<nsIRunnable> resolver = new DelayedResolveOrReject(
                   queue, p, RRValue::MakeResolve(aVal - 8), 10);
-              Unused << queue->Dispatch(resolver.forget());
+              (void)queue->Dispatch(resolver.forget());
               return RefPtr<TestPromise>(p);
             },
             DO_FAIL)
@@ -799,6 +812,56 @@ TEST(MozPromise, MapErr)
 
   EXPECT_EQ(result, 2.0);
   EXPECT_EQ(ran_ok, false);
+}
+
+TEST(MozPromise, ObjectDestructionOrder)
+{
+  AutoTaskQueue atq;
+  RefPtr<TaskQueue> queue = atq.Queue();
+
+  nsTArray<size_t> list;
+
+  bool done = false;
+
+  InvokeAsync(GetCurrentSerialEventTarget(), __func__,
+              [object = MakeUnique<DtorTracker>(list, 0u)]() {
+                return TestPromise::CreateAndResolve(42, __func__);
+              })
+      ->Then(queue, __func__,
+             [object = MakeUnique<DtorTracker>(list, 1u)](
+                 const TestPromise::ResolveOrRejectValue& aValue) {
+               ChaosMode::enterChaosMode();
+               return TestPromise::CreateAndResolveOrReject(aValue, __func__);
+             })
+      ->Then(GetCurrentSerialEventTarget(), __func__,
+             [object = MakeUnique<DtorTracker>(list, 2u)](
+                 const TestPromise::ResolveOrRejectValue& aValue) {
+               return TestPromise::CreateAndResolveOrReject(aValue, __func__);
+             })
+      ->Then(queue, __func__,
+             [object = MakeUnique<DtorTracker>(list, 3u)](
+                 const TestPromise::ResolveOrRejectValue& aValue) {
+               ChaosMode::leaveChaosMode();
+               return TestPromise::CreateAndResolveOrReject(aValue, __func__);
+             })
+      ->Then(GetCurrentSerialEventTarget(), __func__,
+             [object = MakeUnique<DtorTracker>(list, 4u),
+              &done](const TestPromise::ResolveOrRejectValue& aValue) {
+               done = true;
+               return TestPromise::CreateAndResolveOrReject(aValue, __func__);
+             });
+
+  MOZ_ALWAYS_TRUE(
+      SpinEventLoopUntil("xpcom:TEST(MozPromise, ObjectDestructionOrder)"_ns,
+                         [&done]() { return done; }));
+
+  EXPECT_EQ(list.Length(), 5u);
+
+  for (size_t i = 0u; i < 5u; i++) {
+    EXPECT_EQ(list.SafeElementAt(i, -1), i);
+  }
+
+  queue->BeginShutdown();
 }
 
 #undef DO_FAIL

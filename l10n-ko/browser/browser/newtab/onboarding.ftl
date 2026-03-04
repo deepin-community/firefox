@@ -10,7 +10,7 @@
 
 ## Welcome page strings
 
-onboarding-welcome-header = { -brand-short-name }에 오신 것을 환영합니다
+onboarding-welcome-header = { -brand-short-name } 사용을 환영합니다
 onboarding-start-browsing-button-label = 탐색 시작
 onboarding-not-now-button-label = 나중에
 mr1-onboarding-get-started-primary-button-label = 시작하기
@@ -25,6 +25,8 @@ return-to-amo-subtitle = 좋습니다. { -brand-short-name }를 설치했네요.
 return-to-amo-addon-title = 이제 <img data-l10n-name="icon"/> <b>{ $addon-name }</b> 부가 기능을 설치하겠습니다.
 return-to-amo-add-extension-label = 확장 기능 추가
 return-to-amo-add-theme-label = 테마 추가
+return-to-amo-theme-install-complete-label = 테마 설치됨
+return-to-amo-extension-install-complete-label = 확장 기능 설치됨
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = { $previous }에서 가
 mr1-onboarding-theme-header = 나만의 것으로 만드세요
 mr1-onboarding-theme-subtitle = 테마로 { -brand-short-name }를 개인화하세요.
 mr1-onboarding-theme-secondary-button-label = 나중에
-newtab-wallpaper-onboarding-title = 배경 화면 사용해보기
-newtab-wallpaper-onboarding-subtitle = 새 탭에 새로운 모습을 더할 배경 화면을 선택하세요.
-newtab-wallpaper-onboarding-primary-button-label = 배경 화면 설정
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = 시스템 테마
 mr1-onboarding-theme-label-light = 밝게
@@ -153,7 +152,7 @@ fx100-thank-you-hero-text =
 fx100-thank-you-subtitle = 100번째 출시입니다! 더 나은 건강한 인터넷을 구축할 수 있도록 도와주셔서 감사합니다.
 fx100-thank-you-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] { -brand-short-name }를 Dock에 넣기
+        [macos] { -brand-short-name }를 독에 넣기
        *[other] { -brand-short-name }를 작업 표시줄에 고정
     }
 fx100-upgrade-thanks-header = 100 감사합니다
@@ -185,7 +184,7 @@ mr2022-onboarding-welcome-pin-subtitle = 어디서나 클릭 한 번으로 { -br
 # Primary button string used on welcome page for when Firefox is not pinned.
 mr2022-onboarding-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] { -brand-short-name }를 Dock에 넣기
+        [macos] { -brand-short-name }를 독에 넣기
        *[other] { -brand-short-name }를 작업 표시줄에 고정
     }
 # Primary button string used on welcome page for when Firefox is not pinned on MSIX
@@ -225,7 +224,9 @@ mr2022-onboarding-set-default-subtitle = 비영리 단체가 지원하는 브라
 mr2022-onboarding-get-started-primary-subtitle = 최신 버전이 사용자 중심으로 구축되어, 그 어느 때보다 쉽게 웹을 둘러볼 수 있습니다. 여러분이 좋아할 만한 기능으로 가득 차 있습니다.
 mr2022-onboarding-get-started-primary-button-label = 빠른 설정
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = 매우 빠른 설정
 mr2022-onboarding-import-subtitle = { -brand-short-name }를 원하는 대로 설정하세요. 기존 브라우저의 북마크, 비밀번호 등을 추가하세요.
@@ -283,7 +284,7 @@ mr2022-upgrade-onboarding-pin-private-window-header = 한 번의 클릭으로 �
 mr2022-upgrade-onboarding-pin-private-window-subtitle = 쿠키나 기록이 저장되지 않습니다. 아무도 보고 있지 않은 것처럼 탐색하세요.
 mr2022-upgrade-onboarding-pin-private-window-primary-button-label =
     { PLATFORM() ->
-        [macos] { -brand-short-name } 사생활 보호 모드를 Dock에 넣기
+        [macos] { -brand-short-name } 사생활 보호 모드를 독에 넣기
        *[other] { -brand-short-name } 사생활 보호 모드를 작업 표시줄에 고정
     }
 
@@ -349,13 +350,18 @@ amo-picker-collection-link = 더 많은 부가 기능 살펴보기
 
 # Easy setup screen
 onboarding-easy-setup-security-and-privacy-title = 사용자의 안전을 지키기 위해 최선을 다합니다.
-onboarding-easy-setup-security-and-privacy-subtitle = 이 비영리 지원 브라우저는 회사가 웹에서 사용자를 몰래 추적하는 것을 차단하는 데 도움이 됩니다.
+onboarding-easy-setup-security-and-privacy-subtitle = 이 비영리 지원 브라우저는 기업이 웹에서 사용자를 몰래 추적하는 것을 차단하는 데 도움이 됩니다.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = 기기 간 이동 시 암호화 상태를 유지하세요
 onboarding-mobile-download-security-and-privacy-subtitle = 동기화되면 { -brand-short-name }가 비밀번호, 북마크 등을 암호화합니다.  다른 기기에서 탭을 가져올 수도 있습니다.
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name }가 여러분을 도와드립니다.
 onboarding-gratitude-security-and-privacy-subtitle = Mozilla 재단이 지원하는 { -brand-short-name }를 사용해 주셔서 감사합니다. 여러분의 지원으로 우리는 인터넷을 더 안전하고 더 쉽게 이용할 수 있도록 노력하고 있습니다.
+# Sign up or Sign in screen
+onboarding-sign-up-title = 기기 간에 데이터 동기화
+onboarding-sign-up-description = 계정에 가입하면 비밀번호, 북마크 등 모든 중요한 정보가 안전하게 저장되며 모든 기기에서 로그인 할 때 사용할 수 있습니다.
+onboarding-sign-up-button = 가입 또는 로그인
+onboarding-sign-up-secondary-button = 탐색 시작
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +381,208 @@ onboarding-new-user-survey-familiarity-based-option-1 = 완전 새내기
 onboarding-new-user-survey-familiarity-based-option-2 = 사용해 본 적이 있음
 onboarding-new-user-survey-familiarity-based-option-3 = 매우 익숙함
 onboarding-new-user-survey-familiarity-based-option-4 = 예전에 사용했지만 시간이 좀 지남
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = 탭의 위치를 알려주세요
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = 사이드바 설정에서 원할 때마다 기능을 전환할 수 있습니다.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = 탭을 내 방식대로
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = 탭을 많이 열어 놓으시겠습니까? 더 간소화된 보기를 위해 탭을 세로로 사용해 보세요. 또는 클래식하게 상단의 탭을 유지하세요. 언제든지 전환할 수 있습니다.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = 탭 레이아웃 선택
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = 집중에 도움이 되는 간소화된 보기를 위해 탭을 세로로 사용해 보세요. 또는 클래식하게 상단의 탭을 유지하세요. 언제든지 전환할 수 있습니다.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = 측면에 있는 탭
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = 상단에 있는 탭
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = 세로 탭
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = 세로 탭 소개
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = 측면에서 탭을 사용해보세요. 사이드바 설정에서 원할 때마다 기능을 전환할 수 있습니다.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = 세로 탭 사용해보기
+onboarding-flair-text = 새 기능!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = 가로 탭 유지
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = { -brand-shorter-name } 사이드바의 일부로 화면 측면에 탭을 표시하는 브라우저 창입니다.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = { -brand-shorter-name } 사이드바의 일부로 화면 측면에 탭을 표시하는 브라우저 창입니다.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = 탭을 상단에 표시하는 브라우저 창입니다.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = 탭을 상단에 표시하는 브라우저 창입니다.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = 사이드바에서 AI 챗봇을 사용해 보세요
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = 탐색하는 동안 웹 콘텐츠를 요약하고, 아이디어를 브레인스토밍하고, 메시지 초안을 작성하세요. 여러 공급자 중에서 선택하세요. 언제든지 전환할 수 있습니다. <a data-l10n-name="learn-more">더 알아보기</a>
+onboarding-genai-sidebar-primary-button = 챗봇 선택
+onboarding-genai-sidebar-secondary-button = 탐색 시작
+
+## New user onboarding checklist
+
+onboarding-checklist-title = { -brand-short-name } 설정을 마치시겠습니까?
+onboarding-checklist-subtitle = 최고의 탐색 경험을 위해 다음 단계를 완료하세요.
+onboarding-checklist-set-default = { -brand-short-name }를 기본 브라우저로 설정
+onboarding-checklist-pin = { -brand-short-name }를 작업 표시줄에 고정
+onboarding-checklist-import = 이전 브라우저에서 가져오기
+onboarding-checklist-extension = 확장 기능 추가
+onboarding-checklist-sign-up = 계정 가입 또는 로그인
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = 덜 복잡하고 더 집중할 수 있도록 탭 그룹을 사용해 보세요
+tab-groups-onboarding-feature-callout-subtitle = 하나의 탭을 다른 탭 위에 드래그하여 첫 번째 그룹을 만들어 정리하세요.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = 탭 전체 목록 메뉴에서 탭 그룹을 찾을 수 있습니다.
+tab-groups-onboarding-create-group-title-2 = 언제든지 여기에서 탭 그룹을 찾으세요.
+tab-groups-onboarding-create-group-no-alltabs-button-title = 주소 표시줄에서 그룹을 검색하여 찾으세요.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = 탭 그룹을 닫으면 언제든지 탭 전체 목록 메뉴에서 다시 열 수 있습니다.
+tab-groups-onboarding-saved-groups-title-2 = 탭 그룹을 닫으면, 언제든지 여기서 다시 열 수 있습니다.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = 주소 표시줄에서 검색하여 닫힌 그룹을 찾으세요.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = 탭 전체 목록 메뉴에서 언제든지 탭 그룹을 다시열 수 있습니다.
+tab-groups-onboarding-session-restore-title = 언제든지 여기에서 탭 그룹을 다시 열 수 있습니다.
+tab-groups-onboarding-dismiss = 확인
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = { -brand-product-name } 프로필 소개
+multi-profile-spotlight-body = 업무용과 여가용 탐색을 간편하게 전환하세요. 프로필은 검색 기록과 비밀번호를 포함한 탐색 정보를 완전히 분리하여 별도로 관리할 수 있도록 해줍니다.
+multi-profile-spotlight-cta = 프로필 만들기
+multi-profile-callout-title = 업무와 여가를 위한 다양한 프로필 만들기
+multi-profile-callout-subtitle = 프로필을 사용하면 검색 기록이나 비밀번호와 같은 탐색 정보를 완전히 분리할 수 있습니다.
+multi-profile-callout-cta = 프로필 만들기
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = 모바일용 Firefox와 탐색을 동기화하세요.
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = QR 코드를 스캔하여 모바일용 { -brand-product-name }를 다운로드하세요. 설치가 완료되면, "모바일에 동기화"를 선택해서 이동 중에도 비밀번호, 북마크 등에 접근할 수 있습니다.
+dismiss-button-label = 닫기
+sync-to-mobile-button-label = 모바일에 동기화
+desktop-to-mobile-qr-code-alt =
+    .aria-label = 모바일용 { -brand-product-name } 다운로드를 위한 QR 코드
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Windows 11로 업그레이드하십니까?
+    { -brand-product-name } 데이터를 백업하세요.
+create-backup-screen-1-subtitle = 비밀번호, 북마크 등을 1~2분 안에 자동으로 보호합니다.
+create-backup-screen-1-flair = 권장
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">더 알아보기</a>
+create-backup-screen-1-sync-label = { -brand-product-name } 동기화
+create-backup-screen-1-sync-body = 로그인한 모든 기기 백업
+create-backup-screen-1-backup-label = PC에 백업
+create-backup-screen-1-backup-body = 기기 또는 OneDrive에 저장
+create-backup-select-tile-button-label = 선택
+create-backup-back-button-label = 뒤로
+create-backup-show-fewer =
+    .label = 이처럼 간단히 보기
+create-backup-screen-2-title = 백업할 { -brand-product-name } 데이터 선택
+create-backup-screen-2-subtitle = 1분밖에 걸리지 않습니다. 사용자의 데이터는 하루에 한번 백업됩니다.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = 쉬운 설정
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = 북마크, 기록, 설정 등
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = 비밀번호 및 결제는 포함하지 않음
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = 암호화되지 않음
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = 모든 데이터
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = 비밀번호 및 결제 포함
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = 비밀번호로 암호화됨
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = 어디에 백업을 저장하시겠습니까?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = 백업 파일 비밀번호 생성
+create-backup-screen-3-subtitle = 데이터를 암호화하는 데 필요합니다. 기억할 수 있는 장소에 보관하세요.
+fx-backup-opt-in-header = 파일 위치 선택
+fx-backup-opt-in-filepath-label = OneDrive와 같은 새 기기로 전송하고자 하는 곳을 선택하세요.
+fx-backup-opt-in-create-password-label = 비밀번호 입력
+fx-backup-opt-in-confirm-btn-label = 계속
+fx-backup-opt-in-cancel-btn-label = 뒤로
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = 백업이 예약됨
+fx-backup-confirmation-screen-close-button = 닫기
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = 모든 탐색 데이터 포함됨
+fx-backup-confirmation-screen-all-data-item-text-2 = 기기에 저장됨
+fx-backup-confirmation-screen-all-data-item-text-3 = 암호화 및 비밀번호로 보호됨
+fx-backup-confirmation-screen-easy-setup-item-text-1 = 북마크, 기록, 설정 및 기타 데이터가 포함됨
+fx-backup-confirmation-screen-easy-setup-item-text-2 = 기기에 저장됨
+fx-backup-confirmation-screen-easy-setup-item-text-3 = 비밀번호와 결제는 포함되지 않음
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = 민감한 데이터를 포함하려면 <a data-l10n-name="settings">설정</a>으로 이동하세요.
+fx-backup-confirmation-screen-item-subtext-1 = 몇 분 후에 백업이 시작되며, 하루에 한번씩 실행됩니다. <a data-l10n-name="settings">설정</a>에서 진행 상황을 확인할 수 있습니다.
+fx-backup-confirmation-screen-item-subtext-2 = 다시 설치해야 하는 경우 { -brand-short-name }가 백업을 찾습니다.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = 백업에서 복원
+restore-from-backup-title = { -brand-short-name }를 원하는 대로 되돌려 드립니다
+restore-from-backup-subtitle = 탐색을 재개하기 위해 모든 북마크, 방문 기록 및 기타 데이터를 복구하세요.
+restore-from-backup-secondary-button = 복원하지 않음
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = 돌아왔습니다! { -brand-short-name } 데이터가 복원되었습니다.
+restored-from-backup-success-with-checklist-subtitle = 가장 좋아하는 개인 정보 보호에 중점을 둔 브라우저를 한 번의 클릭으로 바로 사용할 수 있게 하고 싶으신가요?
+restored-from-backup-success-no-checklist-subtitle = <a data-l10n-name="settings">설정</a>에서 기기의 백업을 켤 수 있습니다.
+restored-from-backup-success-with-checklist-primary-button = 저장하고 계속
+restored-from-backup-success-with-checklist-secondary-button = 이 단계 건너뛰기
+restored-from-backup-success-no-checklist-primary-button = 계속
+restored-from-backup-error-title = 백업 파일에 문제가 있습니다.
+restored-from-backup-error-subtitle = 다른 { -brand-short-name } 백업 파일이 있는 경우, 그 파일로 복원을 시도하세요. <a data-l10n-name="restore-problems">여전히 문제가 있나요?</a>
+restored-from-backup-error-primary-button = 닫기
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = { -brand-short-name } 경험 사용자 지정
+onboarding-personalization-subtitle = 몇 가지 질문에 답변하시면 { -brand-short-name } 사용을 향상시킬 수 있는 기능 및 확장 기능을 추천해 드립니다.
+onboarding-personalization-use-case-title = 무엇에 { -brand-short-name }를 사용하시겠습니까?
+onboarding-personalization-use-case-personal-option = 개인
+onboarding-personalization-use-case-school-option = 학교
+onboarding-personalization-use-case-work-option = 직장
+onboarding-personalization-motivation-title = 가장 중요하게 생각하는 { -brand-short-name }의 기능은 무엇입니까?
+onboarding-personalization-motivation-privacy-option = 개인 정보 및 보안
+onboarding-personalization-motivation-productivity-option = 생산성
+onboarding-personalization-motivation-other-option = 기타
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = 자동으로 사용자의 데이터를 보호하고 기업이 사용자의 클릭을 감시하지 못하도록 차단합니다.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = 여러분은 안전합니다
+onboarding-refresh-import-subtitle = 비밀번호, 북마크, 기록 등을 가져오세요.
+onboarding-refresh-import-title = { -brand-short-name }를 좀 더 나만의 것으로 만드세요.
+onboarding-refresh-onboarding-addons-subtitle = 확장 기능은 { -brand-short-name }를 사용자 정의할 수 있는 작은 앱입니다. 이들은 개인 정보 보호를 강화하고, 생산성을 향상시키며, { -brand-short-name }의 모양 등을 바꿀 수 있습니다.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = 탐색을 향상시키세요
+onboarding-refresh-sync-subtitle = { -brand-short-name }에 로그인한 모든 곳에서 북마크, 비밀번호 등을 사용하세요. 또한, 데이터는 암호화되어 오직 자신만 볼 수 있습니다.
+onboarding-refresh-sync-title = 어디든 가세요. 모든 것을 동기화하세요.
+onboarding-refresh-gratitude-subtitle = 비영리 단체가 지원하는 유일한 주요 브라우저인 { -brand-short-name }를 사용해 주셔서 감사합니다. 여러분의 지원으로 모든 사람이 더 안전하고 접근 가능한 인터넷을 만들 수 있습니다.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name }가 사용자를 지켜드립니다

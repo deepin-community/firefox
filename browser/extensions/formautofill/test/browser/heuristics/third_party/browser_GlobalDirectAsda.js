@@ -6,6 +6,7 @@ add_heuristic_tests(
   [
     {
       fixturePath: "Payment.html",
+      useTestYear: 2024,
       expectedResult: [
         {
           default: {
@@ -15,6 +16,7 @@ add_heuristic_tests(
             { fieldName: "cc-number", reason: "fathom" },
             { fieldName: "cc-exp-month" },
             { fieldName: "cc-exp-year" },
+            { fieldName: "cc-csc" },
           ],
         },
       ],

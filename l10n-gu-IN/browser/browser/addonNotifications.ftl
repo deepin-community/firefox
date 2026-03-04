@@ -4,10 +4,6 @@
 
 xpinstall-prompt = { -brand-short-name } આ સાઇટને તમારા કમ્પ્યુટર પર સૉફ્ટવેર ઇન્સ્ટોલ કરવા માટે તમને પૂછવાથી અટકાવેલ છે.
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -24,7 +20,6 @@ xpinstall-disabled = સોફ્ટવેર સ્થાપન વર્તમ
 xpinstall-disabled-button =
     .label = સક્રિય કરો
     .accesskey = n
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } ઉમેરવામાં { -brand-short-name }
@@ -38,7 +33,6 @@ webext-perms-update-menu-item = { $addonName } નવી પરવાનગી�
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = { -brand-shorter-name } માંથી { $name } દૂર કરશો?
 addon-removal-button = દૂર કરો
-
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -47,7 +41,6 @@ addon-downloading-and-verifying =
        *[other] { $addonCount } ઍડ-ઑન્સનુ ડાઉનલોડ અને ચકાસણી કરી રહ્યું છે…
     }
 addon-download-verifying = ચકસણી કરી રહ્યું છે
-
 addon-install-cancel-button =
     .label = રદ કરો
     .accesskey = C

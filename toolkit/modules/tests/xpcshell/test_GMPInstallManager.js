@@ -11,17 +11,8 @@ const { GMPExtractor, GMPInstallManager } = ChromeUtils.importESModule(
 const { setTimeout } = ChromeUtils.importESModule(
   "resource://gre/modules/Timer.sys.mjs"
 );
-const { FileUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/FileUtils.sys.mjs"
-);
 const { HttpServer } = ChromeUtils.importESModule(
   "resource://testing-common/httpd.sys.mjs"
-);
-const { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
-const { TelemetryTestUtils } = ChromeUtils.importESModule(
-  "resource://testing-common/TelemetryTestUtils.sys.mjs"
 );
 const { UpdateUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/UpdateUtils.sys.mjs"
@@ -31,9 +22,6 @@ const { GMPPrefs, OPEN_H264_ID } = ChromeUtils.importESModule(
 );
 const { ProductAddonCheckerTestUtils } = ChromeUtils.importESModule(
   "resource://gre/modules/addons/ProductAddonChecker.sys.mjs"
-);
-const { AppConstants } = ChromeUtils.importESModule(
-  "resource://gre/modules/AppConstants.sys.mjs"
 );
 
 Services.prefs.setBoolPref("security.allow_eval_with_system_principal", true);
@@ -564,7 +552,7 @@ add_task(async function test_checkForAddons_updatesWithAddons() {
 add_task(async function test_checkForAddons_contentSignatureSuccess() {
   const previousUrlOverride = setupContentSigTestPrefs();
 
-  const xmlFetchResultHistogram = resetGmpTelemetryAndGetHistogram();
+  Services.fog.testResetFOG();
 
   const testServerInfo = getTestServerForContentSignatureTests();
   Preferences.set(GMPPrefs.KEY_URL_OVERRIDE, testServerInfo.validUpdateUri);
@@ -577,22 +565,38 @@ add_task(async function test_checkForAddons_contentSignatureSuccess() {
     // Smoke test the results are as expected.
     // If the checkForAddons fails we'll get a fallback config,
     // so we'll get incorrect addons and these asserts will fail.
-    Assert.equal(res.addons.length, 5);
+    Assert.equal(res.addons.length, 7);
     Assert.equal(res.addons[0].id, "test1");
     Assert.equal(res.addons[0].usedFallback, false);
+    Assert.deepEqual(res.addons[0].mirrorURLs, []);
     Assert.equal(res.addons[1].id, "test2");
     Assert.equal(res.addons[1].usedFallback, false);
+    Assert.deepEqual(res.addons[1].mirrorURLs, []);
     Assert.equal(res.addons[2].id, "test3");
     Assert.equal(res.addons[2].usedFallback, false);
+    Assert.deepEqual(res.addons[2].mirrorURLs, []);
     Assert.equal(res.addons[3].id, "test4");
     Assert.equal(res.addons[3].usedFallback, false);
+    Assert.deepEqual(res.addons[3].mirrorURLs, []);
     Assert.equal(res.addons[4].id, undefined);
+    Assert.equal(res.addons[4].usedFallback, false);
+    Assert.deepEqual(res.addons[4].mirrorURLs, []);
+    Assert.equal(res.addons[5].id, "test6");
+    Assert.equal(res.addons[5].usedFallback, false);
+    Assert.deepEqual(res.addons[5].mirrorURLs, [
+      "http://alt.example.com/test6.xpi",
+    ]);
+    Assert.equal(res.addons[5].mirrorURLs.length, 1);
+    Assert.equal(res.addons[6].id, "test7");
+    Assert.equal(res.addons[6].usedFallback, false);
+    Assert.deepEqual(res.addons[6].mirrorURLs, [
+      "http://alt.example.com/test7.xpi",
+      "http://alt2.example.com/test7.xpi",
+    ]);
   } catch (e) {
     Assert.ok(false, "checkForAddons should succeed");
   }
 
-  // # Ok content sig fetches should be 1, all others should be 0.
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 2, 1);
   // Test that glean has 1 success for content sig and no other metrics.
   const expectedGleanValues = {
     cert_pin_success: 0,
@@ -624,7 +628,7 @@ add_task(async function test_checkForAddons_contentSignatureSuccess() {
 add_task(async function test_checkForAddons_contentSignatureFailure() {
   const previousUrlOverride = setupContentSigTestPrefs();
 
-  const xmlFetchResultHistogram = resetGmpTelemetryAndGetHistogram();
+  Services.fog.testResetFOG();
 
   const testServerInfo = getTestServerForContentSignatureTests();
   Preferences.set(
@@ -646,22 +650,39 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
     if (res.addons.length == 1) {
       Assert.equal(res.addons[0].id, "gmp-widevinecdm");
       Assert.equal(res.addons[0].usedFallback, true);
+      Assert.ok(res.addons[0].URL.startsWith("https://edgedl.me.gvt1.com"));
+      Assert.equal(res.addons[0].mirrorURLs.length, 1);
+      Assert.ok(
+        res.addons[0].mirrorURLs[0].startsWith("https://www.google.com")
+      );
     } else {
       Assert.equal(res.addons[0].id, "gmp-gmpopenh264");
       Assert.equal(res.addons[0].usedFallback, true);
+      Assert.ok(
+        res.addons[0].URL.startsWith("https://ciscobinary.openh264.org")
+      );
+      Assert.deepEqual(res.addons[0].mirrorURLs, []);
       Assert.equal(res.addons[1].id, "gmp-widevinecdm");
       Assert.equal(res.addons[1].usedFallback, true);
+      Assert.ok(res.addons[1].URL.startsWith("https://edgedl.me.gvt1.com"));
+      Assert.equal(res.addons[1].mirrorURLs.length, 1);
+      Assert.ok(
+        res.addons[1].mirrorURLs[0].startsWith("https://www.google.com")
+      );
       if (res.addons.length >= 3) {
         Assert.equal(res.addons[2].id, "gmp-widevinecdm-l1");
         Assert.equal(res.addons[2].usedFallback, true);
+        Assert.ok(res.addons[2].URL.startsWith("https://edgedl.me.gvt1.com"));
+        Assert.equal(res.addons[2].mirrorURLs.length, 1);
+        Assert.ok(
+          res.addons[2].mirrorURLs[0].startsWith("https://www.google.com")
+        );
       }
     }
   } catch (e) {
     Assert.ok(false, "checkForAddons should succeed");
   }
 
-  // # Failed content sig fetches should be 1, all others should be 0.
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 1);
   // Glean values should reflect the content sig algo failed.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_missing_data.testGetValue(),
@@ -674,10 +695,8 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
   // Fail due to bad content signature.
   Preferences.set(GMPPrefs.KEY_URL_OVERRIDE, testServerInfo.badContentSigUri);
   await installManager.checkForAddons();
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 2);
-  // ... and it should be due to the signature being bad, which causes
-  // verification to fail.
+  // Should have another failure and it should be due to the signature being bad,
+  // which causes verification to fail.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_failed.testGetValue(),
     1
@@ -689,9 +708,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
     testServerInfo.invalidContentSigUri
   );
   await installManager.checkForAddons();
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 3);
-  // ... and it should be due to the signature being invalid.
+  // Should have another failure and it should be due to the signature being invalid.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_invalid.testGetValue(),
     1
@@ -703,9 +720,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
     "https://this.url.doesnt/go/anywhere"
   );
   await installManager.checkForAddons();
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 4);
-  // ... and it should be due to a bad request.
+  // Should have another failure and it should be due to a bad request.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_net_request_error.testGetValue(),
     1
@@ -722,8 +737,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
     overriddenServiceRequest,
     () => installManager.checkForAddons()
   );
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 5);
-  // ... and it should be due to a timeout.
+  // Should have another failure and it should be due to a timeout.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_net_timeout.testGetValue(),
     1
@@ -743,9 +757,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
     overriddenServiceRequest.abort();
   }, 100);
   await promise;
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 6);
-  // ... and it should be due to an abort.
+  // Should have another failure and it should be due to an abort.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_abort.testGetValue(),
     1
@@ -753,9 +765,8 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
 
   Preferences.set(GMPPrefs.KEY_URL_OVERRIDE, testServerInfo.badXmlUri);
   await installManager.checkForAddons();
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 7);
-  // ... and it should be due to the xml response being unrecognized.
+  // Should have another failure and it should be due to the xml response being
+  // unrecognized.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_xml_parse_error.testGetValue(),
     1
@@ -764,9 +775,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
   // Fail via bad request during the x5u look up.
   Preferences.set(GMPPrefs.KEY_URL_OVERRIDE, testServerInfo.badX5uRequestUri);
   await installManager.checkForAddons();
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 8);
-  // ... and it should be due to a bad request.
+  // Should have another failure and it should be due to a bad request.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_net_request_error.testGetValue(),
     2
@@ -783,9 +792,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
   await testServerInfo.promiseHolder.serverPromise;
   delete testServerInfo.promiseHolder.installPromise;
   delete testServerInfo.promiseHolder.serverPromise;
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 9);
-  // ... and it should be due to a timeout.
+  // Should have another failure and it should be due to a timeout.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_net_timeout.testGetValue(),
     2
@@ -802,9 +809,7 @@ add_task(async function test_checkForAddons_contentSignatureFailure() {
   await testServerInfo.promiseHolder.serverPromise;
   delete testServerInfo.promiseHolder.installPromise;
   delete testServerInfo.promiseHolder.serverPromise;
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 3, 10);
-  // ... and it should be due to an abort.
+  // Should have another failure and it should be due to an abort.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.content_sig_abort.testGetValue(),
     2
@@ -901,7 +906,7 @@ add_task(async function test_checkForAddons_telemetry_certPinning() {
   // Grab state so we can restore it at the end of the test.
   const previousUrlOverride = Preferences.get(GMPPrefs.KEY_URL_OVERRIDE, "");
 
-  let xmlFetchResultHistogram = resetGmpTelemetryAndGetHistogram();
+  Services.fog.testResetFOG();
 
   // Re-use the content-sig test server config. We're not going to need any of
   // the content signature specific config but this gives us a server to get
@@ -922,27 +927,19 @@ add_task(async function test_checkForAddons_telemetry_certPinning() {
     Assert.ok(false, "checkForAddons should succeed");
   }
 
-  // # Ok cert pin fetches should be 1, all others should be 0.
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 0, 1);
-  // Glean values should reflect the same.
+  // Glean values should reflect 1 successful pin fetch.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.cert_pin_success.testGetValue(),
     1
   );
 
-  // Reset the histogram because we want to check a different index.
-  xmlFetchResultHistogram = TelemetryTestUtils.getAndClearHistogram(
-    "MEDIA_GMP_UPDATE_XML_FETCH_RESULT"
-  );
   // Fail by pointing to a bad URL.
   Preferences.set(
     GMPPrefs.KEY_URL_OVERRIDE,
     "https://this.url.doesnt/go/anywhere"
   );
   await installManager.checkForAddons();
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 1, 1);
-  // ... and it should be due to a bad request.
+  // Should have another failure and it should be due to a bad request.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.cert_pin_net_request_error.testGetValue(),
     1
@@ -959,8 +956,7 @@ add_task(async function test_checkForAddons_telemetry_certPinning() {
     overriddenServiceRequest,
     () => installManager.checkForAddons()
   );
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 1, 2);
-  // ... and it should be due to a timeout.
+  // Should have another failure and it should be due to a timeout.
   Assert.equal(
     Glean.gmp.updateXmlFetchResult.cert_pin_net_timeout.testGetValue(),
     1
@@ -980,9 +976,7 @@ add_task(async function test_checkForAddons_telemetry_certPinning() {
     overriddenServiceRequest.abort();
   }, 100);
   await promise;
-  // Should have another failure...
-  TelemetryTestUtils.assertHistogram(xmlFetchResultHistogram, 1, 3);
-  // ... and it should be due to an abort.
+  // Should have another failure and it should be due to an abort.
   Assert.equal(Glean.gmp.updateXmlFetchResult.cert_pin_abort.testGetValue(), 1);
 
   // Check all glean metrics have expected values at test end.
@@ -1019,17 +1013,27 @@ add_task(async function test_checkForAddons_telemetry_certPinning() {
  */
 async function test_checkForAddons_installAddon(
   id,
-  includeSize,
-  wantInstallReject
+  sizeConfig,
+  defaultConfig,
+  mirrorConfig,
+  secondMirrorConfig,
+  expectedError
 ) {
   info(
     "Running installAddon for id: " +
       id +
-      ", includeSize: " +
-      includeSize +
-      " and wantInstallReject: " +
-      wantInstallReject
+      ", sizeConfig: " +
+      sizeConfig +
+      ", defaultConfig: " +
+      defaultConfig +
+      ", mirrorConfig: " +
+      mirrorConfig +
+      ", secondMirrorConfig: " +
+      secondMirrorConfig +
+      ", expectedError: " +
+      expectedError
   );
+
   let httpServer = new HttpServer();
   let dir = FileUtils.getDir("TmpD", []);
   httpServer.registerDirectory("/", dir);
@@ -1045,9 +1049,44 @@ async function test_checkForAddons_installAddon(
   let hashFunc = "sha256";
   let expectedDigest = await IOUtils.computeHexDigest(zipFile.path, hashFunc);
   let fileSize = zipFile.fileSize;
-  if (wantInstallReject) {
+  if (sizeConfig === "mismatch") {
     fileSize = 1;
   }
+
+  let badZipURL;
+  let badZipFileName;
+  let badZipFile;
+  if (
+    defaultConfig === "mismatch" ||
+    mirrorConfig === "mismatch" ||
+    secondMirrorConfig === "mismatch"
+  ) {
+    let badData = "e~=0.5772156648";
+    badZipFileName = "test_" + id + "_bad_GMP.zip";
+    badZipFile = createNewZipFile(badZipFileName, badData);
+    badZipURL = URL_HOST + ":" + testserverPort + "/" + badZipFileName;
+  }
+
+  let missingZipURL = zipURL + ".missing";
+
+  function selectUrl(config) {
+    switch (config) {
+      case "success":
+        return zipURL;
+      case "not_found":
+        return missingZipURL;
+      case "mismatch":
+        return badZipURL;
+      case "none":
+        return null;
+      default:
+        throw new Error("bad config " + config);
+    }
+  }
+
+  let defaultURL = selectUrl(defaultConfig);
+  let mirrorURL = selectUrl(mirrorConfig);
+  let secondMirrorURL = selectUrl(secondMirrorConfig);
 
   let responseXML =
     '<?xml version="1.0"?>' +
@@ -1056,17 +1095,20 @@ async function test_checkForAddons_installAddon(
     '        <addon id="' +
     id +
     '-gmp-gmpopenh264"' +
-    '               URL="' +
-    zipURL +
-    '"' +
+    (defaultURL ? ' URL="' + defaultURL + '"' : "") +
     '               hashFunction="' +
     hashFunc +
     '"' +
     '               hashValue="' +
     expectedDigest +
     '"' +
-    (includeSize ? ' size="' + fileSize + '"' : "") +
-    '               version="1.1"/>' +
+    (sizeConfig !== "none" ? ' size="' + fileSize + '"' : "") +
+    '               version="1.1">' +
+    (mirrorURL ? '          <mirror URL="' + mirrorURL + '"/>' : "") +
+    (secondMirrorURL
+      ? '          <mirror URL="' + secondMirrorURL + '"/>'
+      : "") +
+    "        </addon>" +
     "  </addons>" +
     "</updates>";
 
@@ -1082,7 +1124,7 @@ async function test_checkForAddons_installAddon(
 
   try {
     let extractedPaths = await installManager.installAddon(gmpAddon);
-    if (wantInstallReject) {
+    if (sizeConfig === "mismatch") {
       Assert.ok(false); // installAddon() should have thrown.
     }
     Assert.equal(extractedPaths.length, 1);
@@ -1120,20 +1162,333 @@ async function test_checkForAddons_installAddon(
 
     // Cleanup
     extractedFile.parent.remove(true);
-    zipFile.remove(false);
     httpServer.stop(function () {});
     installManager.uninit();
+    Assert.equal(expectedError, null, "Succeeded without errors");
   } catch (ex) {
+    Assert.ok(
+      ex?.message?.match(expectedError),
+      ex?.message + " matches " + expectedError
+    );
+  } finally {
     zipFile.remove(false);
-    if (!wantInstallReject) {
-      do_throw("install update should not reject " + ex.message);
+    if (badZipFile) {
+      badZipFile.remove(false);
     }
   }
 }
 
-add_task(test_checkForAddons_installAddon.bind(null, "1", true, false));
-add_task(test_checkForAddons_installAddon.bind(null, "2", false, false));
-add_task(test_checkForAddons_installAddon.bind(null, "3", true, true));
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_successURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_successURL_noMirror",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_successURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_successURL_noMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_mismatchSize_successURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "mismatchSize_successURL_noMirror",
+      /* sizeConfig */ "mismatch",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /Downloaded file was \d+ bytes but expected \d+ bytes/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_notFoundURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_notFoundURL_noMirror",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /File download failed/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_notFoundURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_notFoundURL_noMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /File download failed/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_mismatchURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_mismatchURL_noMirror",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /Hash was [\w`]+ but expected [\w`]+/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_mismatchURL_noMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_mismatchURL_noMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "none",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /Hash was [\w`]+ but expected [\w`]+/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_successURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_successURL_successMirror",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_successURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_successURL_successMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_mismatchSize_successURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "mismatchSize_successURL_successMirror",
+      /* sizeConfig */ "mismatch",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /Downloaded file was \d+ bytes but expected \d+ bytes/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_notFoundURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_notFoundURL_successMirror",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_notFoundURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_notFoundURL_successMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_mismatchSize_notFoundURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "mismatchSize_notFoundURL_successMirror",
+      /* sizeConfig */ "mismatch",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /File download failed/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_mismatchURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_mismatchURL_successMirror",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_mismatchURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_mismatchURL_successMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_mismatchSize_mismatchURL_successMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "mismatchSize_mismatchURL_successMirror",
+      /* sizeConfig */ "mismatch",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /Downloaded file was \d+ bytes but expected \d+ bytes/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_mismatchURL_mismatchMirror() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_mismatchURL_mismatchMirror",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "mismatch",
+      /* secondMirrorConfig */ "none",
+      /* expectedError */ /Hash was [\w`]+ but expected [\w`]+/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_notFoundURL_notFoundMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_notFoundURL_notFoundMirrors",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "not_found",
+      /* secondMirrorConfig */ "not_found",
+      /* expectedError */ /File download failed/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_notFoundURL_notFoundAndSuccessMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_notFoundURL_notFoundAndSuccessMirrors",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "not_found",
+      /* mirrorConfig */ "not_found",
+      /* secondMirrorConfig */ "success",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_mismatchURL_mismatchMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_mismatchURL_mismatchMirrors",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "mismatch",
+      /* secondMirrorConfig */ "mismatch",
+      /* expectedError */ /Hash was [\w`]+ but expected [\w`]+/
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_noSize_mismatchURL_mismatchAndSuccessMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "noSize_mismatchURL_mismatchAndSuccessMirrors",
+      /* sizeConfig */ "none",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "mismatch",
+      /* secondMirrorConfig */ "success",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_successURL_notFoundMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_successURL_notFoundMirrors",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "not_found",
+      /* secondMirrorConfig */ "not_found",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_successURL_mismatchMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_successURL_mismatchMirrors",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "success",
+      /* mirrorConfig */ "mismatch",
+      /* secondMirrorConfig */ "mismatch",
+      /* expectedError */ null
+    );
+  }
+);
+
+add_task(
+  async function test_checkForAddons_installAddon_includeSize_mismatchURL_successAndMismatchMirrors() {
+    await test_checkForAddons_installAddon(
+      /* id */ "includeSize_mismatchURL_successAndMismatchMirrors",
+      /* sizeConfig */ "include",
+      /* defaultConfig */ "mismatch",
+      /* mirrorConfig */ "success",
+      /* secondMirrorConfig */ "mismatch",
+      /* expectedError */ null
+    );
+  }
+);
 
 /**
  * Tests simpleCheckAndInstall when autoupdate is disabled for a GMP
@@ -1491,6 +1846,7 @@ mockRequest.prototype = {
 
 /**
  * Creates a new zip file containing a file with the specified data
+ *
  * @param zipName The name of the zip file
  * @param data The data to go inside the zip for the filename entry1.info
  */
@@ -1499,7 +1855,7 @@ function createNewZipFile(zipName, data) {
   let stream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stream.setData(data, data.length);
+  stream.setByteStringData(data);
   let zipWriter = Cc["@mozilla.org/zipwriter;1"].createInstance(
     Ci.nsIZipWriter
   );
@@ -1538,7 +1894,7 @@ function setupContentSigTestPrefs() {
   return Preferences.get(GMPPrefs.KEY_URL_OVERRIDE, "");
 }
 
-/***
+/**
  * Revert prefs used for content signature tests.
  *
  * @param previousUrlOverride - The GMP URL override value prior to test being
@@ -1554,21 +1910,9 @@ function revertContentSigTestPrefs(previousUrlOverride) {
   Preferences.set("media.gmp-manager.checkContentSignature", false);
 }
 
-/***
- * Reset telemetry data related to gmp updates, and get the histogram
- * associated with MEDIA_GMP_UPDATE_XML_FETCH_RESULT.
- *
- * @returns The freshly cleared MEDIA_GMP_UPDATE_XML_FETCH_RESULT histogram.
- */
-function resetGmpTelemetryAndGetHistogram() {
-  Services.fog.testResetFOG();
-  return TelemetryTestUtils.getAndClearHistogram(
-    "MEDIA_GMP_UPDATE_XML_FETCH_RESULT"
-  );
-}
-
-/***
+/**
  * A helper to check that glean metrics have expected counts.
+ *
  * @param expectedGleanValues a object that has properties with names set to glean metrics to be checked
  * and the values are the expected count. Eg { cert_pin_success: 1 }.
  */
@@ -1590,7 +1934,7 @@ function checkGleanMetricCounts(expectedGleanValues) {
   }
 }
 
-/***
+/**
  * Sets up a `HttpServer` for use in content singature checking tests. This
  * server will expose different endpoints that can be used to simulate different
  * pass and failure scenarios when fetching an update.xml file.
@@ -1633,7 +1977,7 @@ function getTestServerForContentSignatureTests() {
   // `cat toolkit/mozapps/extensions/test/xpcshell/data/productaddons/good.xml | ./mach python security/manager/ssl/tests/unit/test_content_signing/pysign.py`
   // If test certificates are regenerated, this signature must also be.
   const goodXmlContentSignature =
-    "7QYnPqFoOlS02BpDdIRIljzmPr6BFwPs1z1y8KJUBlnU7EVG6FbnXmVVt5Op9wDzgvhXX7th8qFJvpPOZs_B_tHRDNJ8SK0HN95BAN15z3ZW2r95SSHmU-fP2JgoNOR3";
+    "7QYnPqFoOlS02BpDdIRIljzmPr6BFwPs1z1y8KJUBlnU7EVG6FbnXmVVt5Op9wDzHeN7pJOM7ANmTqU50IbHnV8q87wmY83QL4p6NZzjsFnWolFmwK2ZjlLnhyxFcVSz";
 
   // Setup endpoint to handle x5u lookups correctly.
   const validX5uPath = "/valid_x5u";

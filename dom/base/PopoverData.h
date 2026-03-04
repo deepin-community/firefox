@@ -16,6 +16,8 @@
 
 namespace mozilla::dom {
 
+class CloseWatcher;
+
 // https://html.spec.whatwg.org/#attr-popover
 enum class PopoverAttributeState : uint8_t {
   None,
@@ -30,7 +32,7 @@ enum class PopoverVisibilityState : uint8_t {
 
 class PopoverToggleEventTask : public Runnable {
  public:
-  explicit PopoverToggleEventTask(nsWeakPtr aElement,
+  explicit PopoverToggleEventTask(nsWeakPtr aElement, nsWeakPtr aSource,
                                   PopoverVisibilityState aOldState);
 
   // MOZ_CAN_RUN_SCRIPT_BOUNDARY until Runnable::Run is MOZ_CAN_RUN_SCRIPT.  See
@@ -39,8 +41,11 @@ class PopoverToggleEventTask : public Runnable {
 
   PopoverVisibilityState GetOldState() const { return mOldState; }
 
+  Element* GetSource() const;
+
  private:
   nsWeakPtr mElement;
+  nsWeakPtr mSource;
   PopoverVisibilityState mOldState;
 };
 
@@ -49,10 +54,17 @@ class PopoverData {
   PopoverData() = default;
   ~PopoverData() = default;
 
+  void EnsureCloseWatcher(nsGenericHTMLElement* aElement);
+  CloseWatcher* GetCloseWatcher();
+  void DestroyCloseWatcher();
+
   PopoverAttributeState GetPopoverAttributeState() const { return mState; }
   void SetPopoverAttributeState(PopoverAttributeState aState) {
     mState = aState;
   }
+
+  PopoverAttributeState GetOpenedInMode() const { return mOpenedInMode; }
+  void SetOpenedInMode(PopoverAttributeState aMode) { mOpenedInMode = aMode; }
 
   PopoverVisibilityState GetPopoverVisibilityState() const {
     return mVisibilityState;
@@ -88,6 +100,7 @@ class PopoverData {
  private:
   PopoverVisibilityState mVisibilityState = PopoverVisibilityState::Hidden;
   PopoverAttributeState mState = PopoverAttributeState::None;
+  PopoverAttributeState mOpenedInMode = PopoverAttributeState::None;
   // Popover and dialog don't share mPreviouslyFocusedElement for there are
   // chances to lose the previously focused element.
   // See, https://github.com/whatwg/html/issues/9063
@@ -101,6 +114,11 @@ class PopoverData {
   nsWeakPtr mInvokerElement;
   bool mIsShowingOrHiding = false;
   RefPtr<PopoverToggleEventTask> mTask;
+
+  // This won't need to be cycle collected as CloseWatcher only has strong
+  // references to event listeners, which themselves have Weak References back
+  // to the Node.
+  RefPtr<CloseWatcher> mCloseWatcher;
 };
 }  // namespace mozilla::dom
 

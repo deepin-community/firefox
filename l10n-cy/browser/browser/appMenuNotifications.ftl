@@ -25,11 +25,14 @@ appmenu-update-unsupported2 =
 appmenu-update-unsupported-message2 = Nid yw'ch system weithredu yn gydnaws â'r fersiwn ddiweddaraf o { -brand-shorter-name }.
 appmenu-update-restart2 =
     .label = Mae diweddariad ar gael
-    .buttonlabel = Diweddarwch ac ailgychwyn
+    .buttonlabel = Diweddaru ac ailgychwyn
     .buttonaccesskey = D
     .secondarybuttonlabel = Cau
     .secondarybuttonaccesskey = C
 appmenu-update-restart-message2 = Cael y fersiwn ddiweddaraf o { -brand-shorter-name }. Bydd tabiau a ffenestri sydd ar agor yn cael eu hadfer.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Dadwneud
+    .secondarybuttonaccesskey = D
 appmenu-update-other-instance =
     .label = Nid yw { -brand-shorter-name } yn gallu diweddaru i'r fersiwn diweddaraf.
     .buttonlabel = Diweddaru { -brand-shorter-name } beth bynnag
@@ -41,6 +44,12 @@ appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Iawn
     .buttonaccesskey = I
 appmenu-addon-post-install-message3 = Rheolwch eich estyniadau a'ch themâu trwy'r ddewislen apiau.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Diweddaru hawliau a dewisiadau data unrhyw bryd yn y <a data-l10n-name="settings-link">gosodiadau estyniad</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Pinio'r estyniad i'r bar offer
+    .accesskey = P
 appmenu-addon-post-install-incognito-checkbox =
     .label = Caniatáu i'r estyniad yma redeg mewn Ffenestri Preifat
     .accesskey = C

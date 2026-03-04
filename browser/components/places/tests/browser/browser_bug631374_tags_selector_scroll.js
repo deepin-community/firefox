@@ -14,6 +14,12 @@ function scrolledIntoView(item, parentItem) {
   return pointInView(itemRect.top) || pointInView(itemRect.bottom);
 }
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function runTest() {
   await PlacesUtils.bookmarks.eraseEverything();
   let tags = [
@@ -43,7 +49,7 @@ add_task(async function runTest() {
   PlacesUtils.tagging.tagURI(uri1, tags);
 
   // Add a second bookmark so that tags won't disappear when unchecked.
-  let uri2 = Services.io.newURI("http://www2.mozilla.org/");
+  let uri2 = Services.io.newURI("https://www2.mozilla.org/");
   let bm2 = await PlacesUtils.bookmarks.insert({
     parentGuid: PlacesUtils.bookmarks.toolbarGuid,
     title: "mozilla",

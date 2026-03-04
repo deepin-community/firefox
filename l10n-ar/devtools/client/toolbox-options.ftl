@@ -15,7 +15,7 @@ options-select-default-tools-label = أدوات المطورين المبدئي�
 options-tool-not-supported-label = * ليس مدعوما لهدف صندوق الأدوات الحالي
 # The label for the heading of group of checkboxes corresponding to the developer tools
 # added by add-ons. This heading is hidden when there is no developer tool installed by add-ons.
-options-select-additional-tools-label = أدوات المطورين المنصّبة عن طريق الإضافات
+options-select-additional-tools-label = أدوات المطورين المثبتة عن طريق الإضافات
 # The label for the heading of group of checkboxes corresponding to the default developer
 # tool buttons.
 options-select-enabled-toolbox-buttons-label = أزرار شريط الأدوات المتوفرة
@@ -39,9 +39,6 @@ options-collapse-attrs-tooltip =
 
 options-default-color-unit-label = وحدة الألوان المبدئية
 options-default-color-unit-name = أسماء الألوان
-
-## Web Console section
-
 
 ## Style Editor section
 
@@ -74,7 +71,7 @@ options-sourceeditor-autoclosebrackets-label = أغلِق الأقواس تلق�
 options-sourceeditor-expandtab-tooltip =
     .title = استخدم المسافات بدل محرف الجدولة
 options-sourceeditor-expandtab-label = أزِح مستخدما المسافات
-options-sourceeditor-tabsize-label = حجم التبويب
+options-sourceeditor-tabsize-label = حجم اللسان
 options-sourceeditor-keybinding-label = ربطات المفاتيح
 options-sourceeditor-keybinding-default-label = المبدئي
 
@@ -92,5 +89,5 @@ options-disable-javascript-tooltip =
 options-enable-remote-label = فعِّل التنقيح البعيد
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = فعّل عمّال الخدمة عبر HTTP (عندما يكون صندوق الأدوات مفتوحا)
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * في الجلسة الحالية فقط، تُعيد تحميل الصفحة

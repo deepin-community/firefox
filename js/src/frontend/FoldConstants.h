@@ -7,6 +7,7 @@
 #ifndef frontend_FoldConstants_h
 #define frontend_FoldConstants_h
 
+#include "frontend/Stencil.h"
 #include "frontend/SyntaxParseHandler.h"
 
 namespace js {
@@ -28,17 +29,19 @@ class ParserAtomsTable;
 // the same node (unchanged or modified in place) or a new node.
 //
 // Usage:
-//    MOZ_TRY_VAR(pn, parser->statement());
-//    if (!FoldConstants(fc, parserAtoms, &pn, parser)) {
+//    pn = MOZ_TRY(parser->statement());
+//    if (!FoldConstants(fc, parserAtoms, bigInts, &pn, parser)) {
 //        return errorResult();
 //    }
 [[nodiscard]] extern bool FoldConstants(FrontendContext* fc,
                                         ParserAtomsTable& parserAtoms,
+                                        BigIntStencilVector& bigInts,
                                         ParseNode** pnp,
                                         FullParseHandler* handler);
 
 [[nodiscard]] inline bool FoldConstants(FrontendContext* fc,
                                         ParserAtomsTable& parserAtoms,
+                                        BigIntStencilVector& bigInts,
                                         typename SyntaxParseHandler::Node* pnp,
                                         SyntaxParseHandler* handler) {
   return true;

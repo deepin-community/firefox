@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } 사생활 보호 모드
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } 사생활 보호 모드
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } 사생활 보호 모드
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } 사생활 보호 모드
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } 사생활 보호 모드
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — 사생활 보호 모드
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } 사생활 보호 모드
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — { $profile-name } — 사생활 보호 모드
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — 사생활 보호 모드
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — 사생활 보호 모드
+       *[other] { -brand-full-name } 사생활 보호 모드
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = 사생활 보호 모드
+popups-infobar-dont-show-message2 =
+    .label = 팝업이나 제3자 리디렉션이 차단될 때 이 메시지를 표시하지 않음
+    .accesskey = D
+edit-popup-settings2 =
+    .label = 팝업 및 제3자 리디렉션 설정 관리…
+    .accesskey = M
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = 메시지 패널 열기
 urlbar-geolocation-notification-anchor =
     .tooltiptext = 위치 요청 패널 열기
+urlbar-localhost-notification-anchor =
+    .tooltiptext = 이 사이트에 대한 로컬 기기 접근 관리
+urlbar-local-network-notification-anchor =
+    .tooltiptext = 이 사이트에 대한 로컬 네트워크 접근 공유 관리
 urlbar-xr-notification-anchor =
     .tooltiptext = 가상 현실 권한 패널 열기
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = 도움 받기
     .accesskey = h
+urlbar-result-menu-dismiss-suggestion =
+    .label = 제안 닫기
+    .accesskey = D
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = { -firefox-suggest-brand-name }에 대해 더 알아보기
+    .accesskey = L
+urlbar-result-menu-manage-firefox-suggest =
+    .label = { -firefox-suggest-brand-name } 관리
+    .accesskey = M
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = 부정확한 위치 신고
+urlbar-result-menu-show-less-frequently =
+    .label = 덜 자주 보기
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = 날씨 제안을 표시하지 않음
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = 메뉴 열기
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = 의견을 보내 주셔서 감사합니다
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = 의견을 보내 주셔서 감사합니다. 날씨 제안이 더 이상 표시되지 않습니다.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = 작업
 
 urlbar-geolocation-blocked =
     .tooltiptext = 이 사이트의 위치 정보 사용을 차단했습니다.
+urlbar-localhost-blocked =
+    .tooltiptext = 이 사이트의 로컬 기기 연결을 차단했습니다.
+urlbar-local-network-blocked =
+    .tooltiptext = 이 사이트의 로컬 네트워크 연결을 차단했습니다.
 urlbar-xr-blocked =
     .tooltiptext = 이 웹 사이트에 대한 가상 현실 기기 접근을 차단했습니다.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = 이 사이트의 화면 공유를 차단했습니다.
 urlbar-persistent-storage-blocked =
     .tooltiptext = 이 사이트의 영구 저장소 사용을 차단했습니다.
+urlbar-popup-blocked2 =
+    .tooltiptext = 이 사이트의 팝업과 제3자 리디렉션을 차단했습니다.
 urlbar-popup-blocked =
     .tooltiptext = 이 사이트의 팝업을 차단했습니다.
 urlbar-autoplay-media-blocked =
@@ -178,6 +292,9 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = 이 페이지 북마크 ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = 분할 화면
+    .aria-label = 분할 화면
 
 ## Page Action Context Menu
 
@@ -254,10 +371,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = 부가 기능 보기
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = extensions, themes, addons, add-ons, 확장 기능, 테마, 부가 기능
 quickactions-cmd-addons2 = 부가 기능, add-ons
 # Opens the bookmarks library window
 quickactions-bookmarks2 = 북마크 관리
 quickactions-cmd-bookmarks = 북마크, bookmarks
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = 최근 기록 지우기
+quickactions-cmd-clearrecenthistory = 최근 기록 지우기, 기록, history
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = 기록 지우기
 quickactions-cmd-clearhistory = 기록 지우기, clear history
@@ -266,9 +390,20 @@ quickactions-downloads2 = 다운로드 보기
 quickactions-cmd-downloads = 다운로드, downloads
 # Opens about:addons page in the extensions section
 quickactions-extensions = 확장 기능 관리
+quickactions-cmd-extensions2 = extensions, addons, add-ons, 확장 기능, 부가 기능
 quickactions-cmd-extensions = 확장 기능, extensions
+# Opens Firefox View
+quickactions-firefoxview = { -firefoxview-brand-name } 열기
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = { -firefoxview-brand-name } 열기, { -firefoxview-brand-name }, View 열기, View
+# Opens SUMO home page
+quickactions-help = { -brand-product-name } 도움말
+quickactions-cmd-help = 도움, 지원, help, support
 # Opens the devtools web inspector
 quickactions-inspector2 = 개발자 도구 열기
+quickactions-cmd-inspector2 = inspector, devtools, dev tools, 검사기, 개발자 도구, 개발자
 quickactions-cmd-inspector = 검사기, 개발자 도구, inspector, devtools
 # Opens about:logins
 quickactions-logins2 = 비밀번호 관리
@@ -281,7 +416,7 @@ quickactions-print2 = 페이지 인쇄
 quickactions-cmd-print = 인쇄, print
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = 페이지를 PDF로 저장
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, save page, 페이지 저장
 # Opens a new private browsing window
 quickactions-private2 = 사생활 보호 창 열기
 quickactions-cmd-private = 사생활 보호 모드, private browsing
@@ -292,23 +427,38 @@ quickactions-cmd-refresh = 새로 고침, refresh
 quickactions-restart = { -brand-short-name } 다시 시작
 quickactions-cmd-restart = 다시 시작, restart
 # Opens the screenshot tool
-quickactions-screenshot3 = 스크린샷 찍기
+quickactions-screenshot3 = 스크린샷
+quickactions-cmd-screenshot2 = screenshot, take a screenshot, 스크린샷
+# Opens about:translations
+quickactions-translate = 번역
+quickactions-cmd-translate = 번역
 quickactions-cmd-screenshot = 스크린샷, screenshot
 # Opens about:preferences
 quickactions-settings2 = 설정 관리
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = settings, preferences, options, manage, 설정, 옵션, 관리
 quickactions-cmd-settings = 설정, 옵션, settings, preferences, options
 # Opens about:addons page in the themes section
 quickactions-themes = 테마 관리
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = themes, add-ons, addons, 테마, 부가 기능
 quickactions-cmd-themes = 테마, themes
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = { -brand-short-name } 업데이트
 quickactions-cmd-update = 업데이트, update
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = 페이지 소스 보기
+quickactions-cmd-viewsource2 = view source, source, page source, 소스 보기, 소스, 페이지 소스
 quickactions-cmd-viewsource = 소스 보기, 소스, view source, source
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = 빠른 작업 더 알아보기
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = 탭 키를 눌러서 선택:
 
 ## Bookmark Panel
 
@@ -378,6 +528,8 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = 이 사이트에 안전하게 연결되어 있지 않습니다.
 identity-connection-verified = 이 사이트에 안전하게 연결되어 있습니다.
 identity-ev-owner-label = 인증서 발급 대상:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = 규정 (EU) 2024/1183에 명시된 대로 자격 요건을 충족합니다.
 identity-description-custom-root2 = Mozilla는 이 인증서 발급자를 인식하지 못합니다. 운영 체제 또는 관리자가 추가한 것일 수 있습니다.
 identity-remove-cert-exception =
     .label = 예외 제거
@@ -491,6 +643,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = 검색어 또는 주소 입력
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = 주소 입력
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -545,8 +701,6 @@ urlbar-page-action-button =
     .tooltiptext = 페이지 작업
 urlbar-revert-button =
     .tooltiptext = 주소 표시줄에 주소 표시
-urlbar-show-page-actions-button =
-    .tooltiptext = 모든 페이지 작업 표시
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -566,12 +720,15 @@ urlbar-result-action-search-in-private = 사생활 보호 창에서 검색
 urlbar-result-action-search-w-engine = { $engine } 검색
 urlbar-result-action-sponsored = 스폰서
 urlbar-result-action-switch-tab = 탭 전환
+urlbar-result-action-move-tab-to-split-view = 탭을 분할 화면으로 이동
 urlbar-result-action-visit = 방문
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = 탭 전환 · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = 이름없는 그룹
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = 클립보드에서 방문
 # Directs a user to press the Tab key to perform a search with the specified
@@ -601,12 +758,184 @@ urlbar-result-action-copy-to-clipboard = 복사
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = 정의되지 않음
+# The sub title of an add-on suggestion in the urlbar.
+urlbar-result-addons-subtitle = { -brand-product-name } 확장 기능
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = 추천
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> - { $region }, { $city }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> - { $country }, { $region }, { $city }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> - { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · 스폰서
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = 묻기
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = 검색 표시줄에서 바로 주식 시장 데이터를 확인하세요
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = { -vendor-short-name }와 검색 쿼리 데이터를 공유하면 파트너사로부터 시장 동향 및 추가 정보를 확인할 수 있습니다. <a data-l10n-name="learn-more-link">더 알아보기</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = 제안 표시
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = 나중에
+urlbar-result-realtime-opt-in-dismiss = 닫기
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = 이 제안을 표시하지 않음
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = 시장 제안을 표시하지 않음
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = 의견을 보내 주셔서 감사합니다. 시장 제안이 더 이상 표시되지 않습니다.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = 주식 시장 제안
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = 의견을 보내 주셔서 감사합니다. 이 제안이 더 이상 표시되지 않습니다.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown = { $name } · { $daysUntilStart }일 후
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range = { $name } · { $daysUntilStart }일 후 시작
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing = { $name } · { $daysUntilEnd }일 후 종료
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · 오늘
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · 오늘 종료
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } 검색
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - { $localSearchMode } 검색
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - { $engine } 검색
+urlbar-searchmode-dropmarker =
+    .tooltiptext = 검색 엔진 선택
+urlbar-searchmode-bookmarks =
+    .label = 북마크
+urlbar-searchmode-tabs =
+    .label = 탭
+urlbar-searchmode-history =
+    .label = 기록
+urlbar-searchmode-actions =
+    .label = 작업
+urlbar-searchmode-exit-button =
+    .tooltiptext = 닫기
+urlbar-searchmode-default =
+    .tooltiptext = 기본 검색 엔진
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = 이번만 검색:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-sticky-description = 검색:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = 검색 설정
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = 신규
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, 검색 엔진 선택
+    .tooltiptext = { $engine }, 검색 엔진 선택
+urlbar-searchmode-button-no-engine =
+    .label = 선택된 바로 가기 없음, 바로 가기를 선택하세요
+    .tooltiptext = 선택된 바로 가기 없음, 바로 가기를 선택하세요
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword =
+    .label = 키워드 검색이 비활성화됨
+    .tooltiptext = 키워드 검색이 비활성화됨
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +945,12 @@ urlbar-result-action-search-bookmarks = 북마크 검색
 urlbar-result-action-search-history = 기록 검색
 urlbar-result-action-search-tabs = 탭 검색
 urlbar-result-action-search-actions = 작업 검색
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = { $group } 그룹으로 전환
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = { $group } 열기
 
 ## Labels shown above groups of urlbar results
 
@@ -642,6 +977,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = { $engine } 인기
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = 스폰서
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = 인기 검색어를 표시하지 않음
@@ -698,7 +1036,7 @@ bookmarks-manage-bookmarks =
     .label = 북마크 관리
 bookmarks-recent-bookmarks-panel-subheader = 최근 북마크
 bookmarks-toolbar-chevron =
-    .tooltiptext = 북마크 더 보기
+    .tooltiptext = 북마크 더보기
 bookmarks-sidebar-content =
     .aria-label = 북마크
 bookmarks-menu-button =
@@ -838,6 +1176,9 @@ panel-save-update-password = 비밀번호
 # "More" item in macOS share menu
 menu-share-more =
     .label = 더보기…
+menu-share-copy-link =
+    .label = 링크 복사
+    .accesskey = L
 ui-tour-info-panel-close =
     .tooltiptext = 닫기
 
@@ -849,6 +1190,9 @@ popups-infobar-allow =
     .accesskey = p
 popups-infobar-block =
     .label = { $uriHost }의 팝업 차단
+    .accesskey = p
+popups-infobar-allow2 =
+    .label = { $uriHost }에 대한 팝업 및 제3자 리디렉션 허용
     .accesskey = p
 
 ##
@@ -885,6 +1229,8 @@ navbar-accessible =
     .aria-label = 탐색
 navbar-downloads =
     .label = 다운로드
+navbar-overflow-2 =
+    .tooltiptext = 도구 더보기
 navbar-overflow =
     .tooltiptext = 도구 더보기…
 # Variables:
@@ -911,6 +1257,10 @@ tabs-toolbar-list-all-tabs =
     .label = 탭 전체 목록
     .tooltiptext = 탭 전체 목록
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = 탭을 고정하려면 여기에 놓으세요
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -929,6 +1279,9 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = 사생활 보호 모드
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = 사생활 보호 모드
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -937,7 +1290,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = 데이터 보호
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = 사용자의 조직은 { $agentName } 에이전트를 사용하여 데이터 손실을 방지합니다. <a data-l10n-name="info">더 알아보기</a>
+content-analysis-panel-text-styled = 사용자의 조직은 데이터 손실을 막기 위해 <b>{ $agentName }</b> 에이전트를 사용합니다. <a data-l10n-name="info">더 알아보기</a>
 
 ## Unified extensions (toolbar) button
 
@@ -962,6 +1315,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         확장 기능
         일부 확장 기능은 허용되지 않음
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = 확장 기능
+    .tooltiptext =
+        확장 기능
+        일부 확장 기능이 비활성화됨
 
 ## Private browsing reset button
 
@@ -996,26 +1358,44 @@ firefox-relay-offer-why-to-use-relay = 안전하고 사용하기 쉬운 가리�
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = 이메일 가리기로 전송된 모든 이메일은 차단하지 않는 한 <strong>{ $useremail }</strong>(으)로 전달됩니다.
 firefox-relay-offer-legal-notice = "이메일 가리기 사용"을 클릭하면, <label data-l10n-name="tos-url">이용 약관</label>및 <label data-l10n-name="privacy-url">개인정보처리방침</label>에 동의하는 것입니다.
+firefox-relay-offer-legal-notice-1 = 가입하고 이메일 가리기를 생성하면, <label data-l10n-name="tos-url">이용 약관</label>및 <label data-l10n-name="privacy-url">개인정보처리방침</label>에 동의하는 것입니다.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (확인되지 않음)
 popup-notification-xpinstall-prompt-learn-more = 부가 기능을 안전하게 설치하는 방법에 대해 더 알아보기
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = 사생활 보호 창에서 실행
-    .accesskey = P
+popup-notification-xpinstall-prompt-block-url = 상세 보기
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = 확장 기능이 사생활 보호 창에서 실행되도록 허용
+    .accesskey = p
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = 확장 기능 개발자와 기술 및 상호 작용 데이터 공유
+    .accesskey = S
 
 ## Pop-up warning
 
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-message = { -brand-short-name }가 이 사이트에서 팝업 창 { $popupCount }개를 차단했습니다.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name }가 이 사이트에서 리디렉션을 차단했습니다.
+        [1] { -brand-short-name }가 이 사이트에서 팝업 창을 열고 리디렉션하는 것을 차단했습니다.
+       *[other] { -brand-short-name }가 이 사이트에서 팝업 창 { $popupCount }개를 열고 리디렉션하는 것을 차단했습니다.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name }가 이 사이트에서 팝업 창 { $popupCount }개 이상을 차단했습니다.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message = { -brand-short-name }가 이 사이트에서 팝업 창 { $popupCount }개 이상을 열고 리디렉션하는 것을 차단했습니다.
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1031,6 +1411,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = 표시: “{ $popupURI }”
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = 표시: “{ $redirectURI }”
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1052,3 +1436,89 @@ file-picker-crashed-save-nowhere = Windows 파일 대화 상자가 충돌했습�
 file-picker-crashed-show-in-folder =
     .label = 폴더에서 보기
     .accessKey = F
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = 설정 완료
+onboarding-aw-finish-setup-button =
+    .label = 설정 완료
+    .tooltiptext = { -brand-short-name } 설정 완료
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = 향상된 추적 방지 기능 켜짐
+trustpanel-etp-label-disabled = 향상된 추적 방지 기능 꺼짐
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = 향상된 추적 방지 기능: { $host }에 대해 켜짐
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = 향상된 추적 방지 기능: { $host }에 대해 꺼짐
+trustpanel-etp-description-enabled = 이 사이트에서 뭔가 손상된 것처럼 보이면 보호 기능을 꺼보세요.
+trustpanel-etp-description-disabled = { -brand-product-name }는 기업들이 사용자를 덜 추적해야 한다고 생각합니다. 보호 기능을 켜면 가능한 한 많은 추적기를 차단합니다.
+trustpanel-connection-label-secure = 안전한 연결
+trustpanel-connection-label-insecure = 안전하지 않은 연결
+trustpanel-header-enabled = { -brand-product-name }가 감시 중
+trustpanel-description-enabled2 = 보호 중입니다. 무언가를 발견하면 알려드리겠습니다.
+trustpanel-header-enabled-insecure = 이 사이트를 조심하세요
+trustpanel-description-enabled-insecure = { -brand-product-name }가 수상한 것을 발견했습니다.
+trustpanel-header-disabled = 보호 기능을 사용 중지함
+trustpanel-description-disabled = { -brand-product-name }가 비번 상태입니다. 보호 기능을 다시 켜는 것이 좋습니다.
+trustpanel-clear-cookies-button = 쿠키 및 사이트 데이터 지우기
+trustpanel-privacy-link = 개인 정보 설정
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = { $host }에 대한 쿠키 및 사이트 데이터 지우기
+trustpanel-clear-cookies-description = 쿠키와 사이트 데이터를 제거하면 웹사이트에서 로그아웃되고 장바구니가 비워질 수 있습니다.
+trustpanel-clear-cookies-subview-button-clear = 지우기
+trustpanel-clear-cookies-subview-button-cancel = 취소
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = { $host }에 대한 연결 보호
+trustpanel-siteinformation-morelink = 사이트 정보 더보기
+trustpanel-blocker-see-all = 모두 보기
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = { $host }에 대한 추적 보호
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = 안전하지 않음
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header = 이 사이트에서 <span>{ $count }</span>개의 추적기가 차단됨
+trustpanel-blocker-description = { -brand-product-name }는 기업들이 사용자를 덜 추적해야 한다고 생각합니다. 그래서 저희는 가능한 한 많이 차단합니다.
+trustpanel-blocked-header = { -brand-product-name }가 다음 항목을 차단했습니다:
+trustpanel-tracking-header = { -brand-product-name }가 사이트가 깨지지 않도록 다음 항목을 허용했습니다:
+trustpanel-tracking-description = 추적기가 없으면 일부 버튼, 양식 및 로그인 필드가 작동하지 않을 수 있습니다.
+trustpanel-insecure-section-header = 연결이 안전하지 않음
+trustpanel-insecure-description = 사용자가 이 사이트에 보내는 데이터는 암호화되지 않습니다. 이 데이터는 열람, 도난 또는 변조될 수 있습니다.
+trustpanel-list-label-tracking-cookies = { $count }개의 교차 사이트 추적 쿠키
+trustpanel-list-label-tracking-content = 추적 콘텐츠
+trustpanel-list-label-fingerprinter = { $count }개의 디지털 지문
+trustpanel-list-label-social-tracking = { $count }개의 소셜 미디어 추적기
+trustpanel-list-label-cryptominer = { $count }개의 암호화폐 채굴기
+trustpanel-social-tracking-blocking-tab-header = { -brand-product-name }가 소셜 미디어 추적기 { $count }개를 차단함
+trustpanel-social-tracking-not-blocking-tab-header = { -brand-product-name }가 소셜 미디어 추적기 { $count }개를 허용함
+trustpanel-tracking-cookies-blocking-tab-header = { -brand-product-name }가 교차 사이트 추적 쿠키 { $count }개를 차단함
+trustpanel-tracking-cookies-not-blocking-tab-header = { -brand-product-name }가 교차 사이트 추적 쿠키 { $count }개를 허용함
+trustpanel-tracking-content-blocking-tab-header = { -brand-product-name }가 추적기 { $count }개를 차단함
+trustpanel-tracking-content-not-blocking-tab-header = { -brand-product-name }가 추적기 { $count }개를 허용함
+trustpanel-tracking-content-tab-list-header = 다음 사이트가 사용자를 추적하고 있습니다:
+trustpanel-fingerprinter-blocking-tab-header = { -brand-product-name }가 디지털 지문 { $count }개를 차단함
+trustpanel-fingerprinter-not-blocking-tab-header = { -brand-product-name }가 디지털 지문 { $count }개를 허용함
+trustpanel-fingerprinter-list-header = 다음 사이트가 디지털 지문을 수집하려고 합니다:
+trustpanel-cryptominer-blocking-tab-header = { -brand-product-name }가 암호화폐 채굴기 { $count }개를 차단함
+trustpanel-cryptominer-not-blocking-tab-header = { -brand-product-name }가 암호화폐 채굴기 { $count }개를 허용함
+trustpanel-cryptominer-tab-list-header = 다음 사이트는 암호화폐 채굴을 시도합니다:
+trustpanel-blocker-section-header2 = 이 사이트에서 추적기 <span data-l10n-name="count">{ $count }</span>개 차단됨

@@ -7,17 +7,28 @@
 #ifndef mozilla_dom_WebAuthnUtil_h
 #define mozilla_dom_WebAuthnUtil_h
 
-/*
- * Utility functions used by both WebAuthnManager and U2FTokenManager.
- */
-
-#include "mozilla/dom/WebAuthenticationBinding.h"
 #include "ipc/IPCMessageUtils.h"
+#include "mozilla/dom/WebAuthenticationBinding.h"
 
 namespace mozilla::dom {
 
-bool EvaluateAppID(nsPIDOMWindowInner* aParent, const nsString& aOrigin,
-                   /* in/out */ nsString& aAppId);
+class WindowGlobalParent;
+
+bool IsValidAppId(const nsCOMPtr<nsIPrincipal>& aPrincipal,
+                  const nsCString& aAppId);
+
+bool IsWebAuthnAllowedInDocument(const nsCOMPtr<Document>& aDoc);
+
+bool IsWebAuthnAllowedInContext(WindowGlobalParent* aContext);
+
+bool IsWebAuthnAllowedForTransportSecurityInfo(
+    nsITransportSecurityInfo* aSecurityInfo);
+
+nsresult DefaultRpId(const nsCOMPtr<nsIPrincipal>& aPrincipal,
+                     /* out */ nsACString& aRpId);
+
+bool IsValidRpId(const nsCOMPtr<nsIPrincipal>& aPrincipal,
+                 const nsACString& aRpId);
 
 nsresult HashCString(const nsACString& aIn, /* out */ nsTArray<uint8_t>& aOut);
 

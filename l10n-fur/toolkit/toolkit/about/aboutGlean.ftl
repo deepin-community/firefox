@@ -12,6 +12,12 @@ glean-debug-ping-viewer-brand-name = Visualizadôr ping pal debug di { -glean-br
 about-glean-page-title2 = Informazions su { -glean-brand-name }
 about-glean-header = Informazions su { -glean-brand-name }
 about-glean-interface-description = <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a> e je une librarie pe racuelte di dâts, doprade tai progjets di { -vendor-short-name }. Cheste interface e je progjetade par permeti ai svilupadôrs e tester di <a data-l10n-name="fog-link">fâ provis manuâls de strumentazion</a>.
+about-glean-category-about-glean = Informazions su { -glean-brand-name }
+about-glean-category-manual-testing = Prove manuâl
+about-glean-category-adhoc-testing = Prove ad hoc
+about-glean-category-profiler = Utilizazion dal Profiladôr
+about-glean-category-about-data = Informazions sui dâts
+about-glean-category-metrics-table = Tabele des metrichis
 about-glean-upload-enabled = Il cjariament in rêt dai dâts al è atîf.
 about-glean-upload-disabled = Il cjariament in rêt dai dâts al è disativât.
 about-glean-upload-enabled-local = Il cjariament in rêt dai dâts al è atîf dome par mandâ suntun servidôr locâl.
@@ -39,6 +45,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Par vê une spiegazion dai diviers mûts par regjistrâ e cjatâ dâts, fâs riferiment ae
+    schede <strong>Informazions sui dâts</strong>.
 about-glean-about-testing-header = Informazions su lis provis
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -63,7 +72,7 @@ about-glean-label-for-ping-names =
     il ping <code>metrics</code>.
 # An in-line check box precedes this string.
 about-glean-label-for-log-pings =
-    (Opzionâl. Segne la casele di control se tu desideris che inviant i pings chescj a sedin ancje regjistrâts intun regjistri.
+    (Facoltatîf. Segne la casele di control se tu desideris che inviant i pings chescj a sedin ancje regjistrâts intun regjistri.
     Ti coventarà a <a data-l10n-name="enable-logging-link">ativâ la regjistrazion</a>.)
 # Variables
 #   $debug-tag (String): The user-set value of the debug tag input on this page. Like "about-glean-kV"
@@ -93,8 +102,107 @@ about-glean-adhoc-note =
     Glean par JavaScript. Chest al significhe che i nons e lis categoriis des metrichis
     a son formatâts in <code>camelCase</code> a diference des APIs par Rust e
     C++.
+about-glean-profiler-explanation =
+    Par visualizâ une viodude complete des metrichis regjistradis, tu puedis doprâ { -profiler-brand-name }.
+    Prime tu scugnis <a data-l10n-name="firefox-profiler-link">tirâ dongje un profîl des prestazions</a>.
+    Une volte cuistât il profîl, selezione <q>Grafic a marcadôrs</q> e osserve i indicadôrs in <q>Telemetrie</q>.
+about-glean-profiler-explanation-profiler =
+    Tal profîl des prestazions tu puedis viodi dutis lis metrichis dadis dongje, cuant che a son stadis
+    racueltis e i valôrs precîs. Passant parsore cul mouse sui singui indicadôrs,
+    tu puedis verificâ che al sedi stât cjapât sù il valôr just e che la racuelte e sedi stade fate tal moment just.
 controls-button-label-verbose = Aplice impostazions e invie ping
+about-glean-feedback-settings-only =
+    .message = Impostazions aplicadis!
+about-glean-feedback-settings-and-ping =
+    .message = Impostazions aplicadis e ping inviât!
 about-glean-about-data-header = Informazions sui dâts
+about-glean-about-data-description =
+    A esistin varis struments che tu puedis doprâ par visualizâ i tiei dâts, daûr di ce
+    che tu stâs cirint.
+about-glean-about-data-description-list-intro =
+    Fâs riferiment ae liste chi sot par specifics câs
+    di ûs par ogni strument:
+about-glean-about-data-list-item-dictionary =
+    Par esplorâ la liste dai dâts cjapâts sù di { -glean-brand-name } par aplicazion, fâs riferiment al
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Dizionari</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Par esplorâ i dâts che a son stâts cjapâts sù de vecje telemetrie, fâs riferiment a
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Par esplorâ lis etichetis di debug, viodi i pings complets, viodi in direte il flus or esaminâ lis visualizazions
+    des metrichis, fâs riferiment al
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Par regjistrâ un profîl des prestazions e viodi dutis lis metrichis regjistradis, dopre
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Dutis lis metrichis
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Categorie
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Non
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Gjenar
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Valôr
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Azions
+about-glean-metrics-table-settings-button = Impostazions
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Impostazions tabele metriche
+about-glean-metrics-table-settings-category-general = Gjenerâl
+about-glean-metrics-table-settings-hide-empty-value-rows = Plate riis cence valôrs
+about-glean-metrics-table-settings-category-visualizations = Visualizazions
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Esempli
+about-glean-metrics-table-settings-category-visualizations-histogram = Istogram
+about-glean-metrics-table-settings-histograms-chart-max = Altece massime grafic
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Altece massime par dopo tacâ a ridimensionâ
+about-glean-metrics-table-settings-histograms-box-padding = Margjin dal ricuadri
+about-glean-metrics-table-settings-histograms-chart-padding = Margjin dal grafic
+about-glean-metrics-table-settings-histograms-left-padding = Margjin in plui a çampe
+about-glean-metrics-table-settings-category-visualizations-timeline = Secuence temporâl
+about-glean-metrics-table-settings-timelines-height = Altece
+about-glean-metrics-table-settings-timelines-width = Largjece
+about-glean-metrics-table-settings-timelines-chart-padding = Margjin dal grafic
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Rai dal cercli
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Deviazion X dal as Y
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Deviazion Y dal as Y
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Filtre
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Chest al filtrarà la tabele chi sot in base a categorie, non, gjenar e valôr (se il valôr al è di gjenar sempliç).
+about-glean-button-load-all = Cjame ducj i valôrs
+about-glean-button-load-value = Cjarie
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Documentazion
+about-glean-button-watch = Ten di voli
+# Meaning "to stop watching"
+about-glean-button-unwatch = Ferme di tignî di voli
+about-glean-no-data-to-display = Nissun dât di visualizâ.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Lis metrichis <code>DualLabeledCounter</code> no son supuartadis te viodude <code>about:glean</code>.
+about-glean-unknown-metric-type-warning = Gjenar di metriche no cognossût.
+about-glean-enable-new-features-promo =
+    .message = O stin daûr a zontâ gnovis funzions! A son ancjemò in svilup, ma se tu vuelis ativâlis, fâs clic sul boton di azion.
+    .heading = A stan par rivâ gnovis funzions!
+about-glean-enable-new-features-button = Ative gnovis funzions
+about-glean-disable-new-features-button = Disative gnovis funzions
 about-glean-about-data-explanation =
     Par sgarfâ te liste dai dâts racuelts, consulte il
     <a data-l10n-name="glean-dictionary-link">Dizionari di { -glean-brand-name }</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Pings integrâts
+about-glean-ping-list-optgroup-custom =
+    .label = Pings personalizâts

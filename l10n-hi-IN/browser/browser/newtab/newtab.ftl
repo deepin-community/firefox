@@ -50,9 +50,6 @@ newtab-confirm-delete-history-p1 = क्या वाकई आप इस प�
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = इस क्रिया को पहले जैसा नहीं किया जा सकता है.
 
-## Top Sites - Sponsored label
-
-
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
@@ -195,20 +192,11 @@ newtab-pocket-learn-more = अधिक जानें
 newtab-pocket-cta-button = { -pocket-brand-name } प्राप्त करें
 newtab-pocket-cta-text = अपने पसंदीद कहानियाँ { -pocket-brand-name } में सहेजें, और आकर्षक पढ़ाई के साथ अपने दिमाग को शक्ति दें।
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
 newtab-error-fallback-info = उफ़, कुछ गलत इस सामग्री लोड हो गया ।
 newtab-error-fallback-refresh-link = पुन: प्रयास करने के लिए पृष्ठ ताज़ा करें ।
-
-## Customization Menu
-
-
-## New Tab Wallpapers
-
 
 ## Solid Colors
 
@@ -223,14 +211,8 @@ newtab-wallpaper-light-pink = हल्का गुलाबी
 newtab-wallpaper-red = लाल
 newtab-wallpaper-brown = भूरा
 
-## Abstract
-
-
-## Photographs
+## Firefox
 
 feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
-
-## New Tab Weather
-

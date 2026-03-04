@@ -5,6 +5,7 @@
 
 interface URI;
 interface nsIDocShell;
+interface nsIDOMGeoPosition;
 interface nsISecureBrowserUI;
 interface nsISHEntry;
 interface nsIPrintSettings;
@@ -42,6 +43,7 @@ enum DisplayMode {
   "minimal-ui",
   "standalone",
   "fullscreen",
+  "picture-in-picture"
 };
 
 /**
@@ -51,6 +53,14 @@ enum PrefersColorSchemeOverride {
   "none",
   "light",
   "dark",
+};
+
+/**
+ * CSS forced-colors values.
+ */
+enum ForcedColorsOverride {
+  "none",
+  "active",
 };
 
 /**
@@ -189,12 +199,27 @@ interface BrowsingContext {
   [SetterThrows] attribute boolean useGlobalHistory;
 
   // Extension to give chrome JS the ability to set the window screen
-  // orientation while in RDM.
-  [Throws] undefined setRDMPaneOrientation(OrientationType type, float rotationAngle);
+  // dimensions override with WebDriver BiDi.
+  [Throws] undefined setScreenAreaOverride(unsigned long long screenWidth, unsigned long long screenHeight);
+  // Extension to give chrome JS the ability to reset the window screen
+  // dimensions override with WebDriver BiDi.
+  undefined resetScreenAreaOverride();
+
+  // Extension to give chrome JS the ability to set the window screen
+  // orientation override with WebDriver BiDi and DevTools.
+  [Throws] undefined setOrientationOverride(OrientationType type, float rotationAngle);
+  // Extension to give chrome JS the ability to reset the window screen
+  // orientation override with WebDriver BiDi and DevTools.
+  undefined resetOrientationOverride();
 
   // Extension to give chrome JS the ability to set a maxTouchPoints override
   // while in RDM.
   [Throws] undefined setRDMPaneMaxTouchPoints(octet maxTouchPoints);
+
+  // Geolocation emulation for WebDriver BiDi and DevTools.
+  // Note: in case of watchPosition emulation, the override has to be set
+  // before the watcher is started.
+  undefined setGeolocationServiceOverride(optional nsIDOMGeoPosition position);
 
   // The watchedByDevTools flag indicates whether or not DevTools are currently
   // debugging this browsing context.
@@ -206,8 +231,17 @@ interface BrowsingContext {
   // Enable media query medium override, for DevTools.
   [SetterThrows] attribute DOMString mediumOverride;
 
+  // Language emulation for WebDriver BiDi and DevTools.
+  [SetterThrows] attribute UTF8String languageOverride;
+
+  // Timezone emulation for WebDriver BiDi and DevTools per browsing context.
+  [SetterThrows] attribute DOMString timezoneOverride;
+
   // Color-scheme simulation, for DevTools.
   [SetterThrows] attribute PrefersColorSchemeOverride prefersColorSchemeOverride;
+
+  // Forced-colors simulation, for DevTools
+  [SetterThrows] attribute ForcedColorsOverride forcedColorsOverride;
 
   /**
    * A unique identifier for the browser element that is hosting this
@@ -264,9 +298,15 @@ interface BrowsingContext {
   readonly attribute ChildSHistory? childSessionHistory;
 
   // Resets the location change rate limit. Used for testing.
-  undefined resetLocationChangeRateLimit();
+  undefined resetNavigationRateLimit();
 
   readonly attribute long childOffset;
+
+  // https://wicg.github.io/document-picture-in-picture/
+  // This is true both for the top-level BC of the content and chrome window
+  // of a Document Picture-in-Picture window.
+  [BinaryName="GetIsDocumentPiP"]
+  readonly attribute boolean isDocumentPiP;
 };
 
 BrowsingContext includes LoadContextMixin;
@@ -430,6 +470,11 @@ interface CanonicalBrowsingContext : BrowsingContext {
    * visibility, or no frame.
    */
   readonly attribute boolean isUnderHiddenEmbedderElement;
+
+  /**
+   * Indicates whether opening a modal picker is permitted.
+   */
+  readonly attribute boolean canOpenModalPicker;
 };
 
 [Exposed=Window, ChromeOnly]

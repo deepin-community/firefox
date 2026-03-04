@@ -12,7 +12,17 @@ all-tabs-menu-hidden-tabs =
 all-tabs-menu-manage-user-context =
     .label = コンテナーを管理
     .accesskey = O
-all-tabs-menu-close-duplicate-tabs =
-    .label = 重複タブを閉じる
 all-tabs-menu-close-all-duplicate-tabs =
     .label = すべての重複タブを閉じる
+all-tabs-menu-synced-tabs =
+    .label = 他の端末からのタブ
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = 最近のタブグループ
+all-tabs-menu-current-window-header = 現在のウィンドウ
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = すべて表示
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = タブグループ

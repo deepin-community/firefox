@@ -9,7 +9,6 @@
 
 #include "PDMFactory.h"
 #include "PlatformDecoderModule.h"
-#include "mozilla/Atomics.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/UniquePtr.h"
 
@@ -80,6 +79,13 @@ class MediaChangeMonitor final
     return ConversionRequired::kNeedNone;
   }
 
+  Maybe<PropertyValue> GetDecodeProperty(PropertyName aName) const override {
+    if (RefPtr<MediaDataDecoder> decoder = GetDecoderOnNonOwnerThread()) {
+      return decoder->GetDecodeProperty(aName);
+    }
+    return MediaDataDecoder::GetDecodeProperty(aName);
+  }
+
   class CodecChangeMonitor {
    public:
     virtual bool CanBeInstantiated() const = 0;
@@ -91,6 +97,7 @@ class MediaChangeMonitor final
     virtual bool IsHardwareAccelerated(nsACString& aFailureReason) const {
       return false;
     }
+    virtual void Flush() {};
     virtual ~CodecChangeMonitor() = default;
   };
 
@@ -127,7 +134,7 @@ class MediaChangeMonitor final
 
   UniquePtr<CodecChangeMonitor> mChangeMonitor;
   RefPtr<PDMFactory> mPDMFactory;
-  VideoInfo mCurrentConfig;
+  UniquePtr<TrackInfo> mCurrentConfig;
   nsCOMPtr<nsISerialEventTarget> mThread;
   RefPtr<MediaDataDecoder> mDecoder;
   MozPromiseRequestHolder<CreateDecoderPromise> mDecoderRequest;

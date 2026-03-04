@@ -13,6 +13,9 @@
 // in order to hit different branches in setURI.  Search mode should remain
 // active or be exited as appropriate.
 add_task(async function setURI() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   for (let test of [
     // initialURL, searchString, url, expectSearchMode
 
@@ -101,7 +104,7 @@ async function doSetURITest(initialURL, searchString, url, expectSearchMode) {
 
     // Call setURI.
     let uri = url ? Services.io.newURI(url) : null;
-    gURLBar.setURI(uri);
+    gURLBar.setURI({ uri });
 
     await UrlbarTestUtils.assertSearchMode(
       window,

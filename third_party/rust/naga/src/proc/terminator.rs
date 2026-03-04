@@ -28,19 +28,23 @@ pub fn ensure_block_returns(block: &mut crate::Block) {
                 }
             }
         }
-        Some(&mut (S::Emit(_) | S::Break | S::Continue | S::Return { .. } | S::Kill)) => (),
+        Some(&mut (S::Break | S::Continue | S::Return { .. } | S::Kill)) => (),
         Some(
-            &mut (S::Loop { .. }
+            &mut (S::Emit(_)
+            | S::Loop { .. }
             | S::Store { .. }
             | S::ImageStore { .. }
             | S::Call { .. }
             | S::RayQuery { .. }
             | S::Atomic { .. }
+            | S::ImageAtomic { .. }
             | S::WorkGroupUniformLoad { .. }
             | S::SubgroupBallot { .. }
             | S::SubgroupCollectiveOperation { .. }
             | S::SubgroupGather { .. }
-            | S::Barrier(_)),
+            | S::ControlBarrier(_)
+            | S::MemoryBarrier(_)
+            | S::CooperativeStore { .. }),
         )
         | None => block.push(S::Return { value: None }, Default::default()),
     }

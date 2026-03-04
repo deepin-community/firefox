@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+crashreporter-branded-title = Raportaire d’avarias de { -brand-short-name }
+crashreporter-apology = O planhèm
 crashreporter-plea = Per nos ajudar a diagnosticar e corregir aqueste problèma, nos podètz mandar un rapòrt de plantatge.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Detalhs : { $details }
 crashreporter-no-run-message = Aquesta aplicacion es executada aprèp un plantatge per raportar lo problèma que s'es producha per l'editor de l'aplicacion. Deu pas èsser aviada dirèctament.
 crashreporter-button-details = Detalhs…
 crashreporter-loading-details = Cargament…

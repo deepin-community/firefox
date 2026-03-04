@@ -36,6 +36,9 @@ certificate-viewer-key-size = Velikost ključa
 certificate-viewer-inc-locality = Kraj registracije
 certificate-viewer-locality = Kraj
 certificate-viewer-location = Lokacija
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Ime dnevnika
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID dnevnika
 certificate-viewer-method = Metoda
 certificate-viewer-modulus = Modulo
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Podatki o uradni osebi (AIA)
 certificate-viewer-certificate-policies = Politika digitalnih potrdil
 certificate-viewer-embedded-scts = Vgrajeni SCT-ji
 certificate-viewer-crl-endpoints = Končne točke CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Prenesi
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (potrdilo)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (veriga)
     .download = { $fileName }-veriga.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Ta razširitev je bila označena kot kritična, kar pomeni, da morajo uporabniki zavrniti potrdilo, če ga ne razumejo.
@@ -112,6 +113,8 @@ certificate-viewer-export = Izvozi
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (neznano)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = digitalno potrdilo
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

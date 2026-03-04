@@ -6,30 +6,36 @@ package org.mozilla.focus.input
 
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.AppCompatEditText
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import mozilla.components.browser.domains.autocomplete.CustomDomainsProvider
 import mozilla.components.browser.domains.autocomplete.ShippedDomainsProvider
 import mozilla.components.browser.toolbar.BrowserToolbar
+import mozilla.components.browser.toolbar.display.DisplayToolbar.DisplayMargins
 import mozilla.components.compose.cfr.CFRPopup
 import mozilla.components.compose.cfr.CFRPopupProperties
 import mozilla.components.concept.toolbar.AutocompleteResult
 import mozilla.components.concept.toolbar.Toolbar
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature
+import mozilla.components.support.ktx.android.util.dpToPx
 import org.mozilla.focus.R
 import org.mozilla.focus.ext.components
 import org.mozilla.focus.ext.settings
 import org.mozilla.focus.fragment.UrlInputFragment
 import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.ui.theme.focusTypography
+import androidx.cardview.R as cardViewR
+import mozilla.components.browser.toolbar.R as toolbarR
 
 class InputToolbarIntegration(
     private val toolbar: BrowserToolbar,
@@ -75,7 +81,9 @@ class InputToolbarIntegration(
                 }
 
                 override fun onTextChanged(text: String) {
-                    fragment.onTextChange(text)
+                    fragment.viewLifecycleOwner.lifecycleScope.launch {
+                        fragment.onTextChange(text)
+                    }
                 }
             },
         )
@@ -118,6 +126,10 @@ class InputToolbarIntegration(
         )
 
         toolbar.display.setUrlBackground(urlBackground)
+        toolbar.display.setUrlBackgroundMargins(
+            DisplayMargins(8.dpToPx(toolbar.resources.displayMetrics), 0),
+        )
+
         toolbar.edit.setUrlBackground(urlBackground)
     }
 
@@ -137,7 +149,9 @@ class InputToolbarIntegration(
                 .collect { showStartBrowsingCfr ->
                     if (showStartBrowsingCfr) {
                         CFRPopup(
-                            anchor = toolbar.findViewById<AppCompatEditText>(R.id.mozac_browser_toolbar_background),
+                            anchor = toolbar.findViewById<AppCompatEditText>(
+                                toolbarR.id.mozac_browser_toolbar_background,
+                            ),
                             properties = CFRPopupProperties(
                                 popupWidth = 256.dp,
                                 popupAlignment = CFRPopup.PopupAlignment.BODY_TO_ANCHOR_START,
@@ -153,7 +167,7 @@ class InputToolbarIntegration(
                                 ),
                                 dismissButtonColor = ContextCompat.getColor(
                                     fragment.requireContext(),
-                                    R.color.cardview_light_background,
+                                    cardViewR.color.cardview_light_background,
                                 ),
                                 popupVerticalOffset = 0.dp,
                             ),

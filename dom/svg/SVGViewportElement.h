@@ -7,11 +7,6 @@
 #ifndef DOM_SVG_SVGVIEWPORTELEMENT_H_
 #define DOM_SVG_SVGVIEWPORTELEMENT_H_
 
-#include "mozilla/Attributes.h"
-#include "mozilla/SVGImageContext.h"
-#include "mozilla/UniquePtr.h"
-#include "mozilla/dom/FromParser.h"
-#include "nsIContentInlines.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedLength.h"
 #include "SVGAnimatedPreserveAspectRatio.h"
@@ -19,6 +14,7 @@
 #include "SVGGraphicsElement.h"
 #include "SVGPoint.h"
 #include "SVGPreserveAspectRatio.h"
+#include "nsIContentInlines.h"
 
 namespace mozilla {
 class AutoPreserveAspectRatioOverride;
@@ -45,9 +41,7 @@ class SVGViewportElement : public SVGGraphicsElement {
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
   // SVGElement specializations:
-  gfxMatrix PrependLocalTransformsTo(
-      const gfxMatrix& aMatrix,
-      SVGTransformTypes aWhich = eAllTransforms) const override;
+  gfxMatrix ChildToUserSpaceTransform() const override;
 
   bool HasValidDimensions() const override;
 
@@ -88,7 +82,10 @@ class SVGViewportElement : public SVGGraphicsElement {
 
   void UpdateHasChildrenOnlyTransform();
 
-  enum ChildrenOnlyTransformChangedFlags { eDuringReflow = 1 };
+  enum class ChildrenOnlyTransformChangedFlag { DuringReflow };
+
+  using ChildrenOnlyTransformChangedFlags =
+      EnumSet<ChildrenOnlyTransformChangedFlag>;
 
   /**
    * This method notifies the style system that the overflow rects of our
@@ -100,7 +97,8 @@ class SVGViewportElement : public SVGGraphicsElement {
    * GetAttributeChangeHint is because we need to act on non-attribute (e.g.
    * currentScale) changes in addition to attribute (e.g. viewBox) changes.
    */
-  void ChildrenOnlyTransformChanged(uint32_t aFlags = 0);
+  void ChildrenOnlyTransformChanged(
+      ChildrenOnlyTransformChangedFlags aFlags = {});
 
   gfx::Matrix GetViewBoxTransform() const;
 

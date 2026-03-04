@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Azray
 menu-view-synced-tabs-sidebar =
     .label = Accaren yemtawin
-menu-view-megalist-sidebar =
-    .label = Awalen uffiren
 menu-view-full-zoom =
     .label = Semɣer
     .accesskey = S
@@ -255,6 +241,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Ticraḍ n yisebtar n uziraz
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Imeɣna
+menu-profiles-manage-profiles =
+    .label = Sefrek imaɣunen
+menu-profiles-new-profile =
+    .label = Amaɣnu amaynut
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (amiran)
+menu-profiles-menu =
+    .label = Imeɣna
+    .accesskey = m
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +265,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Isadaren
     .accesskey = i
+menu-tools-extensions-and-themes =
+    .label = Isiɣzaf akked yisental
+    .accesskey = s
 menu-tools-addons-and-themes =
     .label = Izegrar d yisental
     .accesskey = I

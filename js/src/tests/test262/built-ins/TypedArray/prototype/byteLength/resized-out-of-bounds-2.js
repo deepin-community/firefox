@@ -1,9 +1,8 @@
-// |reftest| shell-option(--enable-arraybuffer-resizable) skip-if(!ArrayBuffer.prototype.resize||!xulRuntime.shell) -- resizable-arraybuffer is not enabled unconditionally, requires shell-options
 // Copyright 2023 the V8 project authors. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
 /*---
-esid: sec-get-%typedarray%.prototype.byteLength
+esid: sec-get-%typedarray%.prototype.bytelength
 description: >
   TypedArray.p.byteLength behaves as expected when the underlying resizable
   buffer is resized such that the TypedArray becomes out of bounds.

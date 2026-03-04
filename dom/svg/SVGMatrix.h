@@ -41,9 +41,10 @@
 #include "gfxMatrix.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsWrapperCache.h"
-#include "mozilla/Attributes.h"
 
 namespace mozilla::dom {
+
+struct DOMMatrix2DInit;
 
 /**
  * DOM wrapper for an SVG matrix.
@@ -72,18 +73,19 @@ class SVGMatrix final : public nsWrapperCache {
                        JS::Handle<JSObject*> aGivenProto) override;
 
   float A() const { return static_cast<float>(GetMatrix()._11); }
-  void SetA(float aA, ErrorResult& rv);
+  void SetA(float aA, ErrorResult& aRv);
   float B() const { return static_cast<float>(GetMatrix()._12); }
-  void SetB(float aB, ErrorResult& rv);
+  void SetB(float aB, ErrorResult& aRv);
   float C() const { return static_cast<float>(GetMatrix()._21); }
-  void SetC(float aC, ErrorResult& rv);
+  void SetC(float aC, ErrorResult& aRv);
   float D() const { return static_cast<float>(GetMatrix()._22); }
-  void SetD(float aD, ErrorResult& rv);
+  void SetD(float aD, ErrorResult& aRv);
   float E() const { return static_cast<float>(GetMatrix()._31); }
-  void SetE(float aE, ErrorResult& rv);
+  void SetE(float aE, ErrorResult& aRv);
   float F() const { return static_cast<float>(GetMatrix()._32); }
-  void SetF(float aF, ErrorResult& rv);
-  already_AddRefed<SVGMatrix> Multiply(SVGMatrix& aMatrix);
+  void SetF(float aF, ErrorResult& aRv);
+  already_AddRefed<SVGMatrix> Multiply(const DOMMatrix2DInit& aMatrix,
+                                       ErrorResult& aRv);
   already_AddRefed<SVGMatrix> Inverse(ErrorResult& aRv);
   already_AddRefed<SVGMatrix> Translate(float x, float y);
   already_AddRefed<SVGMatrix> Scale(float scaleFactor);
@@ -94,8 +96,8 @@ class SVGMatrix final : public nsWrapperCache {
                                                ErrorResult& aRv);
   already_AddRefed<SVGMatrix> FlipX();
   already_AddRefed<SVGMatrix> FlipY();
-  already_AddRefed<SVGMatrix> SkewX(float angle, ErrorResult& rv);
-  already_AddRefed<SVGMatrix> SkewY(float angle, ErrorResult& rv);
+  already_AddRefed<SVGMatrix> SkewX(float angle, ErrorResult& aRv);
+  already_AddRefed<SVGMatrix> SkewY(float angle, ErrorResult& aRv);
 
  private:
   ~SVGMatrix() = default;

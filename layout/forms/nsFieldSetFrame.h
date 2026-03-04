@@ -7,7 +7,6 @@
 #ifndef nsFieldSetFrame_h___
 #define nsFieldSetFrame_h___
 
-#include "mozilla/Attributes.h"
 #include "ImgDrawResult.h"
 #include "nsContainerFrame.h"
 
@@ -24,7 +23,7 @@ class nsFieldSetFrame final : public nsContainerFrame {
 
   explicit nsFieldSetFrame(ComputedStyle* aStyle, nsPresContext* aPresContext);
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   /**
@@ -87,6 +86,13 @@ class nsFieldSetFrame final : public nsContainerFrame {
    * container.
    */
   nsContainerFrame* GetInner() const;
+
+  nsContainerFrame* GetContentInsertionFrame() override {
+    if (auto* inner = GetInner()) {
+      return inner->GetContentInsertionFrame();
+    }
+    return this;
+  }
 
   /**
    * Return the frame that represents the rendered legend if any.

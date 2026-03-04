@@ -22,22 +22,6 @@
 #include "wasm/WasmTypeDef.h"
 #include "wasm/WasmValType.h"
 
-namespace js::wasm {
-
-// For trailer blocks whose owning Wasm{Struct,Array}Objects make it into the
-// tenured heap, we have to tell the tenured heap how big those trailers are
-// in order to get major GCs to happen sufficiently frequently.  In an attempt
-// to make the numbers more accurate, for each block we overstate the size by
-// the following amount, on the assumption that:
-//
-// * mozjemalloc has an overhead of at least one word per block
-//
-// * the malloc-cache mechanism rounds up small block sizes to the nearest 16;
-//   hence the average increase is 16 / 2.
-static const size_t TrailerBlockOverhead = (16 / 2) + (1 * sizeof(void*));
-
-}  // namespace js::wasm
-
 namespace js {
 
 //=========================================================================
@@ -85,9 +69,8 @@ class WasmGcObject : public JSObject {
   // emphasise the fact that it cannot be interpreted as an offset in any
   // single contiguous area of memory:
   //
-  // * If the object in question is a WasmStructObject, it is the value of
-  //   `wasm::StructType::fieldOffset()` for the relevant field, without regard
-  //   to the inline/outline split.
+  // * If the object in question is a WasmStructObject, it is the index of
+  //   the relevant field.
   //
   // * If the object in question is a WasmArrayObject, then
   //   - u32 == UINT32_MAX (0xFFFF'FFFF) means the "length" property
@@ -176,22 +159,19 @@ class WasmArrayObject : public WasmGcObject,
     return offsetToPointer<uint8_t>(offsetOfInlineStorage());
   }
 
-  // This tells us how big the object is if we know the number of inline bytes
-  // it was created with.
-  static inline constexpr size_t sizeOfIncludingInlineStorage(
-      size_t sizeOfInlineStorage) {
-    size_t n = sizeof(WasmArrayObject) + sizeOfInlineStorage;
-    MOZ_ASSERT(n <= JSObject::MAX_BYTE_SIZE);
-    return n;
+  // Actual array data that follows DataHeader. The array data is a part of the
+  // `inlineStorage`.
+  template <typename T>
+  T* inlineArrayElements() {
+    return offsetToPointer<T>(offsetOfInlineArrayData());
   }
 
-  // This tells us how big the object is if we know the number of inline bytes
-  // it was created with.
-  static inline constexpr size_t sizeOfIncludingInlineData(
-      size_t sizeOfInlineData) {
-    size_t n = sizeof(WasmArrayObject) + sizeOfInlineData;
-    MOZ_ASSERT(n <= JSObject::MAX_BYTE_SIZE);
-    return n;
+  // Get the element at index `i`.
+  template <typename T>
+  inline T get(uint32_t i) const {
+    MOZ_ASSERT(i < numElements_);
+    MOZ_ASSERT(sizeof(T) == typeDef().arrayType().elementType().size());
+    return ((T*)data_)[i];
   }
 
   // AllocKind for object creation
@@ -206,8 +186,8 @@ class WasmArrayObject : public WasmGcObject,
   //
   // This logic is mirrored in WasmArrayObject::maxInlineElementsForElemSize and
   // MacroAssembler::wasmNewArrayObject.
-  static mozilla::CheckedUint32 calcStorageBytesChecked(uint32_t elemSize,
-                                                        uint32_t numElements) {
+  static constexpr mozilla::CheckedUint32 calcStorageBytesChecked(
+      uint32_t elemSize, uint32_t numElements) {
     static_assert(sizeof(WasmArrayObject) % gc::CellAlignBytes == 0);
     mozilla::CheckedUint32 storageBytes = elemSize;
     storageBytes *= numElements;
@@ -229,11 +209,17 @@ class WasmArrayObject : public WasmGcObject,
   }
   // Compute the maximum number of elements that can be stored inline for the
   // given element size.
-  static inline uint32_t maxInlineElementsForElemSize(uint32_t elemSize);
+  static inline constexpr uint32_t maxInlineElementsForElemSize(
+      uint32_t elemSize);
 
+  size_t sizeOfExcludingThis() const;
+
+  // These constants can be anything, so long as they are not the same.  Use
+  // small but unlikely values in the hope of getting more value from
+  // assertions involving them.
   using DataHeader = uintptr_t;
-  static const DataHeader DataIsIL = 0;
-  static const DataHeader DataIsOOL = 1;
+  static const DataHeader DataIsIL = 0x37;
+  static const DataHeader DataIsOOL = 0x71;
 
   // Creates a new array object with out-of-line storage. Reports an error on
   // OOM. The element type, shape, class pointer, alloc site and alloc kind are
@@ -244,7 +230,8 @@ class WasmArrayObject : public WasmGcObject,
   template <bool ZeroFields>
   static MOZ_ALWAYS_INLINE WasmArrayObject* createArrayOOL(
       JSContext* cx, wasm::TypeDefInstanceData* typeDefData,
-      js::gc::Heap initialHeap, uint32_t numElements, uint32_t storageBytes);
+      js::gc::AllocSite* allocSite, js::gc::Heap initialHeap,
+      uint32_t numElements, uint32_t storageBytes);
 
   // Creates a new array object with inline storage. Reports an error on OOM.
   // The element type, shape, class pointer, alloc site and alloc kind are taken
@@ -254,14 +241,16 @@ class WasmArrayObject : public WasmGcObject,
   template <bool ZeroFields>
   static MOZ_ALWAYS_INLINE WasmArrayObject* createArrayIL(
       JSContext* cx, wasm::TypeDefInstanceData* typeDefData,
-      js::gc::Heap initialHeap, uint32_t numElements, uint32_t storageBytes);
+      js::gc::AllocSite* allocSite, js::gc::Heap initialHeap,
+      uint32_t numElements, uint32_t storageBytes);
 
   // This selects one of the above two routines, depending on how much storage
   // is required for the given type and number of elements.
   template <bool ZeroFields>
   static MOZ_ALWAYS_INLINE WasmArrayObject* createArray(
       JSContext* cx, wasm::TypeDefInstanceData* typeDefData,
-      js::gc::Heap initialHeap, uint32_t numElements);
+      js::gc::AllocSite* allocSite, js::gc::Heap initialHeap,
+      uint32_t numElements);
 
   // JIT accessors
   static constexpr size_t offsetOfNumElements() {
@@ -281,17 +270,27 @@ class WasmArrayObject : public WasmGcObject,
   // Tracing and finalization
   static void obj_trace(JSTracer* trc, JSObject* object);
   static void obj_finalize(JS::GCContext* gcx, JSObject* object);
-  static size_t obj_moved(JSObject* obj, JSObject* old);
+  static size_t obj_moved(JSObject* objNew, JSObject* objOld);
 
   void storeVal(const wasm::Val& val, uint32_t itemIndex);
   void fillVal(const wasm::Val& val, uint32_t itemIndex, uint32_t len);
 
-  static DataHeader* dataHeaderFromDataPointer(const uint8_t* data) {
+  static inline DataHeader* dataHeaderFromDataPointer(const uint8_t* data) {
     MOZ_ASSERT(data);
-    return (DataHeader*)data - 1;
+    DataHeader* header = (DataHeader*)data;
+    header--;
+    MOZ_ASSERT(*header == DataIsIL || *header == DataIsOOL);
+    return header;
   }
   DataHeader* dataHeader() const {
     return WasmArrayObject::dataHeaderFromDataPointer(data_);
+  }
+
+  static inline uint8_t* dataHeaderToDataPointer(const DataHeader* header) {
+    MOZ_ASSERT(header);
+    MOZ_ASSERT(*header == DataIsIL || *header == DataIsOOL);
+    header++;
+    return (uint8_t*)header;
   }
 
   static bool isDataInline(uint8_t* data) {
@@ -327,8 +326,30 @@ static_assert((WasmArrayObject::offsetOfInlineStorage() % 8) == 0);
 
 // Class for a wasm struct.  It has inline data and, if the inline area is
 // insufficient, a pointer to outline data that lives in the C++ heap.
-// Computing the field offsets is somewhat tricky; see block comment on `class
-// StructLayout` for background.
+// Computing the field offsets is somewhat tricky; see SMDOC in
+// WasmStructLayout.h.
+//
+// From a C++ viewpoint, WasmStructObject just holds two pointers, a shape
+// pointer and the supertype vector pointer.  Because of class-total-size
+// roundup effects, it is 16 bytes on both 64- and 32-bit targets.
+//
+// For our purposes a WasmStructObject is always followed immediately by an
+// in-line data area, with maximum size WasmStructObject_MaxInlineBytes.  Both
+// the two-word header and the inline data area have 8-aligned sizes.  The GC's
+// allocation routines only guarantee 8-byte alignment.  This means a
+// WasmStructObject can offer naturally aligned storage for fields of size 8,
+// 4, 2 and 1, but not for fields of size 16, even though the header size is 16
+// bytes.
+//
+// If the available inline storage is insufficient, some part of the inline
+// data are will be used as a pointer to the out of line area.  This however is
+// not WasmStructObject's concern: it is unaware of the in-line area layout,
+// all details of which are stored in the associated StructType, and partially
+// cached in TypeDefInstanceData.cached.strukt.
+//
+// Note that MIR alias analysis assumes the OOL-pointer field, if any, is
+// readonly for the life of the object; do not change it once the object is
+// created.  See MWasmLoadField::congruentTo.
 
 class WasmStructObject : public WasmGcObject,
                          public TrailingArray<WasmStructObject> {
@@ -336,38 +357,11 @@ class WasmStructObject : public WasmGcObject,
   static const JSClass classInline_;
   static const JSClass classOutline_;
 
-  // Owned pointer to a malloc'd block containing out-of-line fields, or
-  // nullptr if none.  Note that MIR alias analysis assumes this is readonly
-  // for the life of the object; do not change it once the object is created.
-  // See MWasmLoadObjectField::congruentTo.
-  uint8_t* outlineData_;
-
-  // The inline (wasm-struct-level) data fields, stored as a trailing array.
-  // This must be a multiple of 16 bytes long in order to ensure that no field
-  // gets split across the inline-outline boundary.  As a refinement, we request
-  // this field to begin at an 8-aligned offset relative to the start of the
-  // object, so as to guarantee that `double` typed fields are not subject to
-  // misaligned-access penalties on any target, whilst wasting at maximum 4
-  // bytes of space.
-  //
-  // Remember that `inlineData` is in reality a variable length block with
-  // maximum size WasmStructObject_MaxInlineBytes bytes.  Do not add any
-  // (C++-level) fields after this point!
-  uint8_t* inlineData() {
-    return offsetToPointer<uint8_t>(offsetOfInlineData());
+  static const JSClass* classFromOOLness(bool needsOOLstorage) {
+    return needsOOLstorage ? &classOutline_ : &classInline_;
   }
 
-  // This tells us how big the object is if we know the number of inline bytes
-  // it was created with.
-  static inline constexpr size_t sizeOfIncludingInlineData(
-      size_t sizeOfInlineData) {
-    size_t n = sizeof(WasmStructObject) + sizeOfInlineData;
-    MOZ_ASSERT(n <= JSObject::MAX_BYTE_SIZE);
-    return n;
-  }
-
-  static const JSClass* classForTypeDef(const wasm::TypeDef* typeDef);
-  static js::gc::AllocKind allocKindForTypeDef(const wasm::TypeDef* typeDef);
+  size_t sizeOfExcludingThis() const;
 
   // Creates a new struct typed object, optionally initialized to zero.
   // Reports if there is an out of memory error.  The structure's type, shape,
@@ -378,74 +372,73 @@ class WasmStructObject : public WasmGcObject,
   template <bool ZeroFields>
   static MOZ_ALWAYS_INLINE WasmStructObject* createStructIL(
       JSContext* cx, wasm::TypeDefInstanceData* typeDefData,
-      js::gc::Heap initialHeap);
+      gc::AllocSite* allocSite, js::gc::Heap initialHeap);
 
   // Same as ::createStructIL, except it is assumed and debug-asserted that
   // `typeDefData` refers to a type that does need OOL storage.
   template <bool ZeroFields>
   static MOZ_ALWAYS_INLINE WasmStructObject* createStructOOL(
       JSContext* cx, wasm::TypeDefInstanceData* typeDefData,
-      js::gc::Heap initialHeap);
+      gc::AllocSite* allocSite, js::gc::Heap initialHeap);
 
-  // Given the total number of data bytes required (including alignment
-  // holes), return the number of inline and outline bytes required.
-  static inline void getDataByteSizes(uint32_t totalBytes,
-                                      uint32_t* inlineBytes,
-                                      uint32_t* outlineBytes);
+  // Given the index of a field, return its actual address.
+  uint8_t* fieldIndexToAddress(uint32_t fieldIndex);
 
-  // Convenience function; returns true iff ::getDataByteSizes would set
-  // *outlineBytes to a non-zero value.
-  static inline bool requiresOutlineBytes(uint32_t totalBytes);
+  // Operations relating to the OOL block pointer.  These involve chain-chasing
+  // starting from `superTypeVector_` and shouldn't be used in very hot paths.
+  bool hasOOLPointer() const;
+  // These will release-assert if called when `!hasOOLPointer()`.
+  uint8_t** addressOfOOLPointer() const;
+  uint8_t* getOOLPointer() const;
+  void setOOLPointer(uint8_t* newOOLpointer);
 
-  // Given the offset of a field, produce the offset in `inlineData` or
-  // `*outlineData_` to use, plus a bool indicating which area it is.
-  // `fieldType` is for assertional purposes only.
-  static inline void fieldOffsetToAreaAndOffset(wasm::StorageType fieldType,
-                                                uint32_t fieldOffset,
-                                                bool* areaIsOutline,
-                                                uint32_t* areaOffset);
-
-  // Given the offset of a field, return its actual address.  `fieldType` is
-  // for assertional purposes only.
-  inline uint8_t* fieldOffsetToAddress(wasm::StorageType fieldType,
-                                       uint32_t fieldOffset);
+  // Similar to the above, but find the OOL pointer by looking in the supplied
+  // TypeDefInstanceData.  This requires less chain-chasing.
+  uint8_t** addressOfOOLPointer(
+      const wasm::TypeDefInstanceData* typeDefData) const;
+  void setOOLPointer(const wasm::TypeDefInstanceData* typeDefData,
+                     uint8_t* newOOLpointer);
 
   // Gets JS Value of the structure field.
   bool getField(JSContext* cx, uint32_t index, MutableHandle<Value> val);
 
-  // JIT accessors
-  static const uint32_t inlineDataAlignment = 8;
-  static constexpr size_t offsetOfOutlineData() {
-    return offsetof(WasmStructObject, outlineData_);
-  }
-  static constexpr size_t offsetOfInlineData() {
-    return AlignBytes(sizeof(WasmStructObject), inlineDataAlignment);
-  }
-
   // Tracing and finalization
   static void obj_trace(JSTracer* trc, JSObject* object);
-  static void obj_finalize(JS::GCContext* gcx, JSObject* object);
-  static size_t obj_moved(JSObject* obj, JSObject* old);
+  static size_t obj_moved(JSObject* objNew, JSObject* objOld);
 
   void storeVal(const wasm::Val& val, uint32_t fieldIndex);
 };
 
-static_assert((WasmStructObject::offsetOfInlineData() % 8) == 0);
+// This isn't specifically required.  Is merely here to make it obvious when
+// the size does change.
+static_assert(sizeof(WasmStructObject) == 16);
 
-// MaxInlineBytes must be a multiple of 16 for reasons described in the
-// comment on `class StructLayout`.  This unfortunately can't be defined
-// inside the class definition itself because the sizeof(..) expression isn't
-// valid until after the end of the class definition.
+// Both `sizeof(WasmStructObject)` and WasmStructObject_MaxInlineBytes
+// must be multiples of 8 for reasons described in the comment on
+// `class WasmStructObject` above.
+static_assert((sizeof(WasmStructObject) % 8) == 0);
+
 const size_t WasmStructObject_MaxInlineBytes =
-    ((JSObject::MAX_BYTE_SIZE - sizeof(WasmStructObject)) / 16) * 16;
+    ((JSObject::MAX_BYTE_SIZE - sizeof(WasmStructObject)) / 8) * 8;
+
+static_assert((WasmStructObject_MaxInlineBytes % 8) == 0);
+
+// These are EXTREMELY IMPORTANT.  Do not remove them.  Without them, there is
+// nothing that ensures that the object layouts created by StructType::init()
+// will actually be in accordance with the WasmStructObject layout constraints
+// described above.  If either fails, the _ASSUMED values are wrong and will
+// need to be updated.
+static_assert(wasm::WasmStructObject_Size_ASSUMED == sizeof(WasmStructObject));
+static_assert(wasm::WasmStructObject_MaxInlineBytes_ASSUMED ==
+              WasmStructObject_MaxInlineBytes);
+
 const size_t WasmArrayObject_MaxInlineBytes =
     ((JSObject::MAX_BYTE_SIZE - sizeof(WasmArrayObject)) / 16) * 16;
 
-static_assert((WasmStructObject_MaxInlineBytes % 16) == 0);
 static_assert((WasmArrayObject_MaxInlineBytes % 16) == 0);
 
 /* static */
-inline uint32_t WasmArrayObject::maxInlineElementsForElemSize(
+inline constexpr uint32_t WasmArrayObject::maxInlineElementsForElemSize(
     uint32_t elemSize) {
   // This implementation inverts the logic of WasmArrayObject::calcStorageBytes
   // to compute numElements.
@@ -459,51 +452,47 @@ inline uint32_t WasmArrayObject::maxInlineElementsForElemSize(
   return result;
 }
 
-/*static*/
-inline void WasmStructObject::getDataByteSizes(uint32_t totalBytes,
-                                               uint32_t* inlineBytes,
-                                               uint32_t* outlineBytes) {
-  if (MOZ_UNLIKELY(totalBytes > WasmStructObject_MaxInlineBytes)) {
-    *inlineBytes = WasmStructObject_MaxInlineBytes;
-    *outlineBytes = totalBytes - WasmStructObject_MaxInlineBytes;
-  } else {
-    *inlineBytes = totalBytes;
-    *outlineBytes = 0;
-  }
+inline bool WasmStructObject::hasOOLPointer() const {
+  const wasm::SuperTypeVector* stv = superTypeVector_;
+  const wasm::TypeDef* typeDef = stv->typeDef();
+  MOZ_ASSERT(typeDef->superTypeVector() == stv);
+  const wasm::StructType& structType = typeDef->structType();
+  uint32_t offset = structType.oolPointerOffset_;
+  return offset != wasm::StructType::InvalidOffset;
 }
 
-/* static */
-inline bool WasmStructObject::requiresOutlineBytes(uint32_t totalBytes) {
-  uint32_t inlineBytes, outlineBytes;
-  WasmStructObject::getDataByteSizes(totalBytes, &inlineBytes, &outlineBytes);
-  return outlineBytes > 0;
+inline uint8_t** WasmStructObject::addressOfOOLPointer() const {
+  const wasm::SuperTypeVector* stv = superTypeVector_;
+  const wasm::TypeDef* typeDef = stv->typeDef();
+  MOZ_ASSERT(typeDef->superTypeVector() == stv);
+  const wasm::StructType& structType = typeDef->structType();
+  uint32_t offset = structType.oolPointerOffset_;
+  MOZ_RELEASE_ASSERT(offset != wasm::StructType::InvalidOffset);
+  return (uint8_t**)((uint8_t*)this + offset);
 }
 
-/*static*/
-inline void WasmStructObject::fieldOffsetToAreaAndOffset(
-    wasm::StorageType fieldType, uint32_t fieldOffset, bool* areaIsOutline,
-    uint32_t* areaOffset) {
-  if (fieldOffset < WasmStructObject_MaxInlineBytes) {
-    *areaIsOutline = false;
-    *areaOffset = fieldOffset;
-  } else {
-    *areaIsOutline = true;
-    *areaOffset = fieldOffset - WasmStructObject_MaxInlineBytes;
-  }
-  // Assert that the first and last bytes for the field agree on which side of
-  // the inline/outline boundary they live.
-  MOZ_RELEASE_ASSERT(
-      (fieldOffset < WasmStructObject_MaxInlineBytes) ==
-      ((fieldOffset + fieldType.size() - 1) < WasmStructObject_MaxInlineBytes));
+inline uint8_t* WasmStructObject::getOOLPointer() const {
+  return *addressOfOOLPointer();
 }
 
-inline uint8_t* WasmStructObject::fieldOffsetToAddress(
-    wasm::StorageType fieldType, uint32_t fieldOffset) {
-  bool areaIsOutline;
-  uint32_t areaOffset;
-  fieldOffsetToAreaAndOffset(fieldType, fieldOffset, &areaIsOutline,
-                             &areaOffset);
-  return (areaIsOutline ? outlineData_ : inlineData()) + areaOffset;
+inline void WasmStructObject::setOOLPointer(uint8_t* newOOLpointer) {
+  *addressOfOOLPointer() = newOOLpointer;
+}
+
+inline uint8_t** WasmStructObject::addressOfOOLPointer(
+    const wasm::TypeDefInstanceData* typeDefData) const {
+  uint32_t offset = typeDefData->cached.strukt.oolPointerOffset;
+  MOZ_RELEASE_ASSERT(offset != wasm::StructType::InvalidOffset);
+  uint8_t** addr = (uint8_t**)((uint8_t*)this + offset);
+  // Don't turn this into a release-assert; that would defeat the purpose of
+  // having this method.
+  MOZ_ASSERT(addr == addressOfOOLPointer());
+  return addr;
+}
+
+inline void WasmStructObject::setOOLPointer(
+    const wasm::TypeDefInstanceData* typeDefData, uint8_t* newOOLpointer) {
+  *addressOfOOLPointer(typeDefData) = newOOLpointer;
 }
 
 // Ensure that faulting loads/stores for WasmStructObject and WasmArrayObject

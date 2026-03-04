@@ -6,7 +6,6 @@
 #include <functional>
 #include "unicode/udat.h"
 
-#include "mozilla/Assertions.h"
 #include "mozilla/intl/ICU4CGlue.h"
 #include "mozilla/intl/ICUError.h"
 
@@ -16,8 +15,6 @@
 #include "mozilla/Span.h"
 #include "mozilla/Try.h"
 #include "mozilla/UniquePtr.h"
-#include "mozilla/Utf8.h"
-#include "mozilla/Variant.h"
 #include "mozilla/Vector.h"
 
 /*
@@ -477,12 +474,6 @@ class DateTimeFormat final {
     }
     return Ok();
   }
-  /**
-   * Set the start time of the Gregorian calendar. This is useful for
-   * ensuring the consistent use of a proleptic Gregorian calendar for ECMA-402.
-   * https://en.wikipedia.org/wiki/Proleptic_Gregorian_calendar
-   */
-  void SetStartTimeIfGregorian(double aTime);
 
   /**
    * Determines the resolved components for the current DateTimeFormat.
@@ -537,6 +528,24 @@ class DateTimeFormat final {
                                        udat_getAvailable>();
   }
 
+  /**
+   * Return the time separator for the given locale and numbering system.
+   */
+  template <typename B>
+  static ICUResult GetTimeSeparator(Span<const char> aLocale,
+                                    Span<const char> aNumberingSystem,
+                                    B& aBuffer) {
+    static_assert(std::is_same_v<typename B::CharType, char16_t>);
+    auto separator = GetTimeSeparator(aLocale, aNumberingSystem);
+    if (separator.isErr()) {
+      return separator.propagateErr();
+    }
+    if (!FillBuffer(separator.unwrap(), aBuffer)) {
+      return Err(ICUError::OutOfMemory);
+    }
+    return Ok();
+  }
+
  private:
   explicit DateTimeFormat(UDateFormat* aDateFormat);
 
@@ -582,6 +591,9 @@ class DateTimeFormat final {
       DateTimePatternGenerator& aDateTimePatternGenerator,
       DateTimeFormat::PatternVector& aPattern, bool aHour12,
       DateTimeFormat::SkeletonVector& aSkeleton);
+
+  static Result<Span<const char16_t>, ICUError> GetTimeSeparator(
+      Span<const char> aLocale, Span<const char> aNumberingSystem);
 
   UDateFormat* mDateFormat = nullptr;
 

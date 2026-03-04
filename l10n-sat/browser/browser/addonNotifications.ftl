@@ -40,6 +40,7 @@ site-permission-install-first-prompt-midi-message = ᱱᱚᱶᱟ ᱨᱮᱭᱟᱜ
 ##
 
 xpinstall-disabled-locked = ᱥᱯᱷᱴᱣᱮᱭᱨ ᱵᱚᱦᱟᱞ ᱟᱢᱤᱡ ᱥᱭᱥᱴᱚᱢ ᱥᱟᱥᱚᱱᱤᱡ ᱫᱟᱨᱚᱭ ᱛᱮ ᱵᱟᱝ ᱞᱮᱜ ᱛᱮᱭᱟᱨ ᱦᱩᱭ ᱟᱠᱟᱱᱟ ᱾
+xpinstall-disabled-by-policy = ᱥᱯᱷᱴᱣᱮᱭᱨ ᱵᱚᱦᱟᱞ ᱟᱢᱤᱡ ᱜᱟᱶᱛᱟ ᱫᱟᱨᱚᱭ ᱛᱮ ᱵᱟᱝ ᱞᱮᱜ ᱛᱮᱭᱟᱨ ᱦᱩᱭ ᱟᱠᱟᱱᱟ ᱾
 xpinstall-disabled = ᱥᱚᱯᱷᱴᱣᱮᱨ ᱵᱚᱦᱟᱞ ᱫᱚ ᱱᱤᱛᱚᱜ ᱵᱚᱸᱫ ᱛᱷᱟᱲ ᱠᱟᱱᱟ ᱾ ᱮᱢ ᱪᱷᱚᱛ ᱨᱮ ᱚᱛᱟ ᱠᱟᱛᱮ ᱫᱩᱦᱲᱟᱹ ᱠᱩᱨᱩᱢᱩᱴᱩᱭ ᱢᱮ ᱾
 xpinstall-disabled-button =
     .label = ᱦᱩᱭ ᱦᱚᱪᱚ ᱛᱮᱭᱟᱨ
@@ -51,6 +52,13 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = { $addonName } ({ $addonId }) ᱫᱚ ᱟᱢᱤᱡ ᱥᱭᱥᱴᱚᱢ ᱥᱟᱥᱚᱱᱤᱡ ᱛᱮ ᱵᱞᱚᱠ ᱟᱠᱟᱱᱟ ᱾
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = ᱟᱢᱟᱜ ᱥᱤᱥᱴᱚᱢ ᱪᱟᱪᱞᱟᱣᱤᱭᱟᱹ ᱫᱚ ᱱᱚᱶᱟ ᱥᱟᱭᱤᱴ ᱠᱷᱚᱱ ᱟᱢᱟᱜ ᱠᱚᱢᱯᱩᱴᱚᱨ ᱨᱮ ᱥᱚᱯᱷᱴᱣᱮᱨ ᱵᱚᱦᱟᱞ ᱠᱷᱚᱱ ᱢᱟᱱᱟ ᱠᱮᱫᱟᱭ ᱾
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId })  ᱫᱚ ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱦᱚᱛᱮᱛᱮ ᱵᱚᱱᱫᱚ ᱟᱠᱟᱱᱟ ᱾
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱪᱟᱪᱞᱟᱣᱤᱭᱟᱹ ᱫᱚ ᱱᱚᱶᱟ ᱥᱟᱭᱤᱴ ᱠᱷᱚᱱ ᱟᱢᱟᱜ ᱠᱚᱢᱯᱩᱴᱚᱨ ᱨᱮ ᱥᱚᱯᱷᱴᱣᱮᱨ ᱵᱚᱦᱟᱞ ᱠᱷᱚᱱ ᱢᱟᱱᱟ ᱠᱮᱫᱟᱭ ᱾
 addon-install-full-screen-blocked = ᱯᱩᱨᱟᱹ ᱯᱚᱨᱫᱟ ᱢᱳᱰ ᱨᱮ ᱵᱚᱞᱚ ᱢᱟᱲᱟᱝ ᱨᱮ ᱮᱰ-ᱚᱱ ᱵᱚᱦᱟᱞ ᱫᱚ ᱮᱢ ᱵᱟᱹᱰ ᱜᱮᱭᱟ ᱾
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
@@ -73,6 +81,8 @@ addon-removal-title = { $name } ᱚᱪᱚᱜᱟᱢ ᱥᱮ?
 addon-removal-message = { -brand-shorter-name } ᱠᱷᱚᱱ { $name } ᱚᱪᱚᱜᱽᱟᱢ ᱥᱮ ?
 addon-removal-button = ᱚᱪᱚᱜᱽ ᱢᱮ
 addon-removal-abuse-report-checkbox = ᱱᱚᱶᱟ ᱯᱟᱥᱱᱟᱣ ᱫᱚ { -vendor-short-name } ᱛᱮ ᱠᱷᱚᱵᱚᱨ ᱢᱮ
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = ᱡᱩᱫᱤ ᱟᱢ ᱱᱚᱣᱟ ᱢᱚᱰᱮᱞ ᱵᱮᱵᱷᱟᱨ ᱯᱷᱤᱪᱟᱨ ᱥᱮ ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱮᱢ ᱵᱮᱵᱷᱟᱨ ᱮᱫᱟ, ᱱᱚᱣᱟ ᱫᱚᱦᱲᱟ ᱥᱮᱞᱮᱫᱚᱜᱼᱟ ᱾
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -115,12 +125,19 @@ addon-install-error-corrupt-file = ᱱᱚᱶᱟ ᱥᱟᱭᱤᱴ ᱠᱷᱚᱱ ᱟ
 addon-install-error-file-access = { $addonName } ᱫᱚ ᱵᱚᱦᱟᱞ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ ᱪᱮᱫᱟᱜ ᱥᱮ { -brand-short-name } ᱫᱚ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱨᱮᱫ ᱵᱚᱫᱚᱞ ᱵᱟᱭ ᱜᱟᱱ ᱪᱷᱚ ᱞᱮᱫᱟᱭ ᱾
 addon-install-error-not-signed = { -brand-short-name } ᱫᱚ ᱱᱚᱶᱟ ᱥᱟᱦᱴᱟ ᱠᱷᱚᱱ ᱵᱟᱝ ᱯᱩᱥᱴᱟᱹᱣ ᱟᱠᱟᱱ ᱮᱰ-ᱳᱱ ᱵᱚᱦᱟᱞ ᱢᱟᱱᱟ ᱠᱮᱫᱮᱭᱟᱭ ᱾
 addon-install-error-invalid-domain = ᱱᱚᱣᱟ ᱴᱷᱟᱶ ᱠᱷᱚᱱ { $addonName } ᱮᱰᱼᱚᱱ ᱫᱚ ᱵᱚᱦᱟᱞ ᱵᱟᱭ ᱜᱟᱱᱚᱜᱼᱟ ᱾
+addon-install-error-no-addon-name-file-access = ᱯᱟᱥᱱᱟᱣ ᱫᱚ ᱵᱚᱦᱟᱞ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ ᱪᱮᱫᱟᱜ ᱥᱮ { -brand-short-name } ᱫᱚ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱨᱮᱫ ᱵᱚᱫᱚᱞ ᱵᱟᱭ ᱜᱟᱱ ᱪᱷᱚ ᱞᱮᱫᱟᱭ ᱾
 addon-local-install-error-network-failure = ᱱᱚᱶᱟ ᱮᱰᱼᱚᱱ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱪᱮᱫᱟᱜ ᱡᱮ ᱨᱮᱫ ᱥᱭᱥᱴᱚᱢ ᱨᱮ ᱵᱷᱩᱞ ᱢᱮᱱᱟᱜᱼᱟ ᱾
 addon-local-install-error-incorrect-hash = ᱱᱚᱶᱟ ᱮᱰ-ᱚᱱ ᱫᱚ ᱵᱟᱭ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱪᱮᱫᱟᱜ ᱥᱮ ᱱᱚᱶᱟ ᱮᱰ-ᱚᱱ { -brand-short-name } ᱥᱟᱶ ᱡᱩᱲᱟᱹᱭ ᱵᱟᱹᱱᱩᱜᱼᱟ ᱾
 addon-local-install-error-corrupt-file = ᱱᱚᱣᱟ ᱮᱰ-ᱚᱱ ᱵᱟᱝ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮᱭᱟᱜ ᱟ ᱪᱮᱫᱟᱜ ᱡᱮ ᱱᱚᱣᱟ ᱨᱟᱹᱯᱩᱫ ᱜᱮ ᱧᱮᱞᱚᱠ ᱠᱟᱱᱟ ᱾
 addon-local-install-error-file-access = { $addonName } ᱫᱚ ᱵᱚᱦᱟᱞ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ ᱪᱮᱫᱟᱜ ᱥᱮ { -brand-short-name } ᱫᱚ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱨᱮᱫ ᱵᱚᱫᱚᱞ ᱵᱟᱭ ᱜᱟᱱ ᱪᱷᱚ ᱞᱮᱫᱟᱭ ᱾
 addon-local-install-error-not-signed = ᱱᱚᱣᱟ ᱮᱰ-ᱚᱱ ᱵᱟᱝ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮᱭᱟᱜ ᱟ ᱪᱮᱫᱟᱜ ᱡᱮ ᱱᱚᱶᱟ ᱫᱚ ᱵᱟᱝ ᱯᱩᱥᱴᱟᱹᱣ ᱠᱟᱱᱟ ᱾
+addon-local-install-no-addon-name-error-file-access = ᱯᱟᱥᱱᱟᱣ ᱫᱚ ᱵᱚᱦᱟᱞ ᱵᱟᱭ ᱜᱟᱱ ᱞᱮᱱᱟ ᱪᱮᱫᱟᱜ ᱥᱮ { -brand-short-name } ᱫᱚ ᱞᱟᱹᱠᱛᱤᱭᱟᱱ ᱨᱮᱫ ᱵᱚᱫᱚᱞ ᱵᱟᱭ ᱜᱟᱱ ᱪᱷᱚ ᱞᱮᱫᱟᱭ ᱾
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } ᱫᱚ ᱵᱟᱝ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮ ᱞᱮᱱᱟ ᱪᱮᱫᱟᱜ ᱥᱮ ᱱᱚᱣᱟ ᱫᱚ { -brand-short-name } { $appVersion } ᱥᱟᱞᱟᱜ ᱢᱮᱞ ᱵᱟᱭ ᱡᱚᱢ ᱞᱮᱫᱼᱟ ᱾
+addon-install-error-hard-blocked = { $addonName } ᱫᱚ Mozilla ᱨᱮᱭᱟᱜ ᱯᱚᱞᱤᱥᱤ ᱵᱟᱝ ᱢᱟᱱᱟᱶ ᱮᱫᱟᱭ ᱟᱨ { -brand-short-name } ᱨᱮ ᱚᱱᱟᱛᱮ ᱵᱟᱝ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+addon-install-error-soft-blocked2 = { $addonName } ᱫᱚ ᱵᱟᱱᱫᱷᱟᱣ ᱟᱠᱟᱱᱟ ᱟᱨ { -brand-short-name } ᱨᱮ ᱵᱚᱦᱟᱞ ᱵᱟᱭ ᱜᱟᱱᱚᱜᱼᱟ ᱾
 addon-install-error-blocklisted = { $addonName } ᱫᱚ ᱵᱚᱦᱟᱞ ᱵᱟᱝ ᱦᱩᱭ ᱫᱟᱲᱮᱭᱟᱫᱼᱟ ᱪᱮᱫᱟᱜ ᱥᱮ ᱱᱚᱣᱟ ᱫᱚ ᱥᱴᱮᱵᱤᱞᱤᱴᱤ ᱟᱨᱵᱟᱝ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱦᱩᱰᱟᱹᱜ ᱢᱮᱱᱟᱜᱼᱟ ᱾
+addon-install-error-soft-blocked = { $addonName } ᱫᱚ Mozilla ᱨᱮᱭᱟᱜ ᱯᱚᱞᱤᱥᱤ ᱵᱟᱝ ᱢᱟᱱᱟᱶ ᱮᱫᱟᱭ ᱟᱨ { -brand-short-name } ᱨᱮ ᱚᱱᱟᱛᱮ ᱵᱟᱝ ᱵᱚᱦᱟᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = ᱟᱢ ᱫᱚ { $addonName } ᱢᱩᱪᱟᱹᱫ ᱵᱮᱵᱷᱟᱨᱤᱭᱟᱹ ᱞᱮᱠᱟ ᱵᱟᱢ ᱤᱱᱥᱴᱚᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ, ᱱᱚᱶᱟ ᱫᱚ ᱮᱠᱮᱱ ᱮᱱᱴᱚᱨᱯᱨᱟᱭᱤᱡᱽ ᱯᱚᱞᱤᱥ ᱵᱮᱵᱷᱟᱨ ᱠᱟᱛᱮ ᱢᱤᱫ ᱜᱟᱶᱛᱟ ᱫᱟᱨᱟᱭ ᱛᱮ ᱤᱱᱥᱴᱚᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾

@@ -4,16 +4,16 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::{mem, time::Duration};
+use std::time::Duration;
 
 use test_fixture::{assertions, DEFAULT_ADDR_V4};
 
 use super::{
-    super::{ConnectionParameters, ACK_RATIO_SCALE},
-    ack_bytes, connect_rtt_idle, default_client, default_server, fill_cwnd, increase_cwnd,
-    induce_persistent_congestion, new_client, new_server, send_something, DEFAULT_RTT,
+    super::ConnectionParameters, ack_bytes, connect_rtt_idle, default_client, default_server,
+    fill_cwnd, increase_cwnd, induce_persistent_congestion, new_client, new_server, send_something,
+    DEFAULT_RTT,
 };
-use crate::stream_id::StreamType;
+use crate::{connection::tests::assert_path_challenge_min_len, stream_id::StreamType};
 
 /// With the default RTT here (100ms) and default ratio (4), endpoints won't send
 /// `ACK_FREQUENCY` as the ACK delay isn't different enough from the default.
@@ -72,7 +72,7 @@ fn ack_rate_exit_slow_start() {
     // and to send ACK_FREQUENCY.
     now += DEFAULT_RTT / 2;
     assert_eq!(client.stats().frame_tx.ack_frequency, 0);
-    let af = client.process(Some(&ack), now).dgram();
+    let af = client.process(Some(ack), now).dgram();
     assert!(af.is_some());
     assert_eq!(client.stats().frame_tx.ack_frequency, 1);
 }
@@ -83,7 +83,9 @@ fn ack_rate_persistent_congestion() {
     // Use a configuration that results in the value being set after exiting
     // the handshake.
     const RTT: Duration = Duration::from_millis(3);
-    let mut client = new_client(ConnectionParameters::default().ack_ratio(ACK_RATIO_SCALE));
+    let mut client = new_client(
+        ConnectionParameters::default().ack_ratio(ConnectionParameters::ACK_RATIO_SCALE),
+    );
     let mut server = default_server();
     let now = connect_rtt_idle(&mut client, &mut server, RTT);
 
@@ -94,7 +96,7 @@ fn ack_rate_persistent_congestion() {
     let stream = client.stream_create(StreamType::UniDi).unwrap();
     let (dgrams, mut now) = fill_cwnd(&mut client, stream, now);
     now += RTT / 2;
-    mem::drop(ack_bytes(&mut server, stream, dgrams, now));
+    drop(ack_bytes(&mut server, stream, dgrams, now));
 
     let now = induce_persistent_congestion(&mut client, &mut server, stream, now);
 
@@ -112,7 +114,9 @@ fn ack_rate_client_one_rtt() {
     // maximum ACK delay is 25ms and an ACK_FREQUENCY frame won't be sent when the
     // change to the maximum ACK delay is too small.
     const RTT: Duration = Duration::from_millis(3);
-    let mut client = new_client(ConnectionParameters::default().ack_ratio(ACK_RATIO_SCALE));
+    let mut client = new_client(
+        ConnectionParameters::default().ack_ratio(ConnectionParameters::ACK_RATIO_SCALE),
+    );
     let mut server = default_server();
     let mut now = connect_rtt_idle(&mut client, &mut server, RTT);
 
@@ -121,11 +125,11 @@ fn ack_rate_client_one_rtt() {
     // The first packet will elicit an immediate ACK however, so do this twice.
     let d = send_something(&mut client, now);
     now += RTT / 2;
-    let ack = server.process(Some(&d), now).dgram();
+    let ack = server.process(Some(d), now).dgram();
     assert!(ack.is_some());
     let d = send_something(&mut client, now);
     now += RTT / 2;
-    let delay = server.process(Some(&d), now).callback();
+    let delay = server.process(Some(d), now).callback();
     assert_eq!(delay, RTT);
 
     assert_eq!(client.stats().frame_tx.ack_frequency, 1);
@@ -136,7 +140,9 @@ fn ack_rate_client_one_rtt() {
 fn ack_rate_server_half_rtt() {
     const RTT: Duration = Duration::from_millis(10);
     let mut client = default_client();
-    let mut server = new_server(ConnectionParameters::default().ack_ratio(ACK_RATIO_SCALE * 2));
+    let mut server = new_server(
+        ConnectionParameters::default().ack_ratio(ConnectionParameters::ACK_RATIO_SCALE * 2),
+    );
     let mut now = connect_rtt_idle(&mut client, &mut server, RTT);
 
     // The server now sends something.
@@ -144,11 +150,11 @@ fn ack_rate_server_half_rtt() {
     now += RTT / 2;
     // The client now will acknowledge immediately because it has been more than
     // an RTT since it last sent an acknowledgment.
-    let ack = client.process(Some(&d), now);
+    let ack = client.process(Some(d), now);
     assert!(ack.as_dgram_ref().is_some());
     let d = send_something(&mut server, now);
     now += RTT / 2;
-    let delay = client.process(Some(&d), now).callback();
+    let delay = client.process(Some(d), now).callback();
     assert_eq!(delay, RTT / 2);
 
     assert_eq!(server.stats().frame_tx.ack_frequency, 1);
@@ -159,7 +165,9 @@ fn ack_rate_server_half_rtt() {
 #[test]
 fn migrate_ack_delay() {
     // Have the client send ACK_FREQUENCY frames at a normal-ish rate.
-    let mut client = new_client(ConnectionParameters::default().ack_ratio(ACK_RATIO_SCALE));
+    let mut client = new_client(
+        ConnectionParameters::default().ack_ratio(ConnectionParameters::ACK_RATIO_SCALE),
+    );
     let mut server = default_server();
     let mut now = connect_rtt_idle(&mut client, &mut server, DEFAULT_RTT);
 
@@ -169,10 +177,11 @@ fn migrate_ack_delay() {
 
     let client1 = send_something(&mut client, now);
     assertions::assert_v4_path(&client1, true); // Contains PATH_CHALLENGE.
+    assert_path_challenge_min_len(&client, &client1, now);
     let client2 = send_something(&mut client, now);
     assertions::assert_v4_path(&client2, false); // Doesn't.  Is dropped.
     now += DEFAULT_RTT / 2;
-    server.process_input(&client1, now);
+    server.process_input(client1, now);
 
     let stream = client.stream_create(StreamType::UniDi).unwrap();
     let now = increase_cwnd(&mut client, &mut server, stream, now);
@@ -188,7 +197,7 @@ fn migrate_ack_delay() {
     // After noticing this new loss, the client sends ACK_FREQUENCY.
     // It has sent a few before (as we dropped `client2`), so ignore those.
     let ad_before = client.stats().frame_tx.ack_frequency;
-    let af = client.process(Some(&ack), now).dgram();
+    let af = client.process(Some(ack), now).dgram();
     assert!(af.is_some());
     assert_eq!(client.stats().frame_tx.ack_frequency, ad_before + 1);
 }

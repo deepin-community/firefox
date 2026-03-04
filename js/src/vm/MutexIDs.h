@@ -16,15 +16,14 @@
 // at the same time.
 
 #define FOR_EACH_MUTEX(_)             \
+  _(ExecutionTracerGlobalLock, 100)   \
   _(TestMutex, 100)                   \
   _(ShellContextWatchdog, 100)        \
   _(ShellWorkerThreads, 100)          \
   _(ShellObjectMailbox, 100)          \
   _(WellKnownParserAtomsInit, 100)    \
                                       \
-  _(WasmInitBuiltinThunks, 250)       \
-  _(WasmCodeProtected, 250)           \
-  _(WasmLazyStubsTier2, 251)          \
+  _(ExecutionTracerInstanceLock, 250) \
                                       \
   _(StoreBuffer, 275)                 \
                                       \
@@ -32,15 +31,17 @@
                                       \
   _(GlobalHelperThreadState, 400)     \
                                       \
+  _(WasmCodeProtected, 450)           \
+                                      \
+  _(WasmInitBuiltinThunks, 451)       \
   _(StringsCache, 500)                \
   _(FutexThread, 500)                 \
-  _(GeckoProfilerStrings, 500)        \
   _(ProtectedRegionTree, 500)         \
   _(ShellOffThreadState, 500)         \
   _(ShellStreamCacheEntryState, 500)  \
   _(SimulatorCacheLock, 500)          \
   _(Arm64SimulatorLock, 500)          \
-  _(IonSpewer, 500)                   \
+  _(JitSpewGraphOutput, 500)          \
   _(PerfSpewer, 500)                  \
   _(CacheIRSpewer, 500)               \
   _(DateTimeInfoMutex, 500)           \
@@ -55,16 +56,18 @@
   _(WasmStreamStatus, 500)            \
   _(WasmRuntimeInstances, 500)        \
   _(WasmSignalInstallState, 500)      \
-  _(WasmHugeMemoryEnabled, 500)       \
   _(MemoryTracker, 500)               \
   _(StencilCache, 500)                \
   _(SourceCompression, 500)           \
   _(GCDelayedMarkingLock, 500)        \
+  _(BufferAllocator, 500)             \
+  _(GeckoProfilerScriptSources, 500)  \
                                       \
   _(SharedImmutableStringsCache, 600) \
   _(IrregexpLazyStatic, 600)          \
   _(ThreadId, 600)                    \
   _(WasmCodeBlockMap, 600)            \
+  _(WasmInliningBudget, 600)          \
   _(VTuneLock, 600)                   \
   _(ShellTelemetry, 600)              \
   _(ShellUseCounters, 600)

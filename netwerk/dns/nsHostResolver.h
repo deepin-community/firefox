@@ -20,13 +20,11 @@
 #include "mozilla/net/DashboardTypes.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/TimeStamp.h"
-#include "mozilla/UniquePtr.h"
 #include "nsHostRecord.h"
 #include "nsRefPtrHashtable.h"
 #include "nsIThreadPool.h"
 #include "mozilla/net/NetworkConnectivityService.h"
 #include "mozilla/net/DNSByTypeRecord.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/StaticPrefs_network.h"
 
 namespace mozilla {
@@ -52,8 +50,6 @@ static inline uint32_t MaxResolverThreads() {
 #define TRR_DISABLED(x)                       \
   (((x) == nsIDNSService::MODE_NATIVEONLY) || \
    ((x) == nsIDNSService::MODE_TRROFF))
-
-extern mozilla::Atomic<bool, mozilla::Relaxed> gNativeIsLocalhost;
 
 #define MAX_NON_PRIORITY_REQUESTS 150
 
@@ -103,18 +99,7 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   /**
    * creates an addref'd instance of a nsHostResolver object.
    */
-  static nsresult Create(uint32_t maxCacheEntries,  // zero disables cache
-                         uint32_t defaultCacheEntryLifetime,  // seconds
-                         uint32_t defaultGracePeriod,         // seconds
-                         nsHostResolver** result);
-
-  /**
-   * Set (new) cache limits.
-   */
-  void SetCacheLimits(uint32_t maxCacheEntries,  // zero disables cache
-                      uint32_t defaultCacheEntryLifetime,  // seconds
-                      uint32_t defaultGracePeriod);        // seconds
-
+  static nsresult Create(nsHostResolver** result);
   /**
    * puts the resolver in the shutdown state, which will cause any pending
    * callbacks to be detached.  any future calls to ResolveHost will fail.
@@ -175,34 +160,13 @@ class nsHostResolver : public nsISupports, public AHostResolver {
                           const mozilla::OriginAttributes& aOriginAttributes,
                           nsIDNSService::DNSFlags flags, uint16_t af,
                           nsIDNSListener* aListener, nsresult status);
-  /**
-   * values for the flags parameter passed to ResolveHost and DetachCallback
-   * that may be bitwise OR'd together.
-   *
-   * NOTE: in this implementation, these flags correspond exactly in value
-   *       to the flags defined on nsIDNSService.
-   */
-  enum {
-    RES_BYPASS_CACHE = nsIDNSService::RESOLVE_BYPASS_CACHE,
-    RES_CANON_NAME = nsIDNSService::RESOLVE_CANONICAL_NAME,
-    RES_PRIORITY_MEDIUM = nsHostRecord::DNS_PRIORITY_MEDIUM,
-    RES_PRIORITY_LOW = nsHostRecord::DNS_PRIORITY_LOW,
-    RES_SPECULATE = nsIDNSService::RESOLVE_SPECULATE,
-    // RES_DISABLE_IPV6 = nsIDNSService::RESOLVE_DISABLE_IPV6, // Not used
-    RES_OFFLINE = nsIDNSService::RESOLVE_OFFLINE,
-    // RES_DISABLE_IPv4 = nsIDNSService::RESOLVE_DISABLE_IPV4, // Not Used
-    RES_ALLOW_NAME_COLLISION = nsIDNSService::RESOLVE_ALLOW_NAME_COLLISION,
-    RES_DISABLE_TRR = nsIDNSService::RESOLVE_DISABLE_TRR,
-    RES_REFRESH_CACHE = nsIDNSService::RESOLVE_REFRESH_CACHE,
-    RES_IP_HINT = nsIDNSService::RESOLVE_IP_HINT
-  };
 
   size_t SizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const;
 
   /**
    * Flush the DNS cache.
    */
-  void FlushCache(bool aTrrToo);
+  void FlushCache(bool aTrrToo, bool aFlushEvictionQueue = false);
 
   LookupStatus CompleteLookup(nsHostRecord*, nsresult, mozilla::net::AddrInfo*,
                               bool pb, const nsACString& aOriginsuffix,
@@ -228,9 +192,7 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   bool TRRServiceEnabledForRecord(nsHostRecord* aRec) MOZ_REQUIRES(mLock);
 
  private:
-  explicit nsHostResolver(uint32_t maxCacheEntries,
-                          uint32_t defaultCacheEntryLifetime,
-                          uint32_t defaultGracePeriod);
+  explicit nsHostResolver();
   virtual ~nsHostResolver();
 
   bool DoRetryTRR(AddrHostRecord* aAddrRec,
@@ -271,8 +233,10 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   nsresult ConditionallyCreateThread(nsHostRecord* rec) MOZ_REQUIRES(mLock);
 
   /**
-   * Starts a new lookup in the background for entries that are in the grace
-   * period with a failed connect or all cached entries are negative.
+   * Starts a new lookup in the background for cached entries that are in the
+   * grace period or that are are negative.
+   *
+   * Also records telemetry for type of cache hit (HIT/NEGATIVE_HIT/RENEWAL).
    */
   nsresult ConditionallyRefreshRecord(nsHostRecord* rec, const nsACString& host,
                                       const mozilla::MutexAutoLock& aLock)
@@ -302,8 +266,8 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   already_AddRefed<nsHostRecord> FromUnspecEntry(
       nsHostRecord* aRec, const nsACString& aHost, const nsACString& aTrrServer,
       const nsACString& aOriginSuffix, uint16_t aType,
-      nsIDNSService::DNSFlags aFlags, uint16_t af, bool aPb, nsresult& aStatus)
-      MOZ_REQUIRES(mLock);
+      nsIDNSService::DNSFlags aFlags, uint16_t af, bool aPb, nsresult& aStatus,
+      const mozilla::MutexAutoLock& aLock) MOZ_REQUIRES(mLock);
 
   enum {
     METHOD_HIT = 1,
@@ -315,9 +279,6 @@ class nsHostResolver : public nsISupports, public AHostResolver {
     METHOD_NETWORK_SHARED = 7
   };
 
-  uint32_t mMaxCacheEntries = 0;
-  uint32_t mDefaultCacheLifetime = 0;  // granularity seconds
-  uint32_t mDefaultGracePeriod = 0;    // granularity seconds
   // mutable so SizeOfIncludingThis can be const
   mutable Mutex mLock{"nsHostResolver.mLock"};
   CondVar mIdleTaskCV;

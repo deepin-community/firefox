@@ -34,7 +34,7 @@ const TIMEOUT_DELAY_MS = 20000;
  *
  * @param  request
  *         The XMLHttpRequest.
- * @returns {Object} result - An object containing the results.
+ * @returns {object} result - An object containing the results.
  * @returns {integer} result.status - Request status code, if available, else the channel nsresult.
  * @returns {integer} result.channelStatus - Channel nsresult.
  * @returns {integer} result.errorCode - Request error code.
@@ -386,7 +386,7 @@ function parseXML(document) {
   let results = [];
   let addonList = document.querySelectorAll("updates:root > addons > addon");
   for (let addonElement of addonList) {
-    let addon = {};
+    let addon = { mirrorURLs: [] };
 
     for (let name of [
       "id",
@@ -401,6 +401,13 @@ function parseXML(document) {
       }
     }
     addon.size = Number(addon.size) || undefined;
+
+    let mirrorList = addonElement.querySelectorAll("mirror");
+    for (let mirrorElement of mirrorList) {
+      if (mirrorElement.hasAttribute("URL")) {
+        addon.mirrorURLs.push(mirrorElement.getAttribute("URL"));
+      }
+    }
 
     results.push(addon);
   }
@@ -477,6 +484,26 @@ function downloadFile(url, options = { httpsOnlyNoUpgrade: false }) {
       reject(ex);
     }
   });
+}
+
+async function downloadAndVerifyFile(addon, url, options) {
+  logger.info(`Try to download addon ${addon.id} from ${url}`);
+  let path;
+  try {
+    path = await downloadFile(url, options);
+  } catch (e) {
+    logger.warn(`Failed to download addon ${addon.id} from ${url}: ${e}`);
+    throw e;
+  }
+
+  try {
+    await verifyFile(addon, path);
+    return path;
+  } catch (e) {
+    logger.warn(`Failed to verify addon ${addon.id} from ${url}: ${e}`);
+    await IOUtils.remove(path);
+    throw e;
+  }
 }
 
 /**
@@ -577,12 +604,16 @@ export const ProductAddonChecker = {
    *         with a JS exception in case of error.
    */
   async downloadAddon(addon, options = { httpsOnlyNoUpgrade: false }) {
-    let path = await downloadFile(addon.URL, options);
     try {
-      await verifyFile(addon, path);
-      return path;
+      return await downloadAndVerifyFile(addon, addon.URL, options);
     } catch (e) {
-      await IOUtils.remove(path);
+      for (const url of addon.mirrorURLs) {
+        try {
+          return await downloadAndVerifyFile(addon, url, options);
+        } catch {
+          // Already logged; ignore error and continue.
+        }
+      }
       throw e;
     }
   },
@@ -592,6 +623,7 @@ export const ProductAddonChecker = {
 export const ProductAddonCheckerTestUtils = {
   /**
    * Used to override ServiceRequest calls with a mock request.
+   *
    * @param mockRequest The mocked ServiceRequest object.
    * @param callback Method called with the overridden ServiceRequest. The override
    *        is undone after the callback returns.

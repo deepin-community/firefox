@@ -350,16 +350,10 @@ var gMenuBuilder = {
         }
 
         if (codePointsToRemove) {
-          let ellipsis = "\u2026";
-          try {
-            ellipsis = Services.prefs.getComplexValue(
-              "intl.ellipsis",
-              Ci.nsIPrefLocalizedString
-            ).data;
-          } catch (e) {}
           codePointsToRemove += 1;
           selection =
-            selectionArray.slice(0, -codePointsToRemove).join("") + ellipsis;
+            selectionArray.slice(0, -codePointsToRemove).join("") +
+            Services.locale.ellipsis;
         }
 
         label = label.replace(/%s/g, selection);
@@ -487,7 +481,7 @@ var gMenuBuilder = {
       element.setAttribute("class", "menuitem-iconic");
     }
 
-    element.setAttribute("image", resolvedURL);
+    element.setAttribute("image", ChromeUtils.encodeURIForSrcset(resolvedURL));
   },
 
   // Undo changes from setMenuItemIcon.
@@ -792,9 +786,7 @@ class MenuItem {
     }
     let menuMap = gMenuMap.get(this.extension);
     if (!menuMap.has(parentId)) {
-      throw new ExtensionError(
-        `Could not find any MenuItem with id: ${parentId}`
-      );
+      throw new ExtensionError(`Cannot find menu item with id ${parentId}`);
     }
     for (let item = menuMap.get(parentId); item; item = item.parent) {
       if (item === this) {
@@ -975,7 +967,7 @@ const libraryTracker = {
     // See WindowTrackerBase#*browserWindows in ext-tabs-base.js for why we
     // can't use the enumerator's windowtype filter.
     for (let window of Services.wm.getEnumerator("")) {
-      if (window.document.readyState === "complete") {
+      if (windowTracker.isBrowserWindowInitialized(window)) {
         if (this.isLibraryWindow(window)) {
           this.notify(window);
         }
@@ -1407,7 +1399,7 @@ this.menusInternal = class extends ExtensionAPIPersistent {
 
           let menuItem = gMenuMap.get(extension).get(id);
           if (!menuItem) {
-            return;
+            throw new ExtensionError(`Cannot find menu item with id ${id}`);
           }
 
           menuItem.setProps(updateProperties);
@@ -1421,11 +1413,13 @@ this.menusInternal = class extends ExtensionAPIPersistent {
           }
 
           let menuItem = gMenuMap.get(extension).get(id);
-          if (menuItem) {
-            const menuIds = [menuItem.id, ...menuItem.descendantIds];
-            menuItem.remove();
-            ExtensionMenus.deleteMenus(extension, menuIds);
+          if (!menuItem) {
+            throw new ExtensionError(`Cannot find menu item with id ${id}`);
           }
+
+          const menuIds = [menuItem.id, ...menuItem.descendantIds];
+          menuItem.remove();
+          ExtensionMenus.deleteMenus(extension, menuIds);
         },
 
         removeAll: async () => {

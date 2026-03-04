@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = 移動至結尾
     .accesskey = E
 fxviewtabrow-move-tab-window = 移動至新視窗
     .accesskey = W
+fxviewtabrow-send-to-device = 傳送到裝置
+    .accesskey = n
 fxviewtabrow-send-tab = 將分頁傳送至裝置
     .accesskey = n
 fxviewtabrow-pin-tab = 釘選分頁
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = 取消分頁靜音
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } 的選項
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = 將 { $tabTitle } 靜音
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = 取消 { $tabTitle } 靜音
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

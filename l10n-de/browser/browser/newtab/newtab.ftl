@@ -8,11 +8,24 @@
 newtab-page-title = Neuer Tab
 newtab-settings-button =
     .title = Einstellungen für neue Tabs anpassen
+newtab-customize-panel-icon-button =
+    .title = Diese Seite anpassen
+newtab-customize-panel-icon-button-label = Anpassen
+newtab-personalize-settings-icon-label =
+    .title = Neuen Tab anpassen
+    .aria-label = Einstellungen
+newtab-settings-dialog-label =
+    .aria-label = Einstellungen
 newtab-personalize-icon-label =
     .title = Neuen Tab anpassen
     .aria-label = Neuen Tab anpassen
 newtab-personalize-dialog-label =
     .aria-label = Anpassen
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+newtab-card-dismiss-button =
+    .title = Verwerfen
+    .aria-label = Verwerfen
 
 ## Search box component.
 
@@ -46,6 +59,9 @@ newtab-topsites-add-shortcut-header = Neue Verknüpfung
 newtab-topsites-edit-topsites-header = Wichtige Seite bearbeiten
 newtab-topsites-edit-shortcut-header = Verknüpfung bearbeiten
 newtab-topsites-add-shortcut-label = Verknüpfung hinzufügen
+newtab-topsites-add-shortcut-title =
+    .title = Verknüpfung hinzufügen
+    .aria-label = Verknüpfung hinzufügen
 newtab-topsites-title-label = Titel
 newtab-topsites-title-input =
     .placeholder = Name eingeben
@@ -74,6 +90,14 @@ newtab-confirm-delete-history-p2 = Diese Aktion kann nicht rückgängig gemacht 
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Gesponsert
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (angeheftet)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +133,21 @@ newtab-menu-save-to-pocket = Bei { -pocket-brand-name } speichern
 newtab-menu-delete-pocket = Aus { -pocket-brand-name } löschen
 newtab-menu-archive-pocket = In { -pocket-brand-name } archivieren
 newtab-menu-show-privacy-info = Unsere Sponsoren & Ihre Privatsphäre
+newtab-menu-about-fakespot = Über { -fakespot-brand-name }
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Melden
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blockieren
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Thema nicht mehr folgen
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Gesponserte Inhalte verwalten
+newtab-menu-our-sponsors-and-your-privacy = Unsere Sponsoren und Ihre Privatsphäre
+newtab-menu-report-this-ad = Diese Anzeige melden
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +209,8 @@ newtab-label-sponsored-by = Werbung von { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } min
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Gesponsert
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +273,6 @@ newtab-pocket-learn-more = Weitere Informationen
 newtab-pocket-cta-button = { -pocket-brand-name } holen
 newtab-pocket-cta-text = Speichern Sie Ihre Lieblingstexte in { -pocket-brand-name } und gewinnen Sie gedankenreiche Einblicke durch faszinierende Texte.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ist Teil der { -brand-product-name }-Familie
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Speichern
 newtab-pocket-saved = Gespeichert
 
@@ -244,7 +284,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nichts für mich
-newtab-toast-thumbs-up-or-down = Vielen Dank. Ihr Feedback hilft uns, Ihren Feed zu verbessern.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Vielen Dank. Ihr Feedback hilft uns, Ihren Feed zu verbessern.
 newtab-toast-dismiss-button =
     .title = Schließen
     .aria-label = Schließen
@@ -280,16 +322,32 @@ newtab-custom-pocket-subtitle = Besondere Inhalte ausgewählt von { -pocket-bran
 newtab-custom-stories-toggle =
     .label = Empfohlene Geschichten
     .description = Besondere Inhalte ausgewählt von der { -brand-product-name }-Familie
+newtab-custom-stories-personalized-toggle =
+    .label = Geschichten
+newtab-custom-stories-personalized-checkbox-label = Personalisierte Geschichten basierend auf Ihrer Aktivität
 newtab-custom-pocket-sponsored = Gesponserte Inhalte
 newtab-custom-pocket-show-recent-saves = Zuletzt hinzugefügte Einträge anzeigen
 newtab-custom-recent-title = Neueste Aktivität
 newtab-custom-recent-subtitle = Eine Auswahl kürzlich besuchter Websites und Inhalte
-newtab-custom-recent-toggle =
-    .label = Neueste Aktivität
-    .description = Eine Auswahl kürzlich besuchter Websites und Inhalte
 newtab-custom-weather-toggle =
     .label = Wetter
     .description = Heutige Vorhersage auf einen Blick
+newtab-custom-widget-weather-toggle =
+    .label = Wetter
+newtab-custom-widget-lists-toggle =
+    .label = Listen
+newtab-custom-widget-timer-toggle =
+    .label = Timer
+newtab-custom-widget-section-title = Widgets
+newtab-custom-widget-section-toggle =
+    .label = Widgets
+newtab-widget-manage-title = Widgets
+newtab-widget-manage-widget-button =
+    .label = Widgets verwalten
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Schließen
+    .aria-label = Menü schließen
 newtab-custom-close-button = Schließen
 newtab-custom-settings = Weitere Einstellungen verwalten
 
@@ -297,6 +355,13 @@ newtab-custom-settings = Weitere Einstellungen verwalten
 
 newtab-wallpaper-title = Hintergrundbilder
 newtab-wallpaper-reset = Standard wiederherstellen
+newtab-wallpaper-upload-image = Grafik hochladen
+newtab-wallpaper-custom-color = Farbe auswählen
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Die Grafik hat die Größenbegrenzung von { $file_size } MB überschritten. Bitte versuchen Sie, eine kleinere Datei hochzuladen.
+newtab-wallpaper-error-upload-file-type = Wir konnten Ihre Datei nicht hochladen. Bitte versuchen Sie es erneut mit einer Grafikdatei.
+newtab-wallpaper-error-file-type = Wir konnten Ihre Datei nicht hochladen. Bitte versuchen Sie es erneut mit einem anderen Dateityp.
 newtab-wallpaper-light-red-panda = Roter Panda
 newtab-wallpaper-light-mountain = Weißer Berg
 newtab-wallpaper-light-sky = Himmel mit violetten und rosafarbenen Wolken
@@ -309,6 +374,8 @@ newtab-wallpaper-dark-panda = Roter Panda im Wald versteckt
 newtab-wallpaper-dark-sky = Stadtlandschaft mit Nachthimmel
 newtab-wallpaper-dark-mountain = Berg in der Landschaft
 newtab-wallpaper-dark-city = Violette Stadtlandschaft
+newtab-wallpaper-dark-fox-anniversary = Ein Fuchs auf einer Straße in der Nähe eines Waldes
+newtab-wallpaper-light-fox-anniversary = Ein Fuchs auf einer Weide vor einer nebligen Berglandschaft
 
 ## Solid Colors
 
@@ -338,8 +405,12 @@ newtab-wallpaper-abstract-purple = Lila Formen
 newtab-wallpaper-abstract-orange = Orangefarbene Formen
 newtab-wallpaper-gradient-orange = Farbverlauf orange und rosa
 newtab-wallpaper-abstract-blue-purple = Blaue und lila Formen
+newtab-wallpaper-abstract-white-curves = Weiß mit schattierten Rundungen
+newtab-wallpaper-abstract-purple-green = Lilafarbener und grüner Lichtverlauf
+newtab-wallpaper-abstract-blue-purple-waves = Blaue und lila gewellte Formen
+newtab-wallpaper-abstract-black-waves = Schwarze gewellte Formen
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Fotos
 newtab-wallpaper-beach-at-sunrise = Strand bei Sonnenaufgang
@@ -348,6 +419,12 @@ newtab-wallpaper-storm-sky = Gewitterhimmel
 newtab-wallpaper-sky-with-pink-clouds = Himmel mit rosafarbenen Wolken
 newtab-wallpaper-red-panda-yawns-in-a-tree = Roter Panda gähnt auf einem Baum
 newtab-wallpaper-white-mountains = Weiße Berge
+newtab-wallpaper-hot-air-balloons = Heißluftballons in verschiedenen Farben bei Tag
+newtab-wallpaper-starry-canyon = Blaue sternenklare Nacht
+newtab-wallpaper-suspension-bridge = Graue Fotografie einer Hängebrücke bei Tag
+newtab-wallpaper-sand-dunes = Weiße Sanddünen
+newtab-wallpaper-palm-trees = Silhouette von Kokospalmen zur Goldenen Stunde
+newtab-wallpaper-blue-flowers = Detailaufnahmen von blühenden blauen Blumen
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +440,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Astronomie
+newtab-wallpaper-celestial-lunar-eclipse = Mondfinsternis
+newtab-wallpaper-celestial-earth-night = Nachtfoto aus der niedrigen Erdumlaufbahn
+newtab-wallpaper-celestial-starry-sky = Sternenhimmel
+newtab-wallpaper-celestial-eclipse-time-lapse = Zeitraffer zur Mondfinsternis
+newtab-wallpaper-celestial-black-hole = Illustration von Galaxie mit schwarzem Loch
+newtab-wallpaper-celestial-river = Satellitenbild eines Flusses
+
 ## New Tab Weather
 
 # Variables:
@@ -373,8 +467,12 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Gesponsert
 newtab-weather-menu-change-location = Standort ändern
-newtab-weather-change-location-search-input = Standort suchen
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Standort suchen
+    .aria-label = Standort suchen
 newtab-weather-menu-weather-display = Wetteranzeige
+newtab-weather-todays-forecast = Die heutige Wettervorhersage
+newtab-weather-see-full-forecast = Vollständige Prognose ansehen
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
@@ -387,14 +485,28 @@ newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Zu Fahrenheit wechseln
 newtab-weather-menu-change-temperature-units-celsius = Zu Celsius wechseln
+newtab-weather-menu-hide-weather-v2 = Wetter ausblenden
 newtab-weather-menu-hide-weather = Wetter bei neuem Tab ausblenden
 newtab-weather-menu-learn-more = Weitere Informationen
+newtab-weather-menu-detect-my-location = Meinen Standort erkennen
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Wetterdaten sind derzeit nicht verfügbar.
+newtab-weather-opt-in-see-weather = Möchten Sie das Wetter für Ihren Standort sehen?
+newtab-weather-opt-in-not-now =
+    .label = Nicht jetzt
+newtab-weather-opt-in-yes =
+    .label = Ja
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = New York City
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Vorhersage in { $provider } ansehen
+    .aria-description = { $provider } ∙ Gesponsert
 
 ## Topic Labels
 
-newtab-topic-label-business = Geschäftliches
+newtab-topic-label-business = Wirtschaft
 newtab-topic-label-career = Karriere
 newtab-topic-label-education = Bildung
 newtab-topic-label-arts = Unterhaltung
@@ -431,3 +543,205 @@ newtab-topic-selection-button-maybe-later = Vielleicht später
 newtab-topic-selection-privacy-link = Erfahren Sie, wie wir Daten schützen und verwalten
 newtab-topic-selection-button-update-interests = Aktualisieren Sie Ihre Interessen
 newtab-topic-selection-button-pick-interests = Wählen Sie Ihre Interessen aus
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Folgen
+newtab-section-following-button = Folgen
+newtab-section-unfollow-button = Nicht mehr folgen
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Passen Sie Ihren Feed an
+newtab-section-follow-highlight-subtitle = Folgen Sie Ihren Interessen, um mehr von dem zu sehen, was Ihnen gefällt.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blockieren
+newtab-section-blocked-button = Blockiert
+newtab-section-unblock-button = Nicht mehr blockieren
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Nicht jetzt
+newtab-section-confirm-block-topic-p1 = Soll dieses Thema wirklich blockiert werden?
+newtab-section-confirm-block-topic-p2 = Blockierte Themen erscheinen nicht mehr in Ihrem Feed.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } blockieren
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Themen
+newtab-section-manage-topics-button-v2 =
+    .label = Themen verwalten
+newtab-section-mangage-topics-followed-topics = Gefolgt
+newtab-section-mangage-topics-followed-topics-empty-state = Sie folgen noch keinen Themen.
+newtab-section-mangage-topics-blocked-topics = Blockiert
+newtab-section-mangage-topics-blocked-topics-empty-state = Sie haben noch keine Themen blockiert.
+newtab-custom-wallpaper-title = Hier gibt es benutzerdefinierte Hintergrundbilder
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Laden Sie Ihr eigenes Hintergrundbild hoch oder wählen Sie eine benutzerdefinierte Farbe, um { -brand-product-name } für Sie anzupassen.
+newtab-custom-wallpaper-cta = Ausprobieren
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Wählen Sie ein Hintergrundbild, um { -brand-product-name } zu personalisieren
+newtab-new-user-custom-wallpaper-subtitle = Fühlen Sie sich in jedem Tab wie zu Hause — mit benutzerdefinierten Hintergrundbildern und Farben.
+newtab-new-user-custom-wallpaper-cta = Jetzt ausprobieren
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = { -brand-product-name } für Mobilgeräte herunterladen
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Scannen Sie den Code, um sicher unterwegs zu surfen.
+newtab-download-mobile-highlight-body-variant-b = Machen Sie da weiter, wo Sie aufgehört haben, wenn Sie Ihre Tabs, Passwörter und mehr synchronisieren.
+newtab-download-mobile-highlight-body-variant-c = Wussten Sie, dass Sie { -brand-product-name } auch unterwegs verwenden können? Gleicher Browser. In der Hosentasche.
+newtab-download-mobile-highlight-image =
+    .aria-label = QR-Code zum Herunterladen von { -brand-product-name } für Mobilgeräte
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Ihre Favoriten in Griffweite
+newtab-shortcuts-highlight-subtitle = Fügen Sie eine Verknüpfung hinzu, damit Ihre Lieblings-Websites mit einem Klick erreichbar sind.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Warum melden Sie das?
+newtab-report-ads-reason-not-interested =
+    .label = Ich habe kein Interesse
+newtab-report-ads-reason-inappropriate =
+    .label = Es ist unangebracht
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Ich habe es zu oft gesehen
+newtab-report-content-wrong-category =
+    .label = Falsche Kategorie
+newtab-report-content-outdated =
+    .label = Veraltet
+newtab-report-content-inappropriate-offensive =
+    .label = Unangemessen oder anstößig
+newtab-report-content-spam-misleading =
+    .label = Spam oder irreführend
+newtab-report-content-requires-payment-subscription =
+    .label = Zahlung oder Abonnement erforderlich
+newtab-report-content-requires-payment-subscription-learn-more = Weitere Informationen
+newtab-report-cancel = Abbrechen
+newtab-report-submit = Absenden
+newtab-toast-thanks-for-reporting =
+    .message = Danke für die Meldung.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = Die Möglichkeiten sind unendlich. Fügen Sie eine hinzu.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Neu
+newtab-widget-lists-label-beta =
+    .label = Beta
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Abgeschlossen ({ $number })
+newtab-widget-task-list-menu-copy = Kopieren
+newtab-widget-lists-menu-edit = Listenname bearbeiten
+newtab-widget-lists-menu-create = Neue Liste erstellen
+newtab-widget-lists-menu-delete = Diese Liste löschen
+newtab-widget-lists-menu-copy = Liste in Zwischenablage kopieren
+newtab-widget-lists-menu-hide = Alle Listen ausblenden
+newtab-widget-lists-menu-learn-more = Weitere Informationen
+newtab-widget-lists-input-add-an-item =
+    .placeholder = Einen Eintrag hinzufügen
+newtab-widget-lists-input-error = Bitte fügen Sie Text hinzu, um einen Eintrag hinzuzufügen.
+newtab-widget-lists-input-menu-open-link = Link öffnen
+newtab-widget-lists-input-menu-move-up = Nach oben
+newtab-widget-lists-input-menu-move-down = Nach unten
+newtab-widget-lists-input-menu-delete = Löschen
+newtab-widget-lists-input-menu-edit = Bearbeiten
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Eine neue Liste erstellen
+newtab-widget-lists-name-label-default =
+    .label = Aufgabenliste
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Aufgabenliste
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Neue Liste
+newtab-widget-section-title = Widgets
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Widgets ausblenden
+    .aria-label = alle Widgets ausblenden
+newtab-widget-section-maximize =
+    .title = Widgets ausklappen
+    .aria-label = alle Widgets zur vollen Größe ausklappen
+newtab-widget-section-minimize =
+    .title = Widgets minimieren
+    .aria-label = Alle Widgets auf kompakte Größe reduzieren
+
+## Strings for timer productivity widget
+## When the timer ends, a system notification may be shown. Depending on which mode the timer is in, that message would be shown
+
+newtab-widget-timer-notification-title = Timer
+newtab-widget-timer-notification-focus = Die Fokuszeit ist abgelaufen. Gute Arbeit. Benötigen Sie eine Pause?
+newtab-widget-timer-notification-break = Ihre Pause ist zu Ende. Bereit zum Fokussieren?
+newtab-widget-timer-notification-warning = Benachrichtigungen sind deaktiviert
+newtab-widget-timer-mode-focus =
+    .label = Fokussieren
+newtab-widget-timer-mode-break =
+    .label = Pause
+newtab-widget-timer-label-play =
+    .label = Starten
+newtab-widget-timer-label-pause =
+    .label = Pausieren
+newtab-widget-timer-reset =
+    .title = Zurücksetzen
+newtab-widget-timer-menu-notifications = Benachrichtigungen deaktivieren
+newtab-widget-timer-menu-notifications-on = Benachrichtigungen aktivieren
+newtab-widget-timer-menu-hide = Timer ausblenden
+newtab-widget-timer-menu-learn-more = Weitere Informationen
+# The title displays above a set of top news headlines.
+newtab-daily-briefing-card-title = Wichtigste Schlagzeilen
+newtab-daily-briefing-card-menu-dismiss = Schließen
+# Variables:
+#   $minutes (number) - Time since the feed has been refreshed
+newtab-daily-briefing-card-timestamp =
+    { $minutes ->
+        [one] Aktualisiert vor { $minutes } Minute
+       *[other] Aktualisiert vor { $minutes } Minuten
+    }
+newtab-widget-message-title = Bleiben Sie konzentriert mit Listen und einem integrierten Timer
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Von kurzen Erinnerungen über tägliche Aufgaben bis hin zu Fokussitzungen und Dehnungspausen – bleiben Sie bei der Sache und im Zeitplan.
+newtab-promo-card-title = { -brand-product-name } unterstützen
+newtab-promo-card-body = Unsere Sponsoren unterstützen unsere Mission, ein besseres Internet zu schaffen
+newtab-promo-card-cta = Weitere Informationen
+newtab-promo-card-dismiss-button =
+    .title = Verwerfen
+    .aria-label = Verwerfen
+
+## Strings for activation window message variants. In certain experiment configurations,
+## the strings from these variants may be displayed in a message below the search input
+## for the first 48 hours of a new profile's lifetime. Some messages include buttons with
+## labels, but not all.
+
+newtab-activation-window-message-dismiss-button =
+    .title = Verwerfen
+    .aria-label = Verwerfen
+# "This space" refers to about:newtab. The call to action here ("make it your own")
+# is to customize newtab with a background image or colour, or by tweaking the
+# existing widgetry that appears on it.
+newtab-activation-window-message-customization-focus-header = Passen Sie diesen Raum an
+newtab-activation-window-message-customization-focus-message = Wählen Sie ein neues Hintergrundbild, fügen Sie Verknüpfungen zu Ihren Lieblingsseiten hinzu und bleiben Sie auf dem neuesten Stand, wenn es um Geschichten geht, die Sie interessieren.
+newtab-activation-window-message-customization-focus-primary-button =
+    .label = Beginnen Sie mit den Anpassungen
+# "This space" refers to about:newtab. The sentiment of "plays by your rules" is
+# meant to evoke the idea that newtab is malleable and customizable. The call to
+# action is to customize newtab with a background image or colour, or by tweaking
+# the existing widgetry that appears on it.
+newtab-activation-window-message-values-focus-header = Dieser Platz spielt nach Ihren Regeln
+newtab-activation-window-message-values-focus-message = Mit { -brand-product-name } können Sie so surfen, wie Sie es möchten. Mit einer persönlicheren Möglichkeit, Ihren Tag online zu starten. Passen Sie { -brand-product-name } an Ihre Wünsche an.

@@ -8,8 +8,8 @@
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/net/PNeckoParent.h"
 #include "mozilla/net/NeckoCommon.h"
+#include "mozilla/MozPromise.h"
 #include "nsIAuthPrompt2.h"
-#include "nsINetworkPredictor.h"
 #include "nsNetUtil.h"
 
 #ifndef mozilla_net_NeckoParent_h
@@ -17,6 +17,10 @@
 
 namespace mozilla {
 namespace net {
+
+class RemoteStreamInfo;
+using RemoteStreamPromise =
+    mozilla::MozPromise<RemoteStreamInfo, nsresult, false>;
 
 // Used to override channel Private Browsing status if needed.
 enum PBOverrideStatus {
@@ -34,21 +38,20 @@ class NeckoParent : public PNeckoParent {
 
   NeckoParent();
 
-  [[nodiscard]] static const char* GetValidatedOriginAttributes(
-      const SerializedLoadContext& aSerialized, PContentParent* aBrowser,
+  static void GetValidatedOriginAttributes(
+      const SerializedLoadContext& aSerialized, PContentParent* aContent,
       nsIPrincipal* aRequestingPrincipal, mozilla::OriginAttributes& aAttrs);
 
   /*
    * Creates LoadContext for parent-side of an e10s channel.
    *
    * PContentParent corresponds to the process that is requesting the load.
-   *
-   * Returns null if successful, or an error string if failed.
    */
-  [[nodiscard]] static const char* CreateChannelLoadContext(
-      PBrowserParent* aBrowser, PContentParent* aContent,
-      const SerializedLoadContext& aSerialized,
-      nsIPrincipal* aRequestingPrincipal, nsCOMPtr<nsILoadContext>& aResult);
+  static void CreateChannelLoadContext(PBrowserParent* aBrowser,
+                                       PContentParent* aContent,
+                                       const SerializedLoadContext& aSerialized,
+                                       nsIPrincipal* aRequestingPrincipal,
+                                       nsCOMPtr<nsILoadContext>& aResult);
 
   virtual void ActorDestroy(ActorDestroyReason aWhy) override;
   PCookieServiceParent* AllocPCookieServiceParent();
@@ -56,6 +59,14 @@ class NeckoParent : public PNeckoParent {
       PCookieServiceParent* aActor) override {
     return PNeckoParent::RecvPCookieServiceConstructor(aActor);
   }
+
+  /*
+   * Helper method to create a remote stream from a resolved file URI.
+   * Shared by PageThumbProtocolHandler and MozNewTabWallpaperProtocolHandler.
+   */
+  static RefPtr<RemoteStreamPromise> CreateRemoteStreamForResolvedURI(
+      nsIURI* aChildURI, const nsACString& aResolvedSpec,
+      const nsACString& aDefaultMimeType);
 
  protected:
   virtual ~NeckoParent() = default;
@@ -77,9 +88,16 @@ class NeckoParent : public PNeckoParent {
       const Maybe<TabId>& aTabId);
   bool DeallocPWebrtcTCPSocketParent(PWebrtcTCPSocketParent* aActor);
 
+  PCacheEntryWriteHandleParent* AllocPCacheEntryWriteHandleParent(
+      PHttpChannelParent* channel);
+  bool DeallocPCacheEntryWriteHandleParent(
+      PCacheEntryWriteHandleParent* aActor);
+
   PAltDataOutputStreamParent* AllocPAltDataOutputStreamParent(
       const nsACString& type, const int64_t& predictedSize,
-      PHttpChannelParent* channel);
+      mozilla::Maybe<mozilla::NotNull<mozilla::net::PHttpChannelParent*>>&
+          channel,
+      mozilla::Maybe<mozilla::NotNull<PCacheEntryWriteHandleParent*>>& handle);
   bool DeallocPAltDataOutputStreamParent(PAltDataOutputStreamParent* aActor);
 
   bool DeallocPCookieServiceParent(PCookieServiceParent*);
@@ -138,10 +156,8 @@ class NeckoParent : public PNeckoParent {
       const uint64_t& aInnerWindowID);
   bool DeallocPWebSocketEventListenerParent(PWebSocketEventListenerParent*);
 
-  already_AddRefed<PDataChannelParent> AllocPDataChannelParent();
+  mozilla::ipc::IPCResult RecvConnectBaseChannel(const uint32_t& channelId);
 
-  virtual mozilla::ipc::IPCResult RecvPDataChannelConstructor(
-      PDataChannelParent* aActor) override;
 #  ifdef MOZ_WIDGET_GTK
   PGIOChannelParent* AllocPGIOChannelParent(
       PBrowserParent* aBrowser, const SerializedLoadContext& aSerialized,
@@ -153,32 +169,23 @@ class NeckoParent : public PNeckoParent {
       const SerializedLoadContext& aSerialized,
       const GIOChannelCreationArgs& aOpenArgs) override;
 #  endif
-  PSimpleChannelParent* AllocPSimpleChannelParent(const uint32_t& channelId);
-  bool DeallocPSimpleChannelParent(PSimpleChannelParent* actor);
+#  ifdef MOZ_WIDGET_ANDROID
+  already_AddRefed<PGeckoViewContentChannelParent>
+  AllocPGeckoViewContentChannelParent(
+      PBrowserParent* aBrowser, const SerializedLoadContext& aSerialized,
+      const GeckoViewContentChannelArgs& aOpenArgs);
 
-  virtual mozilla::ipc::IPCResult RecvPSimpleChannelConstructor(
-      PSimpleChannelParent* aActor, const uint32_t& channelId) override;
+  virtual mozilla::ipc::IPCResult RecvPGeckoViewContentChannelConstructor(
+      PGeckoViewContentChannelParent* aActor, PBrowserParent* aBrowser,
+      const SerializedLoadContext& aSerialized,
+      const GeckoViewContentChannelArgs& args) override;
+#  endif
 
-  already_AddRefed<PFileChannelParent> AllocPFileChannelParent(
-      const uint32_t& channelId);
-
-  virtual mozilla::ipc::IPCResult RecvPFileChannelConstructor(
-      PFileChannelParent* aActor, const uint32_t& channelId) override;
+  mozilla::ipc::IPCResult RecvNotifyFileChannelOpened(
+      const FileChannelInfo& aInfo);
 
   PTransportProviderParent* AllocPTransportProviderParent();
   bool DeallocPTransportProviderParent(PTransportProviderParent* aActor);
-
-  /* Predictor Messages */
-  mozilla::ipc::IPCResult RecvPredPredict(
-      nsIURI* aTargetURI, nsIURI* aSourceURI,
-      const PredictorPredictReason& aReason,
-      const OriginAttributes& aOriginAttributes, const bool& hasVerifier);
-
-  mozilla::ipc::IPCResult RecvPredLearn(
-      nsIURI* aTargetURI, nsIURI* aSourceURI,
-      const PredictorPredictReason& aReason,
-      const OriginAttributes& aOriginAttributes);
-  mozilla::ipc::IPCResult RecvPredReset();
 
   mozilla::ipc::IPCResult RecvRequestContextLoadBegin(const uint64_t& rcid);
   mozilla::ipc::IPCResult RecvRequestContextAfterDOMContentLoaded(
@@ -201,6 +208,11 @@ class NeckoParent : public PNeckoParent {
   mozilla::ipc::IPCResult RecvGetPageIconStream(
       nsIURI* aURI, const LoadInfoArgs& aLoadInfoArgs,
       GetPageIconStreamResolver&& aResolve);
+
+  /* New Tab wallpaper remote resource loading */
+  mozilla::ipc::IPCResult RecvGetMozNewTabWallpaperStream(
+      nsIURI* aURI, const LoadInfoArgs& aLoadInfoArgs,
+      GetMozNewTabWallpaperStreamResolver&& aResolve);
 
   mozilla::ipc::IPCResult RecvInitSocketProcessBridge(
       InitSocketProcessBridgeResolver&& aResolver);

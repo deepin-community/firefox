@@ -10,13 +10,11 @@
 
 psmerr-ssl-disabled = Nelze se připojit zabezpečeně, protože protokol SSL je zakázán.
 psmerr-ssl2-disabled = Nelze se připojit zabezpečeně, protože server používá starší a už nespolehlivou verzi protokolu SSL.
-
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
     Obdrželi jste neplatný certifikát. Kontaktujte prosím správce serveru nebo odesílatele e-mailové zprávy a poskytněte mu tyto informace:
     
     Váš certifikát obsahuje stejné sériové číslo jako jiný certifikát vydaný danou certifikační autoritou. Opatřete si prosím nový certifikát obsahující unikátní sériové číslo.
-
 ssl-error-export-only-server = Bezpečná komunikace není možná. Partner nepodporuje vysoký stupeň šifrování.
 ssl-error-us-only-server = Bezpečná komunikace není možná. Partner vyžaduje vysoký stupeň šifrování, který není podporován.
 ssl-error-no-cypher-overlap = Bezpečná komunikace s partnerem není možná: Nenalezen žádný společný šifrovací algoritmus.
@@ -120,7 +118,7 @@ ssl-error-user-canceled-alert = Partner zrušil inicializaci.
 ssl-error-no-renegotiation-alert = Partner nepovolil rozpoznání bezpečnostních parametrů protokolu SSL.
 ssl-error-server-cache-not-configured = Mezipaměť serveru SSL není nakonfigurována ani zakázána pro tento socket.
 ssl-error-unsupported-extension-alert = Partner protokolu SSL nepodporuje požadované rozšíření TLS hello.
-ssl-error-certificate-unobtainable-alert = Partner protokolu SSL nemohl z poskytnuté URL adresy získat váš certifikát.
+ssl-error-certificate-unobtainable-alert = Partner protokolu SSL nemohl z poskytnuté adresy URL získat váš certifikát.
 ssl-error-unrecognized-name-alert = Partner protokolu SSL nemá pro požadovaný název DNS žádný certifikát .
 ssl-error-bad-cert-status-response-alert = Partner protokolu SSL nemohl získat odezvu OCSP pro svůj certifikát.
 ssl-error-bad-cert-hash-value-alert = Partner protokolu SSL hlásí chybnou hodnotu hashe certifikátu.
@@ -153,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = Byl nakonfigurován nepodporovaný 
 ssl-error-unsupported-signature-algorithm = Partner používá nepodporovanou kombinaci podpisu a hashovacího algoritmu.
 ssl-error-missing-extended-master-secret = Partner se pokusil obnovit bez correct extended_master_secre rozšíření.
 ssl-error-unexpected-extended-master-secret = Partner se pokusil obnovit spojení s neočekávaným rozšířením extended_master_secret.
-
 sec-error-io = Během bezpečnostní autorizace nastala chyba I/O.
 sec-error-library-failure = Chyba bezpečnostní knihovny.
 sec-error-bad-data = Bezpečnostní knihovna: přijaty nesprávné údaje.
@@ -184,8 +181,8 @@ sec-error-no-key = Soukromý klíč k certifikátu nebyl v databázi nalezen
 sec-error-cert-valid = Tento certifikát je platný.
 sec-error-cert-not-valid = Tento certifikát není platný.
 sec-error-cert-no-response = Knihovna certifikátů: bez odpovědi
-sec-error-expired-issuer-certificate = Platnost certifikátu vydavatele certifikátu už uplynula. Zkontrolujte datum a čas vašeho systému.
-sec-error-crl-expired = Platnost CRL vydavatele certifikátu už uplynula. Aktualizujte ho a zkontrolujte datum a čas vašeho systému.
+sec-error-expired-issuer-certificate = Platnost certifikátu vydavatele certifikátu už vypršela. Zkontrolujte datum a čas vašeho systému.
+sec-error-crl-expired = Platnost CRL vydavatele certifikátu už vypršela. Aktualizujte ho a zkontrolujte datum a čas vašeho systému.
 sec-error-crl-bad-signature = CRL vydavatele certifikátu má neplatný podpis.
 sec-error-crl-invalid = Nové CRL má neplatný formát.
 sec-error-extension-value-invalid = Hodnota rozšíření certifikátu je neplatná.
@@ -205,7 +202,7 @@ sec-error-pkcs7-bad-signature = Ověření podpisu se nezdařilo: nenalezen podp
 sec-error-unsupported-keyalg = Nepodporovaný nebo neznámý algoritmus klíče.
 sec-error-decryption-disallowed = Nelze dešifrovat: zašifrováno nepovoleným algoritmem nebo velikostí klíče.
 sec-error-no-krl = Nebyl nalezen žádný KRL certifikátu tohoto serveru
-sec-error-krl-expired = Platnost KRL certifikátu tohoto serveru už uplynula.
+sec-error-krl-expired = Platnost KRL certifikátu tohoto serveru už vypršela.
 sec-error-krl-bad-signature = KRL certifikátu tohoto serveru má neplatný podpis.
 sec-error-revoked-key = Klíč certifikátu tohoto serveru byl zneplatněn.
 sec-error-krl-invalid = Nový KRL má neplatný formát.
@@ -237,7 +234,7 @@ sec-error-inadequate-key-usage = Klíč certifikátu není dostatečný pro pož
 sec-error-inadequate-cert-type = Typ certifikátu nebyl schválen pro aplikace.
 sec-error-cert-addr-mismatch = Adresa v podpisujícím certifikátu nesouhlasí s adresou v hlavičce zprávy.
 sec-error-pkcs12-unable-to-import-key = Není možné importovat. Chyba při pokusu o import soukromého klíče.
-sec-error-pkcs12-importing-cert-chain = Není možné importovat. Chyba při pokusu o import řetězce certifikátů.
+sec-error-pkcs12-importing-cert-chain = Není možné importovat. Chyba při pokusu o import řetězu certifikátů.
 sec-error-pkcs12-unable-to-locate-object-by-name = Není možné exportovat. Nepodařilo se podle přezdívky nalézt certifikát nebo klíč.
 sec-error-pkcs12-unable-to-export-key = Není možné exportovat. Nepodařilo se nalézt a exportovat soukromý klíč.
 sec-error-pkcs12-unable-to-write = Není možné exportovat. Nepodařilo se zapsat do exportního souboru.
@@ -247,7 +244,7 @@ sec-error-keygen-fail = Nepodařilo se vygenerovat dvojici soukromý/veřejný k
 sec-error-invalid-password = Zadané heslo je neplatné. Zvolte prosím jiné.
 sec-error-retry-old-password = Zadané původní heslo není platné. Zkuste to prosím znovu.
 sec-error-bad-nickname = Přezdívka certifikátu už je používána.
-sec-error-not-fortezza-issuer = Partnerův řetězec typu FORTEZZA nemá certifikát typu FORTEZZA.
+sec-error-not-fortezza-issuer = Partnerův řetěz typu FORTEZZA obsahuje certifikát jiného typu než FORTEZZA.
 sec-error-cannot-move-sensitive-key = Citlivý klíč není možné přesunout do pozice, kde je požadován.
 sec-error-js-invalid-module-name = Neplatný název modulu.
 sec-error-js-invalid-dll = Neplatná cesta/soubor modulu
@@ -318,10 +315,9 @@ sec-error-crl-import-failed = Chyba při pokusu o import CRL.
 sec-error-expired-password = Platnost hesla vypršela.
 sec-error-locked-password = Heslo je zamčené.
 sec-error-unknown-pkcs11-error = Neznámá chyba PKCS #11.
-sec-error-bad-crl-dp-url = Neplatná nebo nepodporovaná URL adresa v názvu distribučního bodu CRL.
+sec-error-bad-crl-dp-url = Neplatná nebo nepodporovaná adresa URL v názvu distribučního bodu CRL.
 sec-error-cert-signature-algorithm-disabled = Certifikát byl podepsán algoritmem, který je z bezpečnostních důvodů zakázán.
-
-mozilla-pkix-error-key-pinning-failure = Server používá key pinning (HPKP), ale nebyl složen vhodný řetězec důvěryhodných certifikátů, které se shodují s daným pinsetem. Porušení key pinning není možné ignorovat.
+mozilla-pkix-error-key-pinning-failure = Server používá key pinning (HPKP), ale nebyl složen vhodný řetěz důvěryhodných certifikátů, které se shodují s daným pinsetem. Porušení key pinning není možné ignorovat.
 mozilla-pkix-error-ca-cert-used-as-end-entity = Server používá certifikát s rozšířeným základních vymezení, které ho identifikují jako certifikační autoritu. Pro korektně vydaný certifikát by toto nemělo nastat.
 mozilla-pkix-error-inadequate-key-size = Server poskytl certifikát s velikostí klíče, která je příliš malá na sestavení bezpečného spojení.
 mozilla-pkix-error-v1-cert-used-as-ca = Při vydání certifikátu serveru byl použit certifikát X.509 verze 1, který není důvěryhodným certifikátem. Certifikáty X.509 verze 1 jsou zastaralé a neměly by se používat na podepisování jiných certifikátů.
@@ -335,11 +331,10 @@ mozilla-pkix-error-invalid-integer-encoding = Server poskytl certifikát, který
 mozilla-pkix-error-empty-issuer-name = Server poskytl certifikát s prázdným jménem vydavatele.
 mozilla-pkix-error-additional-policy-constraint-failed = Při ověřování tohoto certifikátu nebylo splněno dodatečné omezující pravidlo.
 mozilla-pkix-error-self-signed-cert = Certifikát není důvěryhodný, protože je podepsán sám sebou.
-
+mozilla-pkix-error-issuer-no-longer-trusted = Certifikační autorita, která certifikát vydala, byla před vydáním certifikátu nedůvěryhodná.
 xp-java-remove-principal-error = Tohoto představitele nelze odstranit
 xp-java-delete-privilege-error = Toto oprávnění nelze smazat
 xp-java-cert-not-exists-error = Tento představitel nemá certifikát
-
 xp-sec-fortezza-bad-card = Karta typu Fortezza nebyla správně inicializována. Vyjměte ji prosím a vraťte ji vydavateli.
 xp-sec-fortezza-no-card = Nenalezena žádná karta typu Fortezza
 xp-sec-fortezza-none-selected = Karta typu Fortezza nebyla zvolena

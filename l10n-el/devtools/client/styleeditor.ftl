@@ -3,20 +3,20 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 styleeditor-new-button =
-    .tooltiptext = Δημιουργία και σύνδεση ενός νέου φύλλου στυλ στο έγγραφο
-    .accesskey = Ν
+    .tooltiptext = Δημιουργία και προσάρτηση νέου φύλλου μορφοποίησης στο έγγραφο
+    .accesskey = Δ
 styleeditor-import-button =
-    .tooltiptext = Εισαγωγή και επισύναψη ενός υπάρχοντος φύλλου στυλ στο έγγραφο
+    .tooltiptext = Εισαγωγή και προσάρτηση υπάρχοντος φύλλου μορφοποίησης στο έγγραφο
     .accesskey = Ε
 styleeditor-filter-input =
     .placeholder = Φιλτράρισμα φύλλων στυλ
 styleeditor-visibility-toggle =
-    .tooltiptext = (Απ)ενεργοποίηση ορατότητας φύλλου στυλ
+    .tooltiptext = (Απ)ενεργοποίηση ορατότητας φύλλου μορφοποίησης
     .accesskey = Α
 styleeditor-visibility-toggle-system =
-    .tooltiptext = Τα φύλλα στυλ συστήματος δεν μπορούν να απενεργοποιηθούν
+    .tooltiptext = Δεν είναι δυνατή η απενεργοποίηση των φύλλων μορφοποίησης του συστήματος
 styleeditor-save-button = Αποθήκευση
-    .tooltiptext = Αποθήκευση φύλλου στυλ σε αρχείο
+    .tooltiptext = Αποθήκευση φύλλου μορφοποίησης σε αρχείο
     .accesskey = Α
 styleeditor-options-button =
     .tooltiptext = Επιλογές επεξεργασίας στυλ
@@ -24,7 +24,7 @@ styleeditor-at-rules = Κανόνες «At»
 styleeditor-editor-textbox =
     .data-placeholder = Πληκτρολογήστε CSS εδώ.
 styleeditor-no-stylesheet = Αυτή η σελίδα δεν έχει φύλλο στυλ.
-styleeditor-no-stylesheet-tip = Μήπως θέλετε να <a data-l10n-name="append-new-stylesheet">προσθέσετε ένα νέο φύλλο στυλ</a>;
+styleeditor-no-stylesheet-tip = Μήπως θέλετε να <a data-l10n-name="append-new-stylesheet">προσαρτήσετε ένα νέο φύλλο μορφοποίησης</a>;
 styleeditor-open-link-new-tab =
     .label = Άνοιγμα συνδέσμου σε νέα καρτέλα
 styleeditor-copy-url =
@@ -39,7 +39,7 @@ styleeditor-go-to-line =
     .label = Μετάβαση στη γραμμή…
     .accesskey = Μ
 # Label displayed when searching a term that is not found in any stylesheet path
-styleeditor-stylesheet-all-filtered = Δεν βρέθηκε αντίστοιχο φύλλο στυλ.
+styleeditor-stylesheet-all-filtered = Δεν βρέθηκε αντίστοιχο φύλλο μορφοποίησης.
 # This string is shown in the style sheets list
 # Variables:
 #   $ruleCount (Integer) - The number of rules in the stylesheet.
@@ -54,3 +54,7 @@ styleeditor-pretty-print-button =
 # Title for the pretty print button in the editor footer, when it's disabled
 styleeditor-pretty-print-button-disabled =
     .title = Η μορφοποίηση μπορεί να γίνει μόνο σε αρχεία CSS
+# Title for the pretty print button in the editor footer, when it's disabled because
+# the stylesheet is read-only
+styleeditor-pretty-print-button-disabled-read-only =
+    .title = Δεν είναι δυνατή η ωραιοποιημένη εκτύπωση φύλλου μορφοποίησης μόνο για ανάγνωση.

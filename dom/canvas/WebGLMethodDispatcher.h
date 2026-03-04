@@ -6,8 +6,8 @@
 #ifndef WEBGLMETHODDISPATCHER_H_
 #define WEBGLMETHODDISPATCHER_H_
 
-#include "TexUnpackBlob.h"
 #include "HostWebGLContext.h"
+#include "TexUnpackBlob.h"
 #include "WebGLQueueParamTraits.h"
 
 namespace mozilla {
@@ -94,6 +94,7 @@ DEFINE_ASYNC(HostWebGLContext::Present)
 DEFINE_ASYNC(HostWebGLContext::SampleCoverage)
 DEFINE_ASYNC(HostWebGLContext::Scissor)
 DEFINE_ASYNC(HostWebGLContext::SetDrawingBufferColorSpace)
+DEFINE_ASYNC(HostWebGLContext::SetUnpackColorSpace)
 DEFINE_ASYNC(HostWebGLContext::ShaderSource)
 DEFINE_ASYNC(HostWebGLContext::StencilFuncSeparate)
 DEFINE_ASYNC(HostWebGLContext::StencilMaskSeparate)

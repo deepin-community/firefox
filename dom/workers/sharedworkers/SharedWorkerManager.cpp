@@ -5,13 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "SharedWorkerManager.h"
+
 #include "SharedWorkerParent.h"
 #include "SharedWorkerService.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/dom/MessagePort.h"
 #include "mozilla/dom/PSharedWorker.h"
+#include "mozilla/dom/RemoteWorkerController.h"
 #include "mozilla/ipc/BackgroundParent.h"
 #include "mozilla/ipc/URIUtils.h"
-#include "mozilla/dom/RemoteWorkerController.h"
 #include "nsIConsoleReportCollector.h"
 #include "nsIPrincipal.h"
 #include "nsProxyRelease.h"
@@ -43,7 +45,7 @@ SharedWorkerManager::SharedWorkerManager(
       mDomain(aData.domain()),
       mEffectiveStoragePrincipalAttrs(aEffectiveStoragePrincipalAttrs),
       mResolvedScriptURL(DeserializeURI(aData.resolvedScriptURL())),
-      mName(aData.name()),
+      mWorkerOptions(aData.workerOptions()),
       mIsSecureContext(aData.isSecureContext()),
       mSuspended(false),
       mFrozen(false) {
@@ -87,10 +89,12 @@ bool SharedWorkerManager::MaybeCreateRemoteWorker(
 
 already_AddRefed<SharedWorkerManagerHolder>
 SharedWorkerManager::MatchOnMainThread(
-    SharedWorkerService* aService, const nsACString& aDomain,
-    nsIURI* aScriptURL, const nsAString& aName, nsIPrincipal* aLoadingPrincipal,
-    const OriginAttributes& aEffectiveStoragePrincipalAttrs) {
+    SharedWorkerService* aService, const RemoteWorkerData& aData,
+    nsIURI* aScriptURL, nsIPrincipal* aLoadingPrincipal,
+    const OriginAttributes& aEffectiveStoragePrincipalAttrs,
+    bool* aMatchNameButNotOptions) {
   MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(aMatchNameButNotOptions);
 
   bool urlEquals;
   if (NS_FAILED(aScriptURL->Equals(mResolvedScriptURL, &urlEquals))) {
@@ -98,13 +102,22 @@ SharedWorkerManager::MatchOnMainThread(
   }
 
   bool match =
-      aDomain == mDomain && urlEquals && aName == mName &&
+      aData.domain() == mDomain && urlEquals &&
+      aData.workerOptions().mName == mWorkerOptions.mName &&
       // We want to be sure that the window's principal subsumes the
       // SharedWorker's loading principal and vice versa.
       mLoadingPrincipal->Subsumes(aLoadingPrincipal) &&
       aLoadingPrincipal->Subsumes(mLoadingPrincipal) &&
       mEffectiveStoragePrincipalAttrs == aEffectiveStoragePrincipalAttrs;
   if (!match) {
+    return nullptr;
+  }
+
+  *aMatchNameButNotOptions =
+      aData.workerOptions().mType != mWorkerOptions.mType ||
+      aData.workerOptions().mCredentials != mWorkerOptions.mCredentials;
+
+  if (*aMatchNameButNotOptions) {
     return nullptr;
   }
 
@@ -121,11 +134,11 @@ void SharedWorkerManager::AddActor(SharedWorkerParent* aParent) {
   mActors.AppendElement(aParent);
 
   if (mLockCount) {
-    Unused << aParent->SendNotifyLock(true);
+    (void)aParent->SendNotifyLock(true);
   }
 
   if (mWebTransportCount) {
-    Unused << aParent->SendNotifyWebTransport(true);
+    (void)aParent->SendNotifyWebTransport(true);
   }
 
   // NB: We don't update our Suspended/Frozen state here, yet. The aParent is
@@ -231,7 +244,7 @@ void SharedWorkerManager::CreationFailed() {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
   for (SharedWorkerParent* actor : mActors) {
-    Unused << actor->SendError(NS_ERROR_FAILURE);
+    (void)actor->SendError(NS_ERROR_FAILURE);
   }
 }
 
@@ -244,7 +257,7 @@ void SharedWorkerManager::ErrorReceived(const ErrorValue& aValue) {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
   for (SharedWorkerParent* actor : mActors) {
-    Unused << actor->SendError(aValue);
+    (void)actor->SendError(aValue);
   }
 }
 
@@ -259,7 +272,7 @@ void SharedWorkerManager::LockNotified(bool aCreated) {
   // 2. Lost all locks
   if ((aCreated && mLockCount == 1) || !mLockCount) {
     for (SharedWorkerParent* actor : mActors) {
-      Unused << actor->SendNotifyLock(aCreated);
+      (void)actor->SendNotifyLock(aCreated);
     }
   }
 };
@@ -275,7 +288,7 @@ void SharedWorkerManager::WebTransportNotified(bool aCreated) {
   // 2. The last WebTransport goes away
   if ((aCreated && mWebTransportCount == 1) || mWebTransportCount == 0) {
     for (SharedWorkerParent* actor : mActors) {
-      Unused << actor->SendNotifyWebTransport(aCreated);
+      (void)actor->SendNotifyWebTransport(aCreated);
     }
   }
 };
@@ -284,7 +297,7 @@ void SharedWorkerManager::Terminated() {
   ::mozilla::ipc::AssertIsOnBackgroundThread();
 
   for (SharedWorkerParent* actor : mActors) {
-    Unused << actor->SendTerminate();
+    (void)actor->SendTerminate();
   }
 }
 

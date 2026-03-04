@@ -7,15 +7,15 @@
 #ifndef nsFocusManager_h___
 #define nsFocusManager_h___
 
-#include "nsCycleCollectionParticipant.h"
-#include "nsIContent.h"
-#include "mozilla/dom/Document.h"
-#include "nsIFocusManager.h"
-#include "nsIObserver.h"
-#include "nsWeakReference.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/StaticPtr.h"
+#include "mozilla/dom/Document.h"
+#include "nsCycleCollectionParticipant.h"
+#include "nsIContent.h"
+#include "nsIFocusManager.h"
+#include "nsIObserver.h"
+#include "nsWeakReference.h"
 
 #define FOCUSMANAGER_CONTRACTID "@mozilla.org/focus-manager;1"
 
@@ -98,6 +98,9 @@ class nsFocusManager final : public nsIFocusManager,
    * Return a focused window. Version of nsIFocusManager::GetFocusedWindow.
    */
   nsPIDOMWindowOuter* GetFocusedWindow() const { return mFocusedWindow; }
+  static nsPIDOMWindowOuter* GetFocusedWindowStatic() {
+    return sInstance ? sInstance->GetFocusedWindow() : nullptr;
+  }
 
   /**
    * In the chrome process, retrieves the BrowsingContext corresponding
@@ -140,11 +143,17 @@ class nsFocusManager final : public nsIFocusManager,
     return mActiveBrowsingContextInContent;
   }
 
+  void ContentInserted(nsIContent* aChild, const ContentInsertInfo& aInfo);
+
+  void ContentAppended(nsIContent* aFirstNewContent,
+                       const ContentAppendInfo& aInfo);
+
   /**
    * Called when content has been removed.
    */
   MOZ_CAN_RUN_SCRIPT nsresult ContentRemoved(Document* aDocument,
-                                             nsIContent* aContent);
+                                             nsIContent* aContent,
+                                             const ContentRemoveInfo& aInfo);
 
   void NeedsFlushBeforeEventHandling(mozilla::dom::Element* aElement) {
     if (mFocusedElement == aElement) {
@@ -220,11 +229,16 @@ class nsFocusManager final : public nsIFocusManager,
   MOZ_CAN_RUN_SCRIPT nsresult SetFocusedWindowWithCallerType(
       mozIDOMWindowProxy* aWindowToFocus, mozilla::dom::CallerType aCallerType);
 
+  /** Given a focused frame loader owner, fix up the focus to be consistent */
+  MOZ_CAN_RUN_SCRIPT void FixUpFocusAfterFrameLoaderChange(
+      mozilla::dom::Element&);
   /**
-   * Given an element, which must be the focused element, activate the remote
-   * frame it embeds, if any.
+   * Keep track of whether the focused window is about to go away, and if so fix
+   * up the focus state so that we can know if we're still focused by the time
+   * the frame loader swap ends.
    */
-  void ActivateRemoteFrameIfNeeded(mozilla::dom::Element&, uint64_t aActionId);
+  void FixUpFocusBeforeFrameLoaderChange(mozilla::dom::Element&,
+                                         mozilla::dom::BrowsingContext* aBc);
 
   /**
    * Raises the top-level window aWindow at the widget level.
@@ -302,6 +316,13 @@ class nsFocusManager final : public nsIFocusManager,
    * focused at the widget level.
    */
   void EnsureCurrentWidgetFocused(mozilla::dom::CallerType aCallerType);
+
+  /**
+   * Focus the last focused element in aWindow, after aWindow was raised (or if
+   * aWindow was already raised).
+   */
+  MOZ_CAN_RUN_SCRIPT void MoveFocusToWindowAfterRaise(nsPIDOMWindowOuter*,
+                                                      uint64_t aActionId);
 
   /**
    * Activate or deactivate the window and send the activate/deactivate events.
@@ -760,6 +781,12 @@ class nsFocusManager final : public nsIFocusManager,
                            nsIContent** aFocusedContent);
 
  private:
+  /**
+   * Given an element, which must be the focused element, activate the remote
+   * frame it embeds, if any.
+   */
+  void ActivateRemoteFrameIfNeeded(mozilla::dom::Element&, uint64_t aActionId);
+
   // Notify that the focus state of aElement has changed.  Note that we need to
   // pass in whether the window should show a focus ring before the
   // SetFocusedNode call on it happened when losing focus and after the
@@ -874,6 +901,8 @@ class nsFocusManager final : public nsIFocusManager,
   bool SetActiveBrowsingContextInChrome(mozilla::dom::BrowsingContext* aContext,
                                         uint64_t aActionId);
 
+  void FocusedElementMayHaveMoved(nsIContent* aContent, nsINode* aOldParent);
+
  public:
   // Chrome-only
   // Gets the chrome process notion of what content believes to be
@@ -971,12 +1000,6 @@ class nsFocusManager final : public nsIFocusManager,
   // mFocusedWindow's current content. This may be null if no content is
   // focused.
   RefPtr<mozilla::dom::Element> mFocusedElement;
-
-  // these fields store a content node temporarily while it is being focused
-  // or blurred to ensure that a recursive call doesn't refire the same event.
-  // They will always be cleared afterwards.
-  RefPtr<mozilla::dom::Element> mFirstBlurEvent;
-  RefPtr<mozilla::dom::Element> mFirstFocusEvent;
 
   // keep track of a window while it is being lowered
   nsCOMPtr<nsPIDOMWindowOuter> mWindowBeingLowered;

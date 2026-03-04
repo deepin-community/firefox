@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-crashreporter-title = ભંગાણ અહેવાલ આપનાર
-crashreporter-crash-message = { -brand-short-name } ને સમસ્યા હતી અને ભાંગી પડ્યો.
 crashreporter-plea = સમસ્યાની તપાસ કરવા અને ઉકેલવામાં અમને મદદ કરવા માટે, તમે અમને ભંગાણનો અહેવાલ મોકલી શકો છો.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = વિગતો: { $details }
 crashreporter-no-run-message = આ કાર્યક્રમ કાર્યક્રમ વિક્રેતાને સમસ્યાનો ભંગાણ અહેવાલ મળ્યા પછી ચાલશે. તે સીધો જ ચાલવો જોઈએ નહિં.
 crashreporter-button-details = વિગતો…
 crashreporter-view-report-title = અહેવાલ સમાવિષ્ટો

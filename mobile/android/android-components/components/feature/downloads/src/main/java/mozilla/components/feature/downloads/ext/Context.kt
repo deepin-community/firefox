@@ -4,11 +4,9 @@
 
 package mozilla.components.feature.downloads.ext
 
-import android.annotation.TargetApi
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import androidx.core.content.getSystemService
 
 /**
@@ -17,7 +15,6 @@ import androidx.core.content.getSystemService
  *
  * Deprecated in Android Q, use MediaStore on that version.
  */
-@TargetApi(Build.VERSION_CODES.P)
 @Suppress("Deprecation", "LongParameterList")
 internal fun Context.addCompletedDownload(
     title: String,
@@ -30,7 +27,6 @@ internal fun Context.addCompletedDownload(
     uri: Uri?,
     referer: Uri?,
 ) = getSystemService<DownloadManager>()!!.run {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         addCompletedDownload(
             title,
             description,
@@ -42,15 +38,4 @@ internal fun Context.addCompletedDownload(
             uri,
             referer,
         )
-    } else {
-        addCompletedDownload(
-            title,
-            description,
-            isMediaScannerScannable,
-            mimeType,
-            path,
-            length,
-            showNotification,
-        )
-    }
 }

@@ -7,7 +7,7 @@ const { PreferencesBackupResource } = ChromeUtils.importESModule(
   "resource:///modules/backup/PreferencesBackupResource.sys.mjs"
 );
 const { SearchUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/SearchUtils.sys.mjs"
+  "moz-src:///toolkit/components/search/SearchUtils.sys.mjs"
 );
 
 /**
@@ -17,7 +17,7 @@ const { SearchUtils } = ChromeUtils.importESModule(
 add_task(async function test_measure() {
   Services.fog.testResetFOG();
 
-  const EXPECTED_PREFERENCES_KILOBYTES_SIZE = 415;
+  const EXPECTED_PREFERENCES_KILOBYTES_SIZE = 55;
   const tempDir = await IOUtils.createUniqueDirectory(
     PathUtils.tempDir,
     "PreferencesBackupResource-measure-test"
@@ -25,8 +25,6 @@ add_task(async function test_measure() {
   const mockFiles = [
     { path: "prefs.js", sizeInKB: 20 },
     { path: "xulstore.json", sizeInKB: 1 },
-    { path: "permissions.sqlite", sizeInKB: 100 },
-    { path: "content-prefs.sqlite", sizeInKB: 260 },
     { path: "containers.json", sizeInKB: 1 },
     { path: "handlers.json", sizeInKB: 1 },
     { path: "search.json.mozlz4", sizeInKB: 1 },
@@ -89,14 +87,6 @@ add_task(async function test_backup() {
   ];
   await createTestFiles(sourcePath, simpleCopyFiles);
 
-  // Create our fake database files. We don't expect these to be copied to the
-  // staging directory in this test due to our stubbing of the backup method, so
-  // we don't include it in `simpleCopyFiles`.
-  await createTestFiles(sourcePath, [
-    { path: "permissions.sqlite" },
-    { path: "content-prefs.sqlite" },
-  ]);
-
   // We have no need to test that Sqlite.sys.mjs's backup method is working -
   // this is something that is tested in Sqlite's own tests. We can just make
   // sure that it's being called using sinon. Unfortunately, we cannot do the
@@ -111,31 +101,18 @@ add_task(async function test_backup() {
     stagingPath,
     sourcePath
   );
-  Assert.equal(
+  Assert.deepEqual(
     manifestEntry,
-    null,
-    "PreferencesBackupResource.backup should return null as its ManifestEntry"
+    { profilePath: sourcePath },
+    "PreferencesBackupResource.backup should return the original profile path " +
+      "in its ManifestEntry"
   );
 
   await assertFilesExist(stagingPath, simpleCopyFiles);
 
-  // Next, we'll make sure that the Sqlite connection had `backup` called on it
-  // with the right arguments.
   Assert.ok(
-    fakeConnection.backup.calledTwice,
-    "Called backup the expected number of times for all connections"
-  );
-  Assert.ok(
-    fakeConnection.backup.firstCall.calledWith(
-      PathUtils.join(stagingPath, "permissions.sqlite")
-    ),
-    "Called backup on the permissions.sqlite Sqlite connection"
-  );
-  Assert.ok(
-    fakeConnection.backup.secondCall.calledWith(
-      PathUtils.join(stagingPath, "content-prefs.sqlite")
-    ),
-    "Called backup on the content-prefs.sqlite Sqlite connection"
+    fakeConnection.backup.notCalled,
+    "No sqlite connections should have been made"
   );
 
   // And we'll make sure that preferences were properly written out.
@@ -149,6 +126,39 @@ add_task(async function test_backup() {
 
   sandbox.restore();
 });
+
+/**
+ * Check that prefs.js has "browser.backup.profile-restoration-date".  Due to
+ * concerns over potential time skips in automation, we only check that the
+ * timestamp is not more than a week before/after now (we would expect the
+ * difference to be more like a few milliseconds).
+ *
+ * @param {string} prefsJsPath
+ */
+async function checkPrefsJsHasValidRecoveryTime(prefsJsPath) {
+  Assert.equal(
+    Services.prefs.getPrefType("browser.backup.profile-restoration-date"),
+    Services.prefs.PREF_INVALID,
+    "Restoration pref not set since current profile was not restored"
+  );
+
+  // NB: The non-profile-restoration-date part of the prefs file is junk made
+  // by `createTestFiles`.  We don't care about that here.
+  const contents = await IOUtils.readUTF8(prefsJsPath);
+  const dateRegex =
+    /pref\("browser\.backup\.profile-restoration-date", (\d+)\);/;
+  let restoreDate = contents.match(dateRegex);
+  Assert.equal(restoreDate.length, 2, "found the restoration date");
+
+  const kOneWeekAgoInSec =
+    60 /* sec/min */ * 60 /* min/hr */ * 24 /* hr/day */ * 7; /* day/wk */
+  const nowInSeconds = Math.round(Date.now() / 1000);
+  Assert.lessOrEqual(
+    Math.abs(nowInSeconds - Number(restoreDate[1])),
+    kOneWeekAgoInSec,
+    "timestamp was within one week of now"
+  );
+}
 
 /**
  * Test that the recover method correctly copies items from the recovery
@@ -169,8 +179,6 @@ add_task(async function test_recover() {
   const simpleCopyFiles = [
     { path: "prefs.js" },
     { path: "xulstore.json" },
-    { path: "permissions.sqlite" },
-    { path: "content-prefs.sqlite" },
     { path: "containers.json" },
     { path: "handlers.json" },
     { path: "user.js" },
@@ -184,21 +192,25 @@ add_task(async function test_recover() {
   // ensure that PreferencesBackupResource knows how to update the
   // verification hashes for non-default engines.
   const TEST_SEARCH_ENGINE_LOAD_PATH = "some/path/on/disk";
+  const TEST_SEARCH_ENGINE_LOAD_PATH_HASH = "some pre-existing hash";
   const TEST_DEFAULT_ENGINE_ID = "bugle";
+  const TEST_DEFAULT_ENGINE_ID_HASH = "default engine original hash";
   const TEST_PRIVATE_DEFAULT_ENGINE_ID = "goose";
+  const TEST_PRIVATE_DEFAULT_ENGINE_ID_HASH =
+    "private default engine original hash";
 
   let fakeSearchPrefs = {
     metaData: {
       defaultEngineId: TEST_DEFAULT_ENGINE_ID,
-      defaultEngineIdHash: "default engine original hash",
+      defaultEngineIdHash: TEST_DEFAULT_ENGINE_ID_HASH,
       privateDefaultEngineId: TEST_PRIVATE_DEFAULT_ENGINE_ID,
-      privateDefaultEngineIdHash: "private default engine original hash",
+      privateDefaultEngineIdHash: TEST_PRIVATE_DEFAULT_ENGINE_ID_HASH,
     },
     engines: [
       {
         _loadPath: TEST_SEARCH_ENGINE_LOAD_PATH,
         _metaData: {
-          loadPathHash: "some pre-existing hash",
+          loadPathHash: TEST_SEARCH_ENGINE_LOAD_PATH_HASH,
         },
       },
     ],
@@ -214,11 +226,26 @@ add_task(async function test_recover() {
   );
 
   const EXPECTED_HASH = "this is some newly generated hash";
-  sandbox.stub(SearchUtils, "getVerificationHash").returns(EXPECTED_HASH);
+  sandbox
+    .stub(SearchUtils, "getVerificationHash")
+    .onCall(0)
+    .returns(TEST_SEARCH_ENGINE_LOAD_PATH_HASH)
+    .onCall(1)
+    .returns(EXPECTED_HASH)
+    .onCall(2)
+    .returns(TEST_DEFAULT_ENGINE_ID_HASH)
+    .onCall(3)
+    .returns(EXPECTED_HASH)
+    .onCall(4)
+    .returns(TEST_PRIVATE_DEFAULT_ENGINE_ID_HASH)
+    .onCall(5)
+    .returns(EXPECTED_HASH);
+
+  const PRETEND_ORIGINAL_PATH = "some/original/path";
 
   // The backup method is expected to have returned a null ManifestEntry
   let postRecoveryEntry = await preferencesBackupResource.recover(
-    null /* manifestEntry */,
+    { profilePath: PRETEND_ORIGINAL_PATH },
     recoveryPath,
     destProfilePath
   );
@@ -229,35 +256,59 @@ add_task(async function test_recover() {
   );
 
   await assertFilesExist(destProfilePath, simpleCopyFiles);
+  await checkPrefsJsHasValidRecoveryTime(
+    PathUtils.join(destProfilePath, "prefs.js")
+  );
 
   // Now ensure that the verification was properly recomputed. We should
-  // Have called getVerificationHash 3 times - once each for:
+  // Have called getVerificationHash 6 times - twice each for:
   //
   // - The single engine in the engines list
   // - The defaultEngineId
   // - The privateDefaultEngineId
+  //
+  // The first call is to verify the hash against the original profile path,
+  // and the second call is to generate the hash for the new profile path.
   Assert.equal(
     SearchUtils.getVerificationHash.callCount,
-    3,
+    6,
     "SearchUtils.getVerificationHash was called the right number of times."
   );
   Assert.ok(
     SearchUtils.getVerificationHash
       .getCall(0)
-      .calledWith(TEST_SEARCH_ENGINE_LOAD_PATH, destProfilePath),
+      .calledWith(TEST_SEARCH_ENGINE_LOAD_PATH, PRETEND_ORIGINAL_PATH),
     "SearchUtils.getVerificationHash first call called with the right arguments."
   );
   Assert.ok(
     SearchUtils.getVerificationHash
       .getCall(1)
-      .calledWith(TEST_DEFAULT_ENGINE_ID, destProfilePath),
+      .calledWith(TEST_SEARCH_ENGINE_LOAD_PATH, destProfilePath),
     "SearchUtils.getVerificationHash second call called with the right arguments."
   );
   Assert.ok(
     SearchUtils.getVerificationHash
       .getCall(2)
-      .calledWith(TEST_PRIVATE_DEFAULT_ENGINE_ID, destProfilePath),
+      .calledWith(TEST_DEFAULT_ENGINE_ID, PRETEND_ORIGINAL_PATH),
     "SearchUtils.getVerificationHash third call called with the right arguments."
+  );
+  Assert.ok(
+    SearchUtils.getVerificationHash
+      .getCall(3)
+      .calledWith(TEST_DEFAULT_ENGINE_ID, destProfilePath),
+    "SearchUtils.getVerificationHash fourth call called with the right arguments."
+  );
+  Assert.ok(
+    SearchUtils.getVerificationHash
+      .getCall(4)
+      .calledWith(TEST_PRIVATE_DEFAULT_ENGINE_ID, PRETEND_ORIGINAL_PATH),
+    "SearchUtils.getVerificationHash fifth call called with the right arguments."
+  );
+  Assert.ok(
+    SearchUtils.getVerificationHash
+      .getCall(5)
+      .calledWith(TEST_PRIVATE_DEFAULT_ENGINE_ID, destProfilePath),
+    "SearchUtils.getVerificationHash sixth call called with the right arguments."
   );
 
   let recoveredSearchPrefs = await IOUtils.readJSON(

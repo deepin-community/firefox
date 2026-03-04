@@ -18,8 +18,6 @@
 
 #include "wasm/WasmProcess.h"
 
-#include "mozilla/Attributes.h"
-
 #include "gc/Memory.h"
 #include "threading/ExclusiveData.h"
 #include "vm/MutexIDs.h"
@@ -107,33 +105,11 @@ bool wasm::InCompiledCode(void* pc) {
   return LookupBuiltinThunk(pc, &codeRange, &codeBase);
 }
 
-/**
- * ReadLockFlag maintains a flag that can be mutated multiple times before it
- * is read, at which point it maintains the same value.
- */
-class ReadLockFlag {
- private:
-  bool enabled_;
-  bool read_;
-
- public:
-  ReadLockFlag() : enabled_(false), read_(false) {}
-
-  bool get() {
-    read_ = true;
-    return enabled_;
-  }
-
-  bool set(bool enabled) {
-    if (read_) {
-      return false;
-    }
-    enabled_ = enabled;
-    return true;
-  }
-};
-
 #ifdef WASM_SUPPORTS_HUGE_MEMORY
+#  if defined(__riscv)
+// On riscv64, Sv39 is not enough for huge memory, so we require at least Sv48.
+static const size_t MinAddressBitsForHugeMemory = 47;
+#  else
 /*
  * Some 64 bit systems greatly limit the range of available virtual memory. We
  * require about 6GiB for each wasm huge memory, which can exhaust the address
@@ -145,6 +121,7 @@ class ReadLockFlag {
  * for error in detecting the address space limit.
  */
 static const size_t MinAddressBitsForHugeMemory = 38;
+#  endif
 
 /*
  * In addition to the above, some systems impose an independent limit on the
@@ -154,51 +131,22 @@ static const size_t MinVirtualMemoryLimitForHugeMemory =
     size_t(1) << MinAddressBitsForHugeMemory;
 #endif
 
-ExclusiveData<ReadLockFlag> sHugeMemoryEnabled32(
-    mutexid::WasmHugeMemoryEnabled);
-ExclusiveData<ReadLockFlag> sHugeMemoryEnabled64(
-    mutexid::WasmHugeMemoryEnabled);
+static bool sHugeMemoryEnabled32 = false;
 
-static MOZ_NEVER_INLINE bool IsHugeMemoryEnabledHelper32() {
-  auto state = sHugeMemoryEnabled32.lock();
-  return state->get();
-}
-
-static MOZ_NEVER_INLINE bool IsHugeMemoryEnabledHelper64() {
-  auto state = sHugeMemoryEnabled64.lock();
-  return state->get();
-}
-
-bool wasm::IsHugeMemoryEnabled(wasm::IndexType t) {
-  if (t == IndexType::I32) {
-    static bool enabled32 = IsHugeMemoryEnabledHelper32();
-    return enabled32;
+bool wasm::IsHugeMemoryEnabled(wasm::AddressType t, wasm::PageSize sz) {
+  if (t == AddressType::I64 || sz != wasm::PageSize::Standard) {
+    // No support for huge memory with 64-bit memories or custom page sizes.
+    return false;
   }
-  static bool enabled64 = IsHugeMemoryEnabledHelper64();
-  return enabled64;
-}
-
-bool wasm::DisableHugeMemory() {
-  bool ok = true;
-  {
-    auto state = sHugeMemoryEnabled64.lock();
-    ok = ok && state->set(false);
-  }
-  {
-    auto state = sHugeMemoryEnabled32.lock();
-    ok = ok && state->set(false);
-  }
-  return ok;
+  return sHugeMemoryEnabled32;
 }
 
 void ConfigureHugeMemory() {
 #ifdef WASM_SUPPORTS_HUGE_MEMORY
-  bool ok = true;
+  MOZ_ASSERT(!sHugeMemoryEnabled32);
 
-  {
-    // Currently no huge memory for IndexType::I64, so always set to false.
-    auto state = sHugeMemoryEnabled64.lock();
-    ok = ok && state->set(false);
+  if (JS::Prefs::wasm_disable_huge_memory()) {
+    return;
   }
 
   if (gc::SystemAddressBits() < MinAddressBitsForHugeMemory) {
@@ -210,12 +158,7 @@ void ConfigureHugeMemory() {
     return;
   }
 
-  {
-    auto state = sHugeMemoryEnabled32.lock();
-    ok = ok && state->set(true);
-  }
-
-  MOZ_RELEASE_ASSERT(ok);
+  sHugeMemoryEnabled32 = true;
 #endif
 }
 
@@ -223,16 +166,7 @@ const TagType* wasm::sWrappedJSValueTagType = nullptr;
 
 static bool InitTagForJSValue() {
   MutableTagType type = js_new<TagType>();
-  if (!type) {
-    return false;
-  }
-
-  ValTypeVector args;
-  if (!args.append(ValType(RefType::extern_()))) {
-    return false;
-  }
-
-  if (!type->initialize(std::move(args))) {
+  if (!type || !type->initialize(StaticTypeDefs::jsTag)) {
     return false;
   }
   MOZ_ASSERT(WrappedJSValueTagType_ValueOffset == type->argOffsets()[0]);

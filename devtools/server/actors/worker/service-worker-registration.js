@@ -24,19 +24,20 @@ XPCOMUtils.defineLazyServiceGetter(
   this,
   "swm",
   "@mozilla.org/serviceworkers/manager;1",
-  "nsIServiceWorkerManager"
+  Ci.nsIServiceWorkerManager
 );
 
 XPCOMUtils.defineLazyServiceGetter(
   this,
   "PushService",
   "@mozilla.org/push/Service;1",
-  "nsIPushService"
+  Ci.nsIPushService
 );
 
 class ServiceWorkerRegistrationActor extends Actor {
   /**
    * Create the ServiceWorkerRegistrationActor
+   *
    * @param DevToolsServerConnection conn
    *   The server connection.
    * @param ServiceWorkerRegistrationInfo registration
@@ -241,17 +242,28 @@ class ServiceWorkerRegistrationActor extends Actor {
   _createServiceWorkerActors() {
     const { evaluatingWorker, installingWorker, waitingWorker, activeWorker } =
       this._registration;
+    const origin = this._registration.principal.origin;
 
     this._evaluatingWorker = new ServiceWorkerActor(
       this.conn,
-      evaluatingWorker
+      evaluatingWorker,
+      origin
     );
     this._installingWorker = new ServiceWorkerActor(
       this.conn,
-      installingWorker
+      installingWorker,
+      origin
     );
-    this._waitingWorker = new ServiceWorkerActor(this.conn, waitingWorker);
-    this._activeWorker = new ServiceWorkerActor(this.conn, activeWorker);
+    this._waitingWorker = new ServiceWorkerActor(
+      this.conn,
+      waitingWorker,
+      origin
+    );
+    this._activeWorker = new ServiceWorkerActor(
+      this.conn,
+      activeWorker,
+      origin
+    );
 
     // Add the ServiceWorker actors as children of this ServiceWorkerRegistration actor,
     // assigning them valid actorIDs.

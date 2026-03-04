@@ -3,15 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-policies-title = Polisïau Mentrau
-
+aboutpolicies-page-heading =
+    .heading = Ynghylch Polisïau
 # 'Active' is used to describe the policies that are currently active
 active-policies-tab = Gweithredol
 errors-tab = Gwallau
 documentation-tab = Dogfennaeth
-
 no-specified-policies-message = Mae'r gwasanaeth Polisïau Menter yn weithredol ond nid oes unrhyw bolisïau wedi'u galluogi.
 inactive-message = Mae'r gwasanaeth Polisïau Menter yn anweithredol.
-
 policy-name = Enw Polisi
 policy-value = Gwerth Polisi
 policy-errors = Gwallau Polisi

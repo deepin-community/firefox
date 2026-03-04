@@ -25,6 +25,7 @@ class MockCDPSession extends EventEmitter<CDPSessionEvents> {
   connection() {
     return undefined;
   }
+  readonly detached = false;
   async detach() {}
   id() {
     return '1';
@@ -1545,7 +1546,7 @@ describe('NetworkManager', () => {
     expect(
       responses.map(r => {
         return r.status();
-      })
+      }),
     ).toEqual([200, 302, 200]);
   });
 });

@@ -11,8 +11,7 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManagerException
@@ -21,14 +20,12 @@ import mozilla.components.support.utils.ext.getParcelableExtraCompat
 import org.mozilla.samples.browser.BrowserActivity
 import org.mozilla.samples.browser.R
 import org.mozilla.samples.browser.ext.components
-import mozilla.components.feature.addons.R as addonsR
 
 /**
  * An activity to show the details of a installed add-on.
  */
 @Suppress("LargeClass")
 class InstalledAddonDetailsActivity : AppCompatActivity() {
-    private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,27 +35,22 @@ class InstalledAddonDetailsActivity : AppCompatActivity() {
     }
 
     private fun bindAddon(addon: Addon) {
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val context = baseContext
-                val addons = context.components.addonManager.getAddons()
-                scope.launch(Dispatchers.Main) {
-                    addons.find { addon.id == it.id }.let {
-                        if (it == null) {
-                            throw AddonManagerException(Exception("Addon ${addon.id} not found"))
-                        } else {
-                            bindUI(it)
-                        }
-                    }
+                // Call getAddonByID directly. It will internally switch to ioDispatcher.
+                val latestAddon = context.components.addonManager.getAddonByID(addon.id)
+                if (latestAddon == null) {
+                    throw AddonManagerException(Exception("Addon ${addon.id} not found"))
+                } else {
+                    bindUI(latestAddon)
                 }
             } catch (e: AddonManagerException) {
-                scope.launch(Dispatchers.Main) {
-                    Toast.makeText(
-                        baseContext,
-                        addonsR.string.mozac_feature_addons_failed_to_query_extensions,
-                        Toast.LENGTH_SHORT,
-                    ).show()
-                }
+                Toast.makeText(
+                    baseContext,
+                    R.string.mozac_feature_addons_failed_to_query_extensions,
+                    Toast.LENGTH_SHORT,
+                ).show()
             }
         }
     }
@@ -89,13 +81,13 @@ class InstalledAddonDetailsActivity : AppCompatActivity() {
                     onSuccess = {
                         switch.isChecked = true
                         showAddonToast(
-                            addonsR.string.mozac_feature_addons_successfully_enabled,
+                            R.string.mozac_feature_addons_successfully_enabled,
                             addon,
                         )
                     },
                     onError = {
                         showAddonToast(
-                            addonsR.string.mozac_feature_addons_failed_to_enable,
+                            R.string.mozac_feature_addons_failed_to_enable,
                             addon,
                         )
                     },
@@ -106,13 +98,13 @@ class InstalledAddonDetailsActivity : AppCompatActivity() {
                     onSuccess = {
                         switch.isChecked = false
                         showAddonToast(
-                            addonsR.string.mozac_feature_addons_successfully_disabled,
+                            R.string.mozac_feature_addons_successfully_disabled,
                             addon,
                         )
                     },
                     onError = {
                         showAddonToast(
-                            addonsR.string.mozac_feature_addons_failed_to_disable,
+                            R.string.mozac_feature_addons_failed_to_disable,
                             addon,
                         )
                     },
@@ -175,14 +167,14 @@ class InstalledAddonDetailsActivity : AppCompatActivity() {
                 addon,
                 onSuccess = {
                     showAddonToast(
-                        addonsR.string.mozac_feature_addons_successfully_uninstalled,
+                        R.string.mozac_feature_addons_successfully_uninstalled,
                         addon,
                     )
                     finish()
                 },
                 onError = { _, _ ->
                     showAddonToast(
-                        addonsR.string.mozac_feature_addons_failed_to_uninstall,
+                        R.string.mozac_feature_addons_failed_to_uninstall,
                         addon,
                     )
                 },
@@ -190,7 +182,10 @@ class InstalledAddonDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun showAddonToast(@StringRes textId: Int, addon: Addon) {
+    private fun showAddonToast(
+        @StringRes textId: Int,
+        addon: Addon,
+    ) {
         Toast.makeText(
             this,
             getString(textId, addon.translateName(context = this)),

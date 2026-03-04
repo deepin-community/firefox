@@ -57,19 +57,20 @@ export async function assertReject(
   p: Promise<unknown>,
   { allowMissingStack = false, message }: ExceptionCheckOptions = {}
 ): Promise<void> {
-  try {
-    await p;
-    unreachable(message);
-  } catch (ex) {
-    // Asserted as expected
-    if (!allowMissingStack) {
-      const m = message ? ` (${message})` : '';
-      assert(
-        ex instanceof Error && typeof ex.stack === 'string',
-        'threw as expected, but missing stack' + m
-      );
+  await p.then(
+    () => {
+      unreachable(message);
+    },
+    ex => {
+      assert(ex instanceof Error, 'rejected with a non-Error object');
+      assert(ex.name === expectedName, `rejected with name ${ex.name} instead of ${expectedName}`);
+      // Asserted as expected
+      if (!allowMissingStack) {
+        const m = message ? ` (${message})` : '';
+        assert(typeof ex.stack === 'string', 'threw as expected, but missing stack' + m);
+      }
     }
-  }
+  );
 }
 
 /**
@@ -258,6 +259,15 @@ export function mapLazy<T, R>(xs: Iterable<T>, f: (x: T) => R): Iterable<R> {
   };
 }
 
+/** Count the number of elements `x` for which `predicate(x)` is true. */
+export function count<T>(xs: Iterable<T>, predicate: (x: T) => boolean): number {
+  let count = 0;
+  for (const x of xs) {
+    if (predicate(x)) count++;
+  }
+  return count;
+}
+
 const ReorderOrders = {
   forward: true,
   backward: true,
@@ -291,6 +301,16 @@ export function reorder<R>(order: ReorderOrder, arr: R[]): R[] {
       return shiftByHalf(arr);
     }
   }
+}
+
+/**
+ * A typed version of Object.entries
+ */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export function typedEntries<T extends Record<string, any>>(obj: T): Array<[keyof T, T[keyof T]]> {
+  // The cast is done once, inside the helper function,
+  // keeping the call site clean and type-safe.
+  return Object.entries(obj) as Array<[keyof T, T[keyof T]]>;
 }
 
 const TypedArrayBufferViewInstances = [
@@ -475,4 +495,26 @@ export function filterUniqueValueTestVariants(valueTestVariants: ValueTestVarian
  */
 export function makeValueTestVariant(base: number, variant: ValueTestVariant) {
   return base * variant.mult + variant.add;
+}
+
+/**
+ * Use instead of features.has because feature's has takes any string
+ * and we want to prevent typos.
+ */
+export function hasFeature(features: GPUSupportedFeatures, feature: GPUFeatureName) {
+  // eslint-disable-next-line no-restricted-syntax
+  return features.has(feature);
+}
+
+/** Convenience helper for combinations of 1-2 usage bits from a list of usage bits. */
+export function combinationsOfOneOrTwoUsages(usages: readonly number[]) {
+  const combinations = [];
+  for (const usage0 of usages) {
+    for (const usage1 of usages) {
+      if (usage0 <= usage1) {
+        combinations.push(usage0 | usage1);
+      }
+    }
+  }
+  return combinations;
 }

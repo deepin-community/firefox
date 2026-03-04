@@ -9,7 +9,8 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  UrlbarProviderTopSites: "resource:///modules/UrlbarProviderTopSites.sys.mjs",
+  UrlbarProviderTopSites:
+    "moz-src:///browser/components/urlbar/UrlbarProviderTopSites.sys.mjs",
 });
 
 const TEST_URLS = [];
@@ -35,7 +36,7 @@ add_setup(async function () {
   await TestUtils.waitForTick();
 
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.urlbar.suggest.quickactions", false]],
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
   });
 
   // Add some URLs to populate both history and top sites. Each URL needs to
@@ -196,16 +197,14 @@ add_task(async function topSites_nonTopSitesResults() {
     let provider = new UrlbarTestUtils.TestProvider({
       priority: lazy.UrlbarProviderTopSites.PRIORITY,
       results: [
-        Object.assign(
-          new UrlbarResult(
-            UrlbarUtils.RESULT_TYPE.URL,
-            UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-            {
-              url: suggestedIndexURL,
-            }
-          ),
-          { suggestedIndex: 0 }
-        ),
+        new UrlbarResult({
+          type: UrlbarUtils.RESULT_TYPE.URL,
+          source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+          suggestedIndex: 0,
+          payload: {
+            url: suggestedIndexURL,
+          },
+        }),
       ],
     });
     UrlbarProvidersManager.registerProvider(provider);

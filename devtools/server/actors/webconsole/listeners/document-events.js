@@ -38,23 +38,21 @@ exports.WILL_NAVIGATE_TIME_SHIFT = WILL_NAVIGATE_TIME_SHIFT;
 /**
  * Forward `DOMContentLoaded` and `load` events with precise timing
  * of when events happened according to window.performance numbers.
- *
- * @constructor
- * @param WindowGlobalTarget targetActor
  */
-function DocumentEventsListener(targetActor) {
-  this.targetActor = targetActor;
+class DocumentEventsListener extends EventEmitter {
+  /**
+   * @param {WindowGlobalTarget} targetActor
+   */
+  constructor(targetActor) {
+    super();
 
-  EventEmitter.decorate(this);
-  this.onWillNavigate = this.onWillNavigate.bind(this);
-  this.onWindowReady = this.onWindowReady.bind(this);
-  this.onContentLoaded = this.onContentLoaded.bind(this);
-  this.onLoad = this.onLoad.bind(this);
-}
+    this.targetActor = targetActor;
 
-exports.DocumentEventsListener = DocumentEventsListener;
-
-DocumentEventsListener.prototype = {
+    this.onWillNavigate = this.onWillNavigate.bind(this);
+    this.onWindowReady = this.onWindowReady.bind(this);
+    this.onContentLoaded = this.onContentLoaded.bind(this);
+    this.onLoad = this.onLoad.bind(this);
+  }
   listen() {
     // When EFT is enabled, the Target Actor won't dispatch any will-navigate/window-ready event
     // Instead listen to WebProgressListener interface directly, so that we can later drop the whole
@@ -88,7 +86,7 @@ DocumentEventsListener.prototype = {
       window: this.targetActor.window,
       isTopLevel: true,
     });
-  },
+  }
 
   onWillNavigate({ isTopLevel, newURI, navigationStart, isFrameSwitching }) {
     // Ignore iframes
@@ -101,7 +99,7 @@ DocumentEventsListener.prototype = {
       newURI,
       isFrameSwitching,
     });
-  },
+  }
 
   onWindowReady({ window, isTopLevel, isFrameSwitching }) {
     // Ignore iframes
@@ -109,7 +107,13 @@ DocumentEventsListener.prototype = {
       return;
     }
 
-    const time = window.performance.timing.navigationStart;
+    if (!window.docShell) {
+      // Bail out if the window is being destroyed and the docShell cannot be
+      // retrieved anymore.
+      return;
+    }
+
+    const time = this._getPerformanceTiming(window, "navigationStart");
 
     this.emit("dom-loading", {
       time,
@@ -151,7 +155,7 @@ DocumentEventsListener.prototype = {
     } else {
       this.onLoad({ target: window.document }, isFrameSwitching);
     }
-  },
+  }
 
   onContentLoaded(event, isFrameSwitching) {
     if (this.destroyed) {
@@ -161,9 +165,9 @@ DocumentEventsListener.prototype = {
     // on the main document, that is when its Document.readyState changes to
     // 'interactive' and the corresponding readystatechange event is thrown
     const window = event.target.defaultView;
-    const time = window.performance.timing.domInteractive;
+    const time = this._getPerformanceTiming(window, "domInteractive");
     this.emit("dom-interactive", { time, isFrameSwitching });
-  },
+  }
 
   onLoad(event, isFrameSwitching) {
     if (this.destroyed) {
@@ -173,13 +177,13 @@ DocumentEventsListener.prototype = {
     // on the main document, that is when its Document.readyState changes to
     // 'complete' and the corresponding readystatechange event is thrown
     const window = event.target.defaultView;
-    const time = window.performance.timing.domComplete;
+    const time = this._getPerformanceTiming(window, "domComplete");
     this.emit("dom-complete", {
       time,
       isFrameSwitching,
       hasNativeConsoleAPI: this.hasNativeConsoleAPI(window),
     });
-  },
+  }
 
   onStateChange(progress, request, flag) {
     progress.QueryInterface(Ci.nsIDocShell);
@@ -193,24 +197,24 @@ DocumentEventsListener.prototype = {
     const isWindow = flag & Ci.nsIWebProgressListener.STATE_IS_WINDOW;
     const window = progress.DOMWindow;
     if (isDocument && isStop) {
-      const time = window.performance.timing.domInteractive;
+      const time = this._getPerformanceTiming(window, "domInteractive");
       this.emit("dom-interactive", { time });
     } else if (isWindow && isStop) {
-      const time = window.performance.timing.domComplete;
+      const time = this._getPerformanceTiming(window, "domComplete");
       this.emit("dom-complete", {
         time,
         hasNativeConsoleAPI: this.hasNativeConsoleAPI(window),
       });
     }
-  },
+  }
 
   /**
    * Tells if the window.console object is native or overwritten by script in
    * the page.
    *
-   * @param nsIDOMWindow window
+   * @param {Window} window
    *        The window object you want to check.
-   * @return boolean
+   * @return {boolean}
    *         True if the window.console object is native, or false otherwise.
    */
   hasNativeConsoleAPI(window) {
@@ -228,7 +232,7 @@ DocumentEventsListener.prototype = {
       // ignore
     }
     return isNative;
-  },
+  }
 
   destroy() {
     // Also use a flag to silent onContentLoad and onLoad events
@@ -236,16 +240,45 @@ DocumentEventsListener.prototype = {
     this.targetActor.off("will-navigate", this.onWillNavigate);
     this.targetActor.off("window-ready", this.onWindowReady);
     if (this.webProgress) {
-      this.webProgress.removeProgressListener(
-        this,
-        Ci.nsIWebProgress.NOTIFY_STATE_WINDOW |
-          Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT
-      );
+      // Bug 1904733 - `removeProgressListener` may throw on toolbox/document destruction and lead to intermittent failure
+      try {
+        this.webProgress.removeProgressListener(
+          this,
+          Ci.nsIWebProgress.NOTIFY_STATE_WINDOW |
+            Ci.nsIWebProgress.NOTIFY_STATE_DOCUMENT
+        );
+      } catch (e) {}
+      this.webProgress = null;
     }
-  },
+  }
 
-  QueryInterface: ChromeUtils.generateQI([
+  /**
+   * Safe getter for performance timings on the window object.
+   * See Bug 1934520.
+   *
+   * @param {Window} window
+   *     The window object for which the performance timing should be retrieved.
+   * @param {string} timing
+   *     The name of the timing property to retrieve.
+   *
+   * @returns {number}
+   *     The performance timing as a timestamp (milliseconds since epoch) or -1
+   *     if the performance object is not available.
+   */
+  _getPerformanceTiming(window, timing) {
+    if (!window.performance?.timing) {
+      // Some windows, such as the ones created for broken XML documents, don't
+      // have a valid performance object.
+      return -1;
+    }
+
+    return window.performance.timing[timing];
+  }
+
+  QueryInterface = ChromeUtils.generateQI([
     "nsIWebProgressListener",
     "nsISupportsWeakReference",
-  ]),
-};
+  ]);
+}
+
+exports.DocumentEventsListener = DocumentEventsListener;

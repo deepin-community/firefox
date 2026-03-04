@@ -4,63 +4,60 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "js/Value.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/TaskQueue.h"
 #include "mozilla/dom/FetchDriver.h"
 
-#include "mozilla/dom/FetchPriority.h"
-#include "mozilla/dom/ReferrerInfo.h"
-#include "nsIAsyncVerifyRedirectCallback.h"
+#include "Fetch.h"
+#include "FetchLog.h"
+#include "FetchUtil.h"
+#include "InternalRequest.h"
+#include "InternalResponse.h"
+#include "js/Value.h"
+#include "mozilla/DebugOnly.h"
+#include "mozilla/PreloaderBase.h"
+#include "mozilla/StaticPrefs_browser.h"
+#include "mozilla/StaticPrefs_javascript.h"
+#include "mozilla/StaticPrefs_network.h"
+#include "mozilla/StaticPrefs_privacy.h"
+#include "mozilla/TaskQueue.h"
+#include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/dom/Document.h"
-#include "nsIBaseChannel.h"
-#include "nsICookieJarSettings.h"
-#include "nsIFile.h"
-#include "nsIInputStream.h"
-#include "nsIInterceptionInfo.h"
-#include "nsIOutputStream.h"
-#include "nsIFileChannel.h"
-#include "nsIHttpChannel.h"
-#include "nsIHttpChannelInternal.h"
-#include "nsISupportsPriority.h"
-#include "nsIThreadRetargetableRequest.h"
-#include "nsIUploadChannel2.h"
-#include "nsIInterfaceRequestorUtils.h"
-#include "nsIPipe.h"
-#include "nsIRedirectHistoryEntry.h"
-
+#include "mozilla/dom/FetchPriority.h"
+#include "mozilla/dom/File.h"
+#include "mozilla/dom/PerformanceStorage.h"
+#include "mozilla/dom/PerformanceTiming.h"
+#include "mozilla/dom/ReferrerInfo.h"
+#include "mozilla/dom/ServiceWorkerInterceptController.h"
+#include "mozilla/dom/UserActivation.h"
+#include "mozilla/dom/WorkerCommon.h"
+#include "mozilla/ipc/PBackgroundSharedTypes.h"
+#include "mozilla/net/ContentRange.h"
+#include "mozilla/net/InterceptionInfo.h"
+#include "mozilla/net/NeckoChannelParams.h"
 #include "nsContentPolicyUtils.h"
 #include "nsDataChannel.h"
 #include "nsDataHandler.h"
+#include "nsHttpChannel.h"
+#include "nsIAsyncVerifyRedirectCallback.h"
+#include "nsIBaseChannel.h"
+#include "nsICookieJarSettings.h"
+#include "nsIFile.h"
+#include "nsIFileChannel.h"
+#include "nsIHttpChannel.h"
+#include "nsIHttpChannelInternal.h"
+#include "nsIInputStream.h"
+#include "nsIInterceptionInfo.h"
+#include "nsIInterfaceRequestorUtils.h"
+#include "nsIOutputStream.h"
+#include "nsIPipe.h"
+#include "nsIRedirectHistoryEntry.h"
+#include "nsISupportsPriority.h"
+#include "nsIThreadRetargetableRequest.h"
+#include "nsIUploadChannel2.h"
 #include "nsNetUtil.h"
 #include "nsPrintfCString.h"
 #include "nsProxyRelease.h"
 #include "nsStreamUtils.h"
 #include "nsStringStream.h"
-#include "nsHttpChannel.h"
-
-#include "mozilla/dom/BlobURLProtocolHandler.h"
-#include "mozilla/dom/File.h"
-#include "mozilla/dom/PerformanceStorage.h"
-#include "mozilla/dom/PerformanceTiming.h"
-#include "mozilla/dom/ServiceWorkerInterceptController.h"
-#include "mozilla/dom/UserActivation.h"
-#include "mozilla/dom/WorkerCommon.h"
-#include "mozilla/PreloaderBase.h"
-#include "mozilla/net/ContentRange.h"
-#include "mozilla/net/InterceptionInfo.h"
-#include "mozilla/net/NeckoChannelParams.h"
-#include "mozilla/ipc/PBackgroundSharedTypes.h"
-#include "mozilla/StaticPrefs_browser.h"
-#include "mozilla/StaticPrefs_network.h"
-#include "mozilla/StaticPrefs_privacy.h"
-#include "mozilla/StaticPrefs_javascript.h"
-#include "mozilla/Unused.h"
-
-#include "Fetch.h"
-#include "FetchUtil.h"
-#include "InternalRequest.h"
-#include "InternalResponse.h"
 
 namespace mozilla::dom {
 
@@ -261,6 +258,8 @@ AlternativeDataStreamListener::OnDataAvailable(nsIRequest* aRequest,
                                                nsIInputStream* aInputStream,
                                                uint64_t aOffset,
                                                uint32_t aCount) {
+  FETCH_LOG(
+      ("FetchDriver::OnDataAvailable this=%p, request=%p", this, aRequest));
   if (mStatus == AlternativeDataStreamListener::LOADING) {
     MOZ_ASSERT(mPipeAlternativeOutputStream);
     uint32_t read = 0;
@@ -338,15 +337,17 @@ FetchDriver::FetchDriver(SafeRefPtr<InternalRequest> aRequest,
                          nsIEventTarget* aMainThreadEventTarget,
                          nsICookieJarSettings* aCookieJarSettings,
                          PerformanceStorage* aPerformanceStorage,
-                         bool aIsTrackingFetch)
+                         net::ClassificationFlags aTrackingFlags)
     : mPrincipal(aPrincipal),
       mLoadGroup(aLoadGroup),
       mRequest(std::move(aRequest)),
+      mODAMutex("FetchDriver::mODAMutex"),
       mMainThreadEventTarget(aMainThreadEventTarget),
       mCookieJarSettings(aCookieJarSettings),
       mPerformanceStorage(aPerformanceStorage),
       mNeedToObserveOnDataAvailable(false),
-      mIsTrackingFetch(aIsTrackingFetch),
+      mTrackingFlags(aTrackingFlags),
+      mIsOn3PCBExceptionList(false),
       mOnStopRequestCalled(false)
 #ifdef DEBUG
       ,
@@ -359,6 +360,9 @@ FetchDriver::FetchDriver(SafeRefPtr<InternalRequest> aRequest,
   MOZ_ASSERT(mRequest);
   MOZ_ASSERT(aPrincipal);
   MOZ_ASSERT(aMainThreadEventTarget);
+
+  mIsTrackingFetch = net::UrlClassifierCommon::IsTrackingClassificationFlag(
+      mTrackingFlags.thirdPartyFlags, false);
 }
 
 FetchDriver::~FetchDriver() {
@@ -367,9 +371,6 @@ FetchDriver::~FetchDriver() {
   // We assert this since even on failures, we should call
   // FailWithNetworkError().
   MOZ_ASSERT(mResponseAvailableCalled);
-  if (mObserver) {
-    mObserver = nullptr;
-  }
 }
 
 already_AddRefed<PreloaderBase> FetchDriver::FindPreload(nsIURI* aURI) {
@@ -443,7 +444,7 @@ void FetchDriver::UpdateReferrerInfoFromNewChannel(nsIChannel* aChannel) {
 
   nsAutoCString computedReferrerSpec;
   mRequest->SetReferrerPolicy(referrerInfo->ReferrerPolicy());
-  Unused << referrerInfo->GetComputedReferrerSpec(computedReferrerSpec);
+  (void)referrerInfo->GetComputedReferrerSpec(computedReferrerSpec);
   mRequest->SetReferrer(computedReferrerSpec);
 }
 
@@ -644,14 +645,19 @@ nsresult FetchDriver::HttpFetch(
     nsCOMPtr<nsIPrincipal> principal = mPrincipal;
     if (principal->IsSystemPrincipal() &&
         mRequest->GetTriggeringPrincipalOverride()) {
-      principal = mRequest->GetTriggeringPrincipalOverride();
+      rv = NS_NewChannelWithTriggeringPrincipal(
+          getter_AddRefs(chan), uri, mPrincipal,
+          mRequest->GetTriggeringPrincipalOverride(), secFlags,
+          mRequest->ContentPolicyType(), mCookieJarSettings,
+          mPerformanceStorage, mLoadGroup, nullptr, /* aCallbacks */
+          loadFlags, ios);
+    } else {
+      rv = NS_NewChannel(getter_AddRefs(chan), uri, mPrincipal, secFlags,
+                         mRequest->ContentPolicyType(), mCookieJarSettings,
+                         mPerformanceStorage, mLoadGroup,
+                         nullptr, /* aCallbacks */
+                         loadFlags, ios);
     }
-
-    rv =
-        NS_NewChannel(getter_AddRefs(chan), uri, principal, secFlags,
-                      mRequest->ContentPolicyType(), mCookieJarSettings,
-                      mPerformanceStorage, mLoadGroup, nullptr, /* aCallbacks */
-                      loadFlags, ios);
   }
   NS_ENSURE_SUCCESS(rv, rv);
 
@@ -674,11 +680,25 @@ nsresult FetchDriver::HttpFetch(
     NS_ENSURE_SUCCESS(rv, rv);
   }
 
-  if (mIsThirdPartyWorker.isSome()) {
+  if (mIsThirdPartyContext.isSome()) {
     nsCOMPtr<nsILoadInfo> loadInfo = chan->LoadInfo();
-    rv = loadInfo->SetIsInThirdPartyContext(mIsThirdPartyWorker.ref());
+    rv = loadInfo->SetIsInThirdPartyContext(mIsThirdPartyContext.ref());
     NS_ENSURE_SUCCESS(rv, rv);
   }
+
+  if (mIsOn3PCBExceptionList) {
+    nsCOMPtr<nsILoadInfo> loadInfo = chan->LoadInfo();
+    rv = loadInfo->SetIsOn3PCBExceptionList(mIsOn3PCBExceptionList);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  nsCOMPtr<nsILoadInfo> loadInfo = chan->LoadInfo();
+  rv = loadInfo->SetTriggeringFirstPartyClassificationFlags(
+      mTrackingFlags.firstPartyFlags);
+  NS_ENSURE_SUCCESS(rv, rv);
+  rv = loadInfo->SetTriggeringThirdPartyClassificationFlags(
+      mTrackingFlags.thirdPartyFlags);
+  NS_ENSURE_SUCCESS(rv, rv);
 
   // If the fetch is created by FetchEvent.request or NavigationPreload request,
   // corresponding InterceptedHttpChannel information need to propagate to the
@@ -791,7 +811,8 @@ nsresult FetchDriver::HttpFetch(
     rv = internalChan->SetFetchCacheMode(
         static_cast<uint32_t>(mRequest->GetCacheMode()));
     MOZ_ASSERT(NS_SUCCEEDED(rv));
-    rv = internalChan->SetIntegrityMetadata(mRequest->GetIntegrity());
+    nsCOMPtr<nsILoadInfo> loadInfo = chan->LoadInfo();
+    rv = loadInfo->SetIntegrityMetadata(mRequest->GetIntegrity());
     MOZ_ASSERT(NS_SUCCEEDED(rv));
 
     // Set the initiator type
@@ -855,12 +876,16 @@ nsresult FetchDriver::HttpFetch(
                        nsIClassOfService::Tail);
   }
 
+  const auto fetchPriority = ToFetchPriority(mRequest->GetPriorityMode());
+  if (cos) {
+    cos->SetFetchPriorityDOM(fetchPriority);
+  }
+
   if (nsCOMPtr<nsISupportsPriority> p = do_QueryInterface(chan)) {
     if (mIsTrackingFetch &&
         StaticPrefs::privacy_trackingprotection_lower_network_priority()) {
       p->SetPriority(nsISupportsPriority::PRIORITY_LOWEST);
     } else if (StaticPrefs::network_fetchpriority_enabled()) {
-      const auto fetchPriority = ToFetchPriority(mRequest->GetPriorityMode());
       // According to step 15 of https://fetch.spec.whatwg.org/#concept-fetch
       // request’s priority, initiator, destination, and render-blocking are
       // used in an implementation-defined manner to set the internal priority.
@@ -882,6 +907,7 @@ nsresult FetchDriver::HttpFetch(
           case RequestDestination::Sharedworker:
           case RequestDestination::Worker:
           case RequestDestination::Xslt:
+          case RequestDestination::Json:
             return FETCH_PRIORITY_ADJUSTMENT_FOR(link_preload_script,
                                                  fetchPriority);
           case RequestDestination::Image:
@@ -948,12 +974,12 @@ nsresult FetchDriver::HttpFetch(
   } else {
     // Integrity check cannot be done on alt-data yet.
     if (mRequest->GetIntegrity().IsEmpty()) {
-      MOZ_ASSERT(!FetchUtil::WasmAltDataType.IsEmpty());
       nsCOMPtr<nsICacheInfoChannel> cic = do_QueryInterface(chan);
       if (cic && StaticPrefs::javascript_options_wasm_caching() &&
           !mRequest->SkipWasmCaching()) {
         cic->PreferAlternativeDataType(
-            FetchUtil::WasmAltDataType, nsLiteralCString(WASM_CONTENT_TYPE),
+            FetchUtil::GetWasmAltDataType(),
+            nsLiteralCString(WASM_CONTENT_TYPE),
             nsICacheInfoChannel::PreferredAlternativeDataDeliveryType::
                 SERIALIZE);
       }
@@ -1043,6 +1069,8 @@ void FetchDriver::FailWithNetworkError(nsresult rv) {
 
 NS_IMETHODIMP
 FetchDriver::OnStartRequest(nsIRequest* aRequest) {
+  FETCH_LOG(
+      ("FetchDriver::OnStartRequest this=%p, request=%p", this, aRequest));
   AssertIsOnMainThread();
 
   // Note, this can be called multiple times if we are doing an opaqueredirect.
@@ -1056,9 +1084,7 @@ FetchDriver::OnStartRequest(nsIRequest* aRequest) {
   }
 
   if (!mChannel) {
-    // if the request is aborted, we remove the mObserver reference in
-    // OnStopRequest or ~FetchDriver()
-    MOZ_ASSERT_IF(!mAborted, !mObserver);
+    MOZ_ASSERT(!mObserver);
     return NS_BINDING_ABORTED;
   }
 
@@ -1243,7 +1269,7 @@ FetchDriver::OnStartRequest(nsIRequest* aRequest) {
     } else if (!cic->PreferredAlternativeDataTypes().IsEmpty()) {
       MOZ_ASSERT(cic->PreferredAlternativeDataTypes().Length() == 1);
       MOZ_ASSERT(cic->PreferredAlternativeDataTypes()[0].type().Equals(
-          FetchUtil::WasmAltDataType));
+          FetchUtil::GetWasmAltDataType()));
       MOZ_ASSERT(
           cic->PreferredAlternativeDataTypes()[0].contentType().EqualsLiteral(
               WASM_CONTENT_TYPE));
@@ -1343,10 +1369,23 @@ FetchDriver::OnStartRequest(nsIRequest* aRequest) {
     SRICheck::IntegrityMetadata(mRequest->GetIntegrity(), sourceUri, reporter,
                                 &mSRIMetadata);
     mSRIDataVerifier =
-        MakeUnique<SRICheckDataVerifier>(mSRIMetadata, sourceUri, reporter);
+        MakeUnique<SRICheckDataVerifier>(mSRIMetadata, channel, reporter);
 
     // Do not retarget off main thread when using SRI API.
     return NS_OK;
+  }
+
+  // Only retarget if not already retargeted
+  nsCOMPtr<nsISerialEventTarget> target;
+  nsCOMPtr<nsIThreadRetargetableRequest> req = do_QueryInterface(aRequest);
+  if (req) {
+    rv = req->GetDeliveryTarget(getter_AddRefs(target));
+    if (NS_SUCCEEDED(rv) && target && !target->IsOnCurrentThread()) {
+      FETCH_LOG(
+          ("FetchDriver::OnStartRequest this=%p, request=%p already retargeted",
+           this, aRequest));
+      return NS_OK;
+    }
   }
 
   nsCOMPtr<nsIEventTarget> sts =
@@ -1357,11 +1396,12 @@ FetchDriver::OnStartRequest(nsIRequest* aRequest) {
     return rv;
   }
 
+  FETCH_LOG(("FetchDriver retargeting: request %p", aRequest));
   // Try to retarget off main thread.
   if (nsCOMPtr<nsIThreadRetargetableRequest> rr = do_QueryInterface(aRequest)) {
     RefPtr<TaskQueue> queue =
         TaskQueue::Create(sts.forget(), "FetchDriver STS Delivery Queue");
-    Unused << NS_WARN_IF(NS_FAILED(rr->RetargetDeliveryTo(queue)));
+    (void)NS_WARN_IF(NS_FAILED(rr->RetargetDeliveryTo(queue)));
   }
   return NS_OK;
 }
@@ -1432,11 +1472,10 @@ FetchDriver::OnDataAvailable(nsIRequest* aRequest, nsIInputStream* aInputStream,
                              uint64_t aOffset, uint32_t aCount) {
   // NB: This can be called on any thread!  But we're guaranteed that it is
   // called between OnStartRequest and OnStopRequest, so we don't need to worry
-  // about races for accesses in OnStartRequest, OnStopRequest and
-  // member functions accessed before opening the channel.
-  // However, we have a possibility of a race from FetchDriverAbortActions.
-  // Hence, we need to ensure that we are not modifying any members accessed by
-  // FetchDriver::FetchDriverAbortActions
+  // about races for the members accessed in OnStartRequest, OnStopRequest,
+  // FailWithNetworkError and member functions accessed before opening the
+  // channel. However, we have a possibility of a race from
+  // FetchDriverAbortActions
 
   if (!mPipeOutputStream) {
     // We ignore the body for HEAD/CONNECT requests.
@@ -1450,9 +1489,13 @@ FetchDriver::OnDataAvailable(nsIRequest* aRequest, nsIInputStream* aInputStream,
 
   if (mNeedToObserveOnDataAvailable) {
     mNeedToObserveOnDataAvailable = false;
-    if (mObserver) {
+    RefPtr<FetchDriverObserver> observer;
+    {
+      MutexAutoLock lock(mODAMutex);
       // Need to keep mObserver alive.
-      RefPtr<FetchDriverObserver> observer = mObserver;
+      observer = mObserver;
+    }
+    if (observer) {
       if (NS_IsMainThread()) {
         observer->OnDataAvailable();
       } else {
@@ -1506,18 +1549,11 @@ FetchDriver::OnDataAvailable(nsIRequest* aRequest, nsIInputStream* aInputStream,
 
 NS_IMETHODIMP
 FetchDriver::OnStopRequest(nsIRequest* aRequest, nsresult aStatusCode) {
+  FETCH_LOG(("FetchDriver::OnStopRequest this=%p, request=%p", this, aRequest));
   AssertIsOnMainThread();
 
   MOZ_DIAGNOSTIC_ASSERT(!mOnStopRequestCalled);
   mOnStopRequestCalled = true;
-
-  if (mObserver && mAborted) {
-    // fetch request was aborted.
-    // We have already sent the observer
-    // notification that request has been aborted in FetchDriverAbortActions.
-    // Remove the observer reference and don't push anymore notifications.
-    mObserver = nullptr;
-  }
 
   // main data loading is going to finish, breaking the reference cycle.
   RefPtr<AlternativeDataStreamListener> altDataListener =
@@ -1560,14 +1596,7 @@ FetchDriver::OnStopRequest(nsIRequest* aRequest, nsresult aStatusCode) {
         reporter = mObserver->GetReporter();
       }
 
-      nsAutoCString sourceUri;
-      if (mDocument && mDocument->GetDocumentURI()) {
-        mDocument->GetDocumentURI()->GetAsciiSpec(sourceUri);
-      } else if (!mWorkerScript.IsEmpty()) {
-        sourceUri.Assign(mWorkerScript);
-      }
-      nsresult rv =
-          mSRIDataVerifier->Verify(mSRIMetadata, channel, sourceUri, reporter);
+      nsresult rv = mSRIDataVerifier->Verify(mSRIMetadata, channel, reporter);
       if (NS_FAILED(rv)) {
         if (altDataListener) {
           altDataListener->Cancel();
@@ -1689,8 +1718,7 @@ FetchDriver::AsyncOnChannelRedirect(nsIChannel* aOldChannel,
 
     // Fetch 4.4.11
     bool rewriteToGET = false;
-    Unused << oldHttpChannel->ShouldStripRequestBodyHeader(method,
-                                                           &rewriteToGET);
+    (void)oldHttpChannel->ShouldStripRequestBodyHeader(method, &rewriteToGET);
 
     // we need to strip Authentication headers for cross-origin requests
     // Ref: https://fetch.spec.whatwg.org/#http-redirect-fetch
@@ -1856,8 +1884,13 @@ void FetchDriver::RunAbortAlgorithm() { FetchDriverAbortActions(Signal()); }
 
 void FetchDriver::FetchDriverAbortActions(AbortSignalImpl* aSignalImpl) {
   MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
+  RefPtr<FetchDriverObserver> observer;
+  {
+    MutexAutoLock lock(mODAMutex);
+    observer = std::move(mObserver);
+  }
 
-  if (mObserver) {
+  if (observer) {
 #ifdef DEBUG
     mResponseAvailableCalled = true;
 #endif
@@ -1865,11 +1898,7 @@ void FetchDriver::FetchDriverAbortActions(AbortSignalImpl* aSignalImpl) {
     if (aSignalImpl) {
       reason.set(aSignalImpl->RawReason());
     }
-    mObserver->OnResponseEnd(FetchDriverObserver::eAborted, reason);
-    // As a part of cleanup, we are not removing the mObserver reference as it
-    // could race with mObserver access in OnDataAvailable when it runs OMT.
-    // We will be removing the reference in the OnStopRequest which guaranteed
-    // to run after cancelling the channel.
+    observer->OnResponseEnd(FetchDriverObserver::eAborted, reason);
   }
 
   if (mChannel) {

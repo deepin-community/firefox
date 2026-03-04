@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Skarzhañ
     .secondarybuttonaccesskey = S
 appmenu-update-restart-message2 = Tapit handelv diwezhañ { -brand-shorter-name }. Assavet e vo an holl brenestroù hag ivinelloù.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Dizober
+    .secondarybuttonaccesskey = i
 appmenu-update-other-instance =
     .label = N'eo ket gouest { -brand-shorter-name } da hizivaat ent emgefreek betek an handelv diwezhañ
     .buttonlabel = Hizivaat { -brand-shorter-name } memestra
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Ket bremañ
     .secondarybuttonaccesskey = K
 appmenu-update-other-instance-message = Un hizivadenn nevez eus { -brand-shorter-name } a zo hegerz, met n’hall ket bezañ staliet dre ma zo ur staliadenn all eus { -brand-shorter-name } a zo lañset. Serrit anezhi evit kenderc'hel gant an hizivadenn, pe dibabit da hizivaat memestra (gallout a ra ar staliadenn all chom hep mont en-dro betek ma adloc'hfec'h anezhi).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Mat eo
     .buttonaccesskey = M
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Merit hoc'h askouezhioù hag ho neuzioù d
 appmenu-addon-post-install-incognito-checkbox =
     .label = Aotren an askouezh-mañ da vezañ lañset en ur prenestr merdeiñ prevez
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = Kemmet eo bet pajenn an ivinell nevez.
     .buttonlabel = Mirout ar c'hemmoù

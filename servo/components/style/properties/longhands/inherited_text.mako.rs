@@ -11,6 +11,7 @@ ${helpers.predefined_type(
     engines="gecko servo",
     ignored_when_colors_disabled="True",
     spec="https://drafts.csswg.org/css-color/#color",
+    servo_restyle_damage="repaint",
     affects="paint",
 )}
 
@@ -23,7 +24,7 @@ ${helpers.predefined_type(
     engines="gecko servo",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text/#propdef-text-transform",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
@@ -57,7 +58,7 @@ ${helpers.predefined_type(
     "computed::TextIndent::zero()",
     engines="gecko servo",
     spec="https://drafts.csswg.org/css-text/#propdef-text-indent",
-    servo_restyle_damage = "reflow",
+    servo_restyle_damage = "rebuild_box",
     affects="layout",
 )}
 
@@ -71,7 +72,7 @@ ${helpers.predefined_type(
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text/#propdef-overflow-wrap",
     aliases="word-wrap",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
@@ -82,7 +83,7 @@ ${helpers.predefined_type(
     engines="gecko servo",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text/#propdef-word-break",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
@@ -93,7 +94,7 @@ ${helpers.predefined_type(
     engines="gecko servo",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text/#propdef-text-justify",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
@@ -115,7 +116,7 @@ ${helpers.predefined_type(
     engines="gecko servo",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text/#propdef-text-align",
-    servo_restyle_damage = "reflow",
+    servo_restyle_damage = "rebuild_box",
     affects="layout",
 )}
 
@@ -125,7 +126,7 @@ ${helpers.predefined_type(
     "computed::LetterSpacing::normal()",
     engines="gecko servo",
     spec="https://drafts.csswg.org/css-text/#propdef-letter-spacing",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
@@ -135,18 +136,33 @@ ${helpers.predefined_type(
     "computed::WordSpacing::zero()",
     engines="gecko servo",
     spec="https://drafts.csswg.org/css-text/#propdef-word-spacing",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
 // TODO: `white-space-collapse: discard` not yet supported
 ${helpers.single_keyword(
     name="white-space-collapse",
-    values="collapse preserve preserve-breaks preserve-spaces break-spaces",
-    engines="gecko",
+    values="collapse preserve preserve-breaks break-spaces",
+    extra_gecko_values="preserve-spaces",
+    gecko_aliases="-moz-pre-space=preserve-spaces",
+    engines="gecko servo",
     gecko_enum_prefix="StyleWhiteSpaceCollapse",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text-4/#propdef-white-space-collapse",
+    servo_restyle_damage="rebuild_box",
+    affects="layout",
+)}
+
+${helpers.predefined_type(
+    "text-autospace",
+    "TextAutospace",
+    "computed::text::TextAutospace::NO_AUTOSPACE",
+    engines="gecko",
+    animation_type="discrete",
+    gecko_pref="layout.css.text-autospace.enabled",
+    has_effect_on_gecko_scrollbars=False,
+    spec="https://drafts.csswg.org/css-text-4/#text-autospace-property",
     affects="layout",
 )}
 
@@ -177,9 +193,9 @@ ${helpers.predefined_type(
 ${helpers.predefined_type(
     "text-emphasis-position",
     "TextEmphasisPosition",
-    "computed::TextEmphasisPosition::OVER",
+    "computed::TextEmphasisPosition::AUTO",
     engines="gecko",
-    initial_specified_value="specified::TextEmphasisPosition::OVER",
+    initial_specified_value="specified::TextEmphasisPosition::AUTO",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text-decor/#propdef-text-emphasis-position",
     affects="layout",
@@ -293,7 +309,7 @@ ${helpers.single_keyword(
     gecko_enum_prefix="StyleTextRendering",
     animation_type="discrete",
     spec="https://svgwg.org/svg2-draft/painting.html#TextRenderingProperty",
-    servo_restyle_damage="rebuild_and_reflow",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
 )}
 
@@ -358,8 +374,6 @@ ${helpers.predefined_type(
     "ForcedColorAdjust",
     "computed::ForcedColorAdjust::Auto",
     engines="gecko",
-    gecko_pref="layout.css.forced-color-adjust.enabled",
-    has_effect_on_gecko_scrollbars=False,
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-color-adjust-1/#forced-color-adjust-prop",
     affects="paint",
@@ -378,19 +392,29 @@ ${helpers.single_keyword(
 ${helpers.single_keyword(
     "text-wrap-mode",
     "wrap nowrap",
-    engines="gecko",
+    engines="gecko servo",
     gecko_enum_prefix="StyleTextWrapMode",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text-4/#propdef-text-wrap-mode",
+    servo_restyle_damage="rebuild_box",
     affects="layout",
+)}
+
+// hyphenation length thresholds
+${helpers.predefined_type(
+    "hyphenate-limit-chars",
+    "HyphenateLimitChars",
+    "computed::HyphenateLimitChars::auto()",
+    engines="gecko",
+    spec="https://drafts.csswg.org/css-text-4/#hyphenate-char-limits",
+    affects="layout",
+    boxed=True,
 )}
 
 ${helpers.single_keyword(
     "text-wrap-style",
     "auto stable balance",
     engines="gecko",
-    gecko_pref="layout.css.text-wrap-balance.enabled",
-    has_effect_on_gecko_scrollbars=False,
     gecko_enum_prefix="StyleTextWrapStyle",
     animation_type="discrete",
     spec="https://drafts.csswg.org/css-text-4/#text-wrap-style",

@@ -17,7 +17,6 @@
 #include "nsSHistory.h"
 #include "nsThreadUtils.h"
 #include "nsFrameLoader.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/Preferences.h"
 
 namespace dom = mozilla::dom;
@@ -61,9 +60,10 @@ SHEntrySharedParentState::SHEntrySharedParentState() {
 SHEntrySharedParentState::SHEntrySharedParentState(
     nsIPrincipal* aTriggeringPrincipal, nsIPrincipal* aPrincipalToInherit,
     nsIPrincipal* aPartitionedPrincipalToInherit,
-    nsIContentSecurityPolicy* aCsp, const nsACString& aContentType)
+    nsIPolicyContainer* aPolicyContainer, const nsACString& aContentType)
     : SHEntrySharedState(aTriggeringPrincipal, aPrincipalToInherit,
-                         aPartitionedPrincipalToInherit, aCsp, aContentType) {
+                         aPartitionedPrincipalToInherit, aPolicyContainer,
+                         aContentType) {
   AddSHEntrySharedParentState(this);
 }
 
@@ -101,7 +101,7 @@ void SHEntrySharedParentState::CopyFrom(SHEntrySharedParentState* aEntry) {
   mTriggeringPrincipal = aEntry->mTriggeringPrincipal;
   mPrincipalToInherit = aEntry->mPrincipalToInherit;
   mPartitionedPrincipalToInherit = aEntry->mPartitionedPrincipalToInherit;
-  mCsp = aEntry->mCsp;
+  mPolicyContainer = aEntry->mPolicyContainer;
   mSaveLayoutState = aEntry->mSaveLayoutState;
   mContentType.Assign(aEntry->mContentType);
   mIsFrameNavigation = aEntry->mIsFrameNavigation;
@@ -240,7 +240,7 @@ nsresult nsSHEntryShared::SetDocumentViewer(nsIDocumentViewer* aViewer) {
     }
 
     // Store observed document in strong pointer in case it is removed from
-    // the contentviewer
+    // the documentviewer
     mDocument = mDocumentViewer->GetDocument();
     if (mDocument) {
       mDocument->SetBFCacheEntry(this);
@@ -338,27 +338,29 @@ void nsSHEntryShared::CharacterDataChanged(nsIContent* aContent,
 
 void nsSHEntryShared::AttributeChanged(dom::Element* aElement,
                                        int32_t aNameSpaceID, nsAtom* aAttribute,
-                                       int32_t aModType,
+                                       AttrModType,
                                        const nsAttrValue* aOldValue) {
   if (!IgnoreMutationForBfCache(*aElement)) {
     RemoveFromBFCacheAsync();
   }
 }
 
-void nsSHEntryShared::ContentAppended(nsIContent* aFirstNewContent) {
+void nsSHEntryShared::ContentAppended(nsIContent* aFirstNewContent,
+                                      const ContentAppendInfo&) {
   if (!IgnoreMutationForBfCache(*aFirstNewContent)) {
     RemoveFromBFCacheAsync();
   }
 }
 
-void nsSHEntryShared::ContentInserted(nsIContent* aChild) {
+void nsSHEntryShared::ContentInserted(nsIContent* aChild,
+                                      const ContentInsertInfo&) {
   if (!IgnoreMutationForBfCache(*aChild)) {
     RemoveFromBFCacheAsync();
   }
 }
 
-void nsSHEntryShared::ContentRemoved(nsIContent* aChild,
-                                     nsIContent* aPreviousSibling) {
+void nsSHEntryShared::ContentWillBeRemoved(nsIContent* aChild,
+                                           const ContentRemoveInfo&) {
   if (!IgnoreMutationForBfCache(*aChild)) {
     RemoveFromBFCacheAsync();
   }

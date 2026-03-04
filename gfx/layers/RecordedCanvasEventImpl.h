@@ -26,7 +26,6 @@ using gfx::ReadElement;
 using gfx::ReferencePtr;
 using gfx::SurfaceFormat;
 using gfx::WriteElement;
-using ipc::SharedMemory;
 
 const EventType CANVAS_BEGIN_TRANSACTION = EventType::LAST;
 const EventType CANVAS_END_TRANSACTION = EventType(EventType::LAST + 1);
@@ -34,20 +33,23 @@ const EventType CANVAS_FLUSH = EventType(EventType::LAST + 2);
 const EventType TEXTURE_LOCK = EventType(EventType::LAST + 3);
 const EventType TEXTURE_UNLOCK = EventType(EventType::LAST + 4);
 const EventType CACHE_DATA_SURFACE = EventType(EventType::LAST + 5);
-const EventType PREPARE_DATA_FOR_SURFACE = EventType(EventType::LAST + 6);
-const EventType GET_DATA_FOR_SURFACE = EventType(EventType::LAST + 7);
-const EventType ADD_SURFACE_ALIAS = EventType(EventType::LAST + 8);
-const EventType REMOVE_SURFACE_ALIAS = EventType(EventType::LAST + 9);
-const EventType DEVICE_CHANGE_ACKNOWLEDGED = EventType(EventType::LAST + 10);
-const EventType CANVAS_DRAW_TARGET_CREATION = EventType(EventType::LAST + 11);
-const EventType TEXTURE_DESTRUCTION = EventType(EventType::LAST + 12);
-const EventType CHECKPOINT = EventType(EventType::LAST + 13);
-const EventType PAUSE_TRANSLATION = EventType(EventType::LAST + 14);
-const EventType RECYCLE_BUFFER = EventType(EventType::LAST + 15);
-const EventType DROP_BUFFER = EventType(EventType::LAST + 16);
-const EventType PREPARE_SHMEM = EventType(EventType::LAST + 17);
-const EventType PRESENT_TEXTURE = EventType(EventType::LAST + 18);
-const EventType LAST_CANVAS_EVENT_TYPE = PRESENT_TEXTURE;
+const EventType GET_DATA_FOR_SURFACE = EventType(EventType::LAST + 6);
+const EventType ADD_SURFACE_ALIAS = EventType(EventType::LAST + 7);
+const EventType REMOVE_SURFACE_ALIAS = EventType(EventType::LAST + 8);
+const EventType CANVAS_DRAW_TARGET_CREATION = EventType(EventType::LAST + 9);
+const EventType TEXTURE_DESTRUCTION = EventType(EventType::LAST + 10);
+const EventType CHECKPOINT = EventType(EventType::LAST + 11);
+const EventType PAUSE_TRANSLATION = EventType(EventType::LAST + 12);
+const EventType RECYCLE_BUFFER = EventType(EventType::LAST + 13);
+const EventType DROP_BUFFER = EventType(EventType::LAST + 14);
+const EventType PREPARE_SHMEM = EventType(EventType::LAST + 15);
+const EventType PRESENT_TEXTURE = EventType(EventType::LAST + 16);
+const EventType DEVICE_RESET_ACKNOWLEDGED = EventType(EventType::LAST + 17);
+const EventType AWAIT_TRANSLATION_SYNC = EventType(EventType::LAST + 18);
+const EventType RESOLVE_EXTERNAL_SNAPSHOT = EventType(EventType::LAST + 19);
+const EventType ADD_EXPORT_SURFACE = EventType(EventType::LAST + 20);
+const EventType REMOVE_EXPORT_SURFACE = EventType(EventType::LAST + 21);
+const EventType LAST_CANVAS_EVENT_TYPE = REMOVE_EXPORT_SURFACE;
 
 class RecordedCanvasBeginTransaction final
     : public RecordedEventDerived<RecordedCanvasBeginTransaction> {
@@ -141,10 +143,10 @@ RecordedCanvasFlush::RecordedCanvasFlush(S& aStream)
 class RecordedTextureLock final
     : public RecordedEventDerived<RecordedTextureLock> {
  public:
-  RecordedTextureLock(int64_t aTextureId, const OpenMode aMode,
-                      bool aInvalidContents)
+  RecordedTextureLock(const RemoteTextureOwnerId aTextureOwnerId,
+                      const OpenMode aMode, bool aInvalidContents)
       : RecordedEventDerived(TEXTURE_LOCK),
-        mTextureId(aTextureId),
+        mTextureOwnerId(aTextureOwnerId),
         mMode(aMode),
         mInvalidContents(aInvalidContents) {}
 
@@ -159,14 +161,14 @@ class RecordedTextureLock final
   std::string GetName() const final { return "TextureLock"; }
 
  private:
-  int64_t mTextureId;
-  OpenMode mMode;
-  bool mInvalidContents;
+  RemoteTextureOwnerId mTextureOwnerId;
+  OpenMode mMode = OpenMode::OPEN_NONE;
+  bool mInvalidContents = false;
 };
 
 inline bool RecordedTextureLock::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  if (!aTranslator->LockTexture(mTextureId, mMode, mInvalidContents)) {
+  if (!aTranslator->LockTexture(mTextureOwnerId, mMode, mInvalidContents)) {
     return false;
   }
   return true;
@@ -174,7 +176,7 @@ inline bool RecordedTextureLock::PlayCanvasEvent(
 
 template <class S>
 void RecordedTextureLock::Record(S& aStream) const {
-  WriteElement(aStream, mTextureId);
+  WriteElement(aStream, mTextureOwnerId);
   WriteElement(aStream, mMode);
   WriteElement(aStream, mInvalidContents);
 }
@@ -182,17 +184,18 @@ void RecordedTextureLock::Record(S& aStream) const {
 template <class S>
 RecordedTextureLock::RecordedTextureLock(S& aStream)
     : RecordedEventDerived(TEXTURE_LOCK) {
-  ReadElement(aStream, mTextureId);
+  ReadElement(aStream, mTextureOwnerId);
   ReadElementConstrained(aStream, mMode, OpenMode::OPEN_NONE,
-                         OpenMode::OPEN_READ_WRITE_ASYNC);
+                         OpenMode::OPEN_READ_WRITE);
   ReadElement(aStream, mInvalidContents);
 }
 
 class RecordedTextureUnlock final
     : public RecordedEventDerived<RecordedTextureUnlock> {
  public:
-  explicit RecordedTextureUnlock(int64_t aTextureId)
-      : RecordedEventDerived(TEXTURE_UNLOCK), mTextureId(aTextureId) {}
+  explicit RecordedTextureUnlock(const RemoteTextureOwnerId aTextureOwnerId)
+      : RecordedEventDerived(TEXTURE_UNLOCK),
+        mTextureOwnerId(aTextureOwnerId) {}
 
   template <class S>
   MOZ_IMPLICIT RecordedTextureUnlock(S& aStream);
@@ -205,12 +208,12 @@ class RecordedTextureUnlock final
   std::string GetName() const final { return "TextureUnlock"; }
 
  private:
-  int64_t mTextureId;
+  RemoteTextureOwnerId mTextureOwnerId;
 };
 
 inline bool RecordedTextureUnlock::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  if (!aTranslator->UnlockTexture(mTextureId)) {
+  if (!aTranslator->UnlockTexture(mTextureOwnerId)) {
     return false;
   }
   return true;
@@ -218,20 +221,23 @@ inline bool RecordedTextureUnlock::PlayCanvasEvent(
 
 template <class S>
 void RecordedTextureUnlock::Record(S& aStream) const {
-  WriteElement(aStream, mTextureId);
+  WriteElement(aStream, mTextureOwnerId);
 }
 
 template <class S>
 RecordedTextureUnlock::RecordedTextureUnlock(S& aStream)
     : RecordedEventDerived(TEXTURE_UNLOCK) {
-  ReadElement(aStream, mTextureId);
+  ReadElement(aStream, mTextureOwnerId);
 }
 
 class RecordedCacheDataSurface final
     : public RecordedEventDerived<RecordedCacheDataSurface> {
  public:
-  explicit RecordedCacheDataSurface(gfx::SourceSurface* aSurface)
-      : RecordedEventDerived(CACHE_DATA_SURFACE), mSurface(aSurface) {}
+  explicit RecordedCacheDataSurface(const gfx::SourceSurface* aSurface,
+                                    bool aForceData = false)
+      : RecordedEventDerived(CACHE_DATA_SURFACE),
+        mSurface(aSurface),
+        mForceData(aForceData) {}
 
   template <class S>
   MOZ_IMPLICIT RecordedCacheDataSurface(S& aStream);
@@ -245,95 +251,54 @@ class RecordedCacheDataSurface final
 
  private:
   ReferencePtr mSurface;
+  bool mForceData = false;
 };
 
 inline bool RecordedCacheDataSurface::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
+  if (RefPtr<gfx::DataSourceSurface> dataSurface =
+          aTranslator->LookupDataSurface(mSurface)) {
+    if (mForceData) {
+      gfx::DataSourceSurface::ScopedMap map(
+          dataSurface, gfx::DataSourceSurface::MapType::READ);
+    }
+    return true;
+  }
+
   gfx::SourceSurface* surface = aTranslator->LookupSourceSurface(mSurface);
   if (!surface) {
     return false;
   }
-
-  RefPtr<gfx::DataSourceSurface> dataSurface = surface->GetDataSurface();
-
-  aTranslator->AddDataSurface(mSurface, std::move(dataSurface));
+  if (RefPtr<gfx::DataSourceSurface> dataSurface = surface->GetDataSurface()) {
+    if (mForceData) {
+      gfx::DataSourceSurface::ScopedMap map(
+          dataSurface, gfx::DataSourceSurface::MapType::READ);
+    }
+    aTranslator->AddDataSurface(mSurface, std::move(dataSurface));
+  }
   return true;
 }
 
 template <class S>
 void RecordedCacheDataSurface::Record(S& aStream) const {
   WriteElement(aStream, mSurface);
+  WriteElement(aStream, mForceData);
 }
 
 template <class S>
 RecordedCacheDataSurface::RecordedCacheDataSurface(S& aStream)
     : RecordedEventDerived(CACHE_DATA_SURFACE) {
   ReadElement(aStream, mSurface);
-}
-
-class RecordedPrepareDataForSurface final
-    : public RecordedEventDerived<RecordedPrepareDataForSurface> {
- public:
-  explicit RecordedPrepareDataForSurface(const gfx::SourceSurface* aSurface)
-      : RecordedEventDerived(PREPARE_DATA_FOR_SURFACE), mSurface(aSurface) {}
-
-  template <class S>
-  MOZ_IMPLICIT RecordedPrepareDataForSurface(S& aStream);
-
-  bool PlayCanvasEvent(CanvasTranslator* aTranslator) const;
-
-  template <class S>
-  void Record(S& aStream) const;
-
-  std::string GetName() const final { return "RecordedPrepareDataForSurface"; }
-
- private:
-  ReferencePtr mSurface;
-};
-
-inline bool RecordedPrepareDataForSurface::PlayCanvasEvent(
-    CanvasTranslator* aTranslator) const {
-  RefPtr<gfx::DataSourceSurface> dataSurface =
-      aTranslator->LookupDataSurface(mSurface);
-  if (!dataSurface) {
-    gfx::SourceSurface* surface = aTranslator->LookupSourceSurface(mSurface);
-    if (!surface) {
-      return false;
-    }
-
-    dataSurface = surface->GetDataSurface();
-    if (!dataSurface) {
-      return false;
-    }
-  }
-
-  auto preparedMap = MakeUnique<gfx::DataSourceSurface::ScopedMap>(
-      dataSurface, gfx::DataSourceSurface::READ);
-  if (!preparedMap->IsMapped()) {
-    return false;
-  }
-
-  aTranslator->SetPreparedMap(mSurface, std::move(preparedMap));
-
-  return true;
-}
-
-template <class S>
-void RecordedPrepareDataForSurface::Record(S& aStream) const {
-  WriteElement(aStream, mSurface);
-}
-
-template <class S>
-RecordedPrepareDataForSurface::RecordedPrepareDataForSurface(S& aStream)
-    : RecordedEventDerived(PREPARE_DATA_FOR_SURFACE) {
-  ReadElement(aStream, mSurface);
+  ReadElement(aStream, mForceData);
 }
 
 class RecordedGetDataForSurface final
     : public RecordedEventDerived<RecordedGetDataForSurface> {
  public:
-  explicit RecordedGetDataForSurface(const gfx::SourceSurface* aSurface)
-      : RecordedEventDerived(GET_DATA_FOR_SURFACE), mSurface(aSurface) {}
+  RecordedGetDataForSurface(uint32_t aId, const gfx::SourceSurface* aSurface)
+      : RecordedEventDerived(GET_DATA_FOR_SURFACE),
+        mId(aId),
+        mSurface(aSurface) {}
 
   template <class S>
   MOZ_IMPLICIT RecordedGetDataForSurface(S& aStream);
@@ -346,23 +311,26 @@ class RecordedGetDataForSurface final
   std::string GetName() const final { return "RecordedGetDataForSurface"; }
 
  private:
+  uint32_t mId = 0;
   ReferencePtr mSurface;
 };
 
 inline bool RecordedGetDataForSurface::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  aTranslator->GetDataSurface(mSurface.mLongPtr);
+  aTranslator->GetDataSurface(mId, mSurface.mLongPtr);
   return true;
 }
 
 template <class S>
 void RecordedGetDataForSurface::Record(S& aStream) const {
+  WriteElement(aStream, mId);
   WriteElement(aStream, mSurface);
 }
 
 template <class S>
 RecordedGetDataForSurface::RecordedGetDataForSurface(S& aStream)
     : RecordedEventDerived(GET_DATA_FOR_SURFACE) {
+  ReadElement(aStream, mId);
   ReadElement(aStream, mSurface);
 }
 
@@ -453,14 +421,14 @@ RecordedRemoveSurfaceAlias::RecordedRemoveSurfaceAlias(S& aStream)
   ReadElement(aStream, mSurfaceAlias);
 }
 
-class RecordedDeviceChangeAcknowledged final
-    : public RecordedEventDerived<RecordedDeviceChangeAcknowledged> {
+class RecordedDeviceResetAcknowledged final
+    : public RecordedEventDerived<RecordedDeviceResetAcknowledged> {
  public:
-  RecordedDeviceChangeAcknowledged()
-      : RecordedEventDerived(DEVICE_CHANGE_ACKNOWLEDGED) {}
+  RecordedDeviceResetAcknowledged()
+      : RecordedEventDerived(DEVICE_RESET_ACKNOWLEDGED) {}
 
   template <class S>
-  MOZ_IMPLICIT RecordedDeviceChangeAcknowledged(S& aStream);
+  MOZ_IMPLICIT RecordedDeviceResetAcknowledged(S& aStream);
 
   bool PlayCanvasEvent(CanvasTranslator* aTranslator) const;
 
@@ -468,33 +436,32 @@ class RecordedDeviceChangeAcknowledged final
   void Record(S& aStream) const;
 
   std::string GetName() const final {
-    return "RecordedDeviceChangeAcknowledged";
+    return "RecordedDeviceResetAcknowledged";
   }
 };
 
-inline bool RecordedDeviceChangeAcknowledged::PlayCanvasEvent(
+inline bool RecordedDeviceResetAcknowledged::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  aTranslator->DeviceChangeAcknowledged();
+  aTranslator->DeviceResetAcknowledged();
   return true;
 }
 
 template <class S>
-void RecordedDeviceChangeAcknowledged::Record(S& aStream) const {}
+void RecordedDeviceResetAcknowledged::Record(S& aStream) const {}
 
 template <class S>
-RecordedDeviceChangeAcknowledged::RecordedDeviceChangeAcknowledged(S& aStream)
-    : RecordedEventDerived(DEVICE_CHANGE_ACKNOWLEDGED) {}
+RecordedDeviceResetAcknowledged::RecordedDeviceResetAcknowledged(S& aStream)
+    : RecordedEventDerived(DEVICE_RESET_ACKNOWLEDGED) {}
 
 class RecordedCanvasDrawTargetCreation final
     : public RecordedEventDerived<RecordedCanvasDrawTargetCreation> {
  public:
-  RecordedCanvasDrawTargetCreation(ReferencePtr aRefPtr, int64_t aTextureId,
+  RecordedCanvasDrawTargetCreation(ReferencePtr aRefPtr,
                                    RemoteTextureOwnerId aTextureOwnerId,
                                    BackendType aType, const IntSize& aSize,
                                    SurfaceFormat aFormat)
       : RecordedEventDerived(CANVAS_DRAW_TARGET_CREATION),
         mRefPtr(aRefPtr),
-        mTextureId(aTextureId),
         mTextureOwnerId(aTextureOwnerId),
         mBackendType(aType),
         mSize(aSize),
@@ -511,7 +478,6 @@ class RecordedCanvasDrawTargetCreation final
   std::string GetName() const final { return "Canvas DrawTarget Creation"; }
 
   ReferencePtr mRefPtr;
-  int64_t mTextureId = -1;
   RemoteTextureOwnerId mTextureOwnerId;
   BackendType mBackendType = BackendType::NONE;
   IntSize mSize;
@@ -520,8 +486,8 @@ class RecordedCanvasDrawTargetCreation final
 
 inline bool RecordedCanvasDrawTargetCreation::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  RefPtr<DrawTarget> newDT = aTranslator->CreateDrawTarget(
-      mRefPtr, mTextureId, mTextureOwnerId, mSize, mFormat);
+  RefPtr<DrawTarget> newDT =
+      aTranslator->CreateDrawTarget(mRefPtr, mTextureOwnerId, mSize, mFormat);
 
   // If we couldn't create a DrawTarget this will probably cause us to crash
   // with nullptr later in the playback, so return false to abort.
@@ -531,8 +497,7 @@ inline bool RecordedCanvasDrawTargetCreation::PlayCanvasEvent(
 template <class S>
 void RecordedCanvasDrawTargetCreation::Record(S& aStream) const {
   WriteElement(aStream, mRefPtr);
-  WriteElement(aStream, mTextureId);
-  WriteElement(aStream, mTextureOwnerId.mId);
+  WriteElement(aStream, mTextureOwnerId);
   WriteElement(aStream, mBackendType);
   WriteElement(aStream, mSize);
   WriteElement(aStream, mFormat);
@@ -542,8 +507,7 @@ template <class S>
 RecordedCanvasDrawTargetCreation::RecordedCanvasDrawTargetCreation(S& aStream)
     : RecordedEventDerived(CANVAS_DRAW_TARGET_CREATION) {
   ReadElement(aStream, mRefPtr);
-  ReadElement(aStream, mTextureId);
-  ReadElement(aStream, mTextureOwnerId.mId);
+  ReadElement(aStream, mTextureOwnerId);
   ReadElementConstrained(aStream, mBackendType, BackendType::NONE,
                          BackendType::WEBRENDER_TEXT);
   ReadElement(aStream, mSize);
@@ -554,10 +518,11 @@ RecordedCanvasDrawTargetCreation::RecordedCanvasDrawTargetCreation(S& aStream)
 class RecordedTextureDestruction final
     : public RecordedEventDerived<RecordedTextureDestruction> {
  public:
-  RecordedTextureDestruction(int64_t aTextureId, RemoteTextureTxnType aTxnType,
+  RecordedTextureDestruction(RemoteTextureOwnerId aTextureOwnerId,
+                             RemoteTextureTxnType aTxnType,
                              RemoteTextureTxnId aTxnId)
       : RecordedEventDerived(TEXTURE_DESTRUCTION),
-        mTextureId(aTextureId),
+        mTextureOwnerId(aTextureOwnerId),
         mTxnType(aTxnType),
         mTxnId(aTxnId) {}
 
@@ -572,20 +537,20 @@ class RecordedTextureDestruction final
   std::string GetName() const final { return "RecordedTextureDestruction"; }
 
  private:
-  int64_t mTextureId = 0;
+  RemoteTextureOwnerId mTextureOwnerId;
   RemoteTextureTxnType mTxnType = 0;
   RemoteTextureTxnId mTxnId = 0;
 };
 
 inline bool RecordedTextureDestruction::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  aTranslator->RemoveTexture(mTextureId, mTxnType, mTxnId);
+  aTranslator->RemoveTexture(mTextureOwnerId, mTxnType, mTxnId);
   return true;
 }
 
 template <class S>
 void RecordedTextureDestruction::Record(S& aStream) const {
-  WriteElement(aStream, mTextureId);
+  WriteElement(aStream, mTextureOwnerId);
   WriteElement(aStream, mTxnType);
   WriteElement(aStream, mTxnId);
 }
@@ -593,7 +558,7 @@ void RecordedTextureDestruction::Record(S& aStream) const {
 template <class S>
 RecordedTextureDestruction::RecordedTextureDestruction(S& aStream)
     : RecordedEventDerived(TEXTURE_DESTRUCTION) {
-  ReadElement(aStream, mTextureId);
+  ReadElement(aStream, mTextureOwnerId);
   ReadElement(aStream, mTxnType);
   ReadElement(aStream, mTxnId);
 }
@@ -637,6 +602,97 @@ class RecordedPauseTranslation final
 
   std::string GetName() const final { return "RecordedPauseTranslation"; }
 };
+
+class RecordedAwaitTranslationSync final
+    : public RecordedEventDerived<RecordedAwaitTranslationSync> {
+ public:
+  explicit RecordedAwaitTranslationSync(uint64_t aSyncId)
+      : RecordedEventDerived(AWAIT_TRANSLATION_SYNC), mSyncId(aSyncId) {}
+
+  template <class S>
+  MOZ_IMPLICIT RecordedAwaitTranslationSync(S& aStream);
+
+  bool PlayCanvasEvent(CanvasTranslator* aTranslator) const {
+    aTranslator->AwaitTranslationSync(mSyncId);
+    return true;
+  }
+
+  template <class S>
+  void Record(S& aStream) const;
+
+  std::string GetName() const final { return "RecordedAwaitTranslationSync"; }
+
+ private:
+  uint64_t mSyncId = 0;
+};
+
+template <class S>
+void RecordedAwaitTranslationSync::Record(S& aStream) const {
+  WriteElement(aStream, mSyncId);
+}
+
+template <class S>
+RecordedAwaitTranslationSync::RecordedAwaitTranslationSync(S& aStream)
+    : RecordedEventDerived(AWAIT_TRANSLATION_SYNC) {
+  ReadElement(aStream, mSyncId);
+}
+
+class RecordedResolveExternalSnapshot final
+    : public RecordedEventDerived<RecordedResolveExternalSnapshot> {
+ public:
+  explicit RecordedResolveExternalSnapshot(uint64_t aSyncId,
+                                           ReferencePtr aRefPtr,
+                                           const IntSize& aSize,
+                                           SurfaceFormat aFormat)
+      : RecordedEventDerived(RESOLVE_EXTERNAL_SNAPSHOT),
+        mSyncId(aSyncId),
+        mRefPtr(aRefPtr),
+        mSize(aSize),
+        mFormat(aFormat) {}
+
+  template <class S>
+  MOZ_IMPLICIT RecordedResolveExternalSnapshot(S& aStream);
+
+  bool PlayCanvasEvent(CanvasTranslator* aTranslator) const {
+    DrawTarget* drawTarget = aTranslator->GetCurrentDrawTarget();
+    if (!drawTarget) {
+      return false;
+    }
+    return aTranslator->ResolveExternalSnapshot(mSyncId, mRefPtr, mSize,
+                                                mFormat, drawTarget);
+  }
+
+  template <class S>
+  void Record(S& aStream) const;
+
+  std::string GetName() const final {
+    return "RecordedResolveExternalSnapshot";
+  }
+
+ private:
+  uint64_t mSyncId = 0;
+  ReferencePtr mRefPtr;
+  IntSize mSize;
+  SurfaceFormat mFormat = SurfaceFormat::UNKNOWN;
+};
+
+template <class S>
+void RecordedResolveExternalSnapshot::Record(S& aStream) const {
+  WriteElement(aStream, mSyncId);
+  WriteElement(aStream, mRefPtr);
+  WriteElement(aStream, mSize);
+  WriteElement(aStream, mFormat);
+}
+
+template <class S>
+RecordedResolveExternalSnapshot::RecordedResolveExternalSnapshot(S& aStream)
+    : RecordedEventDerived(RESOLVE_EXTERNAL_SNAPSHOT) {
+  ReadElement(aStream, mSyncId);
+  ReadElement(aStream, mRefPtr);
+  ReadElement(aStream, mSize);
+  ReadElementConstrained(aStream, mFormat, SurfaceFormat::B8G8R8A8,
+                         SurfaceFormat::UNKNOWN);
+}
 
 class RecordedRecycleBuffer final
     : public RecordedEventDerived<RecordedRecycleBuffer> {
@@ -682,8 +738,8 @@ class RecordedDropBuffer final
 class RecordedPrepareShmem final
     : public RecordedEventDerived<RecordedPrepareShmem> {
  public:
-  explicit RecordedPrepareShmem(int64_t aTextureId)
-      : RecordedEventDerived(PREPARE_SHMEM), mTextureId(aTextureId) {}
+  explicit RecordedPrepareShmem(const RemoteTextureOwnerId aTextureOwnerId)
+      : RecordedEventDerived(PREPARE_SHMEM), mTextureOwnerId(aTextureOwnerId) {}
 
   template <class S>
   MOZ_IMPLICIT RecordedPrepareShmem(S& aStream);
@@ -696,32 +752,33 @@ class RecordedPrepareShmem final
   std::string GetName() const final { return "RecordedPrepareShmem"; }
 
  private:
-  int64_t mTextureId = 0;
+  RemoteTextureOwnerId mTextureOwnerId;
 };
 
 inline bool RecordedPrepareShmem::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  aTranslator->PrepareShmem(mTextureId);
+  aTranslator->PrepareShmem(mTextureOwnerId);
   return true;
 }
 
 template <class S>
 void RecordedPrepareShmem::Record(S& aStream) const {
-  WriteElement(aStream, mTextureId);
+  WriteElement(aStream, mTextureOwnerId);
 }
 
 template <class S>
 RecordedPrepareShmem::RecordedPrepareShmem(S& aStream)
     : RecordedEventDerived(PREPARE_SHMEM) {
-  ReadElement(aStream, mTextureId);
+  ReadElement(aStream, mTextureOwnerId);
 }
 
 class RecordedPresentTexture final
     : public RecordedEventDerived<RecordedPresentTexture> {
  public:
-  RecordedPresentTexture(int64_t aTextureId, RemoteTextureId aId)
+  RecordedPresentTexture(const RemoteTextureOwnerId aTextureOwnerId,
+                         RemoteTextureId aId)
       : RecordedEventDerived(PRESENT_TEXTURE),
-        mTextureId(aTextureId),
+        mTextureOwnerId(aTextureOwnerId),
         mLastRemoteTextureId(aId) {}
 
   template <class S>
@@ -735,13 +792,13 @@ class RecordedPresentTexture final
   std::string GetName() const final { return "PresentTexture"; }
 
  private:
-  int64_t mTextureId;
+  RemoteTextureOwnerId mTextureOwnerId;
   RemoteTextureId mLastRemoteTextureId;
 };
 
 inline bool RecordedPresentTexture::PlayCanvasEvent(
     CanvasTranslator* aTranslator) const {
-  if (!aTranslator->PresentTexture(mTextureId, mLastRemoteTextureId)) {
+  if (!aTranslator->PresentTexture(mTextureOwnerId, mLastRemoteTextureId)) {
     return false;
   }
   return true;
@@ -749,15 +806,101 @@ inline bool RecordedPresentTexture::PlayCanvasEvent(
 
 template <class S>
 void RecordedPresentTexture::Record(S& aStream) const {
-  WriteElement(aStream, mTextureId);
+  WriteElement(aStream, mTextureOwnerId);
   WriteElement(aStream, mLastRemoteTextureId.mId);
 }
 
 template <class S>
 RecordedPresentTexture::RecordedPresentTexture(S& aStream)
     : RecordedEventDerived(PRESENT_TEXTURE) {
-  ReadElement(aStream, mTextureId);
+  ReadElement(aStream, mTextureOwnerId);
   ReadElement(aStream, mLastRemoteTextureId.mId);
+}
+
+class RecordedAddExportSurface final
+    : public RecordedEventDerived<RecordedAddExportSurface> {
+ public:
+  RecordedAddExportSurface(ReferencePtr aExportID,
+                           const RefPtr<gfx::SourceSurface>& aActualSurface)
+      : RecordedEventDerived(ADD_EXPORT_SURFACE),
+        mExportID(aExportID),
+        mActualSurface(aActualSurface) {}
+
+  template <class S>
+  MOZ_IMPLICIT RecordedAddExportSurface(S& aStream);
+
+  bool PlayCanvasEvent(CanvasTranslator* aTranslator) const;
+
+  template <class S>
+  void Record(S& aStream) const;
+
+  std::string GetName() const final { return "RecordedAddExportSurface"; }
+
+ private:
+  ReferencePtr mExportID;
+  ReferencePtr mActualSurface;
+};
+
+inline bool RecordedAddExportSurface::PlayCanvasEvent(
+    CanvasTranslator* aTranslator) const {
+  RefPtr<gfx::SourceSurface> surface =
+      aTranslator->LookupSourceSurface(mActualSurface);
+  if (!surface) {
+    return false;
+  }
+
+  aTranslator->AddExportSurface(mExportID, surface);
+  return true;
+}
+
+template <class S>
+void RecordedAddExportSurface::Record(S& aStream) const {
+  WriteElement(aStream, mExportID);
+  WriteElement(aStream, mActualSurface);
+}
+
+template <class S>
+RecordedAddExportSurface::RecordedAddExportSurface(S& aStream)
+    : RecordedEventDerived(ADD_EXPORT_SURFACE) {
+  ReadElement(aStream, mExportID);
+  ReadElement(aStream, mActualSurface);
+}
+
+class RecordedRemoveExportSurface final
+    : public RecordedEventDerived<RecordedRemoveExportSurface> {
+ public:
+  explicit RecordedRemoveExportSurface(ReferencePtr aExportID)
+      : RecordedEventDerived(REMOVE_EXPORT_SURFACE), mExportID(aExportID) {}
+
+  template <class S>
+  MOZ_IMPLICIT RecordedRemoveExportSurface(S& aStream);
+
+  bool PlayCanvasEvent(CanvasTranslator* aTranslator) const;
+
+  template <class S>
+  void Record(S& aStream) const;
+
+  std::string GetName() const final { return "RecordedRemoveExportSurface"; }
+
+ private:
+  ReferencePtr mExportID;
+};
+
+inline bool RecordedRemoveExportSurface::PlayCanvasEvent(
+    CanvasTranslator* aTranslator) const {
+  aTranslator->RemoveExportSurface(mExportID);
+  return true;
+}
+
+template <class S>
+void RecordedRemoveExportSurface::Record(S& aStream) const {
+  WriteElement(aStream, mExportID);
+}
+
+template <class S>
+RecordedRemoveExportSurface::RecordedRemoveExportSurface(S& aStream)
+    : RecordedEventDerived(REMOVE_EXPORT_SURFACE) {
+  ReadElement(aStream, mExportID);
 }
 
 #define FOR_EACH_CANVAS_EVENT(f)                                    \
@@ -767,11 +910,9 @@ RecordedPresentTexture::RecordedPresentTexture(S& aStream)
   f(TEXTURE_LOCK, RecordedTextureLock);                             \
   f(TEXTURE_UNLOCK, RecordedTextureUnlock);                         \
   f(CACHE_DATA_SURFACE, RecordedCacheDataSurface);                  \
-  f(PREPARE_DATA_FOR_SURFACE, RecordedPrepareDataForSurface);       \
   f(GET_DATA_FOR_SURFACE, RecordedGetDataForSurface);               \
   f(ADD_SURFACE_ALIAS, RecordedAddSurfaceAlias);                    \
   f(REMOVE_SURFACE_ALIAS, RecordedRemoveSurfaceAlias);              \
-  f(DEVICE_CHANGE_ACKNOWLEDGED, RecordedDeviceChangeAcknowledged);  \
   f(CANVAS_DRAW_TARGET_CREATION, RecordedCanvasDrawTargetCreation); \
   f(TEXTURE_DESTRUCTION, RecordedTextureDestruction);               \
   f(CHECKPOINT, RecordedCheckpoint);                                \
@@ -779,7 +920,12 @@ RecordedPresentTexture::RecordedPresentTexture(S& aStream)
   f(RECYCLE_BUFFER, RecordedRecycleBuffer);                         \
   f(DROP_BUFFER, RecordedDropBuffer);                               \
   f(PREPARE_SHMEM, RecordedPrepareShmem);                           \
-  f(PRESENT_TEXTURE, RecordedPresentTexture);
+  f(PRESENT_TEXTURE, RecordedPresentTexture);                       \
+  f(DEVICE_RESET_ACKNOWLEDGED, RecordedDeviceResetAcknowledged);    \
+  f(AWAIT_TRANSLATION_SYNC, RecordedAwaitTranslationSync);          \
+  f(RESOLVE_EXTERNAL_SNAPSHOT, RecordedResolveExternalSnapshot);    \
+  f(ADD_EXPORT_SURFACE, RecordedAddExportSurface);                  \
+  f(REMOVE_EXPORT_SURFACE, RecordedRemoveExportSurface);
 
 }  // namespace layers
 }  // namespace mozilla

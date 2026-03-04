@@ -30,6 +30,10 @@ options-context-inspector = Prieskumník
 options-show-user-agent-styles-label = Zobraziť štýly prehliadača
 options-show-user-agent-styles-tooltip =
     .title = Povolením tejto možnosti zobrazíte predvolené štýly, ktoré sú načítavané prehliadačom
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Zobraziť tieňový DOM prehliadača
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Po zapnutí tejto možnosti sa zobrazia prvky tieňového DOMu, ktoré prehliadač spracováva.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Skrátené DOM atribúty
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Zakázať vyrovnávaciu pamäť HTTP (ak sú 
 options-disable-http-cache-tooltip =
     .title = Zapnutím tejto voľby bude vyrovnávacia pamäť HTTP vypnutá pre všetky karty, ktoré majú otvorené nástroje. Skripty typu worker nebudú touto voľbou ovplyvnené.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Zakázať JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Zakázať JavaScript *
 options-disable-javascript-tooltip =
     .title = Označením tejto voľby zakážete používanie JavaScriptu na aktuálnej karte. Po zatvorení karty alebo ukončení vývojárskych nástrojov bude táto voľba automaticky prepnutá späť
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Povoliť mapy zdrojov
 options-source-maps-tooltip =
     .title = Ak túto voľbu zapnete, zdroje budú mapované v nástrojoch.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (iba pre aktuálnu reláciu, stránka sa znova načíta)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Len pre aktuálnu reláciu, opäť načíta obsah stránky
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (znovu načíta stránku)

@@ -5,15 +5,21 @@ import json
 import os
 import pathlib
 import re
+from urllib.parse import (
+    parse_qs,
+    unquote,
+    urlencode,
+    urlsplit,
+    urlunsplit,
+)
 
+from cmdline import DESKTOP_APPS, GECKO_PROFILER_APPS, TRACE_APPS
 from constants.raptor_tests_constants import YOUTUBE_PLAYBACK_MEASURE
 from logger.logger import RaptorLogger
 from manifestparser import TestManifest
-from perftest import GECKO_PROFILER_APPS, TRACE_APPS
-from six.moves.urllib.parse import parse_qs, unquote, urlencode, urlsplit, urlunsplit
+from support_class_utils import import_support_class
 from utils import (
     bool_from_str,
-    import_support_class,
     transform_platform,
     transform_subtest,
 )
@@ -27,6 +33,7 @@ LIVE_SITE_TIMEOUT_MULTIPLIER = 1.2
 
 required_settings = [
     "alert_threshold",
+    "subtest_alert_threshold",
     "apps",
     "lower_is_better",
     "measure",
@@ -42,7 +49,7 @@ playback_settings = [
 ]
 
 
-def filter_app(tests, values):
+def filter_app(tests, values, strict=False):
     for test in tests:
         if values["app"] in [app.strip() for app in test["apps"].split(",")]:
             yield test
@@ -57,6 +64,19 @@ def get_browser_test_list(browser_app, run_local):
     )
 
 
+def validate_app_playback_settings(test_details):
+    # For Linux desktop playback tests, we need to augment the playback_settings
+    # to ensure that the right recording archive is used. Since Android tests
+    # are run on a Linux host, we should ensure that Android tests are not
+    # affected.
+
+    # This is temporary until Linux machines are upgraded (Bug 1926419)
+    apps = [app.strip() for app in test_details["apps"].split(",")]
+    return any(app in apps for app in DESKTOP_APPS) and test_details.get(
+        "playback_pageset_manifest_backup"
+    )
+
+
 def validate_test_toml(test_details):
     # validate all required test details were found in the test TOML
     valid_settings = True
@@ -66,6 +86,9 @@ def validate_test_toml(test_details):
         if setting == "measure" and test_details["type"] == "benchmark":
             continue
         if setting == "scenario_time" and test_details["type"] != "scenario":
+            continue
+        # subtest_alert_threshold is optional
+        if setting == "subtest_alert_threshold":
             continue
         if test_details.get(setting) is None:
             # if page-cycles is not specified, it's ok as long as browser-cycles is there
@@ -84,7 +107,11 @@ def validate_test_toml(test_details):
 
     # if playback is specified, we need more playback settings
     if test_details.get("playback") is not None:
-        for setting in playback_settings:
+        # Ensure correct values used for android playback
+        pbs = playback_settings
+        if validate_app_playback_settings(test_details):
+            pbs += ["playback_pageset_manifest_backup"]
+        for setting in pbs:
             if test_details.get(setting) is None:
                 valid_settings = False
                 LOG.error(
@@ -173,15 +200,13 @@ def add_test_url_params(url, extra_params):
     final_query_string = unquote(urlencode(parsed_query_params, doseq=True))
 
     # reconstruct test_url with the changed query string
-    return urlunsplit(
-        (
-            parsed_url.scheme,
-            parsed_url.netloc,
-            parsed_url.path,
-            final_query_string,
-            parsed_url.fragment,
-        )
-    )
+    return urlunsplit((
+        parsed_url.scheme,
+        parsed_url.netloc,
+        parsed_url.path,
+        final_query_string,
+        parsed_url.fragment,
+    ))
 
 
 def write_test_settings_json(args, test_details, oskey):
@@ -241,9 +266,9 @@ def write_test_settings_json(args, test_details, oskey):
             "raptor-options"
         ]["lower_is_better"]
     else:
-        test_settings["raptor-options"][
-            "subtest_lower_is_better"
-        ] = subtest_lower_is_better
+        test_settings["raptor-options"]["subtest_lower_is_better"] = (
+            subtest_lower_is_better
+        )
 
     if test_details.get("alert_change_type", None) is not None:
         test_settings["raptor-options"]["alert_change_type"] = test_details[
@@ -271,18 +296,16 @@ def write_test_settings_json(args, test_details, oskey):
             )
             threads.extend(test_threads)
 
-        test_settings["raptor-options"].update(
-            {
-                "gecko_profile": True,
-                "gecko_profile_entries": int(
-                    test_details.get("gecko_profile_entries", 1000000)
-                ),
-                "gecko_profile_interval": float(
-                    test_details.get("gecko_profile_interval", 1)
-                ),
-                "gecko_profile_threads": ",".join(set(threads)),
-            }
-        )
+        test_settings["raptor-options"].update({
+            "gecko_profile": True,
+            "gecko_profile_entries": int(
+                test_details.get("gecko_profile_entries", 1000000)
+            ),
+            "gecko_profile_interval": float(
+                test_details.get("gecko_profile_interval", 1)
+            ),
+            "gecko_profile_threads": ",".join(set(threads)),
+        })
 
         features = test_details.get("gecko_profile_features")
         if features:
@@ -315,7 +338,7 @@ def write_test_settings_json(args, test_details, oskey):
         with open(settings_file, "w") as out_file:
             json.dump(test_settings, out_file, indent=4, ensure_ascii=False)
             out_file.close()
-    except IOError:
+    except OSError:
         LOG.info("abort: exception writing test settings json!")
 
 
@@ -400,7 +423,21 @@ def get_raptor_test_list(args, oskey):
         # If using playback, the playback recording info may need to be transformed.
         # This transformation needs to happen before the test name is changed
         # below (for cold tests for instance)
-        if next_test.get("playback") is not None:
+
+        # Bug 1926419 avoid using mitm11 manifest on linux desktop tests.
+        if oskey == "linux" and args.app in DESKTOP_APPS:
+            if next_test.get("playback") is not None:
+                # Only use the backup manifest if it is set.
+                if next_test.get("playback_pageset_manifest_backup"):
+                    next_test["playback_pageset_manifest_backup"] = transform_subtest(
+                        next_test["playback_pageset_manifest_backup"], next_test["name"]
+                    )
+                else:
+                    next_test["playback_pageset_manifest"] = transform_subtest(
+                        next_test["playback_pageset_manifest"], next_test["name"]
+                    )
+
+        elif next_test.get("playback") is not None:
             next_test["playback_pageset_manifest"] = transform_subtest(
                 next_test["playback_pageset_manifest"], next_test["name"]
             )
@@ -648,6 +685,7 @@ def get_raptor_test_list(args, oskey):
             "interactive",
             "host_from_parent",
             "expose_browser_profiler",
+            "sparse_checkout",
         ]
         for setting in bool_settings:
             if next_test.get(setting, None) is not None:

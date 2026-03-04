@@ -7,15 +7,14 @@
 #include "ScrollSnap.h"
 
 #include "FrameMetrics.h"
-
 #include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/ScrollSnapInfo.h"
 #include "mozilla/ServoStyleConsts.h"
+#include "mozilla/StaticPrefs_layout.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
 #include "nsTArray.h"
-#include "mozilla/StaticPrefs_layout.h"
 
 namespace mozilla {
 
@@ -503,7 +502,7 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForDestination(
             aSnapInfo.mSnapportSize.width) {
       calcSnapPoints.AddVerticalEdge(ScrollSnapInfo::SnapTarget{
           Some(clampedDestination.x), Nothing(), range.mSnapArea,
-          StyleScrollSnapStop::Normal, range.mTargetId});
+          StyleScrollSnapStop::Normal, ScrollSnapTargetId::None});
       break;
     }
   }
@@ -513,34 +512,38 @@ Maybe<SnapDestination> ScrollSnapUtils::GetSnapPointForDestination(
             aSnapInfo.mSnapportSize.height) {
       calcSnapPoints.AddHorizontalEdge(ScrollSnapInfo::SnapTarget{
           Nothing(), Some(clampedDestination.y), range.mSnapArea,
-          StyleScrollSnapStop::Normal, range.mTargetId});
+          StyleScrollSnapStop::Normal, ScrollSnapTargetId::None});
       break;
     }
   }
 
   bool snapped = false;
   auto finalPos = calcSnapPoints.GetBestEdge(aSnapInfo.mSnapportSize);
-  constexpr float proximityRatio = 0.3;
-  if (aSnapInfo.mScrollSnapStrictnessY ==
-          StyleScrollSnapStrictness::Proximity &&
-      std::abs(aDestination.y - finalPos.mPosition.y) >
-          aSnapInfo.mSnapportSize.height * proximityRatio) {
-    finalPos.mPosition.y = aDestination.y;
-  } else if (aSnapInfo.mScrollSnapStrictnessY !=
-                 StyleScrollSnapStrictness::None &&
-             aDestination.y != finalPos.mPosition.y) {
+
+  // Check whether we will snap to the final position on the given axis or not,
+  // and if we will not, reset the final position to the original position so
+  // that even if we need to snap on an axis, but we don't need to on the other
+  // axis, the returned final position can be used as a valid destination.
+  auto checkSnapOnAxis = [&snapped](StyleScrollSnapStrictness aStrictness,
+                                    nscoord aDestination, nscoord aSnapportSize,
+                                    nscoord& aFinalPosition) {
+    // We used 0.3 proximity threshold which is what WebKit uses.
+    constexpr float proximityRatio = 0.3;
+    if (aStrictness == StyleScrollSnapStrictness::None ||
+        (aStrictness == StyleScrollSnapStrictness::Proximity &&
+         std::abs(aDestination - aFinalPosition) >
+             aSnapportSize * proximityRatio)) {
+      aFinalPosition = aDestination;
+      return;
+    }
     snapped = true;
-  }
-  if (aSnapInfo.mScrollSnapStrictnessX ==
-          StyleScrollSnapStrictness::Proximity &&
-      std::abs(aDestination.x - finalPos.mPosition.x) >
-          aSnapInfo.mSnapportSize.width * proximityRatio) {
-    finalPos.mPosition.x = aDestination.x;
-  } else if (aSnapInfo.mScrollSnapStrictnessX !=
-                 StyleScrollSnapStrictness::None &&
-             aDestination.x != finalPos.mPosition.x) {
-    snapped = true;
-  }
+  };
+
+  checkSnapOnAxis(aSnapInfo.mScrollSnapStrictnessY, aDestination.y,
+                  aSnapInfo.mSnapportSize.height, finalPos.mPosition.y);
+  checkSnapOnAxis(aSnapInfo.mScrollSnapStrictnessX, aDestination.x,
+                  aSnapInfo.mSnapportSize.width, finalPos.mPosition.x);
+
   return snapped ? Some(finalPos) : Nothing();
 }
 

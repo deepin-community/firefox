@@ -36,25 +36,35 @@ let patterns: string[];
 
 ## Available trigger actions
 
-* [openArticleURL](#openarticleurl)
-* [openBookmarkedURL](#openbookmarkedurl)
-* [frequentVisits](#frequentvisits)
-* [openURL](#openurl)
-* [newSavedLogin](#newsavedlogin)
-* [formAutofill](#formautofill)
-* [contentBlocking](#contentblocking)
-* [defaultBrowserCheck](#defaultbrowsercheck)
-* [deeplinkedToWindowsSettingsUI](#deeplinkedtowindowssettingsui)
-* [captivePortalLogin](#captiveportallogin)
-* [preferenceObserver](#preferenceobserver)
-* [featureCalloutCheck](#featurecalloutcheck)
-* [nthTabClosed](#nthtabclosed)
-* [activityAfterIdle](#activityafteridle)
-* [cookieBannerDetected](#cookiebannerdetected)
-* [cookieBannerHandled](#cookiebannerhandled)
-* [messagesLoaded](#messagesloaded)
-* [pageActionInUrlbar](#pageactioninurlbar)
-* [onSearch](#onsearch)
+- [`openArticleURL`](#openarticleurl)
+- [`openBookmarkedURL`](#openbookmarkedurl)
+- [`frequentVisits`](#frequentvisits)
+- [`openURL`](#openurl)
+- [`newSavedLogin`](#newsavedlogin)
+- [`formAutofill`](#formautofill)
+- [`contentBlocking`](#contentblocking)
+- [`defaultBrowserCheck`](#defaultbrowsercheck)
+- [`deeplinkedToWindowsSettingsUI`](#deeplinkedtowindowssettingsui)
+- [`captivePortalLogin`](#captiveportallogin)
+- [`preferenceObserver`](#preferenceobserver)
+- [`featureCalloutCheck`](#featurecalloutcheck)
+- [`pdfJsFeatureCalloutCheck`](#pdfjsfeaturecalloutcheck)
+- [`newtabFeatureCalloutCheck`](#newtabfeaturecalloutcheck)
+- [`nthTabClosed`](#nthtabclosed)
+- [`nthTabOpened`](#nthtabopened)
+- [`tabGroupCreated`](#tabgroupcreated)
+- [`tabGroupSaved`](#tabgroupsaved)
+- [`tabGroupCollapsed`](#tabgroupcollapsed)
+- [`activityAfterIdle`](#activityafteridle)
+- [`cookieBannerDetected`](#cookiebannerdetected)
+- [`cookieBannerHandled`](#cookiebannerhandled)
+- [`messagesLoaded`](#messagesloaded)
+- [`pageActionInUrlbar`](#pageactioninurlbar)
+- [`onSearch`](#onsearch)
+- [`sidebarToolOpened`](#sidebartoolopened)
+- [`elementClicked`](#elementclicked)
+- [`ipProtectionReady`](#ipprotectionready)
+- [`selectableProfilesUpdated`](#selectableprofilesupdated)
 
 ### `openArticleURL`
 
@@ -68,9 +78,11 @@ Does not filter by host or patterns.
 
 ### `frequentVisits`
 
-Happens every time a user navigates (or switches tab to) to any of the `hosts` or `patterns` arguments
-provided. Additionally it stores timestamps of these visits that are provided back to the targeting context.
-They can be used inside of the targeting expression:
+Happens every time a user navigates (or switches tab) to any of the `hosts`
+or `patterns` arguments provided. This trigger adds an item to the targeting
+context called `recentVisits`. It is a sorted array of timestamps for recent
+visits to the hosts provided in the `hosts` property.
+This can be used inside of the targeting expression:
 
 ```javascript
 // Has at least 3 visits in the past hour
@@ -100,7 +112,7 @@ visitsCount >= 3
 ### `newSavedLogin`
 
 Happens every time the user saves or updates a login via the login capture doorhanger.
-Provides a `type` to diferentiate between the two events that can be used in targeting.
+Provides a `type` to differentiate between the two events that can be used in targeting.
 
 Does not filter by host or patterns.
 
@@ -136,7 +148,7 @@ Does not filter by host or patterns.
 
 The event it reports back is one of two things:
  * A combination of OR-ed [nsIWebProgressListener](https://searchfox.org/mozilla-central/source/uriloader/base/nsIWebProgressListener.idl) `STATE_BLOCKED_*` flags
- * A string constants, such as [`"ContentBlockingMilestone"`](https://searchfox.org/mozilla-central/rev/8a2d8d26e25ef70c98c6036612aad534b76b9815/toolkit/components/antitracking/TrackingDBService.jsm#327-334)
+ * A string constant, such as [`"ContentBlockingMilestone"`](https://searchfox.org/mozilla-central/rev/8a2d8d26e25ef70c98c6036612aad534b76b9815/toolkit/components/antitracking/TrackingDBService.jsm#327-334)
 
 
 ### `defaultBrowserCheck`
@@ -155,8 +167,10 @@ let willShowDefaultPrompt = boolean | undefined;
 ```
 
 #### Examples
+
 * Only trigger on startup, not on newtab/homepage
 * Don't show if the built-in prompt is going to be shown
+
 ```js
 {
   trigger: { id: "defaultBrowserCheck" },
@@ -209,6 +223,102 @@ Happens when the user closes n or more tabs in a session
 {
   trigger: { id: "nthTabClosed" },
   targeting: "tabsClosedCount >= 2"
+}
+```
+```js
+// The trigger also tracks the number of tabs currently open,
+// and the currentTabsOpen context variable can be used in targeting
+// to ensure a minimum number of tabs are open.
+// Here, the message will trigger on the next tab closed
+// after 4 tabs are opened (and remain open).
+{
+  trigger: { id: "nthTabClosed" },
+  targeting: "currentTabsOpen >= 4"
+}
+```
+
+### `nthTabOpened`
+
+Happens when the user opens n or more tabs in a session
+
+```js
+// Register a message with the following trigger and
+// include the tabsOpenedCount context variable in the targeting.
+// Here, the message triggers once two or more tabs are opened,
+// even if the tabs were closed in between.
+{
+  trigger: { id: "nthTabOpened" },
+  targeting: "tabsOpenedCount >= 2"
+}
+```
+```js
+// The trigger also tracks the number of tabs currently open,
+// and the currentTabsOpen context variable can be used in targeting
+// to ensure a minimum number of tabs are open.
+// Here, the message will trigger on the next tab opened
+// while 4 tabs remain open in the browser.
+{
+  trigger: { id: "nthTabOpened" },
+  targeting: "currentTabsOpen >= 4"
+}
+```
+
+### `tabGroupCreated`
+
+Happens whenever a user creates a tab group.
+
+```js
+{
+  trigger: { id: "tabGroupCreated" }
+}
+```
+```js
+// The trigger can also track the number of tab groups created in a
+// session, by including the tabGroupsCreatedCount context variable in targeting.
+// Here, the message triggers once two or more tab groups have been created,
+// even if the tabs were closed in between.
+{
+  trigger: { id: "tabGroupCreated" },
+  targeting: { "tabGroupsCreatedCount >= 2" }
+}
+```
+
+### `tabGroupSaved`
+
+Happens whenever a user uses the "Save and Close" action on a tab group.
+
+```js
+{
+  trigger: { id: "tabGroupSaved" }
+}
+```
+```js
+// The trigger can also track the number of tab groups closed in a
+// session, by including the tabGroupsClosedCount context variable in targeting.
+// Here, the message triggers once two tab groups have been saved and closed.
+{
+  trigger: { id: "tabGroupSaved" },
+  targeting: { "tabGroupsSavedCount >= 2" }
+}
+```
+
+### `tabGroupCollapsed`
+
+Happens whenever a user clicks a tab group label to collapse it. Can be used with the `currentTabGroups` targeting to ensure multiple groups have been collapsed.
+
+```js
+{
+  trigger: { id: "tabGroupCollapsed" }
+}
+```
+```js
+// The trigger can also track the number of tab groups collapsed in a
+// session, by including the tabGroupsCollapsedCount context variable in targeting.
+// Here, the message triggers once four tab groups have been collapsed, or one group
+// has been collapsed four times.
+{
+  trigger: { id: "tabGroupCollapsed" },
+  targeting: { "tabGroupsCollapsedCount >= 4" }
 }
 ```
 
@@ -274,13 +384,71 @@ Happens when the user uses the search feature in the awesome bar.
 
 The `isSuggestion` boolean context variable is available in targeting, and will evaluate to true if the search was initiated from a recommendation in the awesomebar.
 
-The `searchSource` string context variable is also available in targeting, and returns the search source. It will be one of four values: `urlbar-handoff` if one of the faux-search inputs were used (such as the one present on the newtab page), `urlbar-searchmode` if the user has selected a search engine, `urlbar-persisted` if the user has changed tabs or windows and come back to their search term in the URL bar, or `urlbar` if the user is doing a standard search by entering a term into the URL bar and pressing enter, or clicking on a search suggestion.
+The `searchSource` string context variable is also available in targeting, and returns the search source. It will be one of four values: `urlbar-handoff` if one of the faux-search inputs were used (such as the one present on the newtab page), `urlbar-searchmode` if the user has selected a search engine, `urlbar-persisted` if the user has changed tabs or windows and come back to their search term in the URL bar, `urlbar` if the user is doing a standard search by entering a term into the URL bar and pressing enter, or clicking on a search suggestion, or `searchbar` if the search was started from the separate search bar toolbar widget.
 
 The `isOneOff` boolean context variable is available in targeting, and will be true if one of the one-off search features (typically found at the bottom of the awesomebar's dropdown menu) is used.
 
 ```js
 {
   trigger: { id: "onSearch" },
-  targeting: "isSuggestion && searchSource === 'urlbar-handoff' && isOneOff"
+  targeting: "isSuggestion && searchSource == 'urlbar-handoff' && isOneOff"
+}
+```
+
+### `sidebarToolOpened`
+
+Happens when the user opens a tool or extension panel in the sidebar
+
+The `view` string context variable is available in targeting, and will correspond with which sidebar tool/extension has been opened (ex: "viewHistorySidebar", "viewBookmarksSidebar", etc).
+
+The `clickCounts` object context variable is also available in targeting, and information about how many time a specific tool or extensions has been opened. The `SIDEBAR_TOOL_SURVEY` callout will be targeted to show if any tool/extension (excluding GenAI chatbot) has been clicked 5 times per-window and per-session. The `SIDEBAR_GENAI_SURVEY` callout will be targeted to show if the GenAI chatbot panel has been opened 2 times per-window and per-session.
+
+```js
+{
+  trigger: { id: "sidebarToolOpened" },
+  targeting: `'sidebar.position_start'|preferenceValue && view != 'viewGenaiChatSidebar' && clickCounts.totalToolsMinusGenai == 5 && !'messaging-system-action.sidebar-tools-microsurvey-complete-or-dismissed'|preferenceValue`
+}
+```
+
+### `elementClicked`
+
+Happens when an element in the browser chrome is clicked. The trigger will only fire if the element that is clicked has an ID that is within the trigger's params array.
+
+The `elementId` string context variable is also available in targeting, and will correspond to the ID of the element that was clicked.
+
+```js
+{
+  trigger: {
+    id: "elementClicked",
+    params: ["element1-id", "element2-id"]
+  },
+  targeting: "elementId == 'element1-id'"
+}
+```
+
+### `ipProtectionReady`
+
+Fired once the IP protection widget is created and available. Used as a trigger for the IP protection feature introduction callout, which anchors to the widget.
+
+Targets users with the `browser.ipProtection.enabled` pref set to true, along with frequency caps.
+
+```js
+
+{
+  trigger: { "ipProtectionReady" },
+  targeting: "'browser.ipProtection.enabled' | preferenceValue && !(messageImpressions.IP_PROTECTION_INTRODUCTION_CALLOUT[messageImpressions.IP_PROTECTION_INTRODUCTION_CALLOUT | length - 1] < currentDate|date - (3600000 * 24))",
+
+}
+```
+
+### `selectableProfilesUpdated`
+
+Fires to keep multi-profile feature users informed of changes to data collection settings. Within a profile group, any update to these shared profile settings triggers this event for all other running remote profile instances.
+
+```js
+{
+  trigger: { id: "selectableProfilesUpdated" },
+  template: "infobar",
+  frequency: { lifetime: 1 }
 }
 ```

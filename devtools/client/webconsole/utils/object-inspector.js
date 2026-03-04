@@ -7,19 +7,23 @@
 const {
   createFactory,
   createElement,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 
 loader.lazyGetter(this, "REPS", function () {
-  return require("resource://devtools/client/shared/components/reps/index.js")
-    .REPS;
+  return ChromeUtils.importESModule(
+    "resource://devtools/client/shared/components/reps/index.mjs",
+    { global: "current" }
+  ).REPS;
 });
 loader.lazyGetter(this, "MODE", function () {
-  return require("resource://devtools/client/shared/components/reps/index.js")
-    .MODE;
+  return ChromeUtils.importESModule(
+    "resource://devtools/client/shared/components/reps/index.mjs",
+    { global: "current" }
+  ).MODE;
 });
 loader.lazyGetter(this, "ObjectInspector", function () {
-  const reps = require("resource://devtools/client/shared/components/reps/index.js");
-  return createFactory(reps.objectInspector.ObjectInspector);
+  const objectInspector = require("resource://devtools/client/shared/components/object-inspector/index.js");
+  return createFactory(objectInspector.ObjectInspector);
 });
 
 loader.lazyRequireGetter(
@@ -45,11 +49,11 @@ loader.lazyRequireGetter(
 /**
  * Create and return an ObjectInspector for the given front.
  *
- * @param {Object} grip
+ * @param {object} grip
  *        The object grip to create an ObjectInspector for.
- * @param {Object} serviceContainer
+ * @param {object} serviceContainer
  *        Object containing various utility functions
- * @param {Object} override
+ * @param {object} override
  *        Object containing props that should override the default props passed to
  *        ObjectInspector.
  * @returns {ObjectInspector}
@@ -93,7 +97,7 @@ function getObjectInspector(
     sourceMapURLService: serviceContainer.sourceMapURLService,
     customFormat: override.customFormat !== false,
     setExpanded: override.setExpanded,
-    initiallyExpanded: override.initiallyExpanded,
+    getInitiallyExpanded: override.getInitiallyExpanded,
     queueActorsForCleanup: override.queueActorsForCleanup,
     cachedNodes: override.cachedNodes,
     urlCropLimit: 120,

@@ -104,7 +104,7 @@ impl<T> Synchronized<T> {
     }
 
     /// Borrow a value's data.
-    pub fn borrow(&self) -> std::cell::Ref<T> {
+    pub fn borrow(&self) -> std::cell::Ref<'_, T> {
         self.inner.current.borrow()
     }
 
@@ -133,6 +133,15 @@ impl<T> Synchronized<T> {
         self.on_change(move |val| {
             *other.borrow_mut() = f(val);
         });
+    }
+
+    /// Immediately call the closure on the current value and call it whenever the value changes.
+    pub fn map_with<F: Fn(&T) + 'static>(&self, f: F) {
+        // Hold the borrow to guarantee the value doesn't change until we are subscribed (just as a
+        // measure of extra sanity; this should never occur).
+        let borrow = self.borrow();
+        f(&*borrow);
+        self.on_change(f);
     }
 
     /// Create a new synchronized value which will update when this one changes.

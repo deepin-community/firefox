@@ -36,10 +36,11 @@ void FileSystemParentTest::TearDown() {
 }
 
 // static
-void FileSystemParentTest::InitializeTemporaryOrigin() {
+void FileSystemParentTest::InitializeTemporaryOrigin(
+    bool aCreateIfNonExistent) {
   ASSERT_NO_FATAL_FAILURE(
       QuotaManagerDependencyFixture::InitializeTemporaryOrigin(
-          GetTestOriginMetadata()));
+          GetTestOriginMetadata(), aCreateIfNonExistent));
 }
 
 //  static
@@ -58,7 +59,7 @@ void FileSystemParentTest::GetCachedOriginUsage(quota::UsageInfo& aResult) {
 void FileSystemParentTest::InitializeTemporaryClient() {
   ASSERT_NO_FATAL_FAILURE(
       QuotaManagerDependencyFixture::InitializeTemporaryClient(
-          GetTestClientMetadata()));
+          GetTestClientMetadata(), /* aCreateIfNonExistent */ true));
 }
 
 // static

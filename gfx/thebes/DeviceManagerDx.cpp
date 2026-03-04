@@ -11,7 +11,7 @@
 #include "mozilla/D3DMessageUtils.h"
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/StaticPrefs_layers.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "mozilla/gfx/GPUParent.h"
 #include "mozilla/gfx/GPUProcessManager.h"
 #include "mozilla/gfx/GraphicsMessages.h"
@@ -52,11 +52,6 @@ decltype(DCompositionCreateDevice3)* sDcompCreateDevice3Fn = nullptr;
 decltype(DCompositionCreateSurfaceHandle)* sDcompCreateSurfaceHandleFn =
     nullptr;
 
-// We don't have access to the DirectDrawCreateEx type in gfxWindowsPlatform.h,
-// since it doesn't include ddraw.h, so we use a static here. It should only
-// be used within InitializeDirectDrawConfig.
-decltype(DirectDrawCreateEx)* sDirectDrawCreateExFn = nullptr;
-
 /* static */
 void DeviceManagerDx::Init() { sInstance = new DeviceManagerDx(); }
 
@@ -65,7 +60,8 @@ void DeviceManagerDx::Shutdown() { sInstance = nullptr; }
 
 DeviceManagerDx::DeviceManagerDx()
     : mDeviceLock("gfxWindowsPlatform.mDeviceLock"),
-      mCompositorDeviceSupportsVideo(false) {
+      mCompositorDeviceSupportsVideo(false),
+      mSupportsDCompositionTexture(false) {
   // Set up the D3D11 feature levels we can ask for.
   mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_11_1);
   mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_11_0);
@@ -509,18 +505,6 @@ bool DeviceManagerDx::CreateCanvasDeviceLocked() {
     return false;
   }
 
-  if (StaticPrefs::
-          gfx_direct2d_target_independent_rasterization_disabled_AtStartup()) {
-    int creationFlags = 0x2;  // disable target independent rasterization
-    const GUID D2D_INTERNAL_DEVICE_CREATION_OPTIONS = {
-        0xfb3a8e1a,
-        0x2e3c,
-        0x4de1,
-        {0x84, 0x42, 0x40, 0x43, 0xe0, 0xb0, 0x94, 0x95}};
-    mCanvasDevice->SetPrivateData(D2D_INTERNAL_DEVICE_CREATION_OPTIONS,
-                                  sizeof(creationFlags), &creationFlags);
-  }
-
   if (FAILED(hr) || !mCanvasDevice) {
     NS_WARNING("Failed to acquire a D3D11 device for Canvas");
     return false;
@@ -588,6 +572,32 @@ void DeviceManagerDx::CreateDirectCompositionDeviceLocked() {
     return;
   }
 
+  // Check if DCompositionTexture is supported
+  RefPtr<ID3D11Device> device = mCompositorDevice;
+  const bool supported = [device, compositionDevice] {
+    HRESULT hr;
+    RefPtr<IDCompositionDevice4> dcomp4;
+    hr = compositionDevice->QueryInterface(
+        (IDCompositionDevice4**)getter_AddRefs(dcomp4));
+    if (FAILED(hr)) {
+      return false;
+    }
+
+    BOOL supportCompositionTexture = FALSE;
+    hr = dcomp4->CheckCompositionTextureSupport(device,
+                                                &supportCompositionTexture);
+    if (FAILED(hr)) {
+      return false;
+    }
+
+    if (supportCompositionTexture == FALSE) {
+      return false;
+    }
+
+    return true;
+  }();
+
+  mSupportsDCompositionTexture = supported;
   mDirectCompositionDevice = compositionDevice;
 }
 
@@ -905,7 +915,7 @@ bool DeviceManagerDx::CreateDevice(IDXGIAdapter* aAdapter,
       // problematic.
       D3D11_MESSAGE_ID blockIDs[] = {
           D3D11_MESSAGE_ID_DEVICE_DRAW_CONSTANT_BUFFER_TOO_SMALL};
-      filter.DenyList.NumIDs = MOZ_ARRAY_LENGTH(blockIDs);
+      filter.DenyList.NumIDs = std::size(blockIDs);
       filter.DenyList.pIDList = blockIDs;
       infoQueue->PushStorageFilter(&filter);
 
@@ -974,7 +984,7 @@ void DeviceManagerDx::CreateWARPCompositorDevice() {
 
 FeatureStatus DeviceManagerDx::CreateContentDevice() {
   RefPtr<IDXGIAdapter1> adapter;
-  if (!mDeviceStatus->isWARP()) {
+  if (!IsWARPLocked()) {
     adapter = GetDXGIAdapterLocked();
     if (!adapter) {
       gfxCriticalNote << "Could not get a DXGI adapter";
@@ -987,7 +997,7 @@ FeatureStatus DeviceManagerDx::CreateContentDevice() {
 
   UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
   D3D_DRIVER_TYPE type =
-      mDeviceStatus->isWARP() ? D3D_DRIVER_TYPE_WARP : D3D_DRIVER_TYPE_UNKNOWN;
+      IsWARPLocked() ? D3D_DRIVER_TYPE_WARP : D3D_DRIVER_TYPE_UNKNOWN;
   if (!CreateDevice(adapter, type, flags, hr, device)) {
     gfxCriticalNote
         << "Recovered from crash while creating a D3D11 content device";
@@ -1126,7 +1136,7 @@ RefPtr<ID3D11Device> DeviceManagerDx::CreateMediaEngineDevice() {
   if (FAILED(hr) || !device || !D3D11Checks::DoesDeviceWork()) {
     return nullptr;
   }
-  Unused << SetDebugName(device.get(), "MFMediaEngineDevice");
+  (void)SetDebugName(device.get(), "MFMediaEngineDevice");
 
   RefPtr<ID3D10Multithread> multi;
   device->QueryInterface(__uuidof(ID3D10Multithread), getter_AddRefs(multi));
@@ -1194,6 +1204,10 @@ bool DeviceManagerDx::ContentAdapterIsParentAdapter(ID3D11Device* device) {
   DXGI_ADAPTER_DESC desc;
   if (!D3D11Checks::GetDxgiDesc(device, &desc)) {
     gfxCriticalNote << "Could not query device DXGI adapter info";
+    return false;
+  }
+
+  if (!mDeviceStatus) {
     return false;
   }
 
@@ -1289,8 +1303,8 @@ bool DeviceManagerDx::GetAnyDeviceRemovedReason(DeviceResetReason* aOutReason) {
 }
 
 void DeviceManagerDx::ForceDeviceReset(ForcedDeviceResetReason aReason) {
-  Telemetry::Accumulate(Telemetry::FORCED_DEVICE_RESET_REASON,
-                        uint32_t(aReason));
+  glean::gfx::forced_device_reset_reason.AccumulateSingleSample(
+      uint32_t(aReason));
   {
     MutexAutoLock lock(mDeviceLock);
     if (!mDeviceResetReason) {
@@ -1396,6 +1410,10 @@ bool DeviceManagerDx::CanInitializeKeyedMutexTextures() {
 
 bool DeviceManagerDx::IsWARP() {
   MutexAutoLock lock(mDeviceLock);
+  return IsWARPLocked();
+}
+
+bool DeviceManagerDx::IsWARPLocked() {
   if (!mDeviceStatus) {
     return false;
   }
@@ -1434,57 +1452,10 @@ bool DeviceManagerDx::CanUseDComp() {
   return !!mDirectCompositionDevice;
 }
 
-void DeviceManagerDx::InitializeDirectDraw() {
-  MOZ_ASSERT(layers::CompositorThreadHolder::IsInCompositorThread());
-
-  if (mDirectDraw) {
-    // Already initialized.
-    return;
-  }
-
-  FeatureState& ddraw = gfxConfig::GetFeature(Feature::DIRECT_DRAW);
-  if (!ddraw.IsEnabled()) {
-    return;
-  }
-
-  // Check if DirectDraw is available on this system.
-  mDirectDrawDLL.own(LoadLibrarySystem32(L"ddraw.dll"));
-  if (!mDirectDrawDLL) {
-    ddraw.SetFailed(FeatureStatus::Unavailable,
-                    "DirectDraw not available on this computer",
-                    "FEATURE_FAILURE_DDRAW_LIB"_ns);
-    return;
-  }
-
-  sDirectDrawCreateExFn = (decltype(DirectDrawCreateEx)*)GetProcAddress(
-      mDirectDrawDLL, "DirectDrawCreateEx");
-  if (!sDirectDrawCreateExFn) {
-    ddraw.SetFailed(FeatureStatus::Unavailable,
-                    "DirectDraw not available on this computer",
-                    "FEATURE_FAILURE_DDRAW_LIB"_ns);
-    return;
-  }
-
-  HRESULT hr;
-  MOZ_SEH_TRY {
-    hr = sDirectDrawCreateExFn(nullptr, getter_AddRefs(mDirectDraw),
-                               IID_IDirectDraw7, nullptr);
-  }
-  MOZ_SEH_EXCEPT(EXCEPTION_EXECUTE_HANDLER) {
-    ddraw.SetFailed(FeatureStatus::Failed, "Failed to create DirectDraw",
-                    "FEATURE_FAILURE_DDRAW_LIB"_ns);
-    gfxCriticalNote << "DoesCreatingDirectDrawFailed";
-    return;
-  }
-  if (FAILED(hr)) {
-    ddraw.SetFailed(FeatureStatus::Failed, "Failed to create DirectDraw",
-                    "FEATURE_FAILURE_DDRAW_LIB"_ns);
-    gfxCriticalNote << "DoesCreatingDirectDrawFailed " << hexa(hr);
-    return;
-  }
+bool DeviceManagerDx::CanUseDCompositionTexture() {
+  MutexAutoLock lock(mDeviceLock);
+  return mDirectCompositionDevice && mSupportsDCompositionTexture;
 }
-
-IDirectDraw7* DeviceManagerDx::GetDirectDraw() { return mDirectDraw; }
 
 void DeviceManagerDx::GetCompositorDevices(
     RefPtr<ID3D11Device>* aOutDevice,

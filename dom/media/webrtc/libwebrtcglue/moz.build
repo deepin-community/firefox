@@ -6,6 +6,7 @@
 include("/dom/media/webrtc/third_party_build/webrtc.mozbuild")
 
 LOCAL_INCLUDES += [
+    "!/dist/include/libwebrtc_overrides",
     "!/ipc/ipdl/_ipdlheaders",
     "/dom/media/gmp",  # for GMPLog.h,
     "/dom/media/systemservices",
@@ -13,9 +14,9 @@ LOCAL_INCLUDES += [
     "/ipc/chromium/src",
     "/media/libyuv/libyuv/include",
     "/media/webrtc",
+    "/third_party/abseil-cpp",
     "/third_party/libsrtp/src/include",
     "/third_party/libwebrtc",
-    "/third_party/libwebrtc/third_party/abseil-cpp",
 ]
 
 UNIFIED_SOURCES += [
@@ -29,9 +30,11 @@ UNIFIED_SOURCES += [
     "VideoConduit.cpp",
     "VideoStreamFactory.cpp",
     "WebrtcCallWrapper.cpp",
+    "WebrtcEnvironmentWrapper.cpp",
     "WebrtcGmpVideoCodec.cpp",
     "WebrtcMediaDataDecoderCodec.cpp",
     "WebrtcMediaDataEncoderCodec.cpp",
+    "WebrtcTaskQueueWrapper.cpp",
     "WebrtcVideoCodecFactory.cpp",
 ]
 

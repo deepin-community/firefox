@@ -7,7 +7,6 @@
 #ifndef GFX_WEBRENDERSCROLLDATA_H
 #define GFX_WEBRENDERSCROLLDATA_H
 
-#include <map>
 #include <iosfwd>
 
 #include "chrome/common/ipc_message_utils.h"
@@ -18,7 +17,6 @@
 #include "mozilla/GfxMessageUtils.h"
 #include "mozilla/layers/FocusTarget.h"
 #include "mozilla/layers/ScrollbarData.h"
-#include "mozilla/layers/WebRenderMessageUtils.h"
 #include "mozilla/webrender/WebRenderTypes.h"
 #include "mozilla/HashTable.h"
 #include "mozilla/Maybe.h"
@@ -269,7 +267,7 @@ class WebRenderScrollData {
   Maybe<size_t> HasMetadataFor(
       const ScrollableLayerGuid::ViewID& aScrollId) const;
 
-  void SetIsFirstPaint();
+  void SetIsFirstPaint(bool aValue);
   bool IsFirstPaint() const;
   void SetPaintSequenceNumber(uint32_t aPaintSequenceNumber);
   uint32_t GetPaintSequenceNumber() const;

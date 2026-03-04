@@ -30,6 +30,10 @@ options-context-inspector = ตัวตรวจสอบ
 options-show-user-agent-styles-label = แสดงสไตล์ของเบราว์เซอร์
 options-show-user-agent-styles-tooltip =
     .title = การเปิดตัวเลือกนี้จะแสดงสไตล์เริ่มต้นที่เบราว์เซอร์ได้ทำการโหลดขึ้นมา
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = แสดง Shadow DOM ของเบราว์เซอร์
+options-show-user-agent-shadow-dom-tooltip =
+    .title = การเปิดใช้งานตัวเลือกนี้จะแสดงอิลิเมนต์ Shadow DOM ที่จัดการโดยเบราว์เซอร์
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = ตัดทอนแอตทริบิวต์ DOM
 options-collapse-attrs-tooltip =
@@ -93,7 +97,7 @@ options-screenshot-audio-tooltip =
 ## Editor section
 
 # The heading
-options-sourceeditor-label = การกำหนดลักษณะตัวแก้ไข
+options-sourceeditor-label = ค่าปรับแต่งตัวแก้ไข
 options-sourceeditor-detectindentation-tooltip =
     .title = กะประมาณการเยื้องขึ้นอยู่กับเนื้อหาต้นฉบับ
 options-sourceeditor-detectindentation-label = ตรวจสอบการเยื้อง
@@ -115,6 +119,8 @@ options-context-advanced-settings = การตั้งค่าขั้น�
 options-disable-http-cache-label = ปิดใช้งานแคช HTTP (เมื่อกล่องเครื่องมือเปิดอยู่)
 options-disable-http-cache-tooltip =
     .title = การเปิดตัวเลือกนี้จะเป็นการปิดการใช้งานแคช HTTP สำหรับแท็บทั้งหมดที่เปิดกล่องเครื่องมือ Service Worker จะไม่ได้รับผลกระทบจากตัวเลือกนี้
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = ปิดใช้งาน JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = ปิดใช้งาน JavaScript *
 options-disable-javascript-tooltip =
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = เปิดใช้งานการแมปต้นฉบับ
 options-source-maps-tooltip =
     .title = ถ้าคุณเปิดใช้งานตัวเลือกนี้ ต้นฉบับจะถูกแมปในเครื่องมือ
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (เฉพาะวาระปัจจุบันเท่านั้น จะโหลดหน้าเว็บใหม่)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = *เรียกหน้าเว็บใหม่เฉพาะวาระปัจจุบันเท่านั้น
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (จะโหลดหน้าเว็บใหม่)

@@ -16,10 +16,9 @@
 #ifndef nsDateTimeControlFrame_h__
 #define nsDateTimeControlFrame_h__
 
-#include "mozilla/Attributes.h"
+#include "nsCOMPtr.h"
 #include "nsContainerFrame.h"
 #include "nsIAnonymousContentCreator.h"
-#include "nsCOMPtr.h"
 
 namespace mozilla {
 class PresShell;
@@ -47,7 +46,7 @@ class nsDateTimeControlFrame final : public nsContainerFrame {
   }
 #endif
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,

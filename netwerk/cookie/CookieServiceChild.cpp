@@ -6,6 +6,7 @@
 #include "Cookie.h"
 #include "CookieCommons.h"
 #include "CookieLogging.h"
+#include "CookieNotification.h"
 #include "CookieParser.h"
 #include "CookieService.h"
 #include "mozilla/net/CookieServiceChild.h"
@@ -18,6 +19,7 @@
 #include "mozilla/ConsoleReportCollector.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "mozilla/ipc/URIUtils.h"
 #include "mozilla/net/NeckoChild.h"
 #include "mozilla/StaticPrefs_network.h"
@@ -181,9 +183,10 @@ IPCResult CookieServiceChild::RecvRemoveAll() {
   return IPC_OK();
 }
 
-IPCResult CookieServiceChild::RecvRemoveCookie(const CookieStruct& aCookie,
-                                               const OriginAttributes& aAttrs) {
-  RemoveSingleCookie(aCookie, aAttrs);
+IPCResult CookieServiceChild::RecvRemoveCookie(
+    const CookieStruct& aCookie, const OriginAttributes& aAttrs,
+    const Maybe<nsID>& aOperationID) {
+  RemoveSingleCookie(aCookie, aAttrs, aOperationID);
 
   nsCOMPtr<nsIObserverService> obsService = services::GetObserverService();
   if (obsService) {
@@ -193,9 +196,16 @@ IPCResult CookieServiceChild::RecvRemoveCookie(const CookieStruct& aCookie,
 }
 
 void CookieServiceChild::RemoveSingleCookie(const CookieStruct& aCookie,
-                                            const OriginAttributes& aAttrs) {
+                                            const OriginAttributes& aAttrs,
+                                            const Maybe<nsID>& aOperationID) {
   nsCString baseDomain;
-  CookieCommons::GetBaseDomainFromHost(mTLDService, aCookie.host(), baseDomain);
+  if (NS_FAILED(CookieCommons::GetBaseDomainFromHost(
+          mTLDService, aCookie.host(), baseDomain))) {
+    MOZ_ASSERT(false,
+               "CookieServiceChild::RemoveSingleCookie - GetBaseDomainFromHost "
+               "shouldn't fail");
+    return;
+  }
   CookieKey key(baseDomain, aAttrs);
   CookiesList* cookiesList = nullptr;
   mCookiesMap.Get(key, &cookiesList);
@@ -205,7 +215,7 @@ void CookieServiceChild::RemoveSingleCookie(const CookieStruct& aCookie,
   }
 
   for (uint32_t i = 0; i < cookiesList->Length(); i++) {
-    Cookie* cookie = cookiesList->ElementAt(i);
+    RefPtr<Cookie> cookie = cookiesList->ElementAt(i);
     // bug 1858366: In the case that we are updating a stale cookie
     // from the content process: the parent process will signal
     // a batch deletion for the old cookie.
@@ -215,17 +225,22 @@ void CookieServiceChild::RemoveSingleCookie(const CookieStruct& aCookie,
     if (cookie->Name().Equals(aCookie.name()) &&
         cookie->Host().Equals(aCookie.host()) &&
         cookie->Path().Equals(aCookie.path()) &&
-        cookie->Expiry() <= aCookie.expiry()) {
+        cookie->ExpiryInMSec() <= aCookie.expiryInMSec()) {
       cookiesList->RemoveElementAt(i);
+      NotifyObservers(cookie, aAttrs, CookieNotificationAction::CookieDeleted,
+                      aOperationID);
       break;
     }
   }
 }
 
 IPCResult CookieServiceChild::RecvAddCookie(const CookieStruct& aCookie,
-                                            const OriginAttributes& aAttrs) {
+                                            const OriginAttributes& aAttrs,
+                                            const Maybe<nsID>& aOperationID) {
   RefPtr<Cookie> cookie = Cookie::Create(aCookie, aAttrs);
-  RecordDocumentCookie(cookie, aAttrs);
+
+  CookieNotificationAction action = RecordDocumentCookie(cookie, aAttrs);
+  NotifyObservers(cookie, aAttrs, action, aOperationID);
 
   // signal test code to check their cookie list
   nsCOMPtr<nsIObserverService> obsService = services::GetObserverService();
@@ -242,7 +257,7 @@ IPCResult CookieServiceChild::RecvRemoveBatchDeletedCookies(
   MOZ_ASSERT(aCookiesList.Length() == aAttrsList.Length());
   for (uint32_t i = 0; i < aCookiesList.Length(); i++) {
     CookieStruct cookieStruct = aCookiesList.ElementAt(i);
-    RemoveSingleCookie(cookieStruct, aAttrsList.ElementAt(i));
+    RemoveSingleCookie(cookieStruct, aAttrsList.ElementAt(i), Nothing());
   }
 
   nsCOMPtr<nsIObserverService> obsService = services::GetObserverService();
@@ -293,11 +308,26 @@ IPCResult CookieServiceChild::RecvTrackCookiesLoad(
              nsICookieService::BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN;
 }
 
-void CookieServiceChild::RecordDocumentCookie(Cookie* aCookie,
-                                              const OriginAttributes& aAttrs) {
+CookieServiceChild::CookieNotificationAction
+CookieServiceChild::RecordDocumentCookie(Cookie* aCookie,
+                                         const OriginAttributes& aAttrs) {
   nsAutoCString baseDomain;
-  CookieCommons::GetBaseDomainFromHost(mTLDService, aCookie->Host(),
-                                       baseDomain);
+  if (NS_FAILED(CookieCommons::GetBaseDomainFromHost(
+          mTLDService, aCookie->Host(), baseDomain))) {
+    MOZ_ASSERT(false,
+               "CookieServiceChild::RecordDocumentCookie - "
+               "GetBaseDomainFromHost shouldn't fail");
+    return CookieNotificationAction::NoActionNeeded;
+  }
+
+  if (CookieCommons::IsFirstPartyPartitionedCookieWithoutCHIPS(
+          aCookie, baseDomain, aAttrs)) {
+    COOKIE_LOGSTRING(LogLevel::Error,
+                     ("Invalid first-party partitioned cookie without "
+                      "partitioned cookie attribution from the document."));
+    MOZ_ASSERT(false);
+    return CookieNotificationAction::NoActionNeeded;
+  }
 
   CookieKey key(baseDomain, aAttrs);
   CookiesList* cookiesList = nullptr;
@@ -306,38 +336,45 @@ void CookieServiceChild::RecordDocumentCookie(Cookie* aCookie,
   if (!cookiesList) {
     cookiesList = mCookiesMap.GetOrInsertNew(key);
   }
+
+  bool cookieFound = false;
+
   for (uint32_t i = 0; i < cookiesList->Length(); i++) {
     Cookie* cookie = cookiesList->ElementAt(i);
     if (cookie->Name().Equals(aCookie->Name()) &&
         cookie->Host().Equals(aCookie->Host()) &&
         cookie->Path().Equals(aCookie->Path())) {
       if (cookie->Value().Equals(aCookie->Value()) &&
-          cookie->Expiry() == aCookie->Expiry() &&
+          cookie->ExpiryInMSec() == aCookie->ExpiryInMSec() &&
           cookie->IsSecure() == aCookie->IsSecure() &&
           cookie->SameSite() == aCookie->SameSite() &&
-          cookie->RawSameSite() == aCookie->RawSameSite() &&
           cookie->IsSession() == aCookie->IsSession() &&
           cookie->IsHttpOnly() == aCookie->IsHttpOnly()) {
-        cookie->SetLastAccessed(aCookie->LastAccessed());
-        return;
+        cookie->SetLastAccessedInUSec(aCookie->LastAccessedInUSec());
+        return CookieNotificationAction::NoActionNeeded;
       }
       cookiesList->RemoveElementAt(i);
+      cookieFound = true;
       break;
     }
   }
 
-  int64_t currentTime = PR_Now() / PR_USEC_PER_SEC;
-  if (aCookie->Expiry() <= currentTime) {
-    return;
+  int64_t currentTimeInMSec = PR_Now() / PR_USEC_PER_MSEC;
+  if (aCookie->ExpiryInMSec() <= currentTimeInMSec) {
+    return cookieFound ? CookieNotificationAction::CookieDeleted
+                       : CookieNotificationAction::NoActionNeeded;
   }
 
   cookiesList->AppendElement(aCookie);
+  return cookieFound ? CookieNotificationAction::CookieChanged
+                     : CookieNotificationAction::CookieAdded;
 }
 
 NS_IMETHODIMP
 CookieServiceChild::GetCookieStringFromHttp(nsIURI* /*aHostURI*/,
                                             nsIChannel* /*aChannel*/,
                                             nsACString& /*aCookieString*/) {
+  MOZ_CRASH("This method should not be called");
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -345,177 +382,8 @@ NS_IMETHODIMP
 CookieServiceChild::SetCookieStringFromHttp(nsIURI* aHostURI,
                                             const nsACString& aCookieString,
                                             nsIChannel* aChannel) {
-  NS_ENSURE_ARG(aHostURI);
-  NS_ENSURE_ARG(aChannel);
-
-  if (!CookieCommons::IsSchemeSupported(aHostURI)) {
-    return NS_OK;
-  }
-
-  // Fast past: don't bother sending IPC messages about nullprincipal'd
-  // documents.
-  nsAutoCString scheme;
-  aHostURI->GetScheme(scheme);
-  if (scheme.EqualsLiteral("moz-nullprincipal")) {
-    return NS_OK;
-  }
-
-  nsCOMPtr<nsILoadInfo> loadInfo = aChannel->LoadInfo();
-
-  uint32_t rejectedReason = 0;
-  ThirdPartyAnalysisResult result = mThirdPartyUtil->AnalyzeChannel(
-      aChannel, false, aHostURI, RequireThirdPartyCheck, &rejectedReason);
-
-  nsCString cookieString(aCookieString);
-
-  OriginAttributes storagePrincipalOriginAttributes =
-      loadInfo->GetOriginAttributes();
-  StoragePrincipalHelper::PrepareEffectiveStoragePrincipalOriginAttributes(
-      aChannel, storagePrincipalOriginAttributes);
-
-  bool requireHostMatch;
-  nsCString baseDomain;
-  CookieCommons::GetBaseDomain(mTLDService, aHostURI, baseDomain,
-                               requireHostMatch);
-
-  nsCOMPtr<nsICookieJarSettings> cookieJarSettings =
-      CookieCommons::GetCookieJarSettings(aChannel);
-
-  nsCOMPtr<nsIConsoleReportCollector> crc = do_QueryInterface(aChannel);
-
-  CookieStatus cookieStatus = CookieService::CheckPrefs(
-      crc, cookieJarSettings, aHostURI,
-      result.contains(ThirdPartyAnalysis::IsForeign),
-      result.contains(ThirdPartyAnalysis::IsThirdPartyTrackingResource),
-      result.contains(ThirdPartyAnalysis::IsThirdPartySocialTrackingResource),
-      result.contains(ThirdPartyAnalysis::IsStorageAccessPermissionGranted),
-      aCookieString,
-      HasExistingCookies(baseDomain, storagePrincipalOriginAttributes),
-      storagePrincipalOriginAttributes, &rejectedReason);
-
-  if (cookieStatus != STATUS_ACCEPTED &&
-      cookieStatus != STATUS_ACCEPT_SESSION) {
-    return NS_OK;
-  }
-
-  int64_t currentTimeInUsec = PR_Now();
-
-  bool addonAllowsLoad = false;
-  nsCOMPtr<nsIURI> finalChannelURI;
-  NS_GetFinalChannelURI(aChannel, getter_AddRefs(finalChannelURI));
-  addonAllowsLoad = BasePrincipal::Cast(loadInfo->TriggeringPrincipal())
-                        ->AddonAllowsLoad(finalChannelURI);
-
-  bool isForeignAndNotAddon = false;
-  if (!addonAllowsLoad) {
-    mThirdPartyUtil->IsThirdPartyChannel(aChannel, aHostURI,
-                                         &isForeignAndNotAddon);
-
-    // include sub-document navigations from cross-site to same-site
-    // wrt top-level in our check for thirdparty-ness
-    if (StaticPrefs::network_cookie_sameSite_crossSiteIframeSetCheck() &&
-        !isForeignAndNotAddon &&
-        loadInfo->GetExternalContentPolicyType() ==
-            ExtContentPolicy::TYPE_SUBDOCUMENT) {
-      bool triggeringPrincipalIsThirdParty = false;
-      BasePrincipal::Cast(loadInfo->TriggeringPrincipal())
-          ->IsThirdPartyURI(finalChannelURI, &triggeringPrincipalIsThirdParty);
-      isForeignAndNotAddon |= triggeringPrincipalIsThirdParty;
-    }
-  }
-
-  bool mustBePartitioned =
-      isForeignAndNotAddon &&
-      cookieJarSettings->GetCookieBehavior() ==
-          nsICookieService::BEHAVIOR_REJECT_TRACKER_AND_PARTITION_FOREIGN &&
-      !result.contains(ThirdPartyAnalysis::IsStorageAccessPermissionGranted);
-
-  // CHIPS - The partitioned cookie jar is always available and it is always
-  // possible to store cookies in it using the "Partitioned" attribute.
-  // Prepare the partitioned principals OAs to enable possible partitioned
-  // cookie storing from first-party or with StorageAccess.
-  // Similar behavior to CookieService::SetCookieStringFromHttp().
-  OriginAttributes partitionedPrincipalOriginAttributes;
-  bool isPartitionedPrincipal =
-      !storagePrincipalOriginAttributes.mPartitionKey.IsEmpty();
-  bool isCHIPS = StaticPrefs::network_cookie_CHIPS_enabled() &&
-                 !cookieJarSettings->GetBlockingAllContexts();
-  // Only need to get OAs if we don't already use the partitioned principal.
-  if (isCHIPS && !isPartitionedPrincipal) {
-    StoragePrincipalHelper::GetOriginAttributes(
-        aChannel, partitionedPrincipalOriginAttributes,
-        StoragePrincipalHelper::ePartitionedPrincipal);
-  }
-
-  nsTArray<CookieStruct> cookiesToSend, partitionedCookiesToSend;
-  bool moreCookies;
-  do {
-    CookieParser parser(crc, aHostURI);
-    moreCookies =
-        parser.Parse(baseDomain, requireHostMatch, cookieStatus, cookieString,
-                     true, isForeignAndNotAddon, mustBePartitioned,
-                     storagePrincipalOriginAttributes.IsPrivateBrowsing());
-    if (!parser.ContainsCookie()) {
-      continue;
-    }
-
-    // check permissions from site permission list.
-    if (!CookieCommons::CheckCookiePermission(aChannel, parser.CookieData())) {
-      COOKIE_LOGFAILURE(SET_COOKIE, aHostURI, aCookieString,
-                        "cookie rejected by permission manager");
-      parser.RejectCookie(CookieParser::RejectedByPermissionManager);
-      CookieCommons::NotifyRejected(
-          aHostURI, aChannel,
-          nsIWebProgressListener::STATE_COOKIES_BLOCKED_BY_PERMISSION,
-          OPERATION_WRITE);
-      continue;
-    }
-
-    // CHIPS - If the partitioned attribute is set, store cookie in partitioned
-    // cookie jar independent of context. If the cookies are stored in the
-    // partitioned cookie jar anyway no special treatment of CHIPS cookies
-    // necessary.
-    bool needPartitioned = isCHIPS && parser.CookieData().isPartitioned() &&
-                           !isPartitionedPrincipal;
-    nsTArray<CookieStruct>& cookiesToSendRef =
-        needPartitioned ? partitionedCookiesToSend : cookiesToSend;
-    OriginAttributes& cookieOriginAttributes =
-        needPartitioned ? partitionedPrincipalOriginAttributes
-                        : storagePrincipalOriginAttributes;
-    // Assert that partitionedPrincipalOriginAttributes are initialized if used.
-    MOZ_ASSERT_IF(
-        needPartitioned,
-        !partitionedPrincipalOriginAttributes.mPartitionKey.IsEmpty());
-
-    RefPtr<Cookie> cookie =
-        Cookie::Create(parser.CookieData(), cookieOriginAttributes);
-    MOZ_ASSERT(cookie);
-
-    cookie->SetLastAccessed(currentTimeInUsec);
-    cookie->SetCreationTime(
-        Cookie::GenerateUniqueCreationTime(currentTimeInUsec));
-
-    RecordDocumentCookie(cookie, cookieOriginAttributes);
-    cookiesToSendRef.AppendElement(parser.CookieData());
-  } while (moreCookies);
-
-  // Asynchronously call the parent.
-  if (CanSend()) {
-    RefPtr<HttpChannelChild> httpChannelChild = do_QueryObject(aChannel);
-    MOZ_ASSERT(httpChannelChild);
-    if (!cookiesToSend.IsEmpty()) {
-      httpChannelChild->SendSetCookies(
-          baseDomain, storagePrincipalOriginAttributes, aHostURI, true,
-          isForeignAndNotAddon, cookiesToSend);
-    }
-    if (!partitionedCookiesToSend.IsEmpty()) {
-      httpChannelChild->SendSetCookies(
-          baseDomain, partitionedPrincipalOriginAttributes, aHostURI, true,
-          isForeignAndNotAddon, partitionedCookiesToSend);
-    }
-  }
-
-  return NS_OK;
+  MOZ_CRASH("This method should not be called");
+  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
@@ -598,7 +466,9 @@ void CookieServiceChild::AddCookieFromDocument(
     }
   }
 
-  RecordDocumentCookie(&aCookie, aOriginAttributes);
+  CookieNotificationAction action =
+      RecordDocumentCookie(&aCookie, aOriginAttributes);
+  NotifyObservers(&aCookie, aOriginAttributes, action);
 
   if (CanSend()) {
     nsTArray<CookieStruct> cookiesToSend;
@@ -619,6 +489,52 @@ void CookieServiceChild::AddCookieFromDocument(
                                       aDocumentURI, false, aThirdParty,
                                       cookiesToSend);
   }
+}
+
+void CookieServiceChild::NotifyObservers(Cookie* aCookie,
+                                         const OriginAttributes& aAttrs,
+                                         CookieNotificationAction aAction,
+                                         const Maybe<nsID>& aOperationID) {
+  nsICookieNotification::Action notificationAction;
+  switch (aAction) {
+    case CookieNotificationAction::NoActionNeeded:
+      return;
+
+    case CookieNotificationAction::CookieAdded:
+      notificationAction = nsICookieNotification::COOKIE_ADDED;
+      break;
+
+    case CookieNotificationAction::CookieChanged:
+      notificationAction = nsICookieNotification::COOKIE_CHANGED;
+      break;
+
+    case CookieNotificationAction::CookieDeleted:
+      notificationAction = nsICookieNotification::COOKIE_DELETED;
+      break;
+  }
+
+  nsCOMPtr<nsIObserverService> os = services::GetObserverService();
+  if (!os) {
+    return;
+  }
+
+  nsAutoCString baseDomain;
+  if (NS_FAILED(CookieCommons::GetBaseDomainFromHost(
+          mTLDService, aCookie->Host(), baseDomain))) {
+    MOZ_ASSERT(false,
+               "CookieServiceChild::NotifyObservers - GetBaseDomainFromHost "
+               "shouldn't fail");
+    return;
+  }
+
+  nsCOMPtr<nsICookieNotification> notification =
+      new CookieNotification(notificationAction, aCookie, baseDomain, false,
+                             nullptr, 0, aOperationID.ptrOr(nullptr));
+
+  os->NotifyObservers(
+      notification,
+      aAttrs.IsPrivateBrowsing() ? "private-cookie-changed" : "cookie-changed",
+      u"");
 }
 
 }  // namespace net

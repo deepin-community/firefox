@@ -12,7 +12,17 @@ all-tabs-menu-hidden-tabs =
 all-tabs-menu-manage-user-context =
     .label = Kontejnery rjadować
     .accesskey = K
-all-tabs-menu-close-duplicate-tabs =
-    .label = Dwójne rajtarki začinić
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Wšě dwójne rajtarki začinić
+all-tabs-menu-synced-tabs =
+    .label = Rajtarki z druhich gratow
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Skupiny najnowšich rajtarkow
+all-tabs-menu-current-window-header = Aktualne wokno
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Wšě pokazać
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Skupiny rajtarkow

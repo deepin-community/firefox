@@ -9,7 +9,6 @@
 
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/ThreadLocal.h"
-#include "mozilla/Attributes.h"
 
 #include "nscore.h"
 #include "nsDebug.h"
@@ -63,6 +62,8 @@ class BlockingResourceBase {
   static const char* const kResourceTypeName[];
 
 #ifdef DEBUG
+
+  static void AssertSafeToProcessEventLoop();
 
   static size_t SizeOfDeadlockDetector(MallocSizeOf aMallocSizeOf);
 

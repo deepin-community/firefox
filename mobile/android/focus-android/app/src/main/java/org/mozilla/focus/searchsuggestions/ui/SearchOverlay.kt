@@ -1,6 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.focus.searchsuggestions.ui
 
 import androidx.appcompat.content.res.AppCompatResources
@@ -16,19 +17,24 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.drawable.toBitmap
-import kotlinx.coroutines.DelicateCoroutinesApi
 import mozilla.components.compose.browser.awesomebar.AwesomeBar
 import mozilla.components.compose.browser.awesomebar.AwesomeBarDefaults
 import mozilla.components.concept.awesomebar.AwesomeBar
 import mozilla.components.feature.awesomebar.provider.SearchSuggestionProvider
-import org.mozilla.focus.R
 import org.mozilla.focus.components
 import org.mozilla.focus.searchsuggestions.SearchSuggestionsViewModel
 import org.mozilla.focus.searchsuggestions.State
 import org.mozilla.focus.topsites.TopSitesOverlay
 import org.mozilla.focus.ui.theme.focusColors
+import mozilla.components.ui.icons.R as iconsR
 
-@OptIn(DelicateCoroutinesApi::class)
+/**
+ * Composable function that displays the search overlay.
+ *
+ * @param viewModel The ViewModel that provides the state and search query.
+ * @param defaultSearchEngineName The name of the default search engine.
+ * @param onListScrolled Callback function to be invoked when the list is scrolled.
+ */
 @Composable
 fun SearchOverlay(
     viewModel: SearchSuggestionsViewModel,
@@ -82,10 +88,9 @@ private fun SearchSuggestions(
     val context = LocalContext.current
     val components = components
 
-    val icon = AppCompatResources.getDrawable(context, R.drawable.mozac_ic_search_24)?.toBitmap()
-    val provider = remember(context) {
+    val icon = AppCompatResources.getDrawable(context, iconsR.drawable.mozac_ic_search_24)?.toBitmap()
+    val provider = remember {
         SearchSuggestionProvider(
-            context,
             components.store,
             components.searchUseCases.newPrivateTabSearch,
             components.client,
@@ -112,6 +117,12 @@ private fun SearchSuggestions(
             text = text,
             colors = AwesomeBarDefaults.colors(
                 background = focusColors.surface,
+                title = focusColors.onBackground,
+                description = focusColors.onBackground.copy(
+                    alpha = 0.6f,
+                ),
+                autocompleteIcon = focusColors.onSurface,
+                groupTitle = focusColors.onBackground,
             ),
             providers = listOf(provider),
             onSuggestionClicked = onSuggestionClicked,

@@ -15,6 +15,10 @@ support-addons-type = Típus
 support-addons-enabled = Engedélyezve
 support-addons-version = Verzió
 support-addons-id = Azonosító
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Hely
 legacy-user-stylesheets-title = Hagyományos felhasználói stíluslapok
 legacy-user-stylesheets-enabled = Aktív
 legacy-user-stylesheets-stylesheet-types = Stíluslapok
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Hatékonyság (%)
 place-database-stats-sequentiality-perc = Sorozatosság (%)
 place-database-integrity = Sértetlenség
 place-database-verify-integrity = Sértetlenség ellenőrzése
+place-database-last-idle-maintenance-data = Utolsó tétlen karbantartás dátuma
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Vacuum parancs utolsó futtatási dátuma
+place-database-last-integrity-corruption-date = Legutóbbi integritássérülés dátuma
 a11y-title = Kisegítő lehetőségek
 a11y-activated = Aktiválva
 a11y-force-disabled = Kisegítő lehetőségek letiltása
@@ -150,7 +158,7 @@ troubleshoot-mode-title = Problémák diagnosztizálása
 restart-in-troubleshoot-mode-label = Hibaelhárítási mód…
 clear-startup-cache-title = Próbálja meg üríteni az indítási gyorsítótárat
 clear-startup-cache-label = Indítási gyorsítótár törlése…
-startup-cache-dialog-title2 = Újraindítja a { -brand-short-name(case: "accusative") } az indítási gyorsítótár törléséhez?
+startup-cache-dialog-title2 = Újraindítja a { -brand-short-name }ot az indítási gyorsítótár törléséhez?
 startup-cache-dialog-body2 = Ez nem módosítja a beállításait, és nem távolít el kiegészítőket.
 restart-button-label = Újraindítás
 
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Adatbázis felsorolása
 
 media-codec-support-sw-decoding = Szoftveres dekódolás
 media-codec-support-hw-decoding = Hardveres dekódolás
+media-codec-support-sw-encoding = Szoftveres kódolás
+media-codec-support-hw-encoding = Hardveres kódolás
 media-codec-support-codec-name = Kodeknév
 media-codec-support-supported = Támogatott
 media-codec-support-unsupported = Nem támogatott

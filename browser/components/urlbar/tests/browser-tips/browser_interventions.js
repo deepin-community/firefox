@@ -5,13 +5,16 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   UrlbarProviderInterventions:
-    "resource:///modules/UrlbarProviderInterventions.sys.mjs",
+    "moz-src:///browser/components/urlbar/UrlbarProviderInterventions.sys.mjs",
 });
 
 add_setup(async function () {
   Services.telemetry.clearEvents();
-  Services.telemetry.clearScalars();
   makeProfileResettable();
+
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
 });
 
 // Tests the refresh tip.
@@ -81,47 +84,6 @@ add_task(async function clear_private() {
   await BrowserTestUtils.closeWindow(win);
 });
 
-// Tests that only the intervention visible at the time of abandonment or
-// engagement is registered in Telemetry.
-add_task(async function multipleInterventionsInOneEngagement() {
-  Services.telemetry.clearScalars();
-  let result = (await awaitTip(SEARCH_STRINGS.REFRESH, window))[0];
-  Assert.strictEqual(
-    result.payload.type,
-    UrlbarProviderInterventions.TIP_TYPE.REFRESH
-  );
-  result = (await awaitTip(SEARCH_STRINGS.CLEAR, window))[0];
-  Assert.strictEqual(
-    result.payload.type,
-    UrlbarProviderInterventions.TIP_TYPE.CLEAR
-  );
-  result = (await awaitTip(SEARCH_STRINGS.REFRESH, window))[0];
-  Assert.strictEqual(
-    result.payload.type,
-    UrlbarProviderInterventions.TIP_TYPE.REFRESH
-  );
-
-  // Blur the urlbar so that the engagement is ended.
-  await UrlbarTestUtils.promisePopupClose(window, () => gURLBar.blur());
-
-  const scalars = TelemetryTestUtils.getProcessScalars("parent", true, true);
-  // We should only record one impression for the Refresh tip. Although it was
-  // seen twice, it was in the same engagement.
-  TelemetryTestUtils.assertKeyedScalar(
-    scalars,
-    "urlbar.tips",
-    `${UrlbarProviderInterventions.TIP_TYPE.REFRESH}-shown`,
-    1
-  );
-  Assert.ok(
-    !scalars["urlbar.tips"][
-      `${UrlbarProviderInterventions.TIP_TYPE.CLEAR}-shown`
-    ],
-    `${UrlbarProviderInterventions.TIP_TYPE.CLEAR}-shown is not recorded as an
-     impression`
-  );
-});
-
 // Test the result of UrlbarProviderInterventions.isActive()
 // and whether or not the function calucates the score.
 add_task(async function testIsActive() {
@@ -165,6 +127,13 @@ add_task(async function testIsActive() {
     },
   ];
 
+  let interventionsProviderInstance = UrlbarProvidersManager.getProvider(
+    "UrlbarProviderInterventions"
+  );
+  // Mock the relevent method of Query so we don't have to start a real one.
+  interventionsProviderInstance.queryInstance = {
+    getProvider: name => UrlbarProvidersManager.getProvider(name),
+  };
   for (const {
     description,
     searchString,
@@ -175,17 +144,20 @@ add_task(async function testIsActive() {
 
     // Set null to currentTip to know whether or not UrlbarProviderInterventions
     // calculated the score.
-    UrlbarProviderInterventions.currentTip = null;
+    interventionsProviderInstance.currentTip = null;
 
-    const isActive = UrlbarProviderInterventions.isActive({ searchString });
-    Assert.equal(isActive, expectedActive, "Result of isAcitive is correct");
-    const isScoreCalculated = UrlbarProviderInterventions.currentTip !== null;
+    const isActive = await interventionsProviderInstance.isActive({
+      searchString,
+    });
+    Assert.equal(isActive, expectedActive, "Result of isActive is correct");
+    const isScoreCalculated = interventionsProviderInstance.currentTip !== null;
     Assert.equal(
       isScoreCalculated,
       expectedScoreCalculated,
       "The score is calculated correctly"
     );
   }
+  interventionsProviderInstance.queryInstance = null;
 });
 
 add_task(async function tipsAreEnglishOnly() {
@@ -245,9 +217,8 @@ add_task(async function pickHelp() {
       "The result's helpUrl should be defined and non-empty: " +
         JSON.stringify(result.payload.helpUrl)
     );
-    let loadPromise = BrowserTestUtils.browserLoaded(
-      gBrowser.selectedBrowser,
-      false,
+    let newTabOpened = BrowserTestUtils.waitForNewTab(
+      gBrowser,
       result.payload.helpUrl
     );
     await UrlbarTestUtils.openResultMenuAndPressAccesskey(window, "h", {
@@ -255,20 +226,12 @@ add_task(async function pickHelp() {
       resultIndex: 1,
     });
     info("Waiting for help URL to load in the current tab");
-    await loadPromise;
+    let newTab = await newTabOpened;
+    await BrowserTestUtils.removeTab(newTab);
 
     // Wait a bit and make sure the clear recent history dialog did not open.
     // eslint-disable-next-line mozilla/no-arbitrary-setTimeout
     await new Promise(r => setTimeout(r, 2000));
     Assert.strictEqual(gDialogBox.isOpen, false, "No dialog should be open");
-
-    // Check telemetry.
-    const scalars = TelemetryTestUtils.getProcessScalars("parent", true, true);
-    TelemetryTestUtils.assertKeyedScalar(
-      scalars,
-      "urlbar.tips",
-      `${UrlbarProviderInterventions.TIP_TYPE.CLEAR}-help`,
-      1
-    );
   });
 });

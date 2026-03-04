@@ -7,10 +7,11 @@
 #ifndef mozilla_SelectionMovementUtils_h
 #define mozilla_SelectionMovementUtils_h
 
-#include "mozilla/intl/BidiEmbeddingLevel.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/EnumSet.h"
+#include "mozilla/RangeBoundary.h"
 #include "mozilla/Result.h"
+#include "mozilla/intl/BidiEmbeddingLevel.h"
 #include "nsIFrame.h"
 
 struct nsPrevNextBidiLevels;
@@ -24,12 +25,27 @@ namespace intl {
 class BidiEmbeddingLevel;
 }
 
-struct MOZ_STACK_CLASS PrimaryFrameData {
-  // The frame which should be used to layout the caret.
+struct MOZ_STACK_CLASS FrameAndOffset {
+  [[nodiscard]] nsIContent* GetFrameContent() const {
+    return mFrame ? mFrame->GetContent() : nullptr;
+  }
+
+  operator nsIFrame*() const { return mFrame; }
+
+  explicit operator bool() const { return !!mFrame; }
+  [[nodiscard]] bool operator!() const { return !mFrame; }
+
+  nsIFrame* operator->() const {
+    MOZ_ASSERT(mFrame);
+    return mFrame;
+  }
+
   nsIFrame* mFrame = nullptr;
-  // The offset in content of mFrame.  This is valid only when mFrame is not
-  // nullptr.
+  // The offset in mFrame->GetContent().
   uint32_t mOffsetInFrameContent = 0;
+};
+
+struct MOZ_STACK_CLASS PrimaryFrameData : public FrameAndOffset {
   // Whether the caret should be put before or after the point. This is valid
   // only when mFrame is not nullptr.
   CaretAssociationHint mHint{0};  // Before
@@ -49,17 +65,79 @@ class SelectionMovementUtils final {
   using PeekOffsetOptions = EnumSet<PeekOffsetOption>;
 
   /**
+   * @brief Creates a new `RangeBoundary` which moves `aAmount` into
+   * `aDirection` from the input range boundary.
+   *
+   * @param aRangeBoundary   The input range boundary.
+   * @param aDirection       The direction into which the new boundary should be
+   *                         moved.
+   * @param aHint            The `CaretAssociationHint` (is the caret before or
+   *                         after the boundary point)
+   * @param aCaretBidiLevel  The `BidiEmbeddingLevel`.
+   * @param aAmount          The amount which the range boundary should be
+   *                         moved.
+   * @param aOptions         Additional options, see `PeekOffsetOption`.
+   * @param aAncestorLimiter The content node that limits where Selection may be
+   *                         expanded to.
+   *
+   * @return Returns a new `RangeBoundary` which is moved from `aRangeBoundary`
+   *         by `aAmount` into `aDirection`.
+   */
+  template <typename ParentType, typename RefType>
+  static Result<RangeBoundaryBase<ParentType, RefType>, nsresult>
+  MoveRangeBoundaryToSomewhere(
+      const RangeBoundaryBase<ParentType, RefType>& aRangeBoundary,
+      nsDirection aDirection, CaretAssociationHint aHint,
+      intl::BidiEmbeddingLevel aCaretBidiLevel, nsSelectionAmount aAmount,
+      PeekOffsetOptions aOptions,
+      const dom::Element* aAncestorLimiter = nullptr);
+
+  /**
    * Given a node and its child offset, return the nsIFrame and the offset into
    * that frame.
    *
    * @param aNode input parameter for the node to look at
-   *              TODO: Make this `const nsIContent*` for `ContentEventHandler`.
    * @param aOffset offset into above node.
-   * @param aReturnOffset will contain offset into frame.
    */
-  static nsIFrame* GetFrameForNodeOffset(nsIContent* aNode, uint32_t aOffset,
-                                         CaretAssociationHint aHint,
-                                         uint32_t* aReturnOffset = nullptr);
+  static FrameAndOffset GetFrameForNodeOffset(const nsIContent* aNode,
+                                              uint32_t aOffset,
+                                              CaretAssociationHint aHint);
+
+  /**
+   * Return the first visible point in or at a leaf node in aRange or the first
+   * unselectable content if aRange starts from a selectable container. E.g.,
+   * return the start of the first visible `Text` or the position of the first
+   * visible leaf element.  I.e., the result may be a good point to put a UI for
+   * showing something around the start boundary.
+   *
+   * NOTE: This won't return any boundary point in subtrees from the tree
+   * containing the start container of aRange due to ContentIteratorBase's
+   * limitation. See bug 2001511.
+   *
+   * @param aRange Must not be collapsed because this returns a point in aRange
+   * so that this requires the limitation of scanning forward.
+   * @return A position in a `Text` or a position at an element.
+   */
+  [[nodiscard]] static RawRangeBoundary GetFirstVisiblePointAtLeaf(
+      const dom::AbstractRange& aRange);
+
+  /**
+   * Return the last visible point in or at a leaf node in aRange or the last
+   * unselectable content if aRange ends in a selectable container. E.g., return
+   * the end of the last visible `Text` or the position of the last visible leaf
+   * element. I.e., the result may be a good point to put a UI for showing
+   * something around the end boundary.
+   *
+   * NOTE: This won't return any boundary point in subtrees of the tree
+   * containing the end container of aRange due to ContentIteratorBase's
+   * limitation. See bug 2001511.
+   *
+   * @param aRange Must not be collapsed because this returns a point in aRange
+   * so that this requires the limitation of scanning forward.
+   * @return A position in a `Text` or a position at an element.
+   */
+  [[nodiscard]] static RawRangeBoundary GetLastVisiblePointAtLeaf(
+      const dom::AbstractRange& aRange);
 
   /**
    * GetPrevNextBidiLevels will return the frames and associated Bidi levels of
@@ -70,6 +148,7 @@ class SelectionMovementUtils final {
    * @param aJumpLines
    *   If true, look across line boundaries.
    *   If false, behave as if there were base-level frames at line edges.
+   * @param aAncestorLimiter  If set, this refers only the descendants.
    *
    * @return A struct holding the before/after frame and the before/after
    * level.
@@ -80,10 +159,9 @@ class SelectionMovementUtils final {
    * In these cases the before frame and after frame respectively will be
    * nullptr.
    */
-  static nsPrevNextBidiLevels GetPrevNextBidiLevels(nsIContent* aNode,
-                                                    uint32_t aContentOffset,
-                                                    CaretAssociationHint aHint,
-                                                    bool aJumpLines);
+  static nsPrevNextBidiLevels GetPrevNextBidiLevels(
+      nsIContent* aNode, uint32_t aContentOffset, CaretAssociationHint aHint,
+      bool aJumpLines, const dom::Element* aAncestorLimiter);
 
   /**
    * PeekOffsetForCaretMove() only peek offset for caret move from the specified

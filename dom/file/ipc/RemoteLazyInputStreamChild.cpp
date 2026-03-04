@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "RemoteLazyInputStreamChild.h"
+
 #include "RemoteLazyInputStreamThread.h"
 
 namespace mozilla {
@@ -29,7 +30,7 @@ void RemoteLazyInputStreamChild::StreamConsumed() {
 
   // When the count reaches zero, close the underlying actor.
   if (count == 0) {
-    auto* t = RemoteLazyInputStreamThread::Get();
+    RefPtr<RemoteLazyInputStreamThread> t = RemoteLazyInputStreamThread::Get();
     if (t) {
       t->Dispatch(
           NS_NewRunnableFunction("RemoteLazyInputStreamChild::StreamConsumed",

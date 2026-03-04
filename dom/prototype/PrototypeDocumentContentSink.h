@@ -7,22 +7,20 @@
 #ifndef mozilla_dom_PrototypeDocumentContentSink_h__
 #define mozilla_dom_PrototypeDocumentContentSink_h__
 
-#include "mozilla/Attributes.h"
-#include "nsIContentSink.h"
-#include "nsTArray.h"
+#include "js/experimental/JSStencil.h"
+#include "mozilla/Logging.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/dom/FromParser.h"
 #include "nsCOMPtr.h"
 #include "nsCRT.h"
 #include "nsCycleCollectionNoteChild.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsIDTD.h"
-#include "mozilla/dom/FromParser.h"
-#include "nsXULPrototypeDocument.h"
-#include "nsIStreamLoader.h"
-#include "nsIScriptContext.h"
 #include "nsICSSLoaderObserver.h"
-#include "mozilla/Logging.h"
-#include "js/experimental/JSStencil.h"
-#include "mozilla/RefPtr.h"
+#include "nsIContentSink.h"
+#include "nsIScriptContext.h"
+#include "nsIStreamLoader.h"
+#include "nsTArray.h"
+#include "nsXULPrototypeDocument.h"
 
 class nsIURI;
 class nsIChannel;
@@ -233,7 +231,7 @@ class PrototypeDocumentContentSink final : public nsIStreamLoaderObserver,
    * it to the DOM.
    */
   nsresult CreateAndInsertPI(const nsXULPrototypePI* aProtoPI, nsINode* aParent,
-                             nsINode* aBeforeThis);
+                             bool aInProlog);
 
   /**
    * Inserts the passed <?xml-stylesheet ?> PI at the specified
@@ -245,7 +243,7 @@ class PrototypeDocumentContentSink final : public nsIStreamLoaderObserver,
    * loading.
    */
   nsresult InsertXMLStylesheetPI(const nsXULPrototypePI* aProtoPI,
-                                 nsINode* aParent, nsINode* aBeforeThis,
+                                 nsINode* aParent,
                                  XMLStylesheetProcessingInstruction* aPINode);
   void CloseElement(Element* aElement, bool aHadChildren);
 };

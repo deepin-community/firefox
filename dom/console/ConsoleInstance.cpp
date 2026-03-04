@@ -5,11 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/ConsoleInstance.h"
+
 #include "Console.h"
-#include "mozilla/dom/ConsoleBinding.h"
-#include "mozilla/Preferences.h"
 #include "ConsoleCommon.h"
 #include "ConsoleUtils.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/dom/ConsoleBinding.h"
 #include "nsContentUtils.h"
 
 namespace mozilla::dom {
@@ -46,15 +47,13 @@ ConsoleUtils::Level WebIDLevelToConsoleUtilsLevel(ConsoleLevel aLevel) {
 ConsoleInstance::ConsoleInstance(JSContext* aCx,
                                  const ConsoleInstanceOptions& aOptions)
     : mMaxLogLevel(ConsoleLogLevel::All),
-      mConsole(new Console(aCx, nullptr, 0, 0)) {
+      mConsole(new Console(aCx, nullptr, 0, 0, aOptions.mPrefix)) {
   mConsole->mConsoleID = aOptions.mConsoleID;
   mConsole->mPassedInnerID = aOptions.mInnerID;
 
   if (aOptions.mDump.WasPassed()) {
     mConsole->mDumpFunction = &aOptions.mDump.Value();
   }
-
-  mConsole->mPrefix = aOptions.mPrefix;
 
   // Let's inform that this is a custom instance.
   mConsole->mChromeInstance = true;
@@ -162,6 +161,9 @@ JSObject* ConsoleInstance::WrapObject(JSContext* aCx,
   void ConsoleInstance::name(JSContext* aCx,                     \
                              const Sequence<JS::Value>& aData) { \
     RefPtr<Console> console(mConsole);                           \
+    if (MOZ_UNLIKELY(!console)) {                                \
+      return;                                                    \
+    }                                                            \
     console->MethodInternal(aCx, Console::Method##name,          \
                             nsLiteralString(string), aData);     \
   }

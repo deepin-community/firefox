@@ -11,14 +11,6 @@ ifeq (,$(MOZ_SUITE)$(MOZ_THUNDERBIRD))
 MOCHITESTBROWSERDIR = $(topobjdir)/_tests/testing/mochitest/browser/toolkit/mozapps/update/tests/browser
 endif
 
-ifndef MOZ_WINCONSOLE
-ifdef MOZ_DEBUG
-MOZ_WINCONSOLE = 1
-else
-MOZ_WINCONSOLE = 0
-endif
-endif
-
 include $(topsrcdir)/config/rules.mk
 
 ifneq (,$(COMPILE_ENVIRONMENT)$(MOZ_ARTIFACT_BUILDS))
@@ -27,6 +19,7 @@ ifeq (cocoa,$(MOZ_WIDGET_TOOLKIT))
 	# Copy for xpcshell tests
 	$(NSINSTALL) -D $(XPCSHELLTESTDIR)/data/updater-xpcshell.app
 	rsync -a -C --exclude '*.in' $(srcdir)/../macbuild/Contents $(XPCSHELLTESTDIR)/data/updater-xpcshell.app
+	$(NSINSTALL) $(DIST)/bin/Info.plist $(XPCSHELLTESTDIR)/data/updater-xpcshell.app/Contents
 	$(call py_action,preprocessor updater-xpcshell.app/Contents/Resources/English.lproj/InfoPlist.strings,-Fsubstitution --output-encoding utf-16 -DAPP_NAME='$(MOZ_APP_DISPLAYNAME)' $(srcdir)/../macbuild/Contents/Resources/English.lproj/InfoPlist.strings.in -o $(XPCSHELLTESTDIR)/data/updater-xpcshell.app/Contents/Resources/English.lproj/InfoPlist.strings)
 	$(NSINSTALL) -D $(XPCSHELLTESTDIR)/data/updater-xpcshell.app/Contents/MacOS
 	$(NSINSTALL) $(FINAL_TARGET)/updater-xpcshell $(XPCSHELLTESTDIR)/data/updater-xpcshell.app/Contents/MacOS

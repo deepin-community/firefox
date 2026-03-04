@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Zachyśiś
     .secondarybuttonaccesskey = c
 appmenu-update-restart-message2 = Wobstarajśo se nejnowšu wersiju { -brand-shorter-name }. Wćynjone rejtariki a wokna se wótnowiju.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Anulěrowaś
+    .secondarybuttonaccesskey = A
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } njamóžo na nejnowšu wersiju awtomatiski aktualizěrowaś.
     .buttonlabel = { -brand-shorter-name } weto aktualizěrowaś
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Nic něnto
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = Nowa aktualizacija { -brand-shorter-name } jo k dispoziciji, ale njedajo se instalěrowaś, dokulaž druga kopija { -brand-shorter-name } běžy. Zacyńśo ju, aby z aktualizaciju pókšacował, abo aktualizěrujśo weto (druga kopija pón snaź korektnje njefunkcioněrujo, daniž ju njestartujośo).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = W pórěźe
     .buttonaccesskey = o
 appmenu-addon-post-install-message3 = Zastojśo swóje dodanki a drastwy z menijom nałoženjow.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Aktualizěrujśo pšawa a daty kuždy cas w <a data-l10n-name="settings-link">nastajenjach rozšyrjenja</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Rozšyrjenje k symbolowej rědce pśipěś
+    .accesskey = R
 appmenu-addon-post-install-incognito-checkbox =
     .label = Toś to rozšyrjenje w priwatnych woknach dowóliś
     .accesskey = T
-    
 appmenu-new-tab-controlled-changes =
     .label = Waš nowy rejtarik jo se změnił.
     .buttonlabel = Změny wobchowaś

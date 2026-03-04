@@ -4,8 +4,8 @@
 
 package org.mozilla.fenix.ui.robots
 
-import android.os.Build
 import android.util.Log
+import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -18,6 +18,7 @@ import androidx.test.uiautomator.By.text
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import org.junit.Assert.assertTrue
+import org.mozilla.fenix.helpers.AppAndSystemHelper.clickSystemHomeScreenShortcutAddButton
 import org.mozilla.fenix.helpers.Constants.TAG
 import org.mozilla.fenix.helpers.MatcherHelper.assertUIObjectExists
 import org.mozilla.fenix.helpers.MatcherHelper.checkedItemWithResId
@@ -101,14 +102,12 @@ class SettingsSubMenuPrivateBrowsingRobot {
         Log.i(TAG, "cancelPrivateShortcutAddition: Trying to click the \"Add private browsing shortcut\" button")
         addPrivateBrowsingShortcutButton().click()
         Log.i(TAG, "cancelPrivateShortcutAddition: Clicked the \"Add private browsing shortcut\" button")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.i(TAG, "cancelPrivateShortcutAddition: Waiting for $waitingTime ms until finding the \"Cancel\" button")
-            mDevice.wait(Until.findObject(By.textContains("CANCEL")), waitingTime)
-            Log.i(TAG, "cancelPrivateShortcutAddition: Waited for $waitingTime ms until the \"Cancel\" button was found")
-            Log.i(TAG, "cancelPrivateShortcutAddition: Trying to click the \"Cancel\" button")
-            cancelShortcutAdditionButton().click()
-            Log.i(TAG, "cancelPrivateShortcutAddition: Clicked the \"Cancel\" button")
-        }
+        Log.i(TAG, "cancelPrivateShortcutAddition: Waiting for $waitingTime ms until finding the \"Cancel\" button")
+        mDevice.wait(Until.findObject(By.textContains("CANCEL")), waitingTime)
+        Log.i(TAG, "cancelPrivateShortcutAddition: Waited for $waitingTime ms until the \"Cancel\" button was found")
+        Log.i(TAG, "cancelPrivateShortcutAddition: Trying to click the \"Cancel\" button")
+        cancelShortcutAdditionButton().click()
+        Log.i(TAG, "cancelPrivateShortcutAddition: Clicked the \"Cancel\" button")
     }
 
     fun addPrivateShortcutToHomescreen() {
@@ -121,14 +120,7 @@ class SettingsSubMenuPrivateBrowsingRobot {
         Log.i(TAG, "addPrivateShortcutToHomescreen: Trying to click the \"Add private browsing shortcut\" button")
         addPrivateBrowsingShortcutButton().click()
         Log.i(TAG, "addPrivateShortcutToHomescreen: Clicked the \"Add private browsing shortcut\" button")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.i(TAG, "addPrivateShortcutToHomescreen: Waiting for $waitingTime ms until finding the \"Add automatically\" button")
-            mDevice.wait(Until.findObject(By.textContains("add automatically")), waitingTime)
-            Log.i(TAG, "addPrivateShortcutToHomescreen: Waited for $waitingTime ms until the \"Add automatically\" button was found")
-            Log.i(TAG, "addPrivateShortcutToHomescreen: Trying to click the \"Add automatically\" button")
-            addAutomaticallyButton().click()
-            Log.i(TAG, "addPrivateShortcutToHomescreen: Clicked the \"Add automatically\" button")
-        }
+        clickSystemHomeScreenShortcutAddButton()
     }
 
     class Transition {
@@ -141,13 +133,13 @@ class SettingsSubMenuPrivateBrowsingRobot {
             return SettingsRobot.Transition()
         }
 
-        fun openPrivateBrowsingShortcut(interact: SearchRobot.() -> Unit): SearchRobot.Transition {
+        fun openPrivateBrowsingShortcut(composeTestRule: ComposeTestRule, interact: SearchRobot.() -> Unit): SearchRobot.Transition {
             Log.i(TAG, "openPrivateBrowsingShortcut: Trying to click the \"Private $appName\" shortcut icon")
             privateBrowsingShortcutIcon().click()
             Log.i(TAG, "openPrivateBrowsingShortcut: Clicked the \"Private $appName\" shortcut icon")
 
-            SearchRobot().interact()
-            return SearchRobot.Transition()
+            SearchRobot(composeTestRule).interact()
+            return SearchRobot.Transition(composeTestRule)
         }
     }
 }

@@ -82,7 +82,16 @@ class HyperTextAccessibleBase {
    * Get/set caret offset, if no caret then -1.
    */
   virtual int32_t CaretOffset() const;
-  virtual void SetCaretOffset(int32_t aOffset) = 0;
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY virtual void SetCaretOffset(int32_t aOffset);
+
+  /**
+   * Return the caret rect and the widget containing the caret within this
+   * text accessible.
+   *
+   * @return the caret rect and containing widget
+   */
+  virtual std::pair<mozilla::LayoutDeviceIntRect, nsIWidget*>
+  GetCaretRect() = 0;
 
   /**
    * Provide the line number for the caret.
@@ -248,7 +257,8 @@ class HyperTextAccessibleBase {
   }
 
   /**
-   * Removes the specified selection.
+   * Removes the specified selection, or removes all selections if aSelectionNum
+   *is TextLeafRange::kRemoveAllExistingSelectedRanges.
    * @return true if succeeded
    */
   // TODO: annotate this with `MOZ_CAN_RUN_SCRIPT` instead.

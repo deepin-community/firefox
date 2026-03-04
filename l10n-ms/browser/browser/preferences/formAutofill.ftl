@@ -7,93 +7,100 @@
 
 autofill-manage-addresses-title = Alamat Disimpan
 autofill-manage-addresses-list-header = Alamat
-
 autofill-manage-credit-cards-title = Kad Kredit Disimpan
 autofill-manage-credit-cards-list-header = Kad Kredit
-
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Buang
 autofill-manage-add-button = Tambah…
 autofill-manage-edit-button = Edit…
 
-##
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Tambah Alamat Baru
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Edit Alamat
-
 autofill-address-given-name = Nama Pertama
 autofill-address-additional-name = Nama Tengah
 autofill-address-family-name = Nama Keluarga
 autofill-address-organization = Organisasi
 autofill-address-street = Nama Jalan
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Kawasan kejiranan
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Kampung atau Bandar
 autofill-address-island = Pulau
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Perbandaran
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Bandar
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Daerah
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Pos bandar
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Pinggir bandar
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Wilayah
 autofill-address-state = Negara
 autofill-address-county = Wilayah
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Kariah
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Wilayah
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Kawasan
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Jabatan
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirate
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblast
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Poskod
+# Postal code field.
 autofill-address-zip = Poskod
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Tambah Alamat Baru
 autofill-address-country = Negara atau Rantau
 autofill-address-tel = Telefon
 autofill-address-email = E-mel
-
 autofill-cancel-button = Batal
 autofill-save-button = Simpan
 autofill-country-warning-message = Auto-isi Borang buat masa ini hanya tersedia untuk negara tertentu.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Tambah Kad Kredit Baru
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Edit Kad Kredit
-
 autofill-card-number = Nombor Kad
 autofill-card-invalid-number = Sila masukkan nombor kad yang sah
 autofill-card-name-on-card = Nama pada Kad

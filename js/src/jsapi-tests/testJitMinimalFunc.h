@@ -7,6 +7,7 @@
 #ifndef jsapi_tests_jitTestGVN_h
 #define jsapi_tests_jitTestGVN_h
 
+#include "jit/DominatorTree.h"
 #include "jit/IonAnalysis.h"
 #include "jit/MIRGenerator.h"
 #include "jit/MIRGraph.h"
@@ -76,7 +77,7 @@ struct MinimalFunc : MinimalAlloc {
       return false;
     }
     RenumberBlocks(graph);
-    if (!BuildDominatorTree(graph)) {
+    if (!BuildDominatorTree(&mir, graph)) {
       return false;
     }
     if (!BuildPhiReverseMapping(graph)) {
@@ -94,7 +95,7 @@ struct MinimalFunc : MinimalAlloc {
       return false;
     }
     RenumberBlocks(graph);
-    if (!BuildDominatorTree(graph)) {
+    if (!BuildDominatorTree(&mir, graph)) {
       return false;
     }
     if (!BuildPhiReverseMapping(graph)) {

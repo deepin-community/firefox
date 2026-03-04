@@ -17,6 +17,8 @@ class MacIOSurface;
 namespace mozilla {
 namespace layers {
 
+class GpuFence;
+
 /**
  * A TextureHost for shared MacIOSurface
  *
@@ -74,9 +76,11 @@ class MacIOSurfaceTextureHostOGL : public TextureHost {
   gfx::YUVColorSpace GetYUVColorSpace() const override;
   gfx::ColorRange GetColorRange() const override;
 
+  const RefPtr<MacIOSurface> mSurface;
+  const RefPtr<GpuFence> mGpuFence;
+
  protected:
   RefPtr<GLTextureSource> mTextureSource;
-  RefPtr<MacIOSurface> mSurface;
 };
 
 }  // namespace layers

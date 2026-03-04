@@ -11,7 +11,7 @@ const {
   nodeIsBucket,
   getFront,
 } = require("resource://devtools/client/shared/components/object-inspector/utils/node.js");
-const { getLoadedProperties, getWatchpoints } = require("resource://devtools/client/shared/components/object-inspector/reducer.js");
+const { getLoadedProperties } = require("resource://devtools/client/shared/components/object-inspector/reducer.js");
 
 /**
  * This action is responsible for expanding a given node, which also means that
@@ -60,6 +60,7 @@ function nodeLoadProperties(node, actor) {
       dispatch(nodePropertiesLoaded(node, actor, properties));
     } catch (e) {
       console.error(e);
+      dispatch(nodeCollapse(node));
     }
   };
 }
@@ -156,9 +157,11 @@ function closeObjectInspector(roots) {
  * It takes a props argument which reflects what is passed by the upper-level
  * consumer.
  */
-function rootsChanged(roots, oldRoots) {
+function rootsChanged(roots, oldRoots, autoReleaseObjectActors) {
   return ({ dispatch, client }) => {
-    releaseActors(client, oldRoots, roots);
+    if (autoReleaseObjectActors) {
+      releaseActors(client, oldRoots, roots);
+    }
     dispatch({
       type: "ROOTS_CHANGED",
       data: roots,
@@ -169,7 +172,7 @@ function rootsChanged(roots, oldRoots) {
 /**
  * Release any actors we don't need anymore
  *
- * @param {Object} client: Object with a `releaseActor` method
+ * @param {object} client: Object with a `releaseActor` method
  * @param {Array} oldRoots: The roots in which we want to cleanup now-unused actors
  * @param {Array} newRoots: The current roots (might have item that are also in oldRoots)
  */
@@ -191,7 +194,7 @@ async function releaseActors(client, oldRoots, newRoots = []) {
 }
 
 function invokeGetter(node, receiverId) {
-  return async ({ dispatch, client, getState }) => {
+  return async ({ dispatch, client, _getState }) => {
     try {
       const objectFront =
         getParentFront(node) ||

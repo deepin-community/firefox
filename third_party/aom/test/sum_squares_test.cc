@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -14,7 +14,7 @@
 #include <string>
 #include <tuple>
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
@@ -38,9 +38,9 @@ const int kNumIterations = 10000;
 
 static const int16_t kInt13Max = (1 << 12) - 1;
 
-typedef uint64_t (*SSI16Func)(const int16_t *src, int stride, int width,
-                              int height);
-typedef libaom_test::FuncParam<SSI16Func> TestFuncs;
+using SSI16Func = uint64_t (*)(const int16_t *src, int stride, int width,
+                               int height);
+using TestFuncs = libaom_test::FuncParam<SSI16Func>;
 
 class SumSquaresTest : public ::testing::TestWithParam<TestFuncs> {
  public:
@@ -191,8 +191,8 @@ INSTANTIATE_TEST_SUITE_P(
 // 1D version
 //////////////////////////////////////////////////////////////////////////////
 
-typedef uint64_t (*F1D)(const int16_t *src, uint32_t n);
-typedef libaom_test::FuncParam<F1D> TestFuncs1D;
+using F1D = uint64_t (*)(const int16_t *src, uint32_t n);
+using TestFuncs1D = libaom_test::FuncParam<F1D>;
 
 class SumSquares1DTest : public FunctionEquivalenceTest<F1D> {
  protected:
@@ -261,11 +261,11 @@ INSTANTIATE_TEST_SUITE_P(SVE, SumSquares1DTest,
 
 #endif  // HAVE_SVE
 
-typedef int64_t (*SSEFunc)(const uint8_t *a, int a_stride, const uint8_t *b,
-                           int b_stride, int width, int height);
-typedef libaom_test::FuncParam<SSEFunc> TestSSEFuncs;
+using SSEFunc = int64_t (*)(const uint8_t *a, int a_stride, const uint8_t *b,
+                            int b_stride, int width, int height);
+using TestSSEFuncs = libaom_test::FuncParam<SSEFunc>;
 
-typedef std::tuple<TestSSEFuncs, int> SSETestParam;
+using SSETestParam = std::tuple<TestSSEFuncs, int>;
 
 class SSETest : public ::testing::TestWithParam<SSETestParam> {
  public:
@@ -471,11 +471,11 @@ INSTANTIATE_TEST_SUITE_P(SVE, SSETest,
 // get_blk sum squares test functions
 //////////////////////////////////////////////////////////////////////////////
 
-typedef void (*sse_sum_func)(const int16_t *data, int stride, int bw, int bh,
-                             int *x_sum, int64_t *x2_sum);
-typedef libaom_test::FuncParam<sse_sum_func> TestSSE_SumFuncs;
+using sse_sum_func = void (*)(const int16_t *data, int stride, int bw, int bh,
+                              int *x_sum, int64_t *x2_sum);
+using TestSSE_SumFuncs = libaom_test::FuncParam<sse_sum_func>;
 
-typedef std::tuple<TestSSE_SumFuncs, TX_SIZE> SSE_SumTestParam;
+using SSE_SumTestParam = std::tuple<TestSSE_SumFuncs, TX_SIZE>;
 
 class SSE_Sum_Test : public ::testing::TestWithParam<SSE_SumTestParam> {
  public:
@@ -631,8 +631,8 @@ INSTANTIATE_TEST_SUITE_P(SVE, SSE_Sum_Test,
 // 2D Variance test functions
 //////////////////////////////////////////////////////////////////////////////
 
-typedef uint64_t (*Var2DFunc)(uint8_t *src, int stride, int width, int height);
-typedef libaom_test::FuncParam<Var2DFunc> TestFuncVar2D;
+using Var2DFunc = uint64_t (*)(uint8_t *src, int stride, int width, int height);
+using TestFuncVar2D = libaom_test::FuncParam<Var2DFunc>;
 
 const uint16_t test_block_size[2] = { 128, 256 };
 
@@ -780,6 +780,7 @@ INSTANTIATE_TEST_SUITE_P(NEON_DOTPROD, Lowbd2dVarTest,
 
 #endif  // HAVE_NEON_DOTPROD
 
+#if CONFIG_AV1_HIGHBITDEPTH
 class Highbd2dVarTest : public ::testing::TestWithParam<TestFuncVar2D> {
  public:
   ~Highbd2dVarTest() override = default;
@@ -925,4 +926,5 @@ INSTANTIATE_TEST_SUITE_P(SVE, Highbd2dVarTest,
                                                          &aom_var_2d_u16_sve)));
 
 #endif  // HAVE_SVE
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace

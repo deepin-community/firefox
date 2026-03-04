@@ -22,11 +22,5 @@ about-logging-no-log-file = කිසිවක් නැත
 
 about-logging-preset-networking-label = ජාලකරණය
 about-logging-preset-custom-label = අභිරුචි
-
 # Error handling
 about-logging-error = දෝෂය:
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

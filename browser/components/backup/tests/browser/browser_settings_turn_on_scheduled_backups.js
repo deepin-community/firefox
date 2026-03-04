@@ -9,6 +9,22 @@ const { ERRORS } = ChromeUtils.importESModule(
 
 const SCHEDULED_BACKUPS_ENABLED_PREF = "browser.backup.scheduled.enabled";
 
+async function setup_mockFilePicker(mockParentDir) {
+  const dummyFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+
+  dummyFile.initWithPath(mockParentDir);
+  let filePickerShownPromise = new Promise(resolve => {
+    MockFilePicker.showCallback = () => {
+      Assert.ok(true, "Filepicker shown");
+      MockFilePicker.setFiles([dummyFile]);
+      resolve();
+    };
+  });
+  MockFilePicker.returnValue = MockFilePicker.returnOK;
+
+  return { filePickerShownPromise };
+}
+
 add_setup(async () => {
   MockFilePicker.init(window.browsingContext);
   registerCleanupFunction(() => {
@@ -21,7 +37,10 @@ add_setup(async () => {
  * browser.backup.scheduled.enabled to true from the settings page.
  */
 add_task(async function test_turn_on_scheduled_backups_confirm() {
-  await BrowserTestUtils.withNewTab("about:preferences", async browser => {
+  Services.telemetry.clearEvents();
+  Services.fog.testResetFOG();
+
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
     let settings = browser.contentDocument.querySelector("backup-settings");
 
     await settings.updateComplete;
@@ -61,6 +80,21 @@ add_task(async function test_turn_on_scheduled_backups_confirm() {
       SCHEDULED_BACKUPS_ENABLED_PREF
     );
     Assert.ok(scheduledPrefVal, "Scheduled backups pref should be true");
+
+    let legacyEvents = TelemetryTestUtils.getEvents(
+      {
+        category: "browser.backup",
+        method: "toggle_on",
+        object: "BackupService",
+      },
+      { process: "parent" }
+    );
+    Assert.equal(legacyEvents.length, 1, "Found the toggle_on legacy event.");
+    let events = Glean.browserBackup.toggleOn.testGetValue();
+    Assert.equal(events.length, 1, "Found the toggleOn Glean event.");
+
+    // Reset scheduled backups again for subsequent tests.
+    Services.prefs.clearUserPref(SCHEDULED_BACKUPS_ENABLED_PREF);
   });
 });
 
@@ -70,24 +104,17 @@ add_task(async function test_turn_on_scheduled_backups_confirm() {
  * that path, and sets browser.backup.location to the path from the settings page.
  */
 add_task(async function test_turn_on_custom_location_filepicker() {
-  await BrowserTestUtils.withNewTab("about:preferences", async browser => {
+  Services.telemetry.clearEvents();
+  Services.fog.testResetFOG();
+
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
     const mockCustomParentDir = await IOUtils.createUniqueDirectory(
       PathUtils.tempDir,
       "settings-custom-dir-test"
     );
-    const dummyFile = Cc["@mozilla.org/file/local;1"].createInstance(
-      Ci.nsIFile
-    );
 
-    dummyFile.initWithPath(mockCustomParentDir);
-    let filePickerShownPromise = new Promise(resolve => {
-      MockFilePicker.showCallback = () => {
-        Assert.ok(true, "Filepicker shown");
-        MockFilePicker.setFiles([dummyFile]);
-        resolve();
-      };
-    });
-    MockFilePicker.returnValue = MockFilePicker.returnOK;
+    let { filePickerShownPromise } =
+      await setup_mockFilePicker(mockCustomParentDir);
 
     // After setting up mocks, start testing components
     /** @type {import("../../content/backup-settings.mjs").default} */
@@ -98,6 +125,8 @@ add_task(async function test_turn_on_custom_location_filepicker() {
       turnOnButton,
       "Button to turn on scheduled backups should be found"
     );
+
+    turnOnButton.click();
 
     await settings.updateComplete;
     let turnOnScheduledBackups = settings.turnOnScheduledBackupsEl;
@@ -175,6 +204,37 @@ add_task(async function test_turn_on_custom_location_filepicker() {
       ignoreAbsent: true,
       recursive: true,
     });
+
+    let legacyEvents = TelemetryTestUtils.getEvents(
+      {
+        category: "browser.backup",
+        method: "toggle_on",
+        object: "BackupService",
+      },
+      { process: "parent" }
+    );
+    Assert.equal(legacyEvents.length, 1, "Found the toggle_on legacy event.");
+    let events = Glean.browserBackup.toggleOn.testGetValue();
+    Assert.equal(events.length, 1, "Found the toggleOn Glean event.");
+
+    legacyEvents = TelemetryTestUtils.getEvents(
+      {
+        category: "browser.backup",
+        method: "change_location",
+        object: "BackupService",
+      },
+      { process: "parent" }
+    );
+    Assert.equal(
+      legacyEvents.length,
+      1,
+      "Found the change_location legacy event."
+    );
+    events = Glean.browserBackup.changeLocation.testGetValue();
+    Assert.equal(events.length, 1, "Found the changeLocation Glean event.");
+
+    // Reset scheduled backups again for subsequent tests.
+    Services.prefs.clearUserPref(SCHEDULED_BACKUPS_ENABLED_PREF);
   });
 });
 
@@ -183,7 +243,10 @@ add_task(async function test_turn_on_custom_location_filepicker() {
  * turn-on-scheduled-backups dialog.
  */
 add_task(async function test_turn_on_scheduled_backups_encryption() {
-  await BrowserTestUtils.withNewTab("about:preferences", async browser => {
+  Services.telemetry.clearEvents();
+  Services.fog.testResetFOG();
+
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
     let sandbox = sinon.createSandbox();
     let settings = browser.contentDocument.querySelector("backup-settings");
 
@@ -252,6 +315,34 @@ add_task(async function test_turn_on_scheduled_backups_encryption() {
       "BackupService was called to enable encryption and received the expected argument"
     );
 
+    let legacyEvents = TelemetryTestUtils.getEvents(
+      {
+        category: "browser.backup",
+        method: "toggle_on",
+        object: "BackupService",
+      },
+      { process: "parent" }
+    );
+    Assert.equal(legacyEvents.length, 1, "Found the toggle_on legacy event.");
+    let events = Glean.browserBackup.toggleOn.testGetValue();
+    Assert.equal(events.length, 1, "Found the toggleOn Glean event.");
+
+    legacyEvents = TelemetryTestUtils.getEvents(
+      {
+        category: "browser.backup",
+        method: "password_added",
+        object: "BackupService",
+      },
+      { process: "parent" }
+    );
+    Assert.equal(
+      legacyEvents.length,
+      1,
+      "Found the password_added legacy event."
+    );
+    events = Glean.browserBackup.passwordAdded.testGetValue();
+    Assert.equal(events.length, 1, "Found the passwordAdded Glean event.");
+
     sandbox.restore();
     Services.prefs.clearUserPref(SCHEDULED_BACKUPS_ENABLED_PREF);
   });
@@ -262,7 +353,7 @@ add_task(async function test_turn_on_scheduled_backups_encryption() {
  * enabling encryption.
  */
 add_task(async function test_turn_on_scheduled_backups_encryption_error() {
-  await BrowserTestUtils.withNewTab("about:preferences", async browser => {
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
     let sandbox = sinon.createSandbox();
     let settings = browser.contentDocument.querySelector("backup-settings");
 
@@ -358,3 +449,281 @@ add_task(async function test_turn_on_scheduled_backups_encryption_error() {
     Services.prefs.clearUserPref(SCHEDULED_BACKUPS_ENABLED_PREF);
   });
 });
+
+/**
+ * Tests that the password boxes are cleared if the dialog is closed by JS.
+ */
+add_task(async function test_turn_on_scheduled_backups_encryption_error() {
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
+    let settings = browser.contentDocument.querySelector("backup-settings");
+
+    await settings.updateComplete;
+
+    let turnOnButton = settings.scheduledBackupsButtonEl;
+    Assert.ok(
+      turnOnButton,
+      "Button to turn on scheduled backups should be found"
+    );
+
+    turnOnButton.click();
+    await settings.updateComplete;
+
+    let turnOnScheduledBackups = settings.turnOnScheduledBackupsEl;
+    Assert.ok(
+      turnOnScheduledBackups,
+      "turn-on-scheduled-backups should be found"
+    );
+
+    // Enable passwords
+    let passwordsCheckbox = turnOnScheduledBackups.passwordOptionsCheckboxEl;
+    passwordsCheckbox.click();
+    await turnOnScheduledBackups.updateComplete;
+
+    let passwordOptionsExpanded =
+      turnOnScheduledBackups.passwordOptionsExpandedEl;
+
+    Assert.ok(
+      passwordOptionsExpanded,
+      "Passwords expanded options should be found"
+    );
+
+    passwordOptionsExpanded.inputNewPasswordEl.value = "firefox"; // secret!!
+    passwordOptionsExpanded.inputNewPasswordEl.revealPassword = true;
+    passwordOptionsExpanded.inputRepeatPasswordEl.value = "www1989";
+    passwordOptionsExpanded.inputRepeatPasswordEl.revealPassword = true;
+
+    let dialog = settings.turnOnScheduledBackupsDialogEl;
+    let closedPromise = BrowserTestUtils.waitForEvent(dialog, "close");
+    dialog.close();
+    await closedPromise;
+
+    is(
+      passwordOptionsExpanded.inputNewPasswordEl.value,
+      "",
+      "New password field should be cleared"
+    );
+    is(
+      passwordOptionsExpanded.inputRepeatPasswordEl.value,
+      "",
+      "Repeat password field should be cleared"
+    );
+    is(
+      passwordOptionsExpanded.inputNewPasswordEl.revealPassword,
+      false,
+      "New password field should not be revealed"
+    );
+    is(
+      passwordOptionsExpanded.inputRepeatPasswordEl.revealPassword,
+      false,
+      "Repeat password field should not be revealed"
+    );
+  });
+});
+
+/**
+ * Tests that a backup will go into the default directory unless the user
+ * specifically selects a folder. (Before, the directory previously selected
+ * would be used.)
+ */
+add_task(async function test_default_location_selected() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.backup.location", "backup dir path"]],
+  });
+
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
+    let settings = browser.contentDocument.querySelector("backup-settings");
+    await settings.updateComplete;
+
+    let turnOnButton = settings.scheduledBackupsButtonEl;
+    turnOnButton.click();
+    await settings.updateComplete;
+
+    let turnOnScheduledBackups = settings.turnOnScheduledBackupsEl;
+    let promise = BrowserTestUtils.waitForEvent(
+      turnOnScheduledBackups,
+      "BackupUI:EnableScheduledBackups"
+    );
+    turnOnScheduledBackups.confirmButtonEl.click();
+    let event = await promise;
+
+    is(
+      event.detail.parentDirPath,
+      settings.backupServiceState.defaultParent.path,
+      "Default path was used when nothing was explicitly selected"
+    );
+  });
+
+  await SpecialPowers.popPrefEnv();
+});
+
+async function waitInitialRequestStateSettled() {
+  // restore-from-backup.mjs is rendered quite late during the load.
+  // Bug 543435 caused a timing change such that withNewTab resolves right after
+  // that component dispatches BackupUI:InitWidget. So BackupUIParent hasn't yet
+  // received RequestState. If the RequestState / StateUpdate happens during the test
+  // that can mess things up, so wait a tick. See bug 2001583
+  await new Promise(res => setTimeout(res));
+}
+
+/**
+ * Tests that the persistent data for embedded components is set when a user picks a file
+ * and is flushed once backup is enabled.
+ */
+add_task(async function test_embedded_component_persistent_data_filepicker() {
+  await SpecialPowers.pushPrefEnv({
+    set: [[SCHEDULED_BACKUPS_ENABLED_PREF, false]],
+  });
+
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
+    await waitInitialRequestStateSettled();
+    const mockCustomParentDir = await IOUtils.createUniqueDirectory(
+      PathUtils.tempDir,
+      "our-dummy-folder"
+    );
+    let { filePickerShownPromise } =
+      await setup_mockFilePicker(mockCustomParentDir);
+
+    let settings = browser.contentDocument.querySelector("backup-settings");
+    let turnOnButton = settings.scheduledBackupsButtonEl;
+
+    Assert.ok(
+      turnOnButton,
+      "Button to turn on scheduled backups should be found"
+    );
+
+    turnOnButton.click();
+
+    await settings.updateComplete;
+    let turnOnScheduledBackups = settings.turnOnScheduledBackupsEl;
+
+    // for the purposes of this test, we will act like we are an embedded component
+    turnOnScheduledBackups.embeddedFxBackupOptIn = true;
+
+    // First verify the default input value and dir path button
+    let filePathButton = turnOnScheduledBackups.filePathButtonEl;
+    let stateUpdatePromise = BrowserTestUtils.waitForEvent(
+      window,
+      "BackupUI:StateWasUpdated"
+    );
+    Assert.ok(
+      filePathButton,
+      "Button for choosing a file path should be found"
+    );
+    filePathButton.click();
+
+    await filePickerShownPromise;
+    await stateUpdatePromise;
+    await turnOnScheduledBackups.updateComplete;
+    Assert.equal(
+      settings.backupServiceState.embeddedComponentPersistentData.path,
+      mockCustomParentDir,
+      "Our persistent path should be set correctly"
+    );
+
+    // Let's create a backup
+    let confirmButton = turnOnScheduledBackups.confirmButtonEl;
+    let promise = BrowserTestUtils.waitForEvent(
+      window,
+      "BackupUI:EnableScheduledBackups"
+    );
+
+    Assert.ok(confirmButton, "Confirm button should be found");
+
+    confirmButton.click();
+
+    await promise;
+    await settings.updateComplete;
+  });
+
+  await BrowserTestUtils.withNewTab("about:preferences#sync", async browser => {
+    let settings = browser.contentDocument.querySelector("backup-settings");
+    await settings.updateComplete;
+
+    Assert.deepEqual(
+      settings.backupServiceState.embeddedComponentPersistentData,
+      {},
+      "Our persistent path should be flushed"
+    );
+  });
+
+  await SpecialPowers.popPrefEnv();
+});
+
+/**
+ * Tests that the persistent data for embedded components is flushed if the dialog is cancelled
+ */
+add_task(
+  async function test_embedded_component_persistent_data_filepicker_cancelled() {
+    await SpecialPowers.pushPrefEnv({
+      set: [[SCHEDULED_BACKUPS_ENABLED_PREF, false]],
+    });
+
+    await BrowserTestUtils.withNewTab(
+      "about:preferences#sync",
+      async browser => {
+        await waitInitialRequestStateSettled();
+        const mockCustomParentDir = await IOUtils.createUniqueDirectory(
+          PathUtils.tempDir,
+          "our-dummy-folder"
+        );
+        let { filePickerShownPromise } =
+          await setup_mockFilePicker(mockCustomParentDir);
+
+        let settings = browser.contentDocument.querySelector("backup-settings");
+        let turnOnButton = settings.scheduledBackupsButtonEl;
+
+        Assert.ok(
+          turnOnButton,
+          "Button to turn on scheduled backups should be found"
+        );
+
+        turnOnButton.click();
+
+        await settings.updateComplete;
+        let turnOnScheduledBackups = settings.turnOnScheduledBackupsEl;
+
+        // for the purposes of this test, we will act like we are an embedded component
+        turnOnScheduledBackups.embeddedFxBackupOptIn = true;
+
+        // First verify the default input value and dir path button
+        let filePathButton = turnOnScheduledBackups.filePathButtonEl;
+        const waitForStateUpdate = () =>
+          BrowserTestUtils.waitForEvent(window, "BackupUI:StateWasUpdated");
+
+        let stateUpdatePromise = waitForStateUpdate();
+
+        Assert.ok(
+          filePathButton,
+          "Button for choosing a file path should be found"
+        );
+        filePathButton.click();
+
+        await filePickerShownPromise;
+        await stateUpdatePromise;
+        await turnOnScheduledBackups.updateComplete;
+
+        Assert.equal(
+          settings.backupServiceState.embeddedComponentPersistentData.path,
+          mockCustomParentDir,
+          "Our persistent path should be set correctly"
+        );
+
+        stateUpdatePromise = waitForStateUpdate();
+
+        let dialog = settings.turnOnScheduledBackupsDialogEl;
+        let closedPromise = BrowserTestUtils.waitForEvent(dialog, "close");
+        dialog.close();
+        await closedPromise;
+        await stateUpdatePromise;
+
+        Assert.deepEqual(
+          settings.backupServiceState.embeddedComponentPersistentData,
+          {},
+          "Our persistent path should be flushed"
+        );
+      }
+    );
+
+    await SpecialPowers.popPrefEnv();
+  }
+);

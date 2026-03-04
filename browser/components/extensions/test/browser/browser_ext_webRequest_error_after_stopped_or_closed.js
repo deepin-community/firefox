@@ -64,9 +64,8 @@ async function runTest(stopLoadFunc) {
   stopLoadFunc(slowTab);
 
   // Retrieve the requestId from onBeforeRequest
-  let requestIdOnBeforeRequest = await extension.awaitMessage(
-    "onBeforeRequest"
-  );
+  let requestIdOnBeforeRequest =
+    await extension.awaitMessage("onBeforeRequest");
 
   // Now verify that we got the correct event and request id
   let doneMessage = await extension.awaitMessage("done");
@@ -82,6 +81,12 @@ async function runTest(stopLoadFunc) {
   BrowserTestUtils.removeTab(slowTab);
   await extension.unload();
 }
+
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
 
 /**
  * Check that after we cancel a slow page load, we get an error associated with

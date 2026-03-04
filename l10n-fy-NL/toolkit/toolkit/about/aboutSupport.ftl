@@ -18,6 +18,10 @@ support-addons-type = Type
 support-addons-enabled = Ynskeakele
 support-addons-version = Ferzje
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Lokaasje
 legacy-user-stylesheets-title = Ferâldere brûkersstylblêden
 legacy-user-stylesheets-enabled = Aktyf
 legacy-user-stylesheets-stylesheet-types = Stylblêden
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Effisjinsje (%)
 place-database-stats-sequentiality-perc = Folchoarder (%)
 place-database-integrity = Yntegriteit
 place-database-verify-integrity = Yntegriteit ferifearje
+place-database-last-idle-maintenance-data = Datum fan lêste ynaktiviteitsûnderhâld
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Lêste opskjindatum
+place-database-last-integrity-corruption-date = Datum fan lêste yntegriteitsoantaasting
 a11y-title = Tagonklikheid
 a11y-activated = Aktivearre
 a11y-force-disabled = Tagonklikheid tsjingean
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Database ynventarisearje
 
 media-codec-support-sw-decoding = Software-dekodearring
 media-codec-support-hw-decoding = Hardware-dekodearring
+media-codec-support-sw-encoding = Softwarekodearring
+media-codec-support-hw-encoding = Hardwarekodearring
 media-codec-support-codec-name = Codecnamme
 media-codec-support-supported = Stipe
 media-codec-support-unsupported = Net stipe

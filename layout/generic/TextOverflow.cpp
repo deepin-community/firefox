@@ -5,26 +5,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "TextOverflow.h"
+
 #include <algorithm>
 
 // Please maintain alphabetical order below
+#include "TextDrawTarget.h"
 #include "gfxContext.h"
+#include "mozilla/PresShell.h"
+#include "mozilla/ScrollContainerFrame.h"
+#include "mozilla/dom/Selection.h"
 #include "nsBlockFrame.h"
+#include "nsCSSAnonBoxes.h"
 #include "nsCaret.h"
 #include "nsContentUtils.h"
-#include "nsCSSAnonBoxes.h"
 #include "nsFontMetrics.h"
+#include "nsIFrameInlines.h"
 #include "nsLayoutUtils.h"
 #include "nsPresContext.h"
 #include "nsRect.h"
 #include "nsTextFrame.h"
-#include "nsIFrameInlines.h"
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/Likely.h"
-#include "mozilla/PresShell.h"
-#include "mozilla/ScrollContainerFrame.h"
-#include "mozilla/dom/Selection.h"
-#include "TextDrawTarget.h"
 
 using mozilla::layout::TextDrawTarget;
 
@@ -158,7 +157,7 @@ class nsDisplayTextOverflowMarker final : public nsPaintedDisplayItem {
     MOZ_COUNT_CTOR(nsDisplayTextOverflowMarker);
   }
 
-  MOZ_COUNTED_DTOR_OVERRIDE(nsDisplayTextOverflowMarker)
+  MOZ_COUNTED_DTOR_FINAL(nsDisplayTextOverflowMarker)
 
   virtual nsRect GetBounds(nsDisplayListBuilder* aBuilder,
                            bool* aSnap) const override {
@@ -207,7 +206,7 @@ static void PaintTextShadowCallback(gfxContext* aCtx, nsPoint aShadowOffset,
 void nsDisplayTextOverflowMarker::Paint(nsDisplayListBuilder* aBuilder,
                                         gfxContext* aCtx) {
   nscolor foregroundColor =
-      nsLayoutUtils::GetColor(mFrame, &nsStyleText::mWebkitTextFillColor);
+      nsLayoutUtils::GetTextColor(mFrame, &nsStyleText::mWebkitTextFillColor);
 
   // Paint the text-shadows for the overflow marker
   nsLayoutUtils::PaintTextShadow(mFrame, aCtx, mRect,
@@ -224,14 +223,14 @@ void nsDisplayTextOverflowMarker::PaintTextToContext(gfxContext* aCtx,
   if (wm.IsVertical()) {
     if (wm.IsVerticalLR()) {
       pt.x = NSToCoordFloor(
-          nsLayoutUtils::GetSnappedBaselineX(mFrame, aCtx, pt.x, mAscent));
+          nsLayoutUtils::GetMaybeSnappedBaselineX(mFrame, aCtx, pt.x, mAscent));
     } else {
-      pt.x = NSToCoordFloor(nsLayoutUtils::GetSnappedBaselineX(
+      pt.x = NSToCoordFloor(nsLayoutUtils::GetMaybeSnappedBaselineX(
           mFrame, aCtx, pt.x + mRect.width, -mAscent));
     }
   } else {
     pt.y = NSToCoordFloor(
-        nsLayoutUtils::GetSnappedBaselineY(mFrame, aCtx, pt.y, mAscent));
+        nsLayoutUtils::GetMaybeSnappedBaselineY(mFrame, aCtx, pt.y, mAscent));
   }
   pt += aOffsetFromRect;
 
@@ -750,7 +749,7 @@ void TextOverflow::ProcessLine(const nsDisplayListSet& aLists, nsLineBox* aLine,
 
   // Clip and remove display items as needed at the final marker edges.
   nsDisplayList* lists[] = {aLists.Content(), aLists.PositionedDescendants()};
-  for (uint32_t i = 0; i < ArrayLength(lists); ++i) {
+  for (uint32_t i = 0; i < std::size(lists); ++i) {
     PruneDisplayListContents(lists[i], framesToHide, insideMarkersArea);
   }
   CreateMarkers(aLine, needIStart, needIEnd, insideMarkersArea, contentArea,
@@ -810,7 +809,7 @@ bool TextOverflow::HasClippedTextOverflow(nsIFrame* aBlockFrame) {
 /* static */
 bool TextOverflow::HasBlockEllipsis(nsIFrame* aBlockFrame) {
   nsBlockFrame* f = do_QueryFrame(aBlockFrame);
-  return f && f->HasAnyStateBits(NS_BLOCK_HAS_LINE_CLAMP_ELLIPSIS);
+  return f && f->HasLineClampEllipsis();
 }
 
 static bool BlockCanHaveLineClampEllipsis(nsBlockFrame* aBlockFrame,
@@ -818,7 +817,7 @@ static bool BlockCanHaveLineClampEllipsis(nsBlockFrame* aBlockFrame,
   if (aBeforeReflow) {
     return aBlockFrame->IsInLineClampContext();
   }
-  return aBlockFrame->HasAnyStateBits(NS_BLOCK_HAS_LINE_CLAMP_ELLIPSIS);
+  return aBlockFrame->HasLineClampEllipsis();
 }
 
 /* static */
@@ -837,8 +836,7 @@ bool TextOverflow::CanHaveOverflowMarkers(nsBlockFrame* aBlockFrame,
 
   // Skip the combobox anonymous block because it would clip the drop-down
   // arrow. The inner label inherits 'text-overflow' and does the right thing.
-  if (aBlockFrame->GetParent() &&
-      aBlockFrame->GetParent()->IsComboboxControlFrame()) {
+  if (aBlockFrame->IsComboboxControlFrame()) {
     return false;
   }
 

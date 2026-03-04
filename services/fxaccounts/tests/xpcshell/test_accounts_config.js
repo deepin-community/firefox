@@ -7,24 +7,6 @@ const { FxAccounts } = ChromeUtils.importESModule(
   "resource://gre/modules/FxAccounts.sys.mjs"
 );
 
-add_task(
-  async function test_non_https_remote_server_uri_with_requireHttps_false() {
-    Services.prefs.setStringPref("identity.fxaccounts.autoconfig.uri", "");
-    Services.prefs.setBoolPref("identity.fxaccounts.allowHttp", true);
-    Services.prefs.setStringPref(
-      "identity.fxaccounts.remote.root",
-      "http://example.com/"
-    );
-    Assert.equal(
-      await FxAccounts.config.promiseConnectAccountURI("test"),
-      "http://example.com/?context=fx_desktop_v3&entrypoint=test&action=email&service=sync"
-    );
-
-    Services.prefs.clearUserPref("identity.fxaccounts.remote.root");
-    Services.prefs.clearUserPref("identity.fxaccounts.allowHttp");
-  }
-);
-
 add_task(async function test_non_https_remote_server_uri() {
   Services.prefs.setStringPref(
     "identity.fxaccounts.remote.root",

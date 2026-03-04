@@ -155,11 +155,6 @@ media-device-latency = Dale
 
 media-codec-support-lack-of-extension = Staliañ an askouezh
 
-## Media Content Decryption Modules (CDM)
-## See EME Spec for more explanation for following technical terms
-## https://w3c.github.io/encrypted-media/
-
-
 ##
 
 intl-title = Etrevoradeladur & lec'hiadur
@@ -353,6 +348,16 @@ support-printing-title = Moullerezh
 support-printing-troubleshoot = Disac’hañ
 support-printing-prefs-name = Anv
 support-printing-prefs-value = Talvoud
+
+## Remote Settings sections
+
+support-remote-settings-status-ok = Mat eo
+# Status when synchronization is not working.
+support-remote-settings-status-broken = N’ez a ket en-dro
+support-remote-settings-sync-history = Roll istor
+support-remote-settings-sync-history-status = Stad
+support-remote-settings-sync-history-datetime = Deiziad
+support-remote-settings-sync-history-infos = Titouroù
 
 ## Normandy sections
 

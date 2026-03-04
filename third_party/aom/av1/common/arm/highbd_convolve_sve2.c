@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2024, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -19,6 +19,7 @@
 #include "aom_dsp/arm/aom_neon_sve_bridge.h"
 #include "aom_dsp/arm/aom_neon_sve2_bridge.h"
 #include "aom_dsp/arm/mem_neon.h"
+#include "aom_dsp/arm/transpose_neon.h"
 #include "aom_ports/mem.h"
 #include "av1/common/convolve.h"
 #include "av1/common/filter.h"
@@ -29,7 +30,7 @@ DECLARE_ALIGNED(16, static const uint16_t, kDotProdTbl[32]) = {
   4, 5, 6, 7, 5, 6, 7, 0, 6, 7, 0, 1, 7, 0, 1, 2,
 };
 
-static INLINE uint16x4_t convolve12_4_x(
+static inline uint16x4_t convolve12_4_x(
     int16x8_t s0, int16x8_t s1, int16x8_t filter_0_7, int16x8_t filter_4_11,
     const int64x2_t offset, uint16x8x4_t permute_tbl, uint16x4_t max) {
   int16x8_t permuted_samples[6];
@@ -56,7 +57,7 @@ static INLINE uint16x4_t convolve12_4_x(
   return vmin_u16(res, max);
 }
 
-static INLINE uint16x8_t convolve12_8_x(int16x8_t s0, int16x8_t s1,
+static inline uint16x8_t convolve12_8_x(int16x8_t s0, int16x8_t s1,
                                         int16x8_t s2, int16x8_t filter_0_7,
                                         int16x8_t filter_4_11, int64x2_t offset,
                                         uint16x8x4_t permute_tbl,
@@ -100,7 +101,7 @@ static INLINE uint16x8_t convolve12_8_x(int16x8_t s0, int16x8_t s1,
   return vminq_u16(res, max);
 }
 
-static INLINE void highbd_convolve_x_sr_12tap_sve2(
+static inline void highbd_convolve_x_sr_12tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *y_filter_ptr,
     ConvolveParams *conv_params, int bd) {
@@ -182,7 +183,7 @@ static INLINE void highbd_convolve_x_sr_12tap_sve2(
   }
 }
 
-static INLINE uint16x8_t convolve8_8_x(int16x8_t s0[8], int16x8_t filter,
+static inline uint16x8_t convolve8_8_x(int16x8_t s0[8], int16x8_t filter,
                                        int64x2_t offset, uint16x8_t max) {
   int64x2_t sum[8];
   sum[0] = aom_sdotq_s16(offset, s0[0], filter);
@@ -208,7 +209,7 @@ static INLINE uint16x8_t convolve8_8_x(int16x8_t s0[8], int16x8_t filter,
   return vminq_u16(res, max);
 }
 
-static INLINE void highbd_convolve_x_sr_8tap_sve2(
+static inline void highbd_convolve_x_sr_8tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *y_filter_ptr,
     ConvolveParams *conv_params, int bd) {
@@ -258,7 +259,7 @@ DECLARE_ALIGNED(16, static const uint16_t, kDeinterleaveTbl[8]) = {
 };
 // clang-format on
 
-static INLINE uint16x4_t convolve4_4_x(int16x8_t s0, int16x8_t filter,
+static inline uint16x4_t convolve4_4_x(int16x8_t s0, int16x8_t filter,
                                        int64x2_t offset,
                                        uint16x8x2_t permute_tbl,
                                        uint16x4_t max) {
@@ -274,7 +275,7 @@ static INLINE uint16x4_t convolve4_4_x(int16x8_t s0, int16x8_t filter,
   return vmin_u16(res, max);
 }
 
-static INLINE uint16x8_t convolve4_8_x(int16x8_t s0[4], int16x8_t filter,
+static inline uint16x8_t convolve4_8_x(int16x8_t s0[4], int16x8_t filter,
                                        int64x2_t offset, uint16x8_t tbl,
                                        uint16x8_t max) {
   int64x2_t sum04 = aom_svdot_lane_s16(offset, s0[0], filter, 0);
@@ -292,7 +293,7 @@ static INLINE uint16x8_t convolve4_8_x(int16x8_t s0[4], int16x8_t filter,
   return vminq_u16(res, max);
 }
 
-static INLINE void highbd_convolve_x_sr_4tap_sve2(
+static inline void highbd_convolve_x_sr_4tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *x_filter_ptr,
     ConvolveParams *conv_params, int bd) {
@@ -399,7 +400,7 @@ void av1_highbd_convolve_x_sr_sve2(const uint16_t *src, int src_stride,
                                  x_filter_ptr, conv_params, bd);
 }
 
-static INLINE uint16x4_t highbd_convolve12_4_y(int16x8_t s0[2], int16x8_t s1[2],
+static inline uint16x4_t highbd_convolve12_4_y(int16x8_t s0[2], int16x8_t s1[2],
                                                int16x8_t s2[2],
                                                int16x8_t filter_0_7,
                                                int16x8_t filter_4_11,
@@ -421,7 +422,7 @@ static INLINE uint16x4_t highbd_convolve12_4_y(int16x8_t s0[2], int16x8_t s1[2],
   return vmin_u16(res, max);
 }
 
-static INLINE void highbd_convolve_y_sr_12tap_sve2(
+static inline void highbd_convolve_y_sr_12tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *y_filter_ptr, int bd) {
   const int16x8_t y_filter_0_7 = vld1q_s16(y_filter_ptr);
@@ -456,21 +457,21 @@ static INLINE void highbd_convolve_y_sr_12tap_sve2(
 
     int16x8_t s0123[2], s1234[2], s2345[2], s3456[2], s4567[2], s5678[2],
         s6789[2], s789A[2];
-    transpose_concat_4x4(s0, s1, s2, s3, s0123);
-    transpose_concat_4x4(s1, s2, s3, s4, s1234);
-    transpose_concat_4x4(s2, s3, s4, s5, s2345);
-    transpose_concat_4x4(s3, s4, s5, s6, s3456);
-    transpose_concat_4x4(s4, s5, s6, s7, s4567);
-    transpose_concat_4x4(s5, s6, s7, s8, s5678);
-    transpose_concat_4x4(s6, s7, s8, s9, s6789);
-    transpose_concat_4x4(s7, s8, s9, sA, s789A);
+    transpose_concat_elems_s16_4x4(s0, s1, s2, s3, s0123);
+    transpose_concat_elems_s16_4x4(s1, s2, s3, s4, s1234);
+    transpose_concat_elems_s16_4x4(s2, s3, s4, s5, s2345);
+    transpose_concat_elems_s16_4x4(s3, s4, s5, s6, s3456);
+    transpose_concat_elems_s16_4x4(s4, s5, s6, s7, s4567);
+    transpose_concat_elems_s16_4x4(s5, s6, s7, s8, s5678);
+    transpose_concat_elems_s16_4x4(s6, s7, s8, s9, s6789);
+    transpose_concat_elems_s16_4x4(s7, s8, s9, sA, s789A);
 
     do {
       int16x4_t sB, sC, sD, sE;
       load_s16_4x4(s, src_stride, &sB, &sC, &sD, &sE);
 
       int16x8_t s89AB[2], s9ABC[2], sABCD[2], sBCDE[2];
-      transpose_concat_4x4(sB, sC, sD, sE, sBCDE);
+      transpose_concat_elems_s16_4x4(sB, sC, sD, sE, sBCDE);
 
       // Use the above transpose and reuse data from the previous loop to get
       // the rest.
@@ -518,7 +519,7 @@ static INLINE void highbd_convolve_y_sr_12tap_sve2(
   } while (width != 0);
 }
 
-static INLINE uint16x4_t highbd_convolve8_4_y(int16x8_t samples_lo[2],
+static inline uint16x4_t highbd_convolve8_4_y(int16x8_t samples_lo[2],
                                               int16x8_t samples_hi[2],
                                               int16x8_t filter,
                                               uint16x4_t max) {
@@ -535,7 +536,7 @@ static INLINE uint16x4_t highbd_convolve8_4_y(int16x8_t samples_lo[2],
   return vmin_u16(res, max);
 }
 
-static INLINE uint16x8_t highbd_convolve8_8_y(int16x8_t samples_lo[4],
+static inline uint16x8_t highbd_convolve8_8_y(int16x8_t samples_lo[4],
                                               int16x8_t samples_hi[4],
                                               int16x8_t filter,
                                               uint16x8_t max) {
@@ -597,10 +598,10 @@ static void highbd_convolve_y_sr_8tap_sve2(const uint16_t *src,
     // This operation combines a conventional transpose and the sample permute
     // required before computing the dot product.
     int16x8_t s0123[2], s1234[2], s2345[2], s3456[2];
-    transpose_concat_4x4(s0, s1, s2, s3, s0123);
-    transpose_concat_4x4(s1, s2, s3, s4, s1234);
-    transpose_concat_4x4(s2, s3, s4, s5, s2345);
-    transpose_concat_4x4(s3, s4, s5, s6, s3456);
+    transpose_concat_elems_s16_4x4(s0, s1, s2, s3, s0123);
+    transpose_concat_elems_s16_4x4(s1, s2, s3, s4, s1234);
+    transpose_concat_elems_s16_4x4(s2, s3, s4, s5, s2345);
+    transpose_concat_elems_s16_4x4(s3, s4, s5, s6, s3456);
 
     do {
       int16x4_t s7, s8, s9, s10;
@@ -608,7 +609,7 @@ static void highbd_convolve_y_sr_8tap_sve2(const uint16_t *src,
 
       int16x8_t s4567[2], s5678[2], s6789[2], s789A[2];
       // Transpose and shuffle the 4 lines that were loaded.
-      transpose_concat_4x4(s7, s8, s9, s10, s789A);
+      transpose_concat_elems_s16_4x4(s7, s8, s9, s10, s789A);
 
       // Merge new data into block from previous iteration.
       aom_tbl2x2_s16(s3456, s789A, merge_block_tbl.val[0], s4567);
@@ -651,10 +652,10 @@ static void highbd_convolve_y_sr_8tap_sve2(const uint16_t *src,
       // This operation combines a conventional transpose and the sample permute
       // required before computing the dot product.
       int16x8_t s0123[4], s1234[4], s2345[4], s3456[4];
-      transpose_concat_8x4(s0, s1, s2, s3, s0123);
-      transpose_concat_8x4(s1, s2, s3, s4, s1234);
-      transpose_concat_8x4(s2, s3, s4, s5, s2345);
-      transpose_concat_8x4(s3, s4, s5, s6, s3456);
+      transpose_concat_elems_s16_8x4(s0, s1, s2, s3, s0123);
+      transpose_concat_elems_s16_8x4(s1, s2, s3, s4, s1234);
+      transpose_concat_elems_s16_8x4(s2, s3, s4, s5, s2345);
+      transpose_concat_elems_s16_8x4(s3, s4, s5, s6, s3456);
 
       do {
         int16x8_t s7, s8, s9, s10;
@@ -662,7 +663,7 @@ static void highbd_convolve_y_sr_8tap_sve2(const uint16_t *src,
 
         int16x8_t s4567[4], s5678[4], s6789[4], s789A[4];
         // Transpose and shuffle the 4 lines that were loaded.
-        transpose_concat_8x4(s7, s8, s9, s10, s789A);
+        transpose_concat_elems_s16_8x4(s7, s8, s9, s10, s789A);
 
         // Merge new data into block from previous iteration.
         aom_tbl2x4_s16(s3456, s789A, merge_block_tbl.val[0], s4567);
@@ -706,7 +707,7 @@ static void highbd_convolve_y_sr_8tap_sve2(const uint16_t *src,
   }
 }
 
-static INLINE uint16x4_t highbd_convolve4_4_y(int16x8_t samples[2],
+static inline uint16x4_t highbd_convolve4_4_y(int16x8_t samples[2],
                                               int16x8_t filter,
                                               uint16x4_t max) {
   int64x2_t sum01 = aom_svdot_lane_s16(vdupq_n_s64(0), samples[0], filter, 0);
@@ -717,7 +718,7 @@ static INLINE uint16x4_t highbd_convolve4_4_y(int16x8_t samples[2],
   return vmin_u16(res, max);
 }
 
-static INLINE uint16x8_t highbd_convolve4_8_y(int16x8_t samples[4],
+static inline uint16x8_t highbd_convolve4_8_y(int16x8_t samples[4],
                                               int16x8_t filter,
                                               uint16x8_t max) {
   int64x2_t sum01 = aom_svdot_lane_s16(vdupq_n_s64(0), samples[0], filter, 0);
@@ -757,10 +758,10 @@ static void highbd_convolve_y_sr_4tap_sve2(const uint16_t *src,
       // This operation combines a conventional transpose and the sample permute
       // required before computing the dot product.
       int16x8_t s0123[2], s1234[2], s2345[2], s3456[2];
-      transpose_concat_4x4(s0, s1, s2, s3, s0123);
-      transpose_concat_4x4(s1, s2, s3, s4, s1234);
-      transpose_concat_4x4(s2, s3, s4, s5, s2345);
-      transpose_concat_4x4(s3, s4, s5, s6, s3456);
+      transpose_concat_elems_s16_4x4(s0, s1, s2, s3, s0123);
+      transpose_concat_elems_s16_4x4(s1, s2, s3, s4, s1234);
+      transpose_concat_elems_s16_4x4(s2, s3, s4, s5, s2345);
+      transpose_concat_elems_s16_4x4(s3, s4, s5, s6, s3456);
 
       uint16x4_t d0 = highbd_convolve4_4_y(s0123, y_filter, max);
       uint16x4_t d1 = highbd_convolve4_4_y(s1234, y_filter, max);
@@ -797,10 +798,10 @@ static void highbd_convolve_y_sr_4tap_sve2(const uint16_t *src,
         // This operation combines a conventional transpose and the sample
         // permute required before computing the dot product.
         int16x8_t s0123[4], s1234[4], s2345[4], s3456[4];
-        transpose_concat_8x4(s0, s1, s2, s3, s0123);
-        transpose_concat_8x4(s1, s2, s3, s4, s1234);
-        transpose_concat_8x4(s2, s3, s4, s5, s2345);
-        transpose_concat_8x4(s3, s4, s5, s6, s3456);
+        transpose_concat_elems_s16_8x4(s0, s1, s2, s3, s0123);
+        transpose_concat_elems_s16_8x4(s1, s2, s3, s4, s1234);
+        transpose_concat_elems_s16_8x4(s2, s3, s4, s5, s2345);
+        transpose_concat_elems_s16_8x4(s3, s4, s5, s6, s3456);
 
         uint16x8_t d0 = highbd_convolve4_8_y(s0123, y_filter, max);
         uint16x8_t d1 = highbd_convolve4_8_y(s1234, y_filter, max);
@@ -864,7 +865,7 @@ void av1_highbd_convolve_y_sr_sve2(const uint16_t *src, int src_stride,
                                  y_filter_ptr, bd);
 }
 
-static INLINE uint16x4_t convolve12_4_2d_h(
+static inline uint16x4_t convolve12_4_2d_h(
     int16x8_t s0, int16x8_t s1, int16x8_t filter_0_7, int16x8_t filter_4_11,
     const int64x2_t offset, int32x4_t shift, uint16x8x4_t permute_tbl) {
   int16x8_t permuted_samples[6];
@@ -890,7 +891,7 @@ static INLINE uint16x4_t convolve12_4_2d_h(
   return vqmovun_s32(sum0123);
 }
 
-static INLINE uint16x8_t convolve12_8_2d_h(int16x8_t s0, int16x8_t s1,
+static inline uint16x8_t convolve12_8_2d_h(int16x8_t s0, int16x8_t s1,
                                            int16x8_t s2, int16x8_t filter_0_7,
                                            int16x8_t filter_4_11,
                                            int64x2_t offset, int32x4_t shift,
@@ -934,7 +935,7 @@ static INLINE uint16x8_t convolve12_8_2d_h(int16x8_t s0, int16x8_t s1,
   return vcombine_u16(vqmovun_s32(sum0123), vqmovun_s32(sum4567));
 }
 
-static INLINE void highbd_convolve_2d_sr_horiz_12tap_sve2(
+static inline void highbd_convolve_2d_sr_horiz_12tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *y_filter_ptr,
     ConvolveParams *conv_params, const int x_offset) {
@@ -1017,7 +1018,7 @@ static INLINE void highbd_convolve_2d_sr_horiz_12tap_sve2(
   }
 }
 
-static INLINE uint16x8_t convolve8_8_2d_h(int16x8_t s0[8], int16x8_t filter,
+static inline uint16x8_t convolve8_8_2d_h(int16x8_t s0[8], int16x8_t filter,
                                           int64x2_t offset, int32x4_t shift) {
   int64x2_t sum[8];
   sum[0] = aom_sdotq_s16(offset, s0[0], filter);
@@ -1043,7 +1044,7 @@ static INLINE uint16x8_t convolve8_8_2d_h(int16x8_t s0[8], int16x8_t filter,
   return vcombine_u16(vqmovun_s32(sum0123), vqmovun_s32(sum4567));
 }
 
-static INLINE void highbd_convolve_2d_sr_horiz_8tap_sve2(
+static inline void highbd_convolve_2d_sr_horiz_8tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *y_filter_ptr,
     ConvolveParams *conv_params, const int x_offset) {
@@ -1086,7 +1087,7 @@ static INLINE void highbd_convolve_2d_sr_horiz_8tap_sve2(
   } while (height > 0);
 }
 
-static INLINE uint16x4_t convolve4_4_2d_h(int16x8_t s0, int16x8_t filter,
+static inline uint16x4_t convolve4_4_2d_h(int16x8_t s0, int16x8_t filter,
                                           int64x2_t offset, int32x4_t shift,
                                           uint16x8x2_t permute_tbl) {
   int16x8_t permuted_samples0 = aom_tbl_s16(s0, permute_tbl.val[0]);
@@ -1100,7 +1101,7 @@ static INLINE uint16x4_t convolve4_4_2d_h(int16x8_t s0, int16x8_t filter,
   return vqmovun_s32(sum0123);
 }
 
-static INLINE uint16x8_t convolve4_8_2d_h(int16x8_t s0[8], int16x8_t filter,
+static inline uint16x8_t convolve4_8_2d_h(int16x8_t s0[8], int16x8_t filter,
                                           int64x2_t offset, int32x4_t shift,
                                           uint16x8_t tbl) {
   int64x2_t sum04 = aom_svdot_lane_s16(offset, s0[0], filter, 0);
@@ -1118,7 +1119,7 @@ static INLINE uint16x8_t convolve4_8_2d_h(int16x8_t s0[8], int16x8_t filter,
   return aom_tbl_u16(res, tbl);
 }
 
-static INLINE void highbd_convolve_2d_sr_horiz_4tap_sve2(
+static inline void highbd_convolve_2d_sr_horiz_4tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *x_filter_ptr,
     ConvolveParams *conv_params, const int x_offset) {
@@ -1185,7 +1186,7 @@ static INLINE void highbd_convolve_2d_sr_horiz_4tap_sve2(
   }
 }
 
-static INLINE uint16x4_t highbd_convolve12_4_2d_v(
+static inline uint16x4_t highbd_convolve12_4_2d_v(
     int16x8_t s0[2], int16x8_t s1[2], int16x8_t s2[2], int16x8_t filter_0_7,
     int16x8_t filter_4_11, int32x4_t shift, int64x2_t offset, uint16x4_t max) {
   int64x2_t sum01 = aom_svdot_lane_s16(offset, s0[0], filter_0_7, 0);
@@ -1204,7 +1205,7 @@ static INLINE uint16x4_t highbd_convolve12_4_2d_v(
   return vmin_u16(res, max);
 }
 
-static INLINE void highbd_convolve_2d_sr_vert_12tap_sve2(
+static inline void highbd_convolve_2d_sr_vert_12tap_sve2(
     const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride,
     int width, int height, const int16_t *y_filter_ptr,
     ConvolveParams *conv_params, int bd, const int y_offset) {
@@ -1245,21 +1246,21 @@ static INLINE void highbd_convolve_2d_sr_vert_12tap_sve2(
         s6789[2], s789A[2];
     // This operation combines a conventional transpose and the sample permute
     // required before computing the dot product.
-    transpose_concat_4x4(s0, s1, s2, s3, s0123);
-    transpose_concat_4x4(s1, s2, s3, s4, s1234);
-    transpose_concat_4x4(s2, s3, s4, s5, s2345);
-    transpose_concat_4x4(s3, s4, s5, s6, s3456);
-    transpose_concat_4x4(s4, s5, s6, s7, s4567);
-    transpose_concat_4x4(s5, s6, s7, s8, s5678);
-    transpose_concat_4x4(s6, s7, s8, s9, s6789);
-    transpose_concat_4x4(s7, s8, s9, sA, s789A);
+    transpose_concat_elems_s16_4x4(s0, s1, s2, s3, s0123);
+    transpose_concat_elems_s16_4x4(s1, s2, s3, s4, s1234);
+    transpose_concat_elems_s16_4x4(s2, s3, s4, s5, s2345);
+    transpose_concat_elems_s16_4x4(s3, s4, s5, s6, s3456);
+    transpose_concat_elems_s16_4x4(s4, s5, s6, s7, s4567);
+    transpose_concat_elems_s16_4x4(s5, s6, s7, s8, s5678);
+    transpose_concat_elems_s16_4x4(s6, s7, s8, s9, s6789);
+    transpose_concat_elems_s16_4x4(s7, s8, s9, sA, s789A);
 
     do {
       int16x4_t sB, sC, sD, sE;
       load_s16_4x4(s, src_stride, &sB, &sC, &sD, &sE);
 
       int16x8_t s89AB[2], s9ABC[2], sABCD[2], sBCDE[2];
-      transpose_concat_4x4(sB, sC, sD, sE, sBCDE);
+      transpose_concat_elems_s16_4x4(sB, sC, sD, sE, sBCDE);
 
       // Use the above transpose and reuse data from the previous loop to get
       // the rest.
@@ -1307,7 +1308,7 @@ static INLINE void highbd_convolve_2d_sr_vert_12tap_sve2(
   } while (width != 0);
 }
 
-static INLINE uint16x4_t highbd_convolve8_4_2d_v(
+static inline uint16x4_t highbd_convolve8_4_2d_v(
     int16x8_t samples_lo[2], int16x8_t samples_hi[2], int16x8_t filter,
     int32x4_t shift, int64x2_t offset, uint16x4_t max) {
   int64x2_t sum01 = aom_svdot_lane_s16(offset, samples_lo[0], filter, 0);
@@ -1323,7 +1324,7 @@ static INLINE uint16x4_t highbd_convolve8_4_2d_v(
   return vmin_u16(res, max);
 }
 
-static INLINE uint16x8_t highbd_convolve8_8_2d_v(
+static inline uint16x8_t highbd_convolve8_8_2d_v(
     int16x8_t samples_lo[4], int16x8_t samples_hi[4], int16x8_t filter,
     int32x4_t shift, int64x2_t offset, uint16x8_t max) {
   int64x2_t sum01 = aom_svdot_lane_s16(offset, samples_lo[0], filter, 0);
@@ -1383,10 +1384,10 @@ static void highbd_convolve_2d_sr_vert_8tap_sve2(
     // This operation combines a conventional transpose and the sample permute
     // required before computing the dot product.
     int16x8_t s0123[2], s1234[2], s2345[2], s3456[2];
-    transpose_concat_4x4(s0, s1, s2, s3, s0123);
-    transpose_concat_4x4(s1, s2, s3, s4, s1234);
-    transpose_concat_4x4(s2, s3, s4, s5, s2345);
-    transpose_concat_4x4(s3, s4, s5, s6, s3456);
+    transpose_concat_elems_s16_4x4(s0, s1, s2, s3, s0123);
+    transpose_concat_elems_s16_4x4(s1, s2, s3, s4, s1234);
+    transpose_concat_elems_s16_4x4(s2, s3, s4, s5, s2345);
+    transpose_concat_elems_s16_4x4(s3, s4, s5, s6, s3456);
 
     do {
       int16x4_t s7, s8, s9, s10;
@@ -1394,7 +1395,7 @@ static void highbd_convolve_2d_sr_vert_8tap_sve2(
 
       int16x8_t s4567[2], s5678[2], s6789[2], s789A[2];
       // Transpose and shuffle the 4 lines that were loaded.
-      transpose_concat_4x4(s7, s8, s9, s10, s789A);
+      transpose_concat_elems_s16_4x4(s7, s8, s9, s10, s789A);
 
       // Merge new data into block from previous iteration.
       aom_tbl2x2_s16(s3456, s789A, merge_block_tbl.val[0], s4567);
@@ -1442,10 +1443,10 @@ static void highbd_convolve_2d_sr_vert_8tap_sve2(
       // This operation combines a conventional transpose and the sample permute
       // required before computing the dot product.
       int16x8_t s0123[4], s1234[4], s2345[4], s3456[4];
-      transpose_concat_8x4(s0, s1, s2, s3, s0123);
-      transpose_concat_8x4(s1, s2, s3, s4, s1234);
-      transpose_concat_8x4(s2, s3, s4, s5, s2345);
-      transpose_concat_8x4(s3, s4, s5, s6, s3456);
+      transpose_concat_elems_s16_8x4(s0, s1, s2, s3, s0123);
+      transpose_concat_elems_s16_8x4(s1, s2, s3, s4, s1234);
+      transpose_concat_elems_s16_8x4(s2, s3, s4, s5, s2345);
+      transpose_concat_elems_s16_8x4(s3, s4, s5, s6, s3456);
 
       do {
         int16x8_t s7, s8, s9, s10;
@@ -1453,7 +1454,7 @@ static void highbd_convolve_2d_sr_vert_8tap_sve2(
 
         int16x8_t s4567[4], s5678[4], s6789[4], s789A[4];
         // Transpose and shuffle the 4 lines that were loaded.
-        transpose_concat_8x4(s7, s8, s9, s10, s789A);
+        transpose_concat_elems_s16_8x4(s7, s8, s9, s10, s789A);
 
         // Merge new data into block from previous iteration.
         aom_tbl2x4_s16(s3456, s789A, merge_block_tbl.val[0], s4567);
@@ -1501,7 +1502,7 @@ static void highbd_convolve_2d_sr_vert_8tap_sve2(
   }
 }
 
-static INLINE uint16x4_t highbd_convolve4_4_2d_v(int16x8_t samples[2],
+static inline uint16x4_t highbd_convolve4_4_2d_v(int16x8_t samples[2],
                                                  int16x8_t filter,
                                                  int32x4_t shift,
                                                  int64x2_t offset,
@@ -1516,7 +1517,7 @@ static INLINE uint16x4_t highbd_convolve4_4_2d_v(int16x8_t samples[2],
   return vmin_u16(res, max);
 }
 
-static INLINE uint16x8_t highbd_convolve4_8_2d_v(int16x8_t samples[4],
+static inline uint16x8_t highbd_convolve4_8_2d_v(int16x8_t samples[4],
                                                  int16x8_t filter,
                                                  int32x4_t shift,
                                                  int64x2_t offset,
@@ -1562,10 +1563,10 @@ static void highbd_convolve_2d_sr_vert_4tap_sve2(
       // This operation combines a conventional transpose and the sample permute
       // required before computing the dot product.
       int16x8_t s0123[2], s1234[2], s2345[2], s3456[2];
-      transpose_concat_4x4(s0, s1, s2, s3, s0123);
-      transpose_concat_4x4(s1, s2, s3, s4, s1234);
-      transpose_concat_4x4(s2, s3, s4, s5, s2345);
-      transpose_concat_4x4(s3, s4, s5, s6, s3456);
+      transpose_concat_elems_s16_4x4(s0, s1, s2, s3, s0123);
+      transpose_concat_elems_s16_4x4(s1, s2, s3, s4, s1234);
+      transpose_concat_elems_s16_4x4(s2, s3, s4, s5, s2345);
+      transpose_concat_elems_s16_4x4(s3, s4, s5, s6, s3456);
 
       uint16x4_t d0 =
           highbd_convolve4_4_2d_v(s0123, y_filter, shift, offset, max);
@@ -1606,10 +1607,10 @@ static void highbd_convolve_2d_sr_vert_4tap_sve2(
         // This operation combines a conventional transpose and the sample
         // permute required before computing the dot product.
         int16x8_t s0123[4], s1234[4], s2345[4], s3456[4];
-        transpose_concat_8x4(s0, s1, s2, s3, s0123);
-        transpose_concat_8x4(s1, s2, s3, s4, s1234);
-        transpose_concat_8x4(s2, s3, s4, s5, s2345);
-        transpose_concat_8x4(s3, s4, s5, s6, s3456);
+        transpose_concat_elems_s16_8x4(s0, s1, s2, s3, s0123);
+        transpose_concat_elems_s16_8x4(s1, s2, s3, s4, s1234);
+        transpose_concat_elems_s16_8x4(s2, s3, s4, s5, s2345);
+        transpose_concat_elems_s16_8x4(s3, s4, s5, s6, s3456);
 
         uint16x8_t d0 =
             highbd_convolve4_8_2d_v(s0123, y_filter, shift, offset, max);

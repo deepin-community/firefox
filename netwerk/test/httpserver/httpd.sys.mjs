@@ -10,6 +10,8 @@
  * httpd.js.
  */
 
+/* eslint-disable no-shadow */
+
 const CC = Components.Constructor;
 
 const PR_UINT32_MAX = Math.pow(2, 32) - 1;
@@ -32,8 +34,6 @@ export function setDebuggingStatus(debug, debugTimestamp) {
   DEBUG = debug;
   DEBUG_TIMESTAMP = debugTimestamp;
 }
-
-import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 /**
  * Asserts that the given condition holds.  If it doesn't, the given message is
@@ -861,98 +861,6 @@ nsHttpServer.prototype = {
 
 export var HttpServer = nsHttpServer;
 
-export class NodeServer {
-  // Executes command in the context of a node server.
-  // See handler in moz-http2.js
-  //
-  // Example use:
-  // let id = NodeServer.fork(); // id is a random string
-  // await NodeServer.execute(id, `"hello"`)
-  // > "hello"
-  // await NodeServer.execute(id, `(() => "hello")()`)
-  // > "hello"
-  // await NodeServer.execute(id, `(() => var_defined_on_server)()`)
-  // > "0"
-  // await NodeServer.execute(id, `var_defined_on_server`)
-  // > "0"
-  // function f(param) { if (param) return param; return "bla"; }
-  // await NodeServer.execute(id, f); // Defines the function on the server
-  // await NodeServer.execute(id, `f()`) // executes defined function
-  // > "bla"
-  // let result = await NodeServer.execute(id, `f("test")`);
-  // > "test"
-  // await NodeServer.kill(id); // shuts down the server
-
-  // Forks a new node server using moz-http2-child.js as a starting point
-  static fork() {
-    return this.sendCommand("", "/fork");
-  }
-  // Executes command in the context of the node server indicated by `id`
-  static execute(id, command) {
-    return this.sendCommand(command, `/execute/${id}`);
-  }
-  // Shuts down the server
-  static kill(id) {
-    return this.sendCommand("", `/kill/${id}`);
-  }
-
-  // Issues a request to the node server (handler defined in moz-http2.js)
-  // This method should not be called directly.
-  static sendCommand(command, path) {
-    let h2Port = Services.env.get("MOZNODE_EXEC_PORT");
-    if (!h2Port) {
-      throw new Error("Could not find MOZNODE_EXEC_PORT");
-    }
-
-    let req = new XMLHttpRequest();
-    const serverIP =
-      AppConstants.platform == "android" ? "10.0.2.2" : "127.0.0.1";
-    req.open("POST", `http://${serverIP}:${h2Port}${path}`);
-    req.channel.QueryInterface(Ci.nsIHttpChannelInternal).bypassProxy = true;
-
-    // Passing a function to NodeServer.execute will define that function
-    // in node. It can be called in a later execute command.
-    let isFunction = function (obj) {
-      return !!(obj && obj.constructor && obj.call && obj.apply);
-    };
-    let payload = command;
-    if (isFunction(command)) {
-      payload = `${command.name} = ${command.toString()};`;
-    }
-
-    return new Promise((resolve, reject) => {
-      req.onload = () => {
-        let x = null;
-
-        if (req.statusText != "OK") {
-          reject(`XHR request failed: ${req.statusText}`);
-          return;
-        }
-
-        try {
-          x = JSON.parse(req.responseText);
-        } catch (e) {
-          reject(`Failed to parse ${req.responseText} - ${e}`);
-          return;
-        }
-
-        if (x.error) {
-          let e = new Error(x.error, "", 0);
-          e.stack = x.errorStack;
-          reject(e);
-          return;
-        }
-        resolve(x.result);
-      };
-      req.onerror = e => {
-        reject(e);
-      };
-
-      req.send(payload.toString());
-    });
-  }
-}
-
 //
 // RFC 2396 section 3.2.2:
 //
@@ -1291,8 +1199,9 @@ function Connection(
    */
   this.request = null;
 
-  /** This allows a connection to disambiguate between a peer initiating a
-   *  close and the socket being forced closed on shutdown.
+  /**
+   * This allows a connection to disambiguate between a peer initiating a
+   * close and the socket being forced closed on shutdown.
    */
   this._closed = false;
 
@@ -1927,6 +1836,7 @@ RequestReader.prototype = {
     var lastVal = this._lastHeaderValue;
 
     var line = {};
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       dumpn("*** Last name: '" + lastName + "'");
       dumpn("*** Last val: '" + lastVal + "'");
@@ -3225,6 +3135,7 @@ ServerHandler.prototype = {
     // An example progression of tmp for a path "/foo/bar/baz/" might be:
     // "foo/bar/baz/", "foo/bar/baz", "foo/bar", "foo", ""
     var tmp = path.substring(1);
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       // do we have a match for current head of the path?
       var file = pathMap.get(tmp);
@@ -3815,7 +3726,7 @@ function Response(connection) {
   /**
    * Informational response:
    * For example 103 Early Hint
-   **/
+   */
   this._informationalResponseHttpVersion = nsHttpVersion.HTTP_1_1;
   this._informationalResponseHttpCode = 0;
   this._informationalResponseHttpDescription = "";
@@ -3986,7 +3897,7 @@ Response.prototype = {
   //
   // see nsIHttpResponse.setHeader
   //
-  setHeader(name, value, merge) {
+  setHeader(name, value, merge = false) {
     if (!this._headers || this._finished || this._powerSeized) {
       throw Components.Exception("", Cr.NS_ERROR_NOT_AVAILABLE);
     }
@@ -5274,7 +5185,11 @@ nsHttpHeaders.prototype = {
    */
   setHeader(fieldName, fieldValue, merge) {
     var name = headerUtils.normalizeFieldName(fieldName);
-    var value = headerUtils.normalizeFieldValue(fieldValue);
+    // Bug 1937905 - For testing a neterror page due to invalid header values
+    var value =
+      name === "x-invalid-header-value"
+        ? fieldValue
+        : headerUtils.normalizeFieldValue(fieldValue);
 
     // The following three headers are stored as arrays because their real-world
     // syntax prevents joining individual headers into a single header using

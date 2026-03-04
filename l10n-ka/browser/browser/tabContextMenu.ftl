@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = ახალი ჩანართი
     .accesskey = ხ
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = მარცხენა ჩანართების დახურვა
     .accesskey = ც
+close-tabs-to-the-start-vertical =
+    .label = ჩანართების დახურვა ზემოთ
+    .accesskey = ზ
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = მარჯვენა ჩანართების დახურვა
     .accesskey = ჯ
+close-tabs-to-the-end-vertical =
+    .label = ჩანართების დახურვა ქვემოთ
+    .accesskey = ქ
 close-other-tabs =
     .label = დანარჩენი ჩანართების დახურვა
     .accesskey = ა
@@ -69,12 +79,29 @@ move-to-end =
 move-to-new-window =
     .label = ახალ ფანჯარაში გადატანა
     .accesskey = ფ
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = გადატანით გახსნის { $profileName }
 tab-context-close-multiple-tabs =
     .label = რამდენიმე ჩანართის დახურვა
     .accesskey = რ
+tab-context-close-duplicate-tabs =
+    .label = გამეორებული ჩანართების დახურვა
+    .accesskey = ო
 tab-context-share-url =
     .label = გაზიარება
     .accesskey = ზ
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = ჩანართების ახალი ჯგუფი მარჯვნივ
+    .accesskey = ჯ
+tab-context-new-tab-open-vertical =
+    .label = ჩანართების ახალი ჯგუფი მარცხნივ
+    .accesskey = ც
+tab-context-new-group =
+    .label = ახალი ჯგუფი
+    .accesskey = ჯ
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -100,7 +127,14 @@ tab-context-move-tabs =
            *[other] ჩანართების გადატანა
         }
     .accesskey = ტ
-
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] მოწყობილობაზე გაგზავნა
+           *[other] გაგზავნეთ { $tabCount } ჩანართი სხვა მოწყობილობაზე
+        }
+    .accesskey = ზ
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -108,3 +142,10 @@ tab-context-send-tabs-to-device =
            *[other] { $tabCount } ჩანართის მოწყობილობაზე გაგზავნა
         }
     .accesskey = ნ
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] ჩანართის განტვირთვა
+           *[other] { $tabCount } ჩანართის განტვირთვა
+        }
+    .accesskey = ტ

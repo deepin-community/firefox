@@ -12,20 +12,6 @@ about-reader-color-scheme-sepia = Sepija
     .title = Barbowa šema Sepia
 about-reader-color-scheme-auto = Awtomatisce
     .title = Awtomatiska barbowa šema
-about-reader-color-theme-light = Swětły
-    .title = Barbna drasta Swětły
-about-reader-color-theme-dark = Ćmowy
-    .title = Barbna drasta Ćmowy
-about-reader-color-theme-sepia = Sepija
-    .title = Barbna drasta Sepija
-about-reader-color-theme-auto = Awtomatiski
-    .title = Barbna drasta Awtomatiski
-about-reader-color-theme-gray = Šěry
-    .title = Barbna drasta Šěry
-about-reader-color-theme-contrast = Kontrast
-    .title = Barbna drasta Kontrast
-about-reader-color-theme-custom = Swójske barby
-    .title = Barbna drasta Swójske
 about-reader-color-light-theme = Swětły
     .title = Swětła drasta
 about-reader-color-dark-theme = Ćmowy
@@ -51,7 +37,7 @@ about-reader-estimated-read-time =
        *[other] { $range } mjeńšin
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Pismowu wulkosć pomjeńšić
@@ -76,7 +62,6 @@ about-reader-font-type-monospace = Monospace
 
 about-reader-toolbar-close = Čitanski napohlad začinić
 about-reader-toolbar-type-controls = Pismowe elementy
-about-reader-toolbar-color-controls = Barby
 about-reader-toolbar-text-layout-controls = Tekst a wuhotowanje
 about-reader-toolbar-theme-controls = Drasta
 about-reader-toolbar-savetopocket = Do { -pocket-brand-name } składować
@@ -91,26 +76,30 @@ about-reader-customtheme-tab = Swójski
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Tekst
-    .title = Barbu wobdźěłać
-about-reader-custom-colors-background = Pozadk
-    .title = Wobdźěłanska barba
-about-reader-custom-colors-unvisited-links = Njewopytane wotkazy
-    .title = Wobdźěłanska barba
-about-reader-custom-colors-visited-links = Wopytane wotkazy
-    .title = Wobdźěłanska barba
-about-reader-custom-colors-selection-highlight = Tekstowy marker za wótře čitać
-    .title = Barbu wobdźěłać
-about-reader-custom-colors-reset-button = Na standard wróćo stajić
 about-reader-reset-button = Na standard wróćo stajić
+about-reader-custom-colors-foreground2 =
+    .label = Tekst
+    .title = Barbu wobdźěłać
+about-reader-custom-colors-background2 =
+    .label = Pozadk
+    .title = Wobdźěłanska barba
+about-reader-custom-colors-unvisited-links2 =
+    .label = Njewopytane wotkazy
+    .title = Wobdźěłanska barba
+about-reader-custom-colors-visited-links2 =
+    .label = Wopytane wotkazy
+    .title = Wobdźěłanska barba
+about-reader-custom-colors-selection-highlight2 =
+    .label = Tekstowy marker za wótře čitać
+    .title = Barbu wobdźěłać
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Tekst
 about-reader-text-size-label = Tekstowa wulkosć
 about-reader-font-type-selector-label = Pismo
 about-reader-font-weight-selector-label = Pismowa waha
-about-reader-font-weight-light = Swětły
+about-reader-font-weight-light = Ćeńki
 about-reader-font-weight-regular = Normalny
 about-reader-font-weight-bold = Tučny
 about-reader-layout-header = Wuhotowanje
@@ -121,9 +110,6 @@ about-reader-content-width-label =
 about-reader-line-spacing-label =
     .label = Linkowy wotstup
 about-reader-advanced-layout-header = Rozšěrjene
-about-reader-slider-label-width-narrow = Wuski
-about-reader-slider-label-width-wide = Šěroki
-about-reader-slider-label-spacing-narrow = Wuski
 about-reader-character-spacing-label =
     .label = Znamješkowy wotstup
 about-reader-word-spacing-label =
@@ -135,3 +121,5 @@ about-reader-text-alignment-center =
     .title = Tekst centrowano wusměrić
 about-reader-text-alignment-right =
     .title = Tekst naprawo wusměrić
+about-reader-text-alignment-justify =
+    .title = Tekst w blokowej sadźbje wusměrić

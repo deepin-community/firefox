@@ -3,9 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// This file is loaded into the browser window scope.
-/* eslint-env mozilla/browser-window */
-
 ChromeUtils.defineESModuleGetters(this, {
   OriginControls: "resource://gre/modules/ExtensionPermissions.sys.mjs",
 });
@@ -55,6 +52,10 @@ customElements.define(
       this._messageDeck = this.querySelector(
         ".unified-extensions-item-message-deck"
       );
+      this._messageBarWrapper = this.querySelector(
+        "unified-extensions-item-messagebar-wrapper"
+      );
+      this._messageBarWrapper.extensionId = this.extension?.id;
 
       // Focus/blur events are fired on specific elements only.
       this._actionButton.addEventListener("blur", this);
@@ -201,6 +202,8 @@ customElements.define(
       );
 
       this.#setStateMessage();
+
+      this._messageBarWrapper?.refresh();
     }
   }
 );

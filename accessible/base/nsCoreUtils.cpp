@@ -24,10 +24,11 @@
 #include "mozilla/MouseEvents.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/ScrollContainerFrame.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/TouchEvents.h"
-#include "nsView.h"
 #include "nsGkAtoms.h"
 
+#include "AnchorPositioningUtils.h"
 #include "nsComponentManagerUtils.h"
 
 #include "XULTreeElement.h"
@@ -105,15 +106,16 @@ void nsCoreUtils::DispatchClickEvent(XULTreeElement* aTree, int32_t aRowIndex,
   nsIFrame* rootFrame = presShell->GetRootFrame();
 
   nsPoint offset;
-  nsCOMPtr<nsIWidget> rootWidget =
-      rootFrame->GetView()->GetNearestWidget(&offset);
-
+  nsCOMPtr<nsIWidget> rootWidget = rootFrame->GetNearestWidget(offset);
   RefPtr<nsPresContext> presContext = presShell->GetPresContext();
 
   int32_t cnvdX = presContext->CSSPixelsToDevPixels(tcX + int32_t(rect.x) + 1) +
                   presContext->AppUnitsToDevPixels(offset.x);
   int32_t cnvdY = presContext->CSSPixelsToDevPixels(tcY + int32_t(rect.y) + 1) +
                   presContext->AppUnitsToDevPixels(offset.y);
+
+  // This isn't needed once bug 1924790 is fixed.
+  tcElm->OwnerDoc()->NotifyUserGestureActivation();
 
   // XUL is just desktop, so there is no real reason for senfing touch events.
   DispatchMouseEvent(eMouseDown, cnvdX, cnvdY, tcElm, tcFrame, presShell,
@@ -232,21 +234,22 @@ nsresult nsCoreUtils::ScrollSubstringTo(nsIFrame* aFrame, nsRange* aRange,
     return NS_ERROR_FAILURE;
   }
 
-  nsPresContext* presContext = aFrame->PresContext();
-
-  nsCOMPtr<nsISelectionController> selCon;
-  aFrame->GetSelectionController(presContext, getter_AddRefs(selCon));
-  NS_ENSURE_TRUE(selCon, NS_ERROR_FAILURE);
-
-  RefPtr<dom::Selection> selection =
-      selCon->GetSelection(nsISelectionController::SELECTION_ACCESSIBILITY);
+  const RefPtr<dom::Selection> selection = [&]() -> dom::Selection* {
+    nsISelectionController* const selCon = aFrame->GetSelectionController();
+    NS_ENSURE_TRUE(selCon, nullptr);
+    return selCon->GetSelection(
+        nsISelectionController::SELECTION_ACCESSIBILITY);
+  }();
+  if (MOZ_UNLIKELY(!selection)) {
+    return NS_ERROR_FAILURE;
+  }
 
   selection->RemoveAllRanges(IgnoreErrors());
   selection->AddRangeAndSelectFramesAndNotifyListeners(*aRange, IgnoreErrors());
 
   selection->ScrollIntoView(nsISelectionController::SELECTION_ANCHOR_REGION,
-                            aVertical, aHorizontal,
-                            Selection::SCROLL_SYNCHRONOUS);
+                            aVertical, aHorizontal, ScrollFlags::None,
+                            SelectionScrollMode::SyncNoFlush);
 
   selection->CollapseToStart(IgnoreErrors());
 
@@ -521,8 +524,7 @@ bool nsCoreUtils::IsColumnHidden(nsTreeColumn* aColumn) {
   }
 
   Element* element = aColumn->Element();
-  return element->AttrValueIs(kNameSpaceID_None, nsGkAtoms::hidden,
-                              nsGkAtoms::_true, eCaseMatters);
+  return element->GetBoolAttr(nsGkAtoms::hidden);
 }
 
 void nsCoreUtils::ScrollTo(PresShell* aPresShell, nsIContent* aContent,
@@ -654,4 +656,93 @@ Element* nsCoreUtils::GetAriaActiveDescendantElement(Element* aElement) {
   }
 
   return nullptr;
+}
+
+bool nsCoreUtils::IsTrimmedWhitespaceBeforeHardLineBreak(nsIFrame* aFrame) {
+  if (!aFrame->GetRect().IsEmpty() ||
+      !aFrame->HasAnyStateBits(TEXT_END_OF_LINE)) {
+    return false;
+  }
+  // Normally, accessibility calls nsIFrame::GetRenderedText with
+  // TrailingWhitespace::NoTrim. Using TrailingWhitespace::Trim instead trims 0
+  // width whitespace before a hard line break, resulting in an empty string if
+  // that is all the frame contains. Note that TrailingWhitespace::Trim does
+  // *not* trim whitespace before a soft line break (wrapped line).
+  nsIFrame::RenderedText text = aFrame->GetRenderedText(
+      0, UINT32_MAX, nsIFrame::TextOffsetType::OffsetsInContentText,
+      nsIFrame::TrailingWhitespace::Trim);
+  return text.mString.IsEmpty();
+}
+
+const nsIFrame* nsCoreUtils::GetAnchorForPositionedFrame(
+    const PresShell* aPresShell, const nsIFrame* aPositionedFrame) {
+  if (!aPositionedFrame ||
+      !aPositionedFrame->Style()->HasAnchorPosReference()) {
+    return nullptr;
+  }
+
+  const nsAtom* anchorName = nullptr;
+  AnchorPosReferenceData* referencedAnchors =
+      aPositionedFrame->GetProperty(nsIFrame::AnchorPosReferences());
+
+  if (!referencedAnchors) {
+    return nullptr;
+  }
+
+  for (const auto& entry : *referencedAnchors) {
+    if (entry.GetData().isNothing()) {
+      continue;
+    }
+
+    if (anchorName && entry.GetKey() != anchorName) {
+      // Multiple anchors referenced.
+      return nullptr;
+    }
+
+    anchorName = entry.GetKey();
+  }
+
+  return anchorName
+             ? aPresShell->GetAnchorPosAnchor(anchorName, aPositionedFrame)
+             : nullptr;
+}
+
+nsIFrame* nsCoreUtils::GetPositionedFrameForAnchor(
+    const PresShell* aPresShell, const nsIFrame* aAnchorFrame) {
+  if (!aAnchorFrame) {
+    return nullptr;
+  }
+
+  nsIFrame* positionedFrame = nullptr;
+  const auto* styleDisp = aAnchorFrame->StyleDisplay();
+  if (styleDisp->HasAnchorName()) {
+    for (auto& name : styleDisp->mAnchorName.AsSpan()) {
+      for (nsIFrame* frame : aPresShell->GetAnchorPosPositioned()) {
+        // Bug 1990069: We need to iterate over all positioned frames in doc and
+        // check their referenced anchors because we don't store reverse mapping
+        // from anchor to positioned frame.
+        const auto* referencedAnchors =
+            frame->GetProperty(nsIFrame::AnchorPosReferences());
+        if (!referencedAnchors) {
+          // Depending on where we are in the reflow, this property may or may
+          // not be set. If it isn't set, a future reflow will set it, so we can
+          // just skip this frame for now.
+          continue;
+        }
+        const auto* data = referencedAnchors->Lookup(name.AsAtom());
+        if (data && *data && data->ref().mOffsetData) {
+          if (aAnchorFrame ==
+              aPresShell->GetAnchorPosAnchor(name.AsAtom(), frame)) {
+            if (positionedFrame) {
+              // Multiple positioned frames reference this anchor.
+              return nullptr;
+            }
+            positionedFrame = frame;
+          }
+        }
+      }
+    }
+  }
+
+  return positionedFrame;
 }

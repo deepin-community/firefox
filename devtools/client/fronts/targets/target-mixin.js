@@ -113,7 +113,7 @@ function TargetMixin(parentClass) {
     }
 
     get targetType() {
-      return this._targetType;
+      return this.targetForm.targetType;
     }
 
     get isTopLevel() {
@@ -125,10 +125,6 @@ function TargetMixin(parentClass) {
       }
 
       return this.targetForm.isTopLevelTarget;
-    }
-
-    setTargetType(type) {
-      this._targetType = type;
     }
 
     setIsTopLevel(isTopLevel) {
@@ -201,8 +197,8 @@ function TargetMixin(parentClass) {
      * Returns a boolean indicating whether or not the specific actor
      * type exists.
      *
-     * @param {String} actorName
-     * @return {Boolean}
+     * @param {string} actorName
+     * @return {boolean}
      */
     hasActor(actorName) {
       if (this.targetForm) {
@@ -215,10 +211,13 @@ function TargetMixin(parentClass) {
      * Returns a trait from the target actor if it exists,
      * if not it will fallback to that on the root actor.
      *
-     * @param {String} traitName
+     * @param {string} traitName
      * @return {Mixed}
      */
     getTrait(traitName) {
+      if (this.isDestroyedOrBeingDestroyed()) {
+        return null;
+      }
       // If the targeted actor exposes traits and has a defined value for this
       // traits, override the root actor traits
       if (this.targetForm.traits && traitName in this.targetForm.traits) {
@@ -277,8 +276,26 @@ function TargetMixin(parentClass) {
       return this.typeName === "windowGlobalTarget";
     }
 
+    /**
+     * Return the name to be displayed in the debugger and console context selector.
+     */
     get name() {
-      if (this.isWebExtension || this.isContentProcess) {
+      // When debugging Web Extensions, all documents have moz-extension://${uuid}/... URL
+      // When the developer don't set a custom title, fallback on displaying the pathname
+      // to avoid displaying long URL prefix with the addon internal UUID.
+      if (this.commands.descriptorFront.isWebExtensionDescriptor) {
+        if (this._title) {
+          return this._title;
+        }
+        const parsedURL = URL.parse(this._url);
+        if (parsedURL) {
+          return parsedURL.pathname;
+        }
+        // If document URL can't be parsed, fallback to the raw URL.
+        return this._url;
+      }
+
+      if (this.isContentProcess) {
         return this.targetForm.name;
       }
       return this.title;
@@ -296,15 +313,6 @@ function TargetMixin(parentClass) {
       // XXX Remove the check on `workerDescriptor` as part of Bug 1667404.
       return (
         this.typeName === "workerTarget" || this.typeName === "workerDescriptor"
-      );
-    }
-
-    get isWebExtension() {
-      return !!(
-        this.targetForm &&
-        this.targetForm.actor &&
-        (this.targetForm.actor.match(/conn\d+\.webExtension(Target)?\d+/) ||
-          this.targetForm.actor.match(/child\d+\/webExtension(Target)?\d+/))
       );
     }
 
@@ -328,25 +336,6 @@ function TargetMixin(parentClass) {
         this.targetForm.actor &&
         this.targetForm.actor.match(/conn\d+\.parentProcessTarget\d+/)
       );
-    }
-
-    getExtensionPathName(url) {
-      // Return the url if the target is not a webextension.
-      if (!this.isWebExtension) {
-        throw new Error("Target is not a WebExtension");
-      }
-
-      try {
-        const parsedURL = new URL(url);
-        // Only moz-extension URL should be shortened into the URL pathname.
-        if (parsedURL.protocol !== "moz-extension:") {
-          return url;
-        }
-        return parsedURL.pathname;
-      } catch (e) {
-        // Return the url if unable to resolve the pathname.
-        return url;
-      }
     }
 
     /**
@@ -511,7 +500,7 @@ function TargetMixin(parentClass) {
      *
      * @param {Error} e
      *        The real error object.
-     * @param {String} targetType
+     * @param {string} targetType
      *        The type of the target front ("worker", "browsing-context", ...)
      */
     logDetachError(e, targetType) {
@@ -565,9 +554,9 @@ function TargetMixin(parentClass) {
     /**
      * Log an error of some kind to the tab's console.
      *
-     * @param {String} text
+     * @param {string} text
      *                 The text to log.
-     * @param {String} category
+     * @param {string} category
      *                 The category of the message.  @see nsIScriptError.
      * @returns {Promise}
      */
@@ -582,9 +571,9 @@ function TargetMixin(parentClass) {
     /**
      * Log a warning of some kind to the tab's console.
      *
-     * @param {String} text
+     * @param {string} text
      *                 The text to log.
-     * @param {String} category
+     * @param {string} category
      *                 The category of the message.  @see nsIScriptError.
      * @returns {Promise}
      */

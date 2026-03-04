@@ -18,8 +18,6 @@ abuse-report-addon-authored-by = av <a data-l10n-name="author-name">{ $author-na
 abuse-report-learnmore =
     Er du usikker på hvilket problem du skal velge?
     <a data-l10n-name="learnmore-link">Les mer om rapportering av utvidelser og temaer</a>
-abuse-report-learnmore-intro = Er du usikker på hvilket problem du skal velge?
-abuse-report-learnmore-link = Les mer om rapportering av utvidelser og temaer
 abuse-report-submit-description = Beskriv problemet (valgfritt)
 abuse-report-textarea =
     .placeholder = Det er lettere for oss å løse et problem hvis vi har detaljer. Beskriv hva du opplever. Takk for at du hjelper oss med å gjøre nettet til et bedre sted.
@@ -46,26 +44,8 @@ abuse-report-messagebar-submitted-noremove = Takk for at du sendte inn en rappor
 abuse-report-messagebar-removed-extension = Takk for at du sendte inn en rapport. Du har fjernet utvidelsen <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-removed-sitepermission = Takk for at du sendte inn en rapport. Du har fjernet dette tillegget for nettstedstillatelser <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-removed-theme = Takk for at du sendte inn en rapport. Du har fjernet temaet <span data-l10n-name="addon-name">{ $addon-name }</span>.
-abuse-report-messagebar-error = Det oppsto en feil ved sending av rapporten for <span data-l10n-name="addon-name">{ $addon-name }</span>.
+abuse-report-messagebar-error = Det oppstod en feil ved sending av rapporten for <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error-recent-submit = Rapporten for <span data-l10n-name="addon-name">{ $addon-name }</span> ble ikke sendt fordi en annen rapport ble sendt inn nylig.
-abuse-report-messagebar-aborted2 =
-    .message = Rapport for { $addon-name } ble anullert.
-abuse-report-messagebar-submitting2 =
-    .message = Sender rapport for { $addon-name }.
-abuse-report-messagebar-submitted2 =
-    .message = Takk for at du sendte inn en rapport. Vil du fjerne { $addon-name }?
-abuse-report-messagebar-submitted-noremove2 =
-    .message = Takk for at du sendte inn en rapport.
-abuse-report-messagebar-removed-extension2 =
-    .message = Takk for at du sendte inn en rapport. Du har fjernet utvidelsen { $addon-name }.
-abuse-report-messagebar-removed-sitepermission2 =
-    .message = Takk for at du sendte inn en rapport. Du har fjernet dette tillegget for nettstedstillatelser { $addon-name }.
-abuse-report-messagebar-removed-theme2 =
-    .message = Takk for at du sendte inn en rapport. Du har fjernet temaet { $addon-name }.
-abuse-report-messagebar-error2 =
-    .message = Det oppsto en feil ved sending av rapporten for { $addon-name }.
-abuse-report-messagebar-error-recent-submit2 =
-    .message = Rapporten for { $addon-name } ble ikke sendt fordi en annen rapport ble sendt inn nylig.
 
 ## Message bars actions.
 
@@ -96,7 +76,7 @@ abuse-report-broken-reason-theme-v2 = Den virker ikke eller ødelegger nettsiden
 abuse-report-broken-example = For eksempel: Funksjoner er trege, vanskelig å bruke, eller fungerer ikke; deler av nettsteder vil ikke laste eller ser uvanlige ut
 abuse-report-broken-suggestions-extension =
     Det høres ut som om du har identifisert en feil. I tillegg til å sende inn en rapport her, så er den beste måten
-    for å få en funksjonell feil løst på er å kontakte utvidelsesutvikleren.
+    for å få en funksjonell feil løst på er å kontakte utvikler av utvidelsen.
     <a data-l10n-name="support-link">Besøk utvidelsens nettsted</a> for å få informasjon om utvikleren.
 abuse-report-broken-suggestions-sitepermission =
     Det høres ut som om du har identifisert en feil. I tillegg til å sende inn en rapport her, så er den beste måten

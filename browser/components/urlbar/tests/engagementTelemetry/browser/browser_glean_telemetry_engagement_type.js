@@ -60,10 +60,10 @@ add_task(async function engagement_type_dismiss() {
   const cleanupQuickSuggest = await ensureQuickSuggestInit();
 
   await doTest(async () => {
-    await openPopup("sponsored");
+    await openPopup("amp");
 
     const originalResultCount = UrlbarTestUtils.getResultCount(window);
-    await selectRowByURL("https://example.com/sponsored");
+    await selectRowByURL("https://example.com/amp");
     UrlbarTestUtils.openResultMenuAndPressAccesskey(window, "D");
     await BrowserTestUtils.waitForCondition(
       () => originalResultCount != UrlbarTestUtils.getResultCount(window)
@@ -85,10 +85,10 @@ add_task(async function engagement_type_dismiss() {
   });
 
   await doTest(async () => {
-    await openPopup("sponsored");
+    await openPopup("amp");
 
     const originalResultCount = UrlbarTestUtils.getResultCount(window);
-    await selectRowByURL("https://example.com/sponsored");
+    await selectRowByURL("https://example.com/amp");
     EventUtils.synthesizeKey("KEY_Delete", { shiftKey: true });
     await BrowserTestUtils.waitForCondition(
       () => originalResultCount != UrlbarTestUtils.getResultCount(window)
@@ -106,19 +106,18 @@ add_task(async function engagement_type_help() {
   let provider = new UrlbarTestUtils.TestProvider({
     priority: Infinity,
     results: [
-      new UrlbarResult(
-        UrlbarUtils.RESULT_TYPE.URL,
-        UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-        {
+      new UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.URL,
+        source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        payload: {
           url,
           isBlockable: true,
-          blockL10n: { id: "urlbar-result-menu-dismiss-firefox-suggest" },
           helpUrl,
           helpL10n: {
             id: "urlbar-result-menu-learn-more-about-firefox-suggest",
           },
-        }
-      ),
+        },
+      }),
     ],
   });
   UrlbarProvidersManager.registerProvider(provider);
@@ -142,8 +141,8 @@ add_task(async function engagement_type_manage() {
   const cleanupQuickSuggest = await ensureQuickSuggestInit();
 
   await doTest(async () => {
-    await openPopup("sponsored");
-    await selectRowByURL("https://example.com/sponsored");
+    await openPopup("amp");
+    await selectRowByURL("https://example.com/amp");
 
     const onManagePageLoaded = BrowserTestUtils.browserLoaded(
       browser,

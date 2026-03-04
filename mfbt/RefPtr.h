@@ -83,7 +83,7 @@ class MOZ_IS_REFPTR RefPtr {
 
   // Constructors
 
-  RefPtr()
+  constexpr RefPtr()
       : mRawPtr(nullptr)
   // default constructor
   {}
@@ -109,7 +109,7 @@ class MOZ_IS_REFPTR RefPtr {
     }
   }
 
-  MOZ_IMPLICIT RefPtr(decltype(nullptr)) : mRawPtr(nullptr) {}
+  MOZ_IMPLICIT constexpr RefPtr(std::nullptr_t) : mRawPtr(nullptr) {}
 
   template <typename I,
             typename = std::enable_if_t<std::is_convertible_v<I*, T*>>>
@@ -431,7 +431,7 @@ inline void ImplCycleCollectionUnlink(RefPtr<T>& aField) {
 
 template <typename T>
 inline void ImplCycleCollectionTraverse(
-    nsCycleCollectionTraversalCallback& aCallback, RefPtr<T>& aField,
+    nsCycleCollectionTraversalCallback& aCallback, const RefPtr<T>& aField,
     const char* aName, uint32_t aFlags = 0) {
   CycleCollectionNoteChild(aCallback, aField.get(), aName, aFlags);
 }
@@ -592,17 +592,6 @@ inline already_AddRefed<T> do_AddRef(const RefPtr<T>& aObj) {
 }
 
 namespace mozilla {
-
-template <typename T>
-class AlignmentFinder;
-
-// Provide a specialization of AlignmentFinder to allow MOZ_ALIGNOF(RefPtr<T>)
-// with an incomplete T.
-template <typename T>
-class AlignmentFinder<RefPtr<T>> {
- public:
-  static const size_t alignment = alignof(T*);
-};
 
 /**
  * Helper function to be able to conveniently write things like:

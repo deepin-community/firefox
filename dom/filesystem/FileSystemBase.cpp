@@ -6,11 +6,11 @@
 
 #include "mozilla/dom/FileSystemBase.h"
 
+#include "OSFileSystem.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/FileSystemUtils.h"
 #include "nsIFile.h"
-#include "OSFileSystem.h"
 
 namespace mozilla::dom {
 
@@ -41,7 +41,7 @@ bool FileSystemBase::GetRealPath(BlobImpl* aFile, nsIFile** aPath) const {
     return false;
   }
 
-  rv = NS_NewLocalFile(filePath, true, aPath);
+  rv = NS_NewLocalFile(filePath, aPath);
   if (NS_WARN_IF(rv.Failed())) {
     rv.SuppressException();
     return false;
@@ -77,7 +77,7 @@ void FileSystemBase::GetDOMPath(nsIFile* aFile, nsAString& aRetval,
   aRetval.Truncate();
 
   nsCOMPtr<nsIFile> fileSystemPath;
-  aRv = NS_NewLocalFile(LocalRootPath(), true, getter_AddRefs(fileSystemPath));
+  aRv = NS_NewLocalFile(LocalRootPath(), getter_AddRefs(fileSystemPath));
   if (NS_WARN_IF(aRv.Failed())) {
     return;
   }

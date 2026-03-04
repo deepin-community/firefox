@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Увімкнути автозаповнення 
 policy-AutofillCreditCardEnabled = Увімкнути автозаповнення способів оплати.
 policy-AutoLaunchProtocolsFromOrigins = Визначити список зовнішніх протоколів, які можна використовувати з перелічених джерел без запиту користувача.
 policy-BackgroundAppUpdate2 = Увімкнути чи вимкнути службу фонового оновлення.
+policy-Backup = Вимкнути резервне копіювання або відновлення даних профілю.
 policy-BlockAboutAddons = Заблокувати доступ до керування додатками (about:addons).
 policy-BlockAboutConfig = Заблокувати доступ до сторінки about:config.
 policy-BlockAboutProfiles = Заблокувати доступ до сторінки about:profiles.
@@ -79,6 +80,7 @@ policy-ExtensionSettings = Керувати всіма аспектами вст
 policy-ExtensionUpdate = Увімкнути чи вимкнути автоматичне оновлення розширень.
 policy-FirefoxHome2 = Налаштувати { -firefox-home-brand-name(case: "acc", capitalization: "lower") }
 policy-FirefoxSuggest = Налаштувати { -firefox-suggest-brand-name }
+policy-GenerativeAI = Налаштування функцій генеративного ШІ.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Примусова пряма навігація сайтом внутрішньої мережі замість пошуку під час введення окремих слів у адресному рядку.
 policy-Handlers = Налаштувати стандартні обробники програм.
 policy-HardwareAcceleration = Значення false вимикає апаратне прискорення.
@@ -97,6 +99,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Повернутися
 ##
 
 policy-LocalFileLinks = Дозволити певним вебсайтам посилання на локальні файли.
+policy-LocalNetworkAccess = Увімкнути або вимкнути перевірку доступу до локальної мережі.
 policy-ManagedBookmarks = Налаштувати список закладок, керованих адміністратором, які не може змінювати користувач.
 policy-ManualAppUpdateOnly = Дозволити оновлення лише вручну та не повідомляти користувача про оновлення.
 policy-PrimaryPassword = Вимагати або не допускати використання головного пароля.
@@ -117,6 +120,7 @@ policy-PostQuantumKeyAgreementEnabled = Увімкнути посткванто�
 policy-PDFjs = Вимкнути або налаштувати PDF.js, вбудований засіб перегляду файлів PDF у { -brand-short-name }.
 policy-Permissions2 = Налаштувати дозволи для камери, мікрофона, розташування, сповіщень та автовідтворення.
 policy-PictureInPicture = Увімкнути чи вимкнути Зображення в зображенні.
+policy-PopupBlocking2 = Дозволити певним вебсайтам відкривати спливні вікна та переспрямування за допомогою сторонніх фреймів.
 policy-PopupBlocking = Дозволити певним вебсайтам завжди показувати спливні вікна.
 policy-Preferences = Встановити і зафіксувати значення для набору налаштувань.
 policy-PrivateBrowsingModeAvailability = Налаштувати доступність режиму приватного перегляду.
@@ -130,6 +134,8 @@ policy-SearchSuggestEnabled = Увімкнути чи вимкнути проп�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Додати або видалити модулі PKCS #11.
 policy-ShowHomeButton = Показувати кнопку домівки на панелі інструментів.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Не показувати Умови користування і Положення про приватність під час запуску. Ви заявляєте, що приймаєте і маєте повноваження приймати Умови користування від імені всіх осіб, яким надаєте доступ до цього браузера.
 policy-SSLVersionMax = Встановити максимальну версію SSL.
 policy-SSLVersionMin = Встановити мінімальну версію SSL.
 policy-StartDownloadsInTempDirectory = Примусово розпочинати завантаження в локальне тимчасове розташування,  а не в усталений каталог завантаження.
@@ -137,6 +143,9 @@ policy-SupportMenu = Додати власний елемент меню під�
 policy-TranslateEnabled = Увімкнути або вимкнути переклад вебсторінок.
 policy-UserMessaging = Не показувати певні повідомлення користувачу.
 policy-UseSystemPrintDialog = Друк за допомогою системного засобу друку
+policy-VisualSearchEnabled = Увімкнути або вимкнути візуальний пошук.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Блокувати відвідування вебсайтів. Для отримання подробиць щодо формату, ознайомтеся з документацією.
 policy-Windows10SSO = Дозволити єдиний вхід Windows для облікових записів Microsoft, роботи та школи.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Дозволити єдиний вхід для облікових записів Microsoft Entra.

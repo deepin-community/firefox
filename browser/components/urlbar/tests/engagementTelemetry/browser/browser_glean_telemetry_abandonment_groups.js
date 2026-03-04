@@ -32,7 +32,19 @@ add_task(async function adaptive_history() {
       assertAbandonmentTelemetry([
         {
           groups: "heuristic,adaptive_history",
-          results: "search_engine,history",
+          results: "search_engine,history_adaptive",
+          n_results: 2,
+        },
+      ]),
+  });
+
+  await doAdaptiveHistoryBookmarkTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,adaptive_history",
+          results: "search_engine,bookmark_adaptive",
           n_results: 2,
         },
       ]),
@@ -170,9 +182,9 @@ add_task(async function general() {
     assert: () =>
       assertAbandonmentTelemetry([
         {
-          groups: "heuristic,general",
-          results: "search_engine,bookmark",
-          n_results: 2,
+          groups: "heuristic,suggested_index,general",
+          results: "search_engine,action,bookmark",
+          n_results: 3,
         },
       ]),
   });
@@ -190,16 +202,35 @@ add_task(async function general() {
   });
 });
 
+add_task(async function restrict_keywords() {
+  let telemetry = {
+    groups:
+      "general,general,general,general,general,general,restrict_keyword," +
+      "restrict_keyword,restrict_keyword,restrict_keyword",
+    results:
+      "search_engine,search_engine,search_engine,search_engine,search_engine," +
+      "search_engine,restrict_keyword_bookmarks,restrict_keyword_tabs," +
+      "restrict_keyword_history,restrict_keyword_actions",
+    n_results: 10,
+  };
+  await doRestrictKeywordsTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([telemetry, telemetry, telemetry, telemetry]),
+  });
+});
+
 add_task(async function suggest() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.suggest.engines", false]],
+  });
   await doSuggestTest({
     trigger: () => doBlur(),
     assert: () =>
       assertAbandonmentTelemetry([
         {
           groups: "heuristic,suggest",
-          results: UrlbarPrefs.get("quickSuggestRustEnabled")
-            ? "search_engine,rust_adm_nonsponsored"
-            : "search_engine,rs_adm_nonsponsored",
+          results: "search_engine,rust_adm_nonsponsored",
           n_results: 2,
         },
       ]),
@@ -228,6 +259,112 @@ add_task(async function suggested_index() {
         {
           groups: "heuristic,suggested_index",
           results: "search_engine,unit",
+          n_results: 2,
+        },
+      ]),
+  });
+});
+
+add_task(async function history_semantic() {
+  await doSemanticHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,history_semantic",
+          n_results: 2,
+        },
+      ]),
+  });
+});
+
+add_task(async function history_serp() {
+  await doSerpHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,history_serp",
+          n_results: 2,
+        },
+      ]),
+  });
+
+  await doBookmarkSerpHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,bookmark_serp",
+          n_results: 2,
+        },
+      ]),
+  });
+
+  await doAdaptiveHistorySerpHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,adaptive_history",
+          results: "search_engine,history_adaptive_serp",
+          n_results: 2,
+        },
+      ]),
+  });
+
+  await doAdaptiveHistoryBookmarkSerpHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,adaptive_history",
+          results: "search_engine,bookmark_adaptive_serp",
+          n_results: 2,
+        },
+      ]),
+  });
+});
+
+add_task(async function tab_adaptive() {
+  await doTabAdaptiveTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,adaptive_history",
+          results: "search_engine,tab_adaptive",
+          n_results: 2,
+        },
+      ]),
+  });
+});
+
+add_task(async function tab_adaptive_serp() {
+  await doTabAdaptiveSerpHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,adaptive_history",
+          results: "search_engine,tab_adaptive_serp",
+          n_results: 2,
+        },
+      ]),
+  });
+});
+
+add_task(async function tab_serp() {
+  await doTabSerpHistoryTest({
+    trigger: () => doBlur(),
+    assert: () =>
+      assertAbandonmentTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,tab_serp",
           n_results: 2,
         },
       ]),

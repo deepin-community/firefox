@@ -7,6 +7,7 @@
 #ifndef mozilla_dom_RemoteWorkerServiceChild_h
 #define mozilla_dom_RemoteWorkerServiceChild_h
 
+#include "mozilla/dom/PRemoteWorkerNonLifeCycleOpControllerChild.h"
 #include "mozilla/dom/PRemoteWorkerServiceChild.h"
 #include "nsISupportsImpl.h"
 
@@ -26,9 +27,14 @@ class RemoteWorkerServiceChild final : public PRemoteWorkerServiceChild {
   RemoteWorkerServiceChild();
 
   already_AddRefed<PRemoteWorkerChild> AllocPRemoteWorkerChild(
-      const RemoteWorkerData& aData);
+      const RemoteWorkerData& aData,
+      mozilla::ipc::Endpoint<PRemoteWorkerNonLifeCycleOpControllerChild>&
+          aChildEp);
+
   mozilla::ipc::IPCResult RecvPRemoteWorkerConstructor(
-      PRemoteWorkerChild* aActor, const RemoteWorkerData& aData);
+      PRemoteWorkerChild* aActor, const RemoteWorkerData& aData,
+      mozilla::ipc::Endpoint<PRemoteWorkerNonLifeCycleOpControllerChild>&&
+          aChildEp);
 
  private:
   ~RemoteWorkerServiceChild();

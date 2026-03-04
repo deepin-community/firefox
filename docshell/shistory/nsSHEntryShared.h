@@ -11,21 +11,22 @@
 #include "nsCOMPtr.h"
 #include "nsExpirationTracker.h"
 #include "nsIBFCacheEntry.h"
+#include "nsIPolicyContainer.h"
 #include "nsIWeakReferenceUtils.h"
 #include "nsRect.h"
 #include "nsString.h"
+#include "nsStructuredCloneContainer.h"
 #include "nsStubMutationObserver.h"
 
-#include "mozilla/Attributes.h"
 #include "mozilla/UniquePtr.h"
 
 class nsSHEntry;
 class nsISHEntry;
 class nsISHistory;
-class nsIContentSecurityPolicy;
 class nsIDocShellTreeItem;
 class nsIDocumentViewer;
 class nsILayoutHistoryState;
+class nsIPolicyContainer;
 class nsIPrincipal;
 class nsDocShellEditorData;
 class nsFrameLoader;
@@ -56,13 +57,13 @@ struct SHEntrySharedState {
   SHEntrySharedState(nsIPrincipal* aTriggeringPrincipal,
                      nsIPrincipal* aPrincipalToInherit,
                      nsIPrincipal* aPartitionedPrincipalToInherit,
-                     nsIContentSecurityPolicy* aCsp,
+                     nsIPolicyContainer* aPolicyContainer,
                      const nsACString& aContentType)
       : mId(GenerateId()),
         mTriggeringPrincipal(aTriggeringPrincipal),
         mPrincipalToInherit(aPrincipalToInherit),
         mPartitionedPrincipalToInherit(aPartitionedPrincipalToInherit),
-        mCsp(aCsp),
+        mPolicyContainer(aPolicyContainer),
         mContentType(aContentType) {}
 
   // These members aren't copied by SHEntrySharedParentState::CopyFrom() because
@@ -74,7 +75,7 @@ struct SHEntrySharedState {
   nsCOMPtr<nsIPrincipal> mTriggeringPrincipal;
   nsCOMPtr<nsIPrincipal> mPrincipalToInherit;
   nsCOMPtr<nsIPrincipal> mPartitionedPrincipalToInherit;
-  nsCOMPtr<nsIContentSecurityPolicy> mCsp;
+  nsCOMPtr<nsIPolicyContainer> mPolicyContainer;
   nsCString mContentType;
   // Child side updates layout history state when page is being unloaded or
   // moved to bfcache.
@@ -110,7 +111,7 @@ class SHEntrySharedParentState : public SHEntrySharedState {
   SHEntrySharedParentState(nsIPrincipal* aTriggeringPrincipal,
                            nsIPrincipal* aPrincipalToInherit,
                            nsIPrincipal* aPartitionedPrincipalToInherit,
-                           nsIContentSecurityPolicy* aCsp,
+                           nsIPolicyContainer* aPolicyContainer,
                            const nsACString& aContentType);
 
   // This returns the existing SHEntrySharedParentState that was registered for

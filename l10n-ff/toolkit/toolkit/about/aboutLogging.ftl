@@ -8,10 +8,3 @@ about-logging-set-log-file = Suɓo Fiilde Logagol
 about-logging-set-log-modules = Suɓo Gulle logagol
 about-logging-start-logging = Fuɗɗo Logagol
 about-logging-stop-logging = Dartin Logagol
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

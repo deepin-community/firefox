@@ -1,14 +1,8 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
-"""desktop_unittest.py
-
-author: Jordan Lund
-"""
 
 import copy
 import glob
@@ -23,6 +17,8 @@ from datetime import datetime, timedelta
 # load modules from parent dir
 here = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(1, os.path.dirname(here))
+
+import threading
 
 from mozfile import load_source
 from mozharness.base.errors import BaseErrorList
@@ -51,6 +47,7 @@ SUITE_CATEGORIES = [
 SUITE_DEFAULT_E10S = ["mochitest", "reftest"]
 SUITE_NO_E10S = ["xpcshell"]
 SUITE_REPEATABLE = ["mochitest", "reftest", "xpcshell"]
+SUITE_INSTALL_EXTENSIONS = ["mochitest"]
 
 
 # DesktopUnittest {{{1
@@ -198,6 +195,26 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                 },
             ],
             [
+                ["--timeout-factor"],
+                {
+                    "action": "store",
+                    "dest": "timeout_factor",
+                    "help": "Multiplier for test timeout values",
+                },
+            ],
+            [
+                ["--filter"],
+                {
+                    "action": "store",
+                    "dest": "filter",
+                    "default": "",
+                    "help": "Specify a regular expression (as could be passed "
+                    "to the JS RegExp constructor) to test against URLs in "
+                    "the manifest; only test items that have a matching test "
+                    "URL will be run.",
+                },
+            ],
+            [
                 ["--allow-software-gl-layers"],
                 {
                     "action": "store_true",
@@ -205,6 +222,24 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                     "default": False,
                     "help": "Permits a software GL implementation (such as LLVMPipe) to use "
                     "the GL compositor.",
+                },
+            ],
+            [
+                ["--enable-inc-origin-init"],
+                {
+                    "action": "store_true",
+                    "dest": "enable_inc_origin_init",
+                    "default": False,
+                    "help": "Enable the incremental origin initialization in Gecko.",
+                },
+            ],
+            [
+                ["--filter-set"],
+                {
+                    "action": "store",
+                    "dest": "filter_set",
+                    "default": "",
+                    "help": "Use a predefined filter.",
                 },
             ],
             [
@@ -358,6 +393,18 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                     "Examples: 'plain', 'browser'",
                 },
             ],
+            [
+                ["--install-extension"],
+                {
+                    "action": "append",
+                    "default": [],
+                    "dest": "install_extension",
+                    "help": "Specify one or more extensions to install in the testing profile."
+                    "This is currently only supported for mochitest tests, and is"
+                    "ignored for other types. Paths are relative to the fetches"
+                    "directory.",
+                },
+            ],
         ]
         + copy.deepcopy(testing_config_options)
         + copy.deepcopy(code_coverage_config_options)
@@ -366,13 +413,14 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
     def __init__(self, require_config_file=True):
         # abs_dirs defined already in BaseScript but is here to make pylint happy
         self.abs_dirs = None
-        super(DesktopUnittest, self).__init__(
+        super().__init__(
             config_options=self.config_options,
             all_actions=[
                 "clobber",
                 "download-and-extract",
                 "create-virtualenv",
                 "start-pulseaudio",
+                "unlock-keyring",
                 "install",
                 "stage-files",
                 "run-tests",
@@ -427,7 +475,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
 
     # helper methods {{{2
     def _pre_config_lock(self, rw_config):
-        super(DesktopUnittest, self)._pre_config_lock(rw_config)
+        super()._pre_config_lock(rw_config)
         c = self.config
         if not c.get("run_all_suites"):
             return  # configs are valid
@@ -445,7 +493,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
     def query_abs_dirs(self):
         if self.abs_dirs:
             return self.abs_dirs
-        abs_dirs = super(DesktopUnittest, self).query_abs_dirs()
+        abs_dirs = super().query_abs_dirs()
 
         c = self.config
         dirs = {}
@@ -586,7 +634,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
         symbols_url = None
         self.info("finding symbols_url based upon self.installer_url")
         if self.installer_url:
-            for ext in [".zip", ".dmg", ".tar.bz2"]:
+            for ext in [".zip", ".dmg", ".tar.bz2", ".tar.xz"]:
                 if ext in self.installer_url:
                     symbols_url = self.installer_url.replace(
                         ext, ".crashreporter-symbols.zip"
@@ -670,9 +718,18 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                     base_cmd.extend(["--repeat=%s" % c.get("repeat")])
                 else:
                     self.log(
-                        "--repeat not supported in {}".format(suite_category),
+                        f"--repeat not supported in {suite_category}",
                         level=WARNING,
                     )
+
+            if suite_category in SUITE_INSTALL_EXTENSIONS and len(
+                c.get("install_extension", [])
+            ):
+                fetches_dir = os.environ.get("MOZ_FETCHES_DIR", '""')
+                base_cmd.extend([
+                    f"--install-extension={os.path.join(fetches_dir, e)}"
+                    for e in c["install_extension"]
+                ])
 
             # do not add --disable fission if we don't have --disable-e10s
             if c["disable_fission"] and suite_category not in [
@@ -697,16 +754,37 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                     if test_paths:
                         base_cmd.extend(test_paths)
                     if c["test_tags"]:
-                        base_cmd.extend(["--tag={}".format(t) for t in c["test_tags"]])
+                        # Exclude suites that don't support --tag to prevent
+                        # errors caused by passing unknown argument.
+                        # Note there's a similar list in chunking.py in
+                        # DefaultLoader's get_manifest method. The lists should
+                        # be kept in sync.
+                        if suite_category not in [
+                            "gtest",
+                            "cppunittest",
+                            "jittest",
+                            "crashtest",
+                            "crashtest-qr",
+                            "jsreftest",
+                            "reftest",
+                            "reftest-qr",
+                        ]:
+                            base_cmd.extend([f"--tag={t}" for t in c["test_tags"]])
+                        else:
+                            self.warning(
+                                "--tag does not currently work with the "
+                                "'{suite_category}' suite."
+                            )
                 elif c.get("total_chunks") and c.get("this_chunk"):
-                    base_cmd.extend(
-                        [
-                            "--total-chunks",
-                            c["total_chunks"],
-                            "--this-chunk",
-                            c["this_chunk"],
-                        ]
-                    )
+                    base_cmd.extend([
+                        "--total-chunks",
+                        c["total_chunks"],
+                        "--this-chunk",
+                        c["this_chunk"],
+                    ])
+
+                if c.get("timeout_factor"):
+                    base_cmd.extend(["--timeout-factor", c["timeout_factor"]])
 
             if c["no_random"]:
                 if suite_category == "mochitest":
@@ -723,6 +801,33 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
             if c["headless"]:
                 base_cmd.append("--headless")
 
+            if c["filter"]:
+                if suite_category == "reftest":
+                    base_cmd.append("--filter={}".format(c["filter"]))
+                else:
+                    self.warning(
+                        "--filter does not currently work with suites other than "
+                        "reftest."
+                    )
+
+            if c["enable_inc_origin_init"]:
+                if suite_category == "gtest":
+                    base_cmd.append("--enable-inc-origin-init")
+                else:
+                    self.warning(
+                        "--enable-inc-origin-init does not currently work with "
+                        "suites other than gtest."
+                    )
+
+            if c["filter_set"]:
+                if suite_category == "gtest":
+                    base_cmd.append("--filter-set={}".format(c["filter_set"]))
+                else:
+                    self.warning(
+                        "--filter-set does not currently work with suites other then "
+                        "gtest."
+                    )
+
             if c.get("threads"):
                 base_cmd.extend(["--threads", c["threads"]])
 
@@ -738,7 +843,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                 base_cmd.append("--setpref=layout.css.stylo-threads=4")
 
             if c["extra_prefs"]:
-                base_cmd.extend(["--setpref={}".format(p) for p in c["extra_prefs"]])
+                base_cmd.extend([f"--setpref={p}" for p in c["extra_prefs"]])
 
             if c["a11y_checks"]:
                 base_cmd.append("--enable-a11y-checks")
@@ -806,8 +911,8 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
         Otherwise, do not run any suites and return a fatal error.
         """
         c = self.config
-        all_suites = c.get("all_{}_suites".format(category), None)
-        specified_suites = c.get("specified_{}_suites".format(category), None)
+        all_suites = c.get(f"all_{category}_suites", None)
+        specified_suites = c.get(f"specified_{category}_suites", None)
 
         # Bug 1603842 - disallow selection of more than 1 suite at at time
         if specified_suites is None:
@@ -840,6 +945,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                 ("browser-chrome.*", "browser-chrome"),
                 ("mochitest-browser-a11y.*", "browser-a11y"),
                 ("mochitest-browser-media.*", "browser-media"),
+                ("mochitest-browser-translations.*", "browser-translations"),
                 ("mochitest-devtools-chrome.*", "devtools-chrome"),
                 ("chrome", "chrome"),
             ],
@@ -926,24 +1032,39 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                 for cat in SUITE_CATEGORIES
                 if self._query_specified_suites(cat) is not None
             ]
-        super(DesktopUnittest, self).download_and_extract(
+        super().download_and_extract(
             extract_dirs=extract_dirs, suite_categories=target_categories
         )
+
+    def unlock_keyring(self):
+        if os.environ.get("NEED_GNOME_KEYRING") == "true":
+            self.log("replacing and unlocking gnome-keyring-daemon")
+            import subprocess
+
+            subprocess.run(
+                [
+                    "gnome-keyring-daemon",
+                    "-r",
+                    "-d",
+                    "--unlock",
+                    "--components=secrets",
+                ],
+                check=True,
+                input=b"\n",
+            )
 
     def start_pulseaudio(self):
         command = []
         # Implies that underlying system is Linux.
         if os.environ.get("NEED_PULSEAUDIO") == "true":
-            command.extend(
-                [
-                    "pulseaudio",
-                    "--daemonize",
-                    "--log-level=4",
-                    "--log-time=1",
-                    "-vvvvv",
-                    "--exit-idle-time=-1",
-                ]
-            )
+            command.extend([
+                "pulseaudio",
+                "--daemonize",
+                "--log-level=4",
+                "--log-time=1",
+                "-vvvvv",
+                "--exit-idle-time=-1",
+            ])
 
             # Only run the initialization for Debian.
             # Ubuntu appears to have an alternate method of starting pulseaudio.
@@ -968,7 +1089,7 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
     def stage_files(self):
         for category in SUITE_CATEGORIES:
             suites = self._query_specified_suites(category)
-            stage = getattr(self, "_stage_{}".format(category), None)
+            stage = getattr(self, f"_stage_{category}", None)
             if suites and stage:
                 stage(suites)
 
@@ -1146,18 +1267,22 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                 try:
                     for nc in psutil.net_connections():
                         f.write("  %s\n" % str(nc))
-                except Exception:
-                    f.write("Exception getting network info: %s\n" % sys.exc_info()[0])
+                except Exception as e:
+                    f.write("Exception getting network info: %s\n" % e)
                 f.write("\nProcesses:\n")
                 try:
                     for p in psutil.process_iter():
                         ctime = str(datetime.fromtimestamp(p.create_time()))
+                        try:
+                            cmdline = p.cmdline()
+                        except psutil.NoSuchProcess:
+                            cmdline = ""
                         f.write(
-                            "  PID %d %s %s created at %s\n"
-                            % (p.pid, p.name(), str(p.cmdline()), ctime)
+                            "  PID %d %s %s created at %s [%s]\n"
+                            % (p.pid, p.name(), cmdline, ctime, p.status())
                         )
-                except Exception:
-                    f.write("Exception getting process info: %s\n" % sys.exc_info()[0])
+                except Exception as e:
+                    f.write("Exception getting process info: %s\n" % e)
         except Exception:
             # psutil throws a variety of intermittent exceptions
             self.info("Unable to complete system-info.log: %s" % sys.exc_info()[0])
@@ -1192,6 +1317,61 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
         executed_tests = 0
         executed_too_many_tests = False
         xpcshell_selftests = 0
+
+        def do_gnome_video_recording(suite_name, upload_dir, ev):
+            import os
+
+            import dbus
+
+            target_file = os.path.join(
+                upload_dir,
+                f"video_{suite_name}.webm",
+            )
+
+            self.info(f"Recording suite {suite_name} to {target_file}")
+
+            session_bus = dbus.SessionBus()
+            session_bus.call_blocking(
+                "org.gnome.Shell.Screencast",
+                "/org/gnome/Shell/Screencast",
+                "org.gnome.Shell.Screencast",
+                "Screencast",
+                signature="sa{sv}",
+                args=[
+                    target_file,
+                    {"draw-cursor": True, "framerate": 35},
+                ],
+            )
+
+            ev.wait()
+
+            session_bus.call_blocking(
+                "org.gnome.Shell.Screencast",
+                "/org/gnome/Shell/Screencast",
+                "org.gnome.Shell.Screencast",
+                "StopScreencast",
+                signature="",
+                args=[],
+            )
+
+        def do_macos_video_recording(suite_name, upload_dir, ev):
+            import os
+            import subprocess
+
+            target_file = os.path.join(
+                upload_dir,
+                f"video_{suite_name}.mov",
+            )
+            self.info(f"Recording suite {suite_name} to {target_file}")
+
+            process = subprocess.Popen(
+                ["/usr/sbin/screencapture", "-v", "-k", target_file],
+                stdin=subprocess.PIPE,
+            )
+            ev.wait()
+            process.stdin.write(b"p")
+            process.stdin.flush()
+            process.wait()
 
         if suites:
             self.info("#### Running %s suites" % suite_category)
@@ -1325,21 +1505,52 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                     final_cmd = copy.copy(cmd)
                     final_cmd.extend(per_test_args)
 
-                    # Bug 1714406: In test-verify of xpcshell tests on Windows, repeated
-                    # self-tests can trigger https://bugs.python.org/issue37380,
-                    # for python < 3.7; avoid by running xpcshell self-tests only once
-                    # per test-verify run.
-                    if (
-                        (self.verify_enabled or self.per_test_coverage)
-                        and sys.platform.startswith("win")
-                        and sys.version_info < (3, 7)
-                        and "--self-test" in final_cmd
-                    ):
-                        xpcshell_selftests += 1
-                        if xpcshell_selftests > 1:
+                    # Run xpcshell self-tests only once per test-verify run or only in chunk 1.
+                    if "--self-test" in final_cmd:
+                        should_remove_selftest = False
+
+                        # Remove self-test for test-verify runs after the first one
+                        if self.verify_enabled or self.per_test_coverage:
+                            xpcshell_selftests += 1
+                            if xpcshell_selftests > 1:
+                                should_remove_selftest = True
+
+                        # Remove self-test for chunked runs when not in chunk 1
+                        if (
+                            self.config.get("this_chunk")
+                            and int(self.config["this_chunk"]) != 1
+                        ):
+                            should_remove_selftest = True
+
+                        if should_remove_selftest:
                             final_cmd.remove("--self-test")
 
                     final_env = copy.copy(env)
+
+                    finish_video = threading.Event()
+                    video_recording_thread = None
+                    if os.getenv("MOZ_RECORD_TEST"):
+                        video_recording_target = None
+                        if sys.platform == "linux":
+                            video_recording_target = do_gnome_video_recording
+                        elif sys.platform == "darwin":
+                            video_recording_target = do_macos_video_recording
+
+                        if video_recording_target:
+                            video_recording_thread = threading.Thread(
+                                target=video_recording_target,
+                                args=(
+                                    suite,
+                                    env["MOZ_UPLOAD_DIR"],
+                                    finish_video,
+                                ),
+                            )
+                            self.info(f"Starting recording thread {suite}")
+                            video_recording_thread.start()
+                        else:
+                            self.warning(
+                                "Screen recording not implemented for this platform"
+                            )
 
                     if self.per_test_coverage:
                         self.set_coverage_env(final_env)
@@ -1366,6 +1577,12 @@ class DesktopUnittest(TestingMixin, MercurialScript, MozbaseMixin, CodeCoverageM
                     # 2) if num_errors is 0 then we look in the subclassed 'parser'
                     #    findings for harness/suite errors <- DesktopUnittestOutputParser
                     # 3) checking to see if the return code is in success_codes
+
+                    if video_recording_thread:
+                        self.info(f"Stopping recording thread {suite}")
+                        finish_video.set()
+                        video_recording_thread.join()
+                        self.info(f"Stopped recording thread {suite}")
 
                     success_codes = None
                     tbpl_status, log_level, summary = parser.evaluate_parser(

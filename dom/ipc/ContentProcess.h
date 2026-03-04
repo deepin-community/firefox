@@ -7,8 +7,8 @@
 #ifndef dom_tabs_ContentThread_h
 #define dom_tabs_ContentThread_h 1
 
-#include "mozilla/ipc/ProcessChild.h"
 #include "ContentChild.h"
+#include "mozilla/ipc/ProcessChild.h"
 #include "nsXREDirProvider.h"
 
 #if defined(XP_WIN)
@@ -25,7 +25,8 @@ class ContentProcess : public mozilla::ipc::ProcessChild {
   using ProcessChild = mozilla::ipc::ProcessChild;
 
  public:
-  ContentProcess(ProcessId aParentPid, const nsID& aMessageChannelId);
+  ContentProcess(IPC::Channel::ChannelHandle aClientChannel,
+                 ProcessId aParentPid, const nsID& aMessageChannelId);
   ~ContentProcess();
 
   virtual bool Init(int aArgc, char* aArgv[]) override;

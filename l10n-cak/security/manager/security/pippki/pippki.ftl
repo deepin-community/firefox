@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Titz'et
 download-cert-view-text = Tinik'öx ruwujil rub'i' CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -80,8 +77,6 @@ client-auth-cert-details-issued-by = Elesan ruma: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Yakon pa: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Tinatäx re na'oj re'
 
 ## Set password (p12) dialog
 
@@ -93,6 +88,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = To'öy ewan rutzij ri ruwujil b'i'aj (tijikib'äx):
 set-password-reminder = K'atzinel: We namestaj ri ewan rutzij ruto'öy ruwujil ab'i', man xkatikïr ta xtachojmirisaj pa jun chi ti mej.  Taya' pa jun utziläj k'ojlib'äl.
-
-## Protected authentication alert
-

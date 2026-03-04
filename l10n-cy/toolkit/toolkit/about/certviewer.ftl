@@ -36,6 +36,9 @@ certificate-viewer-key-size = Maint Allwedd
 certificate-viewer-inc-locality = Ardal Corffori
 certificate-viewer-locality = Lleoliad
 certificate-viewer-location = Lleoliad
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Enw Cofnod
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID Cofnod
 certificate-viewer-method = Dull
 certificate-viewer-modulus = Modwlws
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Manylion yr Awdurdod (AIA)
 certificate-viewer-certificate-policies = Polisïau Tystysgrif
 certificate-viewer-embedded-scts = SCTs mewnblanedig
 certificate-viewer-crl-endpoints = Diweddbwynt CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Llwytho i lawr
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (tystysgrif)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (cadwyn)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Mae'r estyniad hwn wedi'i nodi fel un hanfodol, sy'n golygu bod yn rhaid i gleientiaid wrthod y dystysgrif os nad ydyn nhw'n ei deall.
@@ -112,6 +113,8 @@ certificate-viewer-export = Allforio
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (anhysbys)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = tystysgrif
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

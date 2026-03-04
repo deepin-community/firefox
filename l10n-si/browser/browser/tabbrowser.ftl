@@ -33,11 +33,6 @@ tabbrowser-close-tabs-tooltip =
            *[other] පටිති { $tabCount } වසන්න
         }
 
-## Tooltips for tab audio control
-## Variables:
-##   $tabCount (Number): The number of tabs that will be affected.
-
-
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -46,6 +41,7 @@ tabbrowser-close-tabs-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = පටිති { $tabCount } ක් වසන්නද?
 tabbrowser-confirm-close-tabs-button = පටිති වසන්න
+tabbrowser-ask-close-tabs-checkbox = පටිති කිහිපයක් වැසීමට පෙර අසන්න
 tabbrowser-confirm-close-tabs-checkbox = පටිති කිහිපයක් වැසීමට පෙර තහවුරු කරන්න
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -68,6 +64,9 @@ tabbrowser-confirm-close-tabs-with-key-title = කවුළුව වසා { -b
 tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } න් ඉවත් වන්න
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = { $quitKey } මඟින් ඉවත් වීමට පෙර අසන්න.
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = { $quitKey } මඟින් ඉවත් වීමට පෙර තහවුරු කරන්න
 
 ## Confirmation dialog when opening multiple tabs simultaneously
@@ -80,9 +79,6 @@ tabbrowser-confirm-open-multiple-tabs-message =
        *[other] ඔබ පටිති { $tabCount } ක් විවෘත කිරීමට සූදානම්ය. පිටු පූරණය අතරතුර { -brand-short-name } මන්දගාමී වීමට හැකිය. ඉදිරියට යාමට වුවමනා ද?
     }
 tabbrowser-confirm-open-multiple-tabs-button = පටිති අරින්න
-
-## Confirmation dialog for enabling caret browsing
-
 
 ## Confirmation dialog for closing all duplicate tabs
 
@@ -101,10 +97,10 @@ tabbrowser-context-unmute-tab =
     .label = පටිත්ත නොනිහඬ
     .accesskey = m
 
-## Ctrl-Tab dialog
-
-
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-close-tab =
     .tooltiptext = පටිත්ත වසන්න

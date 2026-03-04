@@ -4,7 +4,6 @@
 
 about-reader-loading = Ielādē…
 about-reader-load-error = Neizdevās ielādēt rakstu no lapas
-
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -16,9 +15,6 @@ about-reader-estimated-read-time =
         [one] { $range } minūtes
        *[other] { $range } minūtes
     }
-
-## These are used as tooltips in Type Control
-
 
 ## These are the styles of typeface that are options in the reader view controls.
 

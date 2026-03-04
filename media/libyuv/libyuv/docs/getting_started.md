@@ -59,13 +59,13 @@ To get just the source (not buildable):
 
 ### Windows
 
-    call gn gen out\Release "--args=is_debug=false target_cpu=\"x64\""
-    call gn gen out\Debug "--args=is_debug=true target_cpu=\"x64\""
+    gn gen out\Release "--args=is_debug=false target_cpu=\"x64\""
+    gn gen out\Debug "--args=is_debug=true target_cpu=\"x64\""
     ninja -v -C out\Release
     ninja -v -C out\Debug
 
-    call gn gen out\Release "--args=is_debug=false target_cpu=\"x86\""
-    call gn gen out\Debug "--args=is_debug=true target_cpu=\"x86\""
+    gn gen out\Release "--args=is_debug=false target_cpu=\"x86\""
+    gn gen out\Debug "--args=is_debug=true target_cpu=\"x86\""
     ninja -v -C out\Release
     ninja -v -C out\Debug
 
@@ -177,8 +177,6 @@ Running test with C code:
     ninja -v -C out/Release libyuv_unittest
 
 ### MIPS Linux
-
-mips
 
    gn gen out/Release "--args=is_debug=false target_os=\"linux\" target_cpu=\"mips64el\" mips_arch_variant=\"loongson3\" is_component_build=false use_sysroot=false use_gold=false"
    gn gen out/Debug "--args=is_debug=true target_os=\"linux\" target_cpu=\"mips64el\" mips_arch_variant=\"loongson3\" is_component_build=false use_sysroot=false use_gold=false"

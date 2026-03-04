@@ -5,15 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ScrollingMetrics.h"
-#include "mozilla/dom/ContentParent.h"
+
 #include "mozilla/StaticPrefs_browser.h"
+#include "mozilla/dom/ContentParent.h"
 
 namespace mozilla {
 
 static TimeStamp gScrollingStartTime;
 static TimeStamp gScrollingEndTime;
 static uint32_t gScrollDistanceCSSPixels = 0;
-static dom::InteractionData gScrollingInteraction = {};
+MOZ_RUNINIT static dom::InteractionData gScrollingInteraction = {};
 
 void ScrollingMetrics::OnScrollingInteractionEnded() {
   // We are only interested in content process scrolling

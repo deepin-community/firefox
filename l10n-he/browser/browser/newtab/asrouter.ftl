@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } משתמשים
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = סנכרון הסימניות שלך לכל מקום.
 cfr-doorhanger-bookmark-fxa-body = מציאה מעולה! אל תישארו ללא הסימנייה הזו במכשירים הניידים שלכם. התחילו לעבוד עם { -fxaccount-brand-name(case: "the") }.
@@ -67,6 +67,13 @@ cfr-doorhanger-bookmark-fxa-link-text = סנכרון הסימניות כעת…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = כפתור סגירה
     .title = סגירה
+fxa-adoption-addresses-backup-title = בואו נגבה את הכתובות השמורות שלך
+fxa-adoption-addresses-backup-subtitle = ניתן להגן על הכתובות השמורות שלך על־ידי סנכרונם למכשירים שלך באמצעות הצפנה.
+fxa-adoption-credit-cards-backup-title = בואו נגבה את אמצעי התשלום שלך
+fxa-adoption-credit-cards-backup-subtitle = ניתן להגן על אמצעי התשלום שלך על־ידי סנכרונם למכשירים שלך באמצעות הצפנה.
+fxa-adoption-bookmarks-treatment-backup-title = בואו נגבה את הסימניות שלך
+fxa-adoption-bookmarks-treatment-backup-subtitle = ניתן להגן על הסימניות שלך על־ידי סנכרונם למכשירים שלך באמצעות הצפנה.
+fxa-adoption-primary-button-label = הרשמה
 
 ## Protections panel
 
@@ -220,6 +227,24 @@ fox-doodle-pin-secondary = לא כעת
 set-default-pdf-handler-headline = <strong>מסמכי ה־PDF שלך נפתחים כעת באמצעות { -brand-short-name }.</strong> באפשרותך לערוך או לחתום על טפסים ישירות בדפדפן שלך. כדי לשנות, יש לחפש ״PDF״ בהגדרות.
 set-default-pdf-handler-primary = הבנתי
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = לחתום על הקו המקווקו - או בכל מקום אחר!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = ניתן לצייר, להקליד או להעלות את החתימה שלך, ולאחר מכן למקם אותה בדיוק במקום הרצוי. אפשר גם לשמור את החתימות המועדפות שלך לפעם הבאה.
+annotations-make-default-pdf-handler-title = להפוך את { -brand-short-name } לעורך ה־PDF ברירת המחדל שלך?
+annotations-make-default-pdf-handler-subtitle = תהיה לך גישה לכלים שלנו עם כל פתיחת קובץ PDF.
+annotations-make-default-pdf-primary-cta-label = הגדרה כברירת מחדל
+annotations-make-default-pdf-next-label = הבא
+annotations-make-default-pdf-primary-cta =
+    .label = הגדרה כברירת מחדל
+annotations-make-default-pdf-next =
+    .label = הבא
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = יהיה לך מכשיר חדש בעתיד?
@@ -240,6 +265,9 @@ device-migration-fxa-spotlight-older-device-primary-button = יצירת חשבו
 device-migration-fxa-spotlight-getting-new-device-header-2 = יהיה לך מכשיר חדש בעתיד?
 device-migration-fxa-spotlight-getting-new-device-body-2 = בכמה צעדים פשוטים ניתן להביא איתך את הסימניות, ההיסטוריה והססמאות שלך בעת תחילת שימוש במכשיר חדש.
 device-migration-fxa-spotlight-getting-new-device-primary-button = כיצד לגבות את הנתונים שלי
+device-migration-fxa-spotlight-sync-header = גלישה בלי להחמיץ פעימה
+device-migration-fxa-spotlight-sync-body = סנכרון כל המידע החשוב לך עם הצפנה - כמו סימניות וססמאות. באפשרותך לשלוף הכל בכל מקום בו יש לך את { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = תחילת עבודה
 
 ## Set as Default PDF Reader Infobar
 
@@ -268,5 +296,141 @@ launch-on-login-infobar-final-reject-button = לא תודה
 
 ## Tail Fox Set Default Spotlight
 
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = הורידו רכיבי מעקב טורדניים מהגב שלכם
 tail-fox-spotlight-primary-button = פתיחת הקישורים שלי באמצעות { -brand-short-name }
 tail-fox-spotlight-secondary-button = לא כעת
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>ייתכן שגרסאות ישנות יותר של { -brand-short-name } יתחילו להיתקל בבעיות ב־14 בינואר, 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>יש לעדכן כדי להמשיך להשתמש ב־{ -brand-short-name } אחרי ה־14 במרץ, 2025.</strong>
+root-certificate-succession-infobar-link = למה צריך לעדכן?
+root-certificate-succession-infobar-primary-button =
+    .label = עדכון כעת
+    .accesskey = ע
+root-certificate-succession-infobar-secondary-button =
+    .label = מאוחר יותר
+    .accesskey = מ
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = פספסת עדכון חשוב של { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = חלקים מהדפדפן יפסיקו לעבוד בקרוב אם לא יבוצע עדכון. עכשיו זה זמן מצוין לקבל את ההגנות והיכולות העדכניות ביותר שלנו.
+root-certificate-windows-background-notification-learn-more-button = מידע נוסף
+root-certificate-windows-background-notification-update-button = עדכון { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = סגירה
+    .aria-label = סגירה
+fxa-menu-message-sign-up-button = הרשמה
+fxa-menu-message-sign-in-button = כניסה
+fxa-menu-message-sync-button = התחלה בסנכרון
+fxa-menu-message-sync-devices-primary-text = סנכרון כל המכשירים שלך
+fxa-menu-message-sync-devices-secondary-text = קבלה מיידית של כל המידע שלך - כמו סימניות וססמאות - בכל מקום בו יש לך את { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = קבלת הסימניות, הססמאות ופריטים נוספים שלך באופן מיידי - בכל מקום בו { -brand-short-name } מחובר לחשבון שלך.
+fxa-menu-message-sync-devices-collapsed-text = סנכרון כל המכשירים שלך
+fxa-menu-message-backup-data-primary-text = גיבוי נתוני הדפדפן שלך
+fxa-menu-message-backup-data-secondary-text = הגנה אוטומטית על סימניות, ססמאות ונתונים אחרים בכל המכשירים שלך.
+fxa-menu-message-backup-data-collapsed-text = גיבוי נתוני הדפדפן
+fxa-menu-message-backup-sync-primary-text = הגנה וסנכרון הנתונים שלך
+fxa-menu-message-backup-sync-secondary-text = הסנכרון מגבה את רוב הנתונים שלך כך שיהיה באפשרותך לגשת אליהם בכל מקום בו יש לך את { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = סנכרון וגיבוי נתונים
+fxa-menu-message-mobile-primary-text = שליחת לשוניות לטלפון שלך
+fxa-menu-message-mobile-secondary-text = להמשיך מאיפה שהפסקת באופן מיידי בעת סנכרון הלשוניות שלך עם מכשיר נייד.
+fxa-menu-message-mobile-collapsed-text = סנכרון עם הטלפון שלך
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = ברוכים השבים
+multi-cta-fox-doodle-set-default-checkbox = הגדרת { -brand-short-name } כברירת מחדל
+multi-cta-fox-doodle-pin-startmenu-checkbox = הצמדת { -brand-short-name } לתפריט ההתחל
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] שמירת { -brand-short-name } ב־Dock
+       *[other] הצמדת { -brand-short-name } לשורת המשימות
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = התחלת גלישה
+multi-cta-fox-doodle-main-browser-primary-button-label = הגדרת { -brand-short-name } כדפדפן הראשי שלי
+multi-cta-fox-doodle-quick-reminder-subtitle = רק תזכורת קטנה שבאפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] באפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד. כדאי להגדיר את { -brand-short-name } כדפדפן ברירת המחדל שלך לפתיחת קישורים ולשמור אותו ב־Dock.
+       *[other] באפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד. כדאי להגדיר את { -brand-short-name } כדפדפן ברירת המחדל שלך לפתיחת קישורים ולהצמיד אותו לשורת המשימות שלך.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = באפשרותך לשמור את הדפדפן ממוקד הפרטיות האהוב עליך במרחק לחיצה אחת בלבד. כדאי להגדיר את { -brand-short-name } כדפדפן ברירת המחדל שלך לפתיחת קישורים ולהצמיד אותו לשורת המשימות ותפריט ההתחל שלך.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = בכוונתך לשדרג מ־Windows 10 בקרוב?
+windows-10-eos-sync-spotlight-subtitle = כדאי לגבות את הססמאות והסימניות שלך כדי שתהיה מוכן לעשות את הקפיצה לכל מכשיר.
+windows-10-eos-sync-spotlight-primary-label = גיבוי ה־{ -brand-short-name } שלך
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = בכוונתך לשדרג ל־Windows 11? כדאי לגבות את הסימניות והססמאות שלך.
+windows-10-eos-sync-toast-subtitle = ניתן לגבות את הנתונים שלך כך ש־{ -brand-short-name } יהיה מוכן לעבודה בכל עת, במחשב זה או במחשב הבא.
+windows-10-eos-sync-toast-primary-label = תחילת עבודה
+windows-10-eos-sync-toast-secondary-label = להזכיר לי מאוחר יותר
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = ‏{ -brand-product-name } אינו מותקן מראש כמו דפדפנים של חברות גדולות אחרות. זוהי בדיוק הנקודה.
+windows-10-eos-challenger-sync-callout-subtitle = כשהסימניות והססמאות שלך ה־{ -brand-product-name } שלך מגובים, קל יותר להעביר את הדפדפן שבחרת למכשיר הבא שלך.
+windows-10-eos-challenger-pin-callout-subtitle = ניתן להצמיד את { -brand-shorter-name } לשורת המשימות שלך כך שהדפדפן שבחרת תמיד יהיה זמין כשצריכים אותו.
+windows-10-eos-challenger-sync-primary-button = גיבוי { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = נעיצת { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = ‏{ -brand-product-name } חוסם כורי מטבעות דיגיטליים, רכיבי מעקב של מדיה חברתית ורכיבי זהות דיגיטלית.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = רכיבי מעקב לא יכולים לזהות את המכשיר שלך או לעקוב אחריך ברחבי הרשת - מכיוון שאנחנו לא מאפשרים להם.
+windows-10-eos-sync-callout-privacy-screen-2-title = כדאי לאבטח את הססמאות והסימניות שלך עבור המכשיר הבא שלך.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = גיבוי { -brand-shorter-name } מקל עליך לקחת את הנתונים וההגדרות הפרטיות שלך יחד איתך.
+windows-10-eos-sync-callout-privacy-info-button = הצגת הפריטים שנחסמים
+windows-10-eos-callout-addons-title = כדאי לנסות תוספות: שדרוגים פשוטים עם השפעות גדולות
+windows-10-eos-callout-addons-subtitle = הרחבות אלו נבחרו כדי לעזור לך להישאר פרודוקטיבי, מוגן וללא הסחות דעת.
+windows-10-eos-callout-addons-primary-button = הצגת המומלצים שלנו
+windows-10-eos-sync-callout-addons-title = לא לאבד את התוספות שלך בעת השדרוג מ־Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = כדאי לסנכרן עכשיו כדי שהתוספות שלך ב־{ -brand-product-name } תהיינה זמינות תמיד, גם לאחר החלפת מכשיר.
+windows-10-eos-sync-callout-next-button = הבא
+windows-10-eos-sync-callout-get-started-button = תחילת עבודה
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = לשוניות אנכיות וקבוצות לשוניות כבר כאן!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = בתגובה לביקוש הרב, { -brand-product-name } השיקה תכונות חדשות לגלישה חלקה ומרוכזת יותר.
+windows-10-eos-feature-toast-whats-new-button = מה חדש
+windows-10-eos-feature-toast-dismiss-button = סגירה
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>הגנת מעקב מחמירה עלולה לגרום לאתרים לא לעבוד כראוי.</strong> ניתן לתקן בעיות נפוצות על־ידי ביטול חסימה של אלמנטים חיוניים שעשויים להכיל רכיבי מעקב.
+etp-strict-exceptions-infobar-learn-more = מידע נוסף
+etp-strict-exceptions-infobar-button = להחיל תיקונים
+    .accesskey = ת
+etp-strict-exceptions-infobar-not-now = לא כעת
+    .accesskey = ל
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } אינו דפדפן ברירת המחדל שלך
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } אינו הדפדפן הראשי שלך
+set-default-menu-message-row-layout-title = הגדרת { -brand-short-name } כדפדפן הראשי שלך
+set-default-menu-message-row-layout-title-variant = הגדרת { -brand-short-name } כדפדפן ברירת המחדל שלך
+set-default-menu-message-row-layout-subtitle = קבלת מהירות, בטיחות ופרטיות בכל פעם שגולשים ברשת.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] כדי לשמור את { -brand-short-name } קרוב אליך — מומלץ להגדיר אותו כברירת המחדל ולשמור אותו ב־Dock שלך.
+       *[other] כדי לשמור את { -brand-short-name } קרוב אליך — מומלץ להגדיר אותו כברירת המחדל ולהצמיד אותו לשורת המשימות.
+    }
+set-default-menu-message-primary-button = הגדרה כברירת מחדל
+set-default-menu-message-primary-button-variant = הגדרה כדפדפן הראשי

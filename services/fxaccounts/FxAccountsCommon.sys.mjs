@@ -49,6 +49,7 @@ export let DATA_FORMAT_VERSION = 1;
 export let DEFAULT_STORAGE_FILENAME = "signedInUser.json";
 
 export let OAUTH_TOKEN_FOR_SYNC_LIFETIME_SECONDS = 3600 * 6; // 6 hours
+export let ATTACHED_CLIENTS_CACHE_DURATION = 4 * 60 * 60 * 1000; // 4 hours in ms
 
 // After we start polling for account verification, we stop polling when this
 // many milliseconds have elapsed.
@@ -150,7 +151,13 @@ export let COMMAND_FIREFOX_VIEW = "fxaccounts:firefox_view";
 // be stored. This branch will be reset on account signout and signin.
 export let PREF_ACCOUNT_ROOT = "identity.fxaccounts.account.";
 
-export let PREF_LAST_FXA_USER = "identity.fxaccounts.lastSignedInUserHash";
+// Where we store the hashed uid of the previous user.
+export let PREF_LAST_FXA_USER_UID =
+  "identity.fxaccounts.lastSignedInUserIdHash";
+// Where we used to store the hashed email of the previous user. We now store the
+// uid, but need to migrate from this.
+export let PREF_LAST_FXA_USER_EMAIL =
+  "identity.fxaccounts.lastSignedInUserHash";
 export let PREF_REMOTE_PAIRING_URI = "identity.fxaccounts.remote.pairing.uri";
 
 // Server errno.
@@ -289,6 +296,7 @@ export let FXA_PWDMGR_PLAINTEXT_FIELDS = new Set([
   "profileCache",
   "encryptedSendTabKeys",
   "encryptedCloseTabKeys",
+  "requestedServices", // info about services which should be configured, used during oauth flows.
 ]);
 
 // Fields we store in secure storage if it exists.

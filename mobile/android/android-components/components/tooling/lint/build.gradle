@@ -8,16 +8,18 @@ apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 dependencies {
-  compileOnly ComponentsDependencies.tools_lintapi
-  compileOnly ComponentsDependencies.tools_lintchecks
+  compileOnly libs.android.lint.api
+  compileOnly libs.android.lint.checks
+  compileOnly libs.kotlin.reflect
 
-  compileOnly ComponentsDependencies.kotlin_reflect
-  testImplementation ComponentsDependencies.kotlin_reflect
-
-  testImplementation ComponentsDependencies.tools_lint
-  testImplementation ComponentsDependencies.tools_linttests
-  testImplementation ComponentsDependencies.testing_junit
-  testImplementation ComponentsDependencies.testing_mockito
+  testImplementation libs.android.lint
+  testImplementation libs.android.lint.tests
+  testImplementation platform(libs.junit.bom)
+  testImplementation libs.junit4
+  testRuntimeOnly libs.junit.platform.launcher
+  testRuntimeOnly libs.junit.vintage
+  testImplementation libs.kotlin.reflect
+  testImplementation libs.mockito
 }
 
 jar {

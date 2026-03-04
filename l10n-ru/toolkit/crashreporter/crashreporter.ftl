@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } столкнулся �
 crashreporter-plea = Чтобы помочь нам диагностировать и устранить проблему, вы можете отправить нам отчёт о сбое.
 crashreporter-information = Это приложение запускается после падения, чтобы сообщить о проблеме в { -vendor-short-name }. Оно не должно запускаться напрямую.
 crashreporter-error = { -brand-short-name } столкнулся с проблемой и аварийно завершил работу. К сожалению, инструмент создания отчётов о падениях не может отправить сообщение об этой ошибке.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Подробности: { $details }
+crashreporter-error-details-header = Подробности:
 crashreporter-no-run-message = Эта программа запускается после падения приложения, чтобы отправить сообщение об ошибке производителю приложения. Её не следует запускать напрямую.
 crashreporter-button-details = Подробности…
 crashreporter-loading-details = Загрузка…
 crashreporter-view-report-title = Содержание сообщения
 crashreporter-comment-prompt = Добавить комментарий (комментарии публично доступны)
 crashreporter-report-info = Это сообщение также содержит техническую информацию о состоянии приложения в момент падения.
-crashreporter-send-report = Сообщить об этом падении в { -vendor-short-name }, чтобы они смогли это исправить.
-crashreporter-include-url = Включить адрес страницы, на которой я был в это время.
+crashreporter-checkbox-test-hardware = Проверьте наличие проблем с аппаратным обеспечением и конфигурацией моего устройства.
+crashreporter-checkbox-send-report = Сообщить об этом падении в { -vendor-short-name }, чтобы они смогли это исправить.
+crashreporter-checkbox-include-url = Включить адрес страницы, на которой я был в это время.
 crashreporter-submit-status = Ваше сообщение будет отправлено перед выходом или перезапуском.
+crashreporter-submit-waiting-hardware-tests = Проверка наличия проблем с аппаратным обеспечением и конфигурацией…
 crashreporter-submit-in-progress = Идёт отправка сообщения…
 crashreporter-submit-success = Сообщение успешно отправлено!
 crashreporter-submit-failure = При отправке вашего сообщения возникла проблема.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Вы можете просмотреть подр�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Не удалось запустить анализатор минидампов
 # $path (String) - the file path
 crashreporter-error-opening-file = Не удалось открыть файл ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Отсутствует домашний кат
 # $to (String) - the destination path
 crashreporter-error-moving-path = Не удалось переместить { $from } в { $to }
 crashreporter-error-version-eol = Конец жизненного цикла версии: сообщения о падениях больше не принимаются.
+crashreporter-error-failed-to-generate-minidump = Приложение не может сгенерировать информацию о падении.

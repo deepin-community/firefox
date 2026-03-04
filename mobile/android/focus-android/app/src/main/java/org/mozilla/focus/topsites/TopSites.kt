@@ -4,19 +4,24 @@
 
 package org.mozilla.focus.topsites
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +59,7 @@ fun TopSites(
     Row(
         modifier = Modifier
             .padding(horizontal = 10.dp)
-            .size(width = 324.dp, height = 84.dp),
+            .size(width = 324.dp, height = 86.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(28.dp),
     ) {
@@ -84,7 +89,6 @@ fun TopSites(
  * @param menuItems List of [MenuItem] to display in a top site dropdown menu.
  * @param onTopSiteClick Invoked when the user clicks on a top site.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TopSiteItem(
     topSite: TopSite,
@@ -102,14 +106,16 @@ private fun TopSiteItem(
                     onClick = { onTopSiteClick(topSite) },
                     onLongClick = { menuExpanded = true },
                 )
-                .size(width = 60.dp, height = 84.dp),
+                .width(60.dp)
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             TopSiteFaviconCard(topSite = topSite)
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = topSite.title ?: topSite.url,
-                modifier = Modifier.padding(top = 8.dp),
                 color = focusColors.topSiteTitle,
                 fontSize = 12.sp,
                 overflow = TextOverflow.Ellipsis,
@@ -135,11 +141,14 @@ private fun TopSiteFaviconCard(topSite: TopSite) {
     Card(
         modifier = Modifier.size(60.dp),
         shape = RoundedCornerShape(8.dp),
-        backgroundColor = focusColors.topSiteBackground,
+        colors = CardDefaults.cardColors(
+            containerColor = focusColors.topSiteBackground,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
         ) {
             Surface(
                 modifier = Modifier.size(36.dp),
@@ -147,6 +156,7 @@ private fun TopSiteFaviconCard(topSite: TopSite) {
                 color = focusColors.surface,
             ) {
                 Column(
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {

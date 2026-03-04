@@ -6,53 +6,29 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt')
-        }
-    }
-
-    lint {
-        // Disabled since this caused issues with Android Gradle Plugin 3.2.1+ (NullPointerException:InvalidPackageDetector)
-        tasks.lint.enabled = false
-
-        lintConfig file("lint.xml")
-    }
-
-    namespace 'mozilla.components.support.test'
+    namespace = 'mozilla.components.support.test'
 }
 
 dependencies {
-    implementation ComponentsDependencies.kotlin_coroutines
-    implementation ComponentsDependencies.kotlin_reflect
+    api libs.mockito
 
-    implementation ComponentsDependencies.androidx_test_junit
-    api ComponentsDependencies.testing_mockito
-    implementation ComponentsDependencies.testing_coroutines
-    implementation ComponentsDependencies.androidx_fragment
-    implementation  (ComponentsDependencies.testing_robolectric) {
-        exclude group: 'org.apache.maven'
-    }
-    implementation project(':support-base')
-    testImplementation ComponentsDependencies.testing_maven_ant_tasks
+    implementation project(':components:concept-fetch')
+    implementation project(':components:support-base')
 
-    implementation ComponentsDependencies.androidx_test_core
+    implementation libs.androidx.fragment
+    implementation libs.androidx.test.core
+    implementation libs.androidx.test.junit
+    implementation libs.kotlin.reflect
+    implementation libs.kotlinx.coroutines
+    implementation libs.kotlinx.coroutines.test
+    implementation libs.robolectric
 
-    testImplementation ComponentsDependencies.androidx_core
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation project(':support-ktx')
+    testImplementation project(':components:support-ktx')
+
+    testImplementation libs.androidx.core
+    testImplementation libs.androidx.test.junit
 }
 
-apply from: '../../../android-lint.gradle'
+apply from: '../../../common-config.gradle'
 apply from: '../../../publish.gradle'
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
-
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

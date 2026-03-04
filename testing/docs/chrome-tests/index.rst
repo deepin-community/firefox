@@ -37,7 +37,7 @@ For example, to run all chrome tests under `toolkit/content`, run the following 
 
 ::
 
-   ./mach test toolkit/content/test/chrome/chrome.ini
+   ./mach test toolkit/content/test/chrome/chrome.toml
 
 To run a single test, just pass the path to the test into mach:
 
@@ -101,8 +101,8 @@ in the test output as a failure. Exceptions thrown outside of the test's
 context (e.g. in a timeout, event handler, etc) will not be caught, but
 will result in a timed out test.
 
-The test file name must be prefixed with "test_", and must have a file
-extension of ".xhtml". Files that don't match this pattern will be ignored
+The test file name must be prefixed with ``test_``, and must have a file
+extension of ``.xhtml``. Files that don't match this pattern will be ignored
 by the test harness, but you still can include them. For example, a XUL
 window file opened by your test_demo.xhtml via openDialog should be named
 window_demo.xhtml. Putting the bug number in the file name is recommended

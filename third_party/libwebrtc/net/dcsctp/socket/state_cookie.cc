@@ -9,11 +9,13 @@
  */
 #include "net/dcsctp/socket/state_cookie.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "api/array_view.h"
+#include "net/dcsctp/common/internal_types.h"
 #include "net/dcsctp/packet/bounded_byte_reader.h"
 #include "net/dcsctp/packet/bounded_byte_writer.h"
 #include "net/dcsctp/socket/capabilities.h"
@@ -24,7 +26,6 @@ namespace dcsctp {
 // Magic values, which the state cookie is prefixed with.
 constexpr uint32_t kMagic1 = 1684230979;
 constexpr uint32_t kMagic2 = 1414541360;
-constexpr size_t StateCookie::kCookieSize;
 
 std::vector<uint8_t> StateCookie::Serialize() {
   std::vector<uint8_t> cookie;
@@ -48,12 +49,12 @@ std::vector<uint8_t> StateCookie::Serialize() {
   return cookie;
 }
 
-absl::optional<StateCookie> StateCookie::Deserialize(
-    rtc::ArrayView<const uint8_t> cookie) {
+std::optional<StateCookie> StateCookie::Deserialize(
+    webrtc::ArrayView<const uint8_t> cookie) {
   if (cookie.size() != kCookieSize) {
     RTC_DLOG(LS_WARNING) << "Invalid state cookie: " << cookie.size()
                          << " bytes";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   BoundedByteReader<kCookieSize> buffer(cookie);
@@ -61,7 +62,7 @@ absl::optional<StateCookie> StateCookie::Deserialize(
   uint32_t magic2 = buffer.Load32<4>();
   if (magic1 != kMagic1 || magic2 != kMagic2) {
     RTC_DLOG(LS_WARNING) << "Invalid state cookie; wrong magic";
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   VerificationTag peer_tag(buffer.Load32<8>());

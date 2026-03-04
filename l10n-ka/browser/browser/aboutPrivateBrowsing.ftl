@@ -11,28 +11,28 @@ about-private-browsing-search-btn =
 # Variables
 #  $engine (String): the name of the user's default search engine
 about-private-browsing-handoff =
-    .title = მოძებნეთ { $engine } საძიებოთი ან შეიყვანეთ მისამართი
+    .title = საძიებოდ გამოიყენეთ { $engine } ან შეიყვანეთ მისამართი
 about-private-browsing-handoff-no-engine =
     .title = მოძებნეთ ან შეიყვანეთ მისამართი
 # Variables
 #  $engine (String): the name of the user's default search engine
-about-private-browsing-handoff-text = მოძებნეთ { $engine } საძიებოთი ან შეიყვანეთ მისამართი
+about-private-browsing-handoff-text = საძიებოდ გამოიყენეთ { $engine } ან შეიყვანეთ მისამართი
 about-private-browsing-handoff-text-no-engine = მოძებნეთ ან შეიყვანეთ მისამართი
 about-private-browsing-not-private = ამჟამად პირად ფანჯარაში არ იმყოფებით.
-about-private-browsing-info-description-private-window = პირადი ფანჯარა: { -brand-short-name } გაასუფთავებს თქვენ მიერ მოძიებული და მონახულებული გვერდების ჩანაწერებს ყველა პირადი ფანჯრის დახურვისას. მიუხედავად ამისა, ეს ვერ დაფარავს თქვენს ვინაობას.
-about-private-browsing-info-description-simplified = { -brand-short-name } გაასუფთავებს თქვენ მიერ მოძიებული და მონახულებული გვერდების ჩანაწერებს ყველა პირადი ფანჯრის დახურვისას, მაგრამ ეს ვერ დაფარავს თქვენს ვინაობას.
+about-private-browsing-info-description-private-window = პირადი ფანჯარა: { -brand-short-name } გაასუფთავებს თქვენ მიერ მოძიებული და მონახულებული გვერდების ჩანაწერებს ყველა პირადი ფანჯრის დახურვისას. მიუხედავად ამისა, ვერ დაფარავს თქვენს ვინაობას.
+about-private-browsing-info-description-simplified = { -brand-short-name } გაასუფთავებს თქვენ მიერ მოძიებული და მონახულებული გვერდების ჩანაწერებს ყველა პირადი ფანჯრის დახურვისას, მაგრამ ვერ დაფარავს თქვენს ვინაობას.
 about-private-browsing-learn-more-link = ვრცლად
 about-private-browsing-hide-activity = დამალეთ თქვენი მოქმედებები და ადგილსამყოფელი, ნებისმიერ გვერდზე შესვლისას
-about-private-browsing-get-privacy = თან წაიყოლეთ უსაფრთხოება ყველგან
+about-private-browsing-get-privacy = თან გაიყოლეთ უსაფრთხოება ყველგან
 about-private-browsing-hide-activity-1 = დაფარეთ თქვენი მოქმედებები და ადგილსამყოფელი { -mozilla-vpn-brand-name }-ით. ერთი შეხებით ქმნის უხიფათო კავშირს, საჯარო WiFi-ით სარგებლობის დროსაც კი.
 about-private-browsing-prominent-cta = დაიცავით პირადულობა { -mozilla-vpn-brand-name }-ით
 about-private-browsing-focus-promo-cta = ჩამოტვირთეთ { -focus-brand-name }
-about-private-browsing-focus-promo-header = { -focus-brand-name }: თან წაიყოლეთ პირადულობა
+about-private-browsing-focus-promo-header = { -focus-brand-name }: თან გაიყოლეთ პირადულობა
 about-private-browsing-focus-promo-text = პირადულობისთვის განკუთვნილი მობილური ბრაუზერი, ასუფთავებს ისტორიასა და კვალს, ყოველი გამოყენების შემდგომ.
 
 ## The following strings will be used for experiments in Fx99 and Fx100
 
-about-private-browsing-focus-promo-header-b = წაიყოლეთ პირადულობა ტელეფონთან ერთად
+about-private-browsing-focus-promo-header-b = გაიყოლეთ პირადულობა ტელეფონთან ერთად
 about-private-browsing-focus-promo-text-b = გამოიყენეთ { -focus-brand-name } იმ ინფორმაციის გაუმჟღავნებლად მოძიებისთვის, რომლის მთავარი ბრაუზერით ნახვაც არ გსურთ.
 about-private-browsing-focus-promo-header-c = ახალ სიმაღლეზე აყვანილი პირადულობა მობილურზე
 about-private-browsing-focus-promo-text-c = { -focus-brand-name } ყოველი გამოყენების შემდგომ ასუფთავებს თქვენს ისტორიას, რეკლამებისა და მეთვალყურეების შეზღუდვასთან ერთად.
@@ -56,8 +56,8 @@ about-private-browsing-promo-close-button =
 about-private-browsing-pin-promo-header = პირადი თვალიერება ერთი დაწკაპებით
 about-private-browsing-pin-promo-link-text =
     { PLATFORM() ->
-        [macos] დატოვება Dock-ზე
-       *[other] მიმაგრება სამუშაო ზოლზე
+        [macos] დატოვეთ Dock-ზე
+       *[other] მიამაგრეთ სამუშაო ზოლზე
     }
 about-private-browsing-pin-promo-title = არანაირი კვალი და გვერდების ისტორია, პირდაპირ სამუშაო ეკრანიდან. მოინახულეთ საიტები მეთვალყურეობის გარეშე.
 

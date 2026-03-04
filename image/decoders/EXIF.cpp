@@ -40,7 +40,10 @@ enum EXIFType {
 
 static const char* EXIFHeader = "Exif\0\0";
 static const uint32_t EXIFHeaderLength = 6;
-static const uint32_t TIFFHeaderStart = EXIFHeaderLength;
+
+uint32_t EXIFParser::TIFFHeaderStart() const {
+  return mExpectExifIdCode ? EXIFHeaderLength : 0;
+}
 
 struct ParsedEXIFData {
   Orientation orientation;
@@ -99,8 +102,10 @@ EXIFData EXIFParser::ParseEXIF(const uint8_t* aData, const uint32_t aLength,
     return EXIFData();
   }
 
-  if (!ParseEXIFHeader()) {
-    return EXIFData();
+  if (mExpectExifIdCode) {
+    if (!ParseEXIFHeader()) {
+      return EXIFData();
+    }
   }
 
   uint32_t offsetIFD;
@@ -147,7 +152,7 @@ bool EXIFParser::ParseTIFFHeader(uint32_t& aIFD0OffsetOut) {
   // The IFD offset is relative to the beginning of the TIFF header, which
   // begins after the EXIF header, so we need to increase the offset
   // appropriately.
-  aIFD0OffsetOut = ifd0Offset + TIFFHeaderStart;
+  aIFD0OffsetOut = ifd0Offset + TIFFHeaderStart();
   return true;
 }
 
@@ -223,7 +228,7 @@ void EXIFParser::ParseIFD(ParsedEXIFData& aData, uint32_t aDepth) {
           return;
         }
 
-        ScopedJump jump(*this, offset + TIFFHeaderStart);
+        ScopedJump jump(*this, offset + TIFFHeaderStart());
         ParseIFD(aData, aDepth + 1);
         break;
       }
@@ -242,7 +247,7 @@ bool EXIFParser::ReadRational(float& aOut) {
   if (!ReadUInt32(valueOffset)) {
     return false;
   }
-  ScopedJump jumpToHeader(*this, valueOffset + TIFFHeaderStart);
+  ScopedJump jumpToHeader(*this, valueOffset + TIFFHeaderStart());
   uint32_t numerator;
   if (!ReadUInt32(numerator)) {
     return false;
@@ -260,10 +265,6 @@ bool EXIFParser::ReadRational(float& aOut) {
 
 bool EXIFParser::ParseResolution(uint16_t aType, uint32_t aCount,
                                  Maybe<float>& aOut) {
-  if (!StaticPrefs::image_exif_density_correction_enabled()) {
-    Advance(4);
-    return true;
-  }
   if (aType != RationalType || aCount != 1) {
     return false;
   }
@@ -280,11 +281,6 @@ bool EXIFParser::ParseResolution(uint16_t aType, uint32_t aCount,
 
 bool EXIFParser::ParseDimension(uint16_t aType, uint32_t aCount,
                                 Maybe<uint32_t>& aOut) {
-  if (!StaticPrefs::image_exif_density_correction_enabled()) {
-    Advance(4);
-    return true;
-  }
-
   if (aCount != 1) {
     return false;
   }
@@ -315,10 +311,6 @@ bool EXIFParser::ParseDimension(uint16_t aType, uint32_t aCount,
 
 bool EXIFParser::ParseResolutionUnit(uint16_t aType, uint32_t aCount,
                                      Maybe<ResolutionUnit>& aOut) {
-  if (!StaticPrefs::image_exif_density_correction_enabled()) {
-    Advance(4);
-    return true;
-  }
   if (aType != ShortType || aCount != 1) {
     return false;
   }

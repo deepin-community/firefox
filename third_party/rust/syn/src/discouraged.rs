@@ -175,17 +175,17 @@ impl<'a> Speculative for ParseBuffer<'a> {
         if !Rc::ptr_eq(&self_unexp, &fork_unexp) {
             match (fork_sp, self_sp) {
                 // Unexpected set on the fork, but not on `self`, copy it over.
-                (Some(span), None) => {
-                    self_unexp.set(Unexpected::Some(span));
+                (Some((span, delimiter)), None) => {
+                    self_unexp.set(Unexpected::Some(span, delimiter));
                 }
                 // Unexpected unset. Use chain to propagate errors from fork.
                 (None, None) => {
                     fork_unexp.set(Unexpected::Chain(self_unexp));
 
                     // Ensure toplevel 'unexpected' tokens from the fork don't
-                    // bubble up the chain by replacing the root `unexpected`
+                    // propagate up the chain by replacing the root `unexpected`
                     // pointer, only 'unexpected' tokens from existing group
-                    // parsers should bubble.
+                    // parsers should propagate.
                     fork.unexpected
                         .set(Some(Rc::new(Cell::new(Unexpected::None))));
                 }

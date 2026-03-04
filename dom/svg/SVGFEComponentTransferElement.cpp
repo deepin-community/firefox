@@ -6,11 +6,11 @@
 
 #include "mozilla/dom/SVGFEComponentTransferElement.h"
 
+#include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/SVGComponentTransferFunctionElement.h"
 #include "mozilla/dom/SVGFEComponentTransferElementBinding.h"
 #include "mozilla/gfx/2D.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/BindContext.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEComponentTransfer)
 
@@ -43,7 +43,7 @@ already_AddRefed<DOMSVGAnimatedString> SVGFEComponentTransferElement::In1() {
 SVGElement::StringAttributesInfo
 SVGFEComponentTransferElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 //--------------------------------------------

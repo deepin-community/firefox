@@ -10,23 +10,24 @@
 // include math.h to pick up definition of M_ maths defines e.g. M_PI
 #include <math.h>
 
+#include <algorithm>
+
 #include "DrawMode.h"
 #include "ImgDrawResult.h"
 #include "gfx2DGlue.h"
 #include "gfxMatrix.h"
 #include "gfxPoint.h"
 #include "gfxRect.h"
+#include "mozilla/ISVGDisplayableFrame.h"
 #include "mozilla/gfx/Rect.h"
-#include "nsAlgorithm.h"
+#include "nsCOMPtr.h"
 #include "nsChangeHint.h"
 #include "nsColor.h"
-#include "nsCOMPtr.h"
 #include "nsID.h"
 #include "nsIFrame.h"
 #include "nsISupports.h"
 #include "nsMathUtils.h"
 #include "nsStyleStruct.h"
-#include <algorithm>
 
 class gfxContext;
 class nsFrameList;
@@ -56,12 +57,6 @@ class DrawTarget;
 class GeneralPattern;
 }  // namespace gfx
 }  // namespace mozilla
-
-// maximum dimension of an offscreen surface - choose so that
-// the surface size doesn't overflow a 32-bit signed int using
-// 4 bytes per pixel; in line with Factory::CheckSurfaceSize
-// In fact Macs can't even manage that
-#define NS_SVG_OFFSCREEN_MAX_DIMENSION 4096
 
 #define SVG_HIT_TEST_FILL 0x01
 #define SVG_HIT_TEST_STROKE 0x02
@@ -216,6 +211,7 @@ class SVGUtils final {
             length - length to be converted
   */
   static float ObjectSpace(const gfxRect& aRect,
+                           const dom::UserSpaceMetrics& aMetrics,
                            const SVGAnimatedLength* aLength);
 
   /* Computes the input length in terms of user space coordinates.
@@ -265,7 +261,8 @@ class SVGUtils final {
    * Notify the descendants of aFrame of a change to one of their ancestors
    * that might affect them.
    */
-  static void NotifyChildrenOfSVGChange(nsIFrame* aFrame, uint32_t aFlags);
+  static void NotifyChildrenOfSVGChange(
+      nsIFrame* aFrame, ISVGDisplayableFrame::ChangeFlags aFlags);
 
   /*
    * Convert a surface size to an integer for use by thebes
@@ -404,6 +401,7 @@ class SVGUtils final {
   static gfxRect GetRelativeRect(uint16_t aUnits,
                                  const SVGAnimatedLength* aXYWH,
                                  const gfxRect& aBBox,
+                                 const SVGElement* aElement,
                                  const dom::UserSpaceMetrics& aMetrics);
 
   static bool OuterSVGIsCallingReflowSVG(nsIFrame* aFrame);
@@ -421,6 +419,12 @@ class SVGUtils final {
    */
   static bool GetNonScalingStrokeTransform(const nsIFrame* aFrame,
                                            gfxMatrix* aUserToOuterSVG);
+
+  /**
+   * We need to track whether content has non-scaling-stroke because we can't
+   * asynchronously animate it with a scaling transform.
+   */
+  static void UpdateNonScalingStrokeStateBit(nsIFrame* aFrame);
 
   /**
    * Compute the maximum possible device space stroke extents of a path given
@@ -447,8 +451,7 @@ class SVGUtils final {
    * the range of valid integers.
    */
   static int32_t ClampToInt(double aVal) {
-    return NS_lround(
-        std::max(double(INT32_MIN), std::min(double(INT32_MAX), aVal)));
+    return NS_lround(std::clamp(aVal, double(INT32_MIN), double(INT32_MAX)));
   }
 
   /**
@@ -461,7 +464,7 @@ class SVGUtils final {
   }
 
   static nscolor GetFallbackOrPaintColor(
-      const ComputedStyle&, StyleSVGPaint nsStyleSVG::*aFillOrStroke,
+      const ComputedStyle&, StyleSVGPaint nsStyleSVG::* aFillOrStroke,
       nscolor aDefaultContextFallbackColor);
 
   static void MakeFillPatternFor(nsIFrame* aFrame, gfxContext* aContext,
@@ -618,14 +621,6 @@ class SVGUtils final {
    * its usual dev pixels to SVG user units/CSS px to keep the SVG code happy.
    */
   static gfxMatrix GetCSSPxToDevPxMatrix(const nsIFrame* aNonSVGFrame);
-
-  /**
-   * It is a replacement of
-   * SVGElement::PrependLocalTransformsTo(eUserSpaceToParent).
-   * If no CSS transform is involved, they should behave exactly the same;
-   * if there are CSS transforms, this one will take them into account
-   * while SVGElement::PrependLocalTransformsTo won't.
-   */
   static gfxMatrix GetTransformMatrixInUserSpace(const nsIFrame* aFrame);
 };
 

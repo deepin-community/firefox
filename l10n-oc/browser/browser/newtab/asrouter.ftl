@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } utilizaires
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sincronizatz vòstres marcapaginas pertot.
 cfr-doorhanger-bookmark-fxa-body = Genial ! Ara, contunhetz pas sens aqueste marcapagina suls vòstres periferics mobils. Començatz amb { -fxaccount-brand-name }.
@@ -266,4 +266,26 @@ launch-on-login-infobar-final-reject-button = Non, mercé
 
 ## Tail Fox Set Default Spotlight
 
+tail-fox-spotlight-primary-button = Dobrir mos ligams amb { -brand-short-name }
 tail-fox-spotlight-secondary-button = Pas ara
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-primary-button =
+    .label = Metre a jorn ara
+    .accesskey = M
+root-certificate-succession-infobar-secondary-button =
+    .label = Mai tard
+    .accesskey = a
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Tampar
+    .aria-label = Tampar
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Urós de vos tornar veire !
+multi-cta-fox-doodle-set-default-checkbox = Definir { -brand-short-name } coma navegador per defaut
+multi-cta-fox-doodle-start-browsing-primary-button-label = Començar de navegar

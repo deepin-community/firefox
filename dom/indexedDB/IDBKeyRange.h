@@ -9,12 +9,10 @@
 
 #include "js/RootingAPI.h"
 #include "js/Value.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/IndexedDatabaseManager.h"
 #include "mozilla/dom/indexedDB/Key.h"
 #include "nsCOMPtr.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsISupports.h"
 #include "nsString.h"
 
 class mozIStorageStatement;
@@ -31,9 +29,8 @@ namespace indexedDB {
 class SerializedKeyRange;
 }  // namespace indexedDB
 
-class IDBKeyRange : public nsISupports {
+class IDBKeyRange {
  protected:
-  nsCOMPtr<nsISupports> mGlobal;
   indexedDB::Key mLower;
   indexedDB::Key mUpper;
   JS::Heap<JS::Value> mCachedLowerVal;
@@ -47,8 +44,8 @@ class IDBKeyRange : public nsISupports {
   bool mRooted : 1;
 
  public:
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
-  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_CLASS(IDBKeyRange)
+  NS_INLINE_DECL_CYCLE_COLLECTING_NATIVE_REFCOUNTING(IDBKeyRange)
+  NS_DECL_CYCLE_COLLECTION_SCRIPT_HOLDER_NATIVE_CLASS(IDBKeyRange)
 
   // aCx is allowed to be null, but only if aVal.isUndefined().
   static void FromJSVal(JSContext* aCx, JS::Handle<JS::Value> aVal,
@@ -99,8 +96,6 @@ class IDBKeyRange : public nsISupports {
   bool WrapObject(JSContext* aCx, JS::Handle<JSObject*> aGivenProto,
                   JS::MutableHandle<JSObject*> aReflector);
 
-  nsISupports* GetParentObject() const { return mGlobal; }
-
   void GetLower(JSContext* aCx, JS::MutableHandle<JS::Value> aResult,
                 ErrorResult& aRv);
 
@@ -112,8 +107,7 @@ class IDBKeyRange : public nsISupports {
   bool UpperOpen() const { return mUpperOpen; }
 
  protected:
-  IDBKeyRange(nsISupports* aGlobal, bool aLowerOpen, bool aUpperOpen,
-              bool aIsOnly);
+  IDBKeyRange(bool aLowerOpen, bool aUpperOpen, bool aIsOnly);
 
   virtual ~IDBKeyRange();
 };

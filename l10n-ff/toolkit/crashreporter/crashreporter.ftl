@@ -2,11 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-crashreporter-title = Jaŋtorde Kooke
-crashreporter-crash-message = { -brand-short-name } hawrii e caɗeele kisa hookii.
 crashreporter-plea = Ngam wallude-min yiytude e ñawndude caɗeele ɗee, aɗa waawi neldude jaŋtol hookre.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Cariiɗe: { $details }
 crashreporter-no-run-message = Jaaɓnirgal ngal hurminaama caggal hookre ngam neldude jaŋtol to joom maggal.  Ngal fotaani hurmineede hono nih.
 crashreporter-button-details = Cariiɗe…
 crashreporter-view-report-title = Loowdi Jaŋtol

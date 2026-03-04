@@ -206,6 +206,10 @@ addon-updates-manual-updates-found = Mussar las actualisaziuns disponiblas
 
 addon-install-from-file = Installar in supplement a basa dad ina datoteca…
     .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Installar u actualisar in supplement a basa d’ina datoteca…
+    .accesskey = I
 addon-install-from-file-dialog-title = Tscherna il supplement per l'installar
 addon-install-from-file-filter-name = Supplements
 addon-open-about-debugging = Debugar supplements
@@ -294,6 +298,17 @@ find-more-themes = Chattar ulteriurs designs
 # used for screen readers.
 addon-options-button =
     .aria-label = Ulteriuras opziuns
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Extensiuns e designs ta permettan da persunalisar { -brand-product-name }. Els pon augmentar la protecziun da datas,
+    meglierar la productivitad, optimar multimedia, midar l’apparientscha da { -brand-product-name } e
+    bler dapli. Quests pitschens programs vegnan savens sviluppads da terzas partidas. Qua
+    ina selecziun che Firefox <a data-l10n-name="learn-more-trigger">recumonda</a>
+    per
+    segirezza, prestaziun e funcziunalitad excepziunala.
 
 ## Add-on actions
 
@@ -380,6 +395,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permess en fanestras privatas
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permess en fanestras privatas
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -419,6 +438,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Questa extensiun è vegnida controllada per garantir noss standard da segirezza e performanza
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Ina extensiun uffiziala, creada da Mozilla. Correspunda a standards da segirezza e stabilitad
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Questa extensiun è vegnida controllada per garantir standards da segirezza e performanza
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox recumonda mo extensiuns che correspundan a standards da segirezza e prestaziun
 
 ##
 
@@ -426,6 +463,7 @@ available-updates-heading = Actualisaziuns disponiblas
 recent-updates-heading = Ultimas actualisaziuns
 release-notes-loading = Chargiar…
 release-notes-error = Perstgisa, ma cun chargiar las remartgas davart la versiun è succedida ina errur.
+addon-permissions-empty2 = Questa extensiun na pretenda naginas permissiuns.
 addon-permissions-empty = Questa extensiun na pretenda naginas autorisaziuns
 addon-permissions-required = Permissiuns necessarias per las funcziunalitads centralas:
 addon-permissions-optional = Permissiuns facultativas per funcziunalitads supplementaras:
@@ -475,14 +513,24 @@ details-notification-unsigned-and-disabled-link = Ulteriuras infurmaziuns
 details-notification-unsigned = Impussibel da verifitgar { $name } per l'utilisaziun en { -brand-short-name }. Cuntinuar cun precauziun.
 details-notification-unsigned2 =
     .message = Impussibel da verifitgar { $name } per l'utilisaziun en { -brand-short-name }. Cuntinuar cun precauziun.
+details-notification-hard-blocked-extension =
+    .message = Questa extensiun è bloccada pervia da la violaziun da directivas da Mozilla ed è vegnida deactivada.
+details-notification-hard-blocked-other =
+    .message = Quest supplement è bloccà pervia da la violaziun da directivas da Mozilla ed è vegnì deactivà.
 details-notification-unsigned-link = Ulteriuras infurmaziuns
 details-notification-blocked = { $name } è vegnì deactivà pervia da problems da segirezza u da stabilitad.
-details-notification-blocked2 =
-    .message = { $name } è vegnì deactivà pervia da problems da segirezza u da stabilitad.
+details-notification-blocked-link2 = Mussar ils detagls
+details-notification-soft-blocked-extension-disabled =
+    .message = Questa extensiun è suttamessa a limitaziuns pervia da la violaziun da las directivas da Mozilla ed è vegnida deactivada. Ti pos l’activar, ma quai po esser ristgus.
+details-notification-soft-blocked-extension-enabled =
+    .message = Questa extensiun violescha las directivas da Mozilla. L’utilisaziun po esser ristgusa.
+details-notification-soft-blocked-other-disabled =
+    .message = Quest supplement è suttamess a limitaziuns pervia da la violaziun da las directivas da Mozilla ed è vegnì deactivà. Ti pos al activar, ma quai po esser ristgus.
+details-notification-soft-blocked-other-enabled =
+    .message = Quest supplement violescha las directivas da Mozilla. L’utilisaziun po esser ristgusa.
+details-notification-softblocked-link2 = Mussar ils detagls
 details-notification-blocked-link = Dapli infurmaziuns
 details-notification-softblocked = { $name } po chaschunar problems da segirezza u da stabilitad.
-details-notification-softblocked2 =
-    .message = { $name } po chaschunar problems da segirezza u da stabilitad.
 details-notification-softblocked-link = Ulteriuras infurmaziuns
 details-notification-gmp-pending = { $name } vegn installà en curt mument.
 details-notification-gmp-pending2 =

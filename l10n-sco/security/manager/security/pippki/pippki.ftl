@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = View
 download-cert-view-text = Examine CA certificate
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -80,8 +77,6 @@ client-auth-cert-details-issued-by = Issued by: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Stored on: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Mind this deceesion
 
 ## Set password (p12) dialog
 
@@ -93,6 +88,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Certificate backup passwird (aince mair):
 set-password-reminder = Important: If you forget yer certificate backup passwird, ye'll no be able tae restore this backup efter. Gonnae keep it in a sauf airtin.
-
-## Protected authentication alert
-

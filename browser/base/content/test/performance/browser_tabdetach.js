@@ -12,8 +12,9 @@
 const EXPECTED_REFLOWS = [
   {
     stack: [
-      "clientPos@chrome://browser/content/tabbrowser/tabs.js",
-      "startTabDrag@chrome://browser/content/tabbrowser/tabs.js",
+      "clientPos@chrome://browser/content/tabbrowser/drag-and-drop.js",
+      "startTabDrag@chrome://browser/content/tabbrowser/drag-and-drop.js",
+      "handle_dragstart@chrome://browser/content/tabbrowser/drag-and-drop.js",
       "on_dragstart@chrome://browser/content/tabbrowser/tabs.js",
       "handleEvent@chrome://browser/content/tabbrowser/tabs.js",
       "synthesizeMouseAtPoint@chrome://mochikit/content/tests/SimpleTest/EventUtils.js",
@@ -26,7 +27,8 @@ const EXPECTED_REFLOWS = [
   {
     stack: [
       "get scrollPosition@chrome://global/content/elements/arrowscrollbox.js",
-      "startTabDrag@chrome://browser/content/tabbrowser/tabs.js",
+      "startTabDrag@chrome://browser/content/tabbrowser/drag-and-drop.js",
+      "handle_dragstart@chrome://browser/content/tabbrowser/drag-and-drop.js",
       "on_dragstart@chrome://browser/content/tabbrowser/tabs.js",
       "handleEvent@chrome://browser/content/tabbrowser/tabs.js",
       "synthesizeMouseAtPoint@chrome://mochikit/content/tests/SimpleTest/EventUtils.js",
@@ -48,7 +50,7 @@ add_task(async function test_detach_not_overflowed() {
 
   // Make sure we didn't overflow, as expected
   await TestUtils.waitForCondition(() => {
-    return !gBrowser.tabContainer.hasAttribute("overflow");
+    return !gBrowser.tabContainer.overflowing;
   });
 
   let win;
@@ -74,7 +76,7 @@ add_task(async function test_detach_overflowed() {
 
   // Make sure we overflowed, as expected
   await TestUtils.waitForCondition(() => {
-    return gBrowser.tabContainer.hasAttribute("overflow");
+    return gBrowser.tabContainer.overflowing;
   });
 
   let win;

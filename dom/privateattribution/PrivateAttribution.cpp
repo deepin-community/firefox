@@ -5,15 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "PrivateAttribution.h"
+
+#include "mozilla/Components.h"
+#include "mozilla/StaticPrefs_datareporting.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/PrivateAttributionBinding.h"
-#include "mozilla/Components.h"
-#include "mozilla/StaticPrefs_datareporting.h"
 #include "nsIGlobalObject.h"
 #include "nsIPrivateAttributionService.h"
-#include "nsXULAppAPI.h"
 #include "nsURLHelper.h"
+#include "nsXULAppAPI.h"
 
 namespace mozilla::dom {
 
@@ -53,7 +54,7 @@ bool PrivateAttribution::GetSourceHostIfNonPrivate(nsACString& aSourceHost,
 
 [[nodiscard]] static bool ValidateHost(const nsACString& aHost,
                                        ErrorResult& aRv) {
-  if (!net_IsValidHostName(aHost)) {
+  if (!net_IsValidDNSHost(aHost)) {
     aRv.ThrowSyntaxError(aHost + " is not a valid host name"_ns);
     return false;
   }

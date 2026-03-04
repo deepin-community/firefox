@@ -54,7 +54,6 @@ import org.mozilla.focus.utils.Settings
  */
 class GleanMetricsService(context: Context) : MetricsService {
 
-    @Suppress("UnusedPrivateMember")
     private val activationPing = ActivationPing(context)
 
     companion object {
@@ -77,9 +76,19 @@ class GleanMetricsService(context: Context) : MetricsService {
 
         /**
          * Determines whether or not telemetry is enabled.
+         * Currently, according to our lean data policy, general telemetry is disabled.
          */
         @JvmStatic
-        fun isTelemetryEnabled(context: Context): Boolean {
+        @Suppress("FunctionOnlyReturningConstant", "UNUSED_PARAMETER")
+        fun isTelemetryEnabled(context: Context? = null): Boolean = false
+
+        /**
+         * Determines whether or not daily usage telemetry should be enabled by default.
+         * This matches whether general telemetry was enabled prior to the switch being removed.
+         * Currently, according to our lean data policy, general telemetry is disabled.
+         */
+        @JvmStatic
+        fun shouldTelemetryBeEnabledByDefault(context: Context): Boolean {
             if (isDeviceWithTelemetryDisabled()) { return false }
 
             // The first access to shared preferences will require a disk read.
@@ -112,6 +121,7 @@ class GleanMetricsService(context: Context) : MetricsService {
                 httpClient = ConceptFetchHttpUploader(
                     client = lazy(LazyThreadSafetyMode.NONE) { components.client },
                     usePrivateRequest = true,
+                    supportsOhttp = true,
                 ),
             ),
             buildInfo = GleanBuildInfo.buildInfo,
@@ -122,7 +132,7 @@ class GleanMetricsService(context: Context) : MetricsService {
         if (telemetryEnabled) {
             CoroutineScope(Dispatchers.Main).launch {
                 val readJson = { context.assets.readJSONObject("search/search_telemetry_v2.json") }
-                val providerList = withContext(Dispatchers.IO) {
+                val providerList = withContext(IO) {
                     SerpTelemetryRepository(
                         rootStorageDirectory = context.filesDir,
                         readJson = readJson,
@@ -187,10 +197,10 @@ class GleanMetricsService(context: Context) : MetricsService {
         MozillaProducts.isFenixDefaultBrowser.set(isFenixDefaultBrowser)
 
         // tracking protection metrics
-        TrackingProtection.hasAdvertisingBlocked.set(settings.hasAdvertisingBlocked())
-        TrackingProtection.hasAnalyticsBlocked.set(settings.hasAnalyticsBlocked())
+        TrackingProtection.hasAdvertisingBlocked.set(settings.shouldBlockAdTrackers())
+        TrackingProtection.hasAnalyticsBlocked.set(settings.shouldBlockAnalyticTrackers())
         TrackingProtection.hasContentBlocked.set(settings.shouldBlockOtherTrackers())
-        TrackingProtection.hasSocialBlocked.set(settings.hasSocialBlocked())
+        TrackingProtection.hasSocialBlocked.set(settings.shouldBlockSocialTrackers())
 
         // theme telemetry
         val currentTheme =

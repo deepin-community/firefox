@@ -8,7 +8,6 @@
 #define nsIClassInfoImpl_h__
 
 #include "mozilla/Alignment.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/MacroArgs.h"
 #include "mozilla/MacroForEach.h"
 #include "nsIClassInfo.h"
@@ -118,11 +117,12 @@ class GenericClassInfo : public nsIClassInfo {
 
 #define NS_IMPL_CLASSINFO(_class, _getscriptablehelper, _flags, _cid)       \
   NS_DECL_CI_INTERFACE_GETTER(_class)                                       \
-  static const GenericClassInfo::ClassInfoData k##_class##ClassInfoData = { \
-      NS_CI_INTERFACE_GETTER_NAME(_class),                                  \
-      _getscriptablehelper,                                                 \
-      _flags | nsIClassInfo::SINGLETON_CLASSINFO,                           \
-      _cid,                                                                 \
+  MOZ_GLOBINIT static const GenericClassInfo::ClassInfoData                 \
+      k##_class##ClassInfoData = {                                          \
+          NS_CI_INTERFACE_GETTER_NAME(_class),                              \
+          _getscriptablehelper,                                             \
+          _flags | nsIClassInfo::SINGLETON_CLASSINFO,                       \
+          _cid,                                                             \
   };                                                                        \
   mozilla::AlignedStorage2<GenericClassInfo> k##_class##ClassInfoDataPlace; \
   nsIClassInfo* NS_CLASSINFO_NAME(_class) = nullptr;

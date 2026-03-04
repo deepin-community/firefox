@@ -4,7 +4,6 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Focail Fhaire
-
 fxaccounts-sign-in-text = Faigh do chuid focal faire ar ghléasanna eile
 fxaccounts-avatar-button =
     .title = Bainistigh an cuntas
@@ -42,9 +41,6 @@ about-logins-list-section-today = Inniu
 about-logins-list-section-yesterday = Inné
 about-logins-list-section-week = An 7 lá anuas
 
-## Introduction screen
-
-
 ## Login
 
 login-item-new-login-title = Cruthaigh Logáil Isteach Nua
@@ -67,18 +63,9 @@ login-item-save-changes-button = Sábháil na hAthruithe
 login-item-save-new-button = Sábháil
 login-item-cancel-button = Cealaigh
 
-## The date is displayed in a timeline showing the password evolution.
-## A label is displayed under the date to describe the type of change.
-## (e.g. updated, created, etc.)
-
 ## OS Authentication dialog
 
 about-logins-os-auth-dialog-caption = { -brand-full-name }
-
-## The macOS strings are preceded by the operating system with "Firefox is trying to "
-## and includes subtitle of "Enter password for the user "xxx" to allow this." These
-## notes are only valid for English. Please test in your respected locale.
-
 
 ## Primary Password notification
 
@@ -91,22 +78,14 @@ master-password-reload-button =
 confirmation-dialog-cancel-button = Cealaigh
 confirmation-dialog-dismiss-button =
     .title = Cealaigh
-
 about-logins-confirm-remove-dialog-title = Bain an Focal Faire seo?
 confirm-delete-dialog-message = Ní féidir an gníomh seo a chur ar ceal.
 about-logins-confirm-remove-dialog-confirm-button = Bain
 
-## Variables
-##   $count (number) - Number of items
-
 ##
 
 about-logins-confirm-export-dialog-confirm-button = Easpórtáil…
-
 confirm-discard-changes-dialog-confirm-button = Cuileáil
-
-## Breach Alert notification
-
 
 ## Vulnerable Password notification
 
@@ -143,16 +122,3 @@ about-logins-import-file-picker-tsv-filter-title =
 ##  $count (number) - The number of affected elements
 
 about-logins-import-dialog-error-cancel = Cealaigh
-
-##
-## Variables:
-##  $field (String) - The name of the field from the CSV file for example url, username or password
-
-
-##
-## Variables:
-##  $count (number) - The number of affected elements
-
-
-## Logins import report page
-

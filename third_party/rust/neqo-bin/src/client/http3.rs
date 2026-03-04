@@ -4,56 +4,60 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![expect(clippy::unwrap_used, reason = "This is example code.")]
+
 //! An HTTP 3 client implementation.
 
 use std::{
     cell::RefCell,
-    collections::{HashMap, VecDeque},
+    collections::VecDeque,
     fmt::Display,
     fs::File,
-    io::{BufWriter, Write},
+    io::{BufWriter, Write as _},
     net::SocketAddr,
+    num::NonZeroUsize,
     path::PathBuf,
     rc::Rc,
     time::Instant,
 };
 
-use neqo_common::{event::Provider, hex, qdebug, qinfo, qwarn, Datagram, Header};
+use neqo_common::{event::Provider, hex, qdebug, qerror, qinfo, qwarn, Datagram};
 use neqo_crypto::{AuthenticationStatus, ResumptionToken};
 use neqo_http3::{Error, Http3Client, Http3ClientEvent, Http3Parameters, Http3State, Priority};
 use neqo_transport::{
-    AppError, CloseReason, Connection, EmptyConnectionIdGenerator, Error as TransportError, Output,
-    StreamId,
+    AppError, CloseReason, Connection, EmptyConnectionIdGenerator, Error as TransportError,
+    OutputBatch, RandomConnectionIdGenerator, StreamId,
 };
+use rustc_hash::FxHashMap as HashMap;
 use url::Url;
 
 use super::{get_output_file, qlog_new, Args, CloseState, Res};
+use crate::{send_data::SendData, STREAM_IO_BUFFER_SIZE};
 
-pub struct Handler<'a> {
-    #[allow(clippy::struct_field_names)]
-    url_handler: UrlHandler<'a>,
+pub struct Handler {
+    #[expect(clippy::struct_field_names, reason = "This name is more descriptive.")]
+    url_handler: UrlHandler,
     token: Option<ResumptionToken>,
     output_read_data: bool,
+    read_buffer: Vec<u8>,
 }
 
-impl<'a> Handler<'a> {
-    pub(crate) fn new(url_queue: VecDeque<Url>, args: &'a Args) -> Self {
+impl Handler {
+    pub(crate) fn new(url_queue: VecDeque<Url>, args: Args) -> Self {
+        let output_read_data = args.output_read_data;
         let url_handler = UrlHandler {
             url_queue,
-            stream_handlers: HashMap::new(),
+            handled_urls: Vec::new(),
+            stream_handlers: HashMap::default(),
             all_paths: Vec::new(),
-            handler_type: if args.test.is_some() {
-                StreamHandlerType::Upload
-            } else {
-                StreamHandlerType::Download
-            },
             args,
         };
 
         Self {
             url_handler,
             token: None,
-            output_read_data: args.output_read_data,
+            output_read_data,
+            read_buffer: vec![0; STREAM_IO_BUFFER_SIZE],
         }
     }
 }
@@ -65,10 +69,18 @@ pub fn create_client(
     hostname: &str,
     resumption_token: Option<ResumptionToken>,
 ) -> Res<Http3Client> {
+    let cid_generator: Rc<RefCell<dyn neqo_transport::ConnectionIdGenerator>> = if args.cid_len == 0
+    {
+        Rc::new(RefCell::new(EmptyConnectionIdGenerator::default()))
+    } else {
+        Rc::new(RefCell::new(RandomConnectionIdGenerator::new(
+            args.cid_len.into(),
+        )))
+    };
     let mut transport = Connection::new_client(
         hostname,
         &[&args.shared.alpn],
-        Rc::new(RefCell::new(EmptyConnectionIdGenerator::default())),
+        cid_generator,
         local_addr,
         remote_addr,
         args.shared.quic_parameters.get(args.shared.alpn.as_str()),
@@ -90,12 +102,10 @@ pub fn create_client(
     let qlog = qlog_new(args, hostname, client.connection_id())?;
     client.set_qlog(qlog);
     if let Some(ech) = &args.ech {
-        client.enable_ech(ech).expect("enable ECH");
+        client.enable_ech(ech)?;
     }
     if let Some(token) = resumption_token {
-        client
-            .enable_resumption(Instant::now(), token)
-            .expect("enable resumption");
+        client.enable_resumption(Instant::now(), token)?;
     }
 
     Ok(client)
@@ -124,14 +134,19 @@ impl super::Client for Http3Client {
         self.state().try_into()
     }
 
-    fn process_output(&mut self, now: Instant) -> Output {
-        self.process_output(now)
+    fn process_multiple_output(
+        &mut self,
+        now: Instant,
+        max_datagrams: NonZeroUsize,
+    ) -> OutputBatch {
+        self.process_multiple_output(now, max_datagrams)
     }
 
-    fn process_multiple_input<'a, I>(&mut self, dgrams: I, now: Instant)
-    where
-        I: IntoIterator<Item = &'a Datagram>,
-    {
+    fn process_multiple_input<'a>(
+        &mut self,
+        dgrams: impl IntoIterator<Item = Datagram<&'a mut [u8]>>,
+        now: Instant,
+    ) {
         self.process_multiple_input(dgrams, now);
     }
 
@@ -147,11 +162,11 @@ impl super::Client for Http3Client {
     }
 
     fn has_events(&self) -> bool {
-        neqo_common::event::Provider::has_events(self)
+        Provider::has_events(self)
     }
 }
 
-impl<'a> super::Handler for Handler<'a> {
+impl super::Handler for Handler {
     type Client = Http3Client;
 
     fn handle(&mut self, client: &mut Http3Client) -> Res<bool> {
@@ -166,8 +181,8 @@ impl<'a> super::Handler for Handler<'a> {
                     fin,
                     ..
                 } => {
-                    if let Some(handler) = self.url_handler.stream_handler(stream_id) {
-                        handler.process_header_ready(stream_id, fin, headers);
+                    if self.url_handler.stream_handler(stream_id).is_some() {
+                        qdebug!("READ HEADERS[{stream_id}]: fin={fin} {headers:?}");
                     } else {
                         qwarn!("Data on unexpected stream: {stream_id}");
                     }
@@ -182,16 +197,16 @@ impl<'a> super::Handler for Handler<'a> {
                             qwarn!("Data on unexpected stream: {stream_id}");
                         }
                         Some(handler) => loop {
-                            let mut data = vec![0; 4096];
-                            let (sz, fin) = client
-                                .read_data(Instant::now(), stream_id, &mut data)
-                                .expect("Read should succeed");
+                            let (sz, fin) = client.read_data(
+                                Instant::now(),
+                                stream_id,
+                                &mut self.read_buffer,
+                            )?;
 
                             handler.process_data_readable(
                                 stream_id,
                                 fin,
-                                data,
-                                sz,
+                                &self.read_buffer[..sz],
                                 self.output_read_data,
                             )?;
 
@@ -216,12 +231,19 @@ impl<'a> super::Handler for Handler<'a> {
                             qwarn!("Data on unexpected stream: {stream_id}");
                         }
                         Some(handler) => {
-                            handler.process_data_writable(client, stream_id);
+                            handler.process_data_writable(client, stream_id, Instant::now());
                         }
                     }
                 }
                 Http3ClientEvent::StateChange(Http3State::Connected)
                 | Http3ClientEvent::RequestsCreatable => {
+                    qinfo!("{event:?}");
+                    self.url_handler.process_urls(client);
+                }
+                Http3ClientEvent::ZeroRttRejected => {
+                    qinfo!("{event:?}");
+                    // All 0-RTT data was rejected. We need to retransmit it.
+                    self.url_handler.reinit();
                     self.url_handler.process_urls(client);
                 }
                 Http3ClientEvent::ResumptionToken(t) => self.token = Some(t),
@@ -240,46 +262,19 @@ impl<'a> super::Handler for Handler<'a> {
 }
 
 trait StreamHandler {
-    fn process_header_ready(&mut self, stream_id: StreamId, fin: bool, headers: Vec<Header>);
     fn process_data_readable(
         &mut self,
         stream_id: StreamId,
         fin: bool,
-        data: Vec<u8>,
-        sz: usize,
+        data: &[u8],
         output_read_data: bool,
-    ) -> Res<bool>;
-    fn process_data_writable(&mut self, client: &mut Http3Client, stream_id: StreamId);
-}
-
-enum StreamHandlerType {
-    Download,
-    Upload,
-}
-
-impl StreamHandlerType {
-    fn make_handler(
-        handler_type: &Self,
-        url: &Url,
-        args: &Args,
-        all_paths: &mut Vec<PathBuf>,
+    ) -> Res<()>;
+    fn process_data_writable(
+        &mut self,
         client: &mut Http3Client,
-        client_stream_id: StreamId,
-    ) -> Box<dyn StreamHandler> {
-        match handler_type {
-            Self::Download => {
-                let out_file = get_output_file(url, &args.output_dir, all_paths);
-                client.stream_close_send(client_stream_id).unwrap();
-                Box::new(DownloadStreamHandler { out_file })
-            }
-            Self::Upload => Box::new(UploadStreamHandler {
-                data: vec![42; args.upload_size],
-                offset: 0,
-                chunk_size: 32768,
-                start: Instant::now(),
-            }),
-        }
-    }
+        stream_id: StreamId,
+        now: Instant,
+    );
 }
 
 struct DownloadStreamHandler {
@@ -287,31 +282,26 @@ struct DownloadStreamHandler {
 }
 
 impl StreamHandler for DownloadStreamHandler {
-    fn process_header_ready(&mut self, stream_id: StreamId, fin: bool, headers: Vec<Header>) {
-        if self.out_file.is_none() {
-            qdebug!("READ HEADERS[{stream_id}]: fin={fin} {headers:?}");
-        }
-    }
-
     fn process_data_readable(
         &mut self,
         stream_id: StreamId,
         fin: bool,
-        data: Vec<u8>,
-        sz: usize,
+        data: &[u8],
         output_read_data: bool,
-    ) -> Res<bool> {
+    ) -> Res<()> {
         if let Some(out_file) = &mut self.out_file {
-            if sz > 0 {
-                out_file.write_all(&data[..sz])?;
+            if !data.is_empty() {
+                out_file.write_all(data)?;
             }
-            return Ok(true);
-        } else if !output_read_data {
-            qdebug!("READ[{stream_id}]: {sz} bytes");
-        } else if let Ok(txt) = String::from_utf8(data.clone()) {
-            qdebug!("READ[{stream_id}]: {txt}");
-        } else {
-            qdebug!("READ[{}]: 0x{}", stream_id, hex(&data));
+            return Ok(());
+        } else if log::log_enabled!(log::Level::Debug) {
+            if !output_read_data {
+                qdebug!("READ[{stream_id}]: {} bytes", data.len());
+            } else if let Ok(txt) = std::str::from_utf8(data) {
+                qdebug!("READ[{stream_id}]: {txt}");
+            } else {
+                qdebug!("READ[{stream_id}]: 0x{}", hex(data));
+            }
         }
 
         if fin {
@@ -322,74 +312,71 @@ impl StreamHandler for DownloadStreamHandler {
             }
         }
 
-        Ok(true)
+        Ok(())
     }
 
-    fn process_data_writable(&mut self, _client: &mut Http3Client, _stream_id: StreamId) {}
+    fn process_data_writable(
+        &mut self,
+        _client: &mut Http3Client,
+        _stream_id: StreamId,
+        _now: Instant,
+    ) {
+    }
 }
 
 struct UploadStreamHandler {
-    data: Vec<u8>,
-    offset: usize,
-    chunk_size: usize,
+    data: SendData,
     start: Instant,
 }
 
 impl StreamHandler for UploadStreamHandler {
-    fn process_header_ready(&mut self, stream_id: StreamId, fin: bool, headers: Vec<Header>) {
-        qdebug!("READ HEADERS[{stream_id}]: fin={fin} {headers:?}");
-    }
-
     fn process_data_readable(
         &mut self,
         stream_id: StreamId,
         _fin: bool,
-        data: Vec<u8>,
-        _sz: usize,
+        data: &[u8],
         _output_read_data: bool,
-    ) -> Res<bool> {
-        if let Ok(txt) = String::from_utf8(data.clone()) {
+    ) -> Res<()> {
+        if let Ok(txt) = std::str::from_utf8(data) {
             let trimmed_txt = txt.trim_end_matches(char::from(0));
-            let parsed: usize = trimmed_txt.parse().unwrap();
+            let parsed: usize = trimmed_txt.parse().map_err(|_| Error::InvalidInput)?;
             if parsed == self.data.len() {
-                let upload_time = Instant::now().duration_since(self.start);
-                qinfo!("Stream ID: {stream_id:?}, Upload time: {upload_time:?}");
+                qinfo!(
+                    "Stream ID: {stream_id:?}, Upload time: {:?}",
+                    Instant::now().duration_since(self.start)
+                );
             }
+            Ok(())
         } else {
-            panic!("Unexpected data [{}]: 0x{}", stream_id, hex(&data));
+            qerror!("Unexpected data [{stream_id}]: 0x{}", hex(data));
+            Err(crate::client::Error::Http3(Error::InvalidInput))
         }
-        Ok(true)
     }
 
-    fn process_data_writable(&mut self, client: &mut Http3Client, stream_id: StreamId) {
-        while self.offset < self.data.len() {
-            let end = self.offset + self.chunk_size.min(self.data.len() - self.offset);
-            let chunk = &self.data[self.offset..end];
-            match client.send_data(stream_id, chunk) {
-                Ok(amount) => {
-                    if amount == 0 {
-                        break;
-                    }
-                    self.offset += amount;
-                    if self.offset == self.data.len() {
-                        client.stream_close_send(stream_id).unwrap();
-                    }
-                }
-                Err(_) => break,
-            };
+    fn process_data_writable(
+        &mut self,
+        client: &mut Http3Client,
+        stream_id: StreamId,
+        now: Instant,
+    ) {
+        let done = self
+            .data
+            .send(|chunk| client.send_data(stream_id, chunk, now).unwrap());
+        if done {
+            client.stream_close_send(stream_id, now).unwrap();
         }
     }
 }
 
-struct UrlHandler<'a> {
+struct UrlHandler {
     url_queue: VecDeque<Url>,
+    handled_urls: Vec<Url>,
     stream_handlers: HashMap<StreamId, Box<dyn StreamHandler>>,
     all_paths: Vec<PathBuf>,
-    handler_type: StreamHandlerType,
-    args: &'a Args,
+    args: Args,
 }
 
-impl<'a> UrlHandler<'a> {
+impl UrlHandler {
     fn stream_handler(&mut self, stream_id: StreamId) -> Option<&mut Box<dyn StreamHandler>> {
         self.stream_handlers.get_mut(&stream_id)
     }
@@ -413,30 +400,41 @@ impl<'a> UrlHandler<'a> {
             .url_queue
             .pop_front()
             .expect("download_next called with empty queue");
+        let now = Instant::now();
         match client.fetch(
-            Instant::now(),
+            now,
             &self.args.method,
             &url,
-            &to_headers(&self.args.header),
+            &self.args.headers,
             Priority::default(),
         ) {
             Ok(client_stream_id) => {
                 qdebug!("Successfully created stream id {client_stream_id} for {url}");
 
-                let handler: Box<dyn StreamHandler> = StreamHandlerType::make_handler(
-                    &self.handler_type,
-                    &url,
-                    self.args,
-                    &mut self.all_paths,
-                    client,
-                    client_stream_id,
-                );
+                let handler: Box<dyn StreamHandler> = match self.args.method.as_str() {
+                    "GET" => {
+                        let out_file = get_output_file(
+                            &url,
+                            self.args.output_dir.as_ref(),
+                            &mut self.all_paths,
+                        );
+                        client.stream_close_send(client_stream_id, now).unwrap();
+                        Box::new(DownloadStreamHandler { out_file })
+                    }
+                    "POST" => Box::new(UploadStreamHandler {
+                        data: SendData::zeroes(self.args.upload_size),
+                        start: now,
+                    }),
+                    _ => unimplemented!(),
+                };
+
                 self.stream_handlers.insert(client_stream_id, handler);
+                self.handled_urls.push(url);
                 true
             }
             Err(
-                Error::TransportError(TransportError::StreamLimitError)
-                | Error::StreamLimitError
+                Error::Transport(TransportError::StreamLimit)
+                | Error::StreamLimit
                 | Error::Unavailable,
             ) => {
                 self.url_queue.push_front(url);
@@ -456,19 +454,12 @@ impl<'a> UrlHandler<'a> {
         self.stream_handlers.remove(&stream_id);
         self.process_urls(client);
     }
-}
 
-fn to_headers(values: &[impl AsRef<str>]) -> Vec<Header> {
-    values
-        .iter()
-        .scan(None, |state, value| {
-            if let Some(name) = state.take() {
-                *state = None;
-                Some(Header::new(name, value.as_ref()))
-            } else {
-                *state = Some(value.as_ref().to_string());
-                None
-            }
-        })
-        .collect()
+    fn reinit(&mut self) {
+        for url in self.handled_urls.drain(..).rev() {
+            self.url_queue.push_front(url);
+        }
+        self.stream_handlers.clear();
+        self.all_paths.clear();
+    }
 }

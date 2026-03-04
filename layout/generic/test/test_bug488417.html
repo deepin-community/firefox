@@ -5,7 +5,6 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=488417
 -->
 <head>
   <title>Test for Bug 488417</title>
-  <script type="application/javascript" src="/MochiKit/MochiKit.js"></script>
   <script src="/tests/SimpleTest/SimpleTest.js"></script>
   <script src="/tests/SimpleTest/EventUtils.js"></script>
   <link rel="stylesheet" type="text/css" href="/tests/SimpleTest/test.css"/>
@@ -36,7 +35,7 @@ function clickIt(node) {
                   { accelKey: 1 });
 }
   
-/** Test for Bug 488417 **/
+/** Test for Bug 488417 */
 SimpleTest.waitForExplicitFinish();
 
 addLoadEvent(function() {

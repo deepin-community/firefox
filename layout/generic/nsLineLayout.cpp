@@ -8,10 +8,12 @@
 
 #include "nsLineLayout.h"
 
-#include "mozilla/ComputedStyle.h"
-#include "mozilla/SVGTextFrame.h"
+#include <algorithm>
 
 #include "LayoutLogging.h"
+#include "RubyUtils.h"
+#include "mozilla/ComputedStyle.h"
+#include "mozilla/SVGTextFrame.h"
 #include "nsBidiPresUtils.h"
 #include "nsBlockFrame.h"
 #include "nsContainerFrame.h"
@@ -26,8 +28,6 @@
 #include "nsStyleConsts.h"
 #include "nsStyleStructInlines.h"
 #include "nsTextFrame.h"
-#include "RubyUtils.h"
-#include <algorithm>
 
 #ifdef DEBUG
 #  undef NOISY_INLINEDIR_ALIGN
@@ -629,6 +629,16 @@ static bool HasPercentageUnitSide(const StyleRect<T>& aSides) {
   return aSides.Any([](const auto& aLength) { return aLength.HasPercent(); });
 }
 
+static bool HasPercentageUnitMargin(const nsStyleMargin& aStyleMargin,
+                                    const AnchorPosResolutionParams& aParams) {
+  for (const auto side : AllPhysicalSides()) {
+    if (aStyleMargin.GetMargin(side, aParams)->HasPercent()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static bool IsPercentageAware(const nsIFrame* aFrame, WritingMode aWM) {
   MOZ_ASSERT(aFrame, "null frame is not allowed");
 
@@ -644,7 +654,8 @@ static bool IsPercentageAware(const nsIFrame* aFrame, WritingMode aWM) {
   // quite rarely.
 
   const nsStyleMargin* margin = aFrame->StyleMargin();
-  if (HasPercentageUnitSide(margin->mMargin)) {
+  const auto anchorResolutionParams = AnchorPosResolutionParams::From(aFrame);
+  if (HasPercentageUnitMargin(*margin, anchorResolutionParams)) {
     return true;
   }
 
@@ -656,24 +667,30 @@ static bool IsPercentageAware(const nsIFrame* aFrame, WritingMode aWM) {
   // Note that borders can't be aware of percentages
 
   const nsStylePosition* pos = aFrame->StylePosition();
-
-  if ((pos->ISizeDependsOnContainer(aWM) && !pos->ISize(aWM).IsAuto()) ||
-      pos->MaxISizeDependsOnContainer(aWM) ||
-      pos->MinISizeDependsOnContainer(aWM) ||
-      pos->mOffset.GetIStart(aWM).HasPercent() ||
-      pos->mOffset.GetIEnd(aWM).HasPercent()) {
+  const auto iSize = pos->ISize(aWM, anchorResolutionParams);
+  const auto anchorOffsetResolutionParams =
+      AnchorPosOffsetResolutionParams::UseCBFrameSize(anchorResolutionParams);
+  if ((nsStylePosition::ISizeDependsOnContainer(iSize) && !iSize->IsAuto()) ||
+      nsStylePosition::MaxISizeDependsOnContainer(
+          pos->MaxISize(aWM, anchorResolutionParams)) ||
+      nsStylePosition::MinISizeDependsOnContainer(
+          pos->MinISize(aWM, anchorResolutionParams)) ||
+      pos->GetAnchorResolvedInset(LogicalSide::IStart, aWM,
+                                  anchorOffsetResolutionParams)
+          ->HasPercent() ||
+      pos->GetAnchorResolvedInset(LogicalSide::IEnd, aWM,
+                                  anchorOffsetResolutionParams)
+          ->HasPercent()) {
     return true;
   }
 
-  if (pos->ISize(aWM).IsAuto()) {
+  if (iSize->IsAuto()) {
     // We need to check for frames that shrink-wrap when they're auto
     // width.
     const nsStyleDisplay* disp = aFrame->StyleDisplay();
     if ((disp->DisplayOutside() == StyleDisplayOutside::Inline &&
          (disp->DisplayInside() == StyleDisplayInside::FlowRoot ||
           disp->DisplayInside() == StyleDisplayInside::Table)) ||
-        fType == LayoutFrameType::HTMLButtonControl ||
-        fType == LayoutFrameType::GfxButtonControl ||
         fType == LayoutFrameType::FieldSet) {
       return true;
     }
@@ -688,7 +705,7 @@ static bool IsPercentageAware(const nsIFrame* aFrame, WritingMode aWM) {
     nsIFrame* f = const_cast<nsIFrame*>(aFrame);
     if (f->GetAspectRatio() &&
         // Some percents are treated like 'auto', so check != coord
-        !pos->BSize(aWM).ConvertsToLength()) {
+        !pos->BSize(aWM, anchorResolutionParams)->ConvertsToLength()) {
       const IntrinsicSize& intrinsicSize = f->GetIntrinsicSize();
       if (!intrinsicSize.width && !intrinsicSize.height) {
         return true;
@@ -1368,7 +1385,8 @@ void nsLineLayout::AddMarkerFrame(nsIFrame* aFrame,
 
   nsBlockFrame* blockFrame = do_QueryFrame(LineContainerFrame());
   MOZ_ASSERT(blockFrame, "must be for block");
-  if (!blockFrame->MarkerIsEmpty()) {
+  if (!blockFrame->MarkerIsEmpty(aFrame)) {
+    mLineIsEmpty = false;
     mHasMarker = true;
     mLineBox->SetHasMarker();
   }
@@ -1476,11 +1494,53 @@ bool nsLineLayout::NotifyOptionalBreakPosition(nsIFrame* aFrame,
 #define VALIGN_TOP 1
 #define VALIGN_BOTTOM 2
 
+void nsLineLayout::SetSpanForEmptyLine(PerSpanData* aPerSpanData,
+                                       WritingMode aWM,
+                                       const nsSize& aContainerSize,
+                                       nscoord aBStartEdge) {
+  for (PerFrameData* pfd = aPerSpanData->mFirstFrame; pfd; pfd = pfd->mNext) {
+    // Ideally, if the frame would collapse itself - but it depends on
+    // knowing that the line is empty.
+    if (!pfd->mFrame->IsInlineFrame() && !pfd->mFrame->IsRubyFrame() &&
+        !pfd->mFrame->IsPlaceholderFrame()) {
+      continue;
+    }
+    // Collapse the physical size to 0.
+    pfd->mBounds.BStart(aWM) = aBStartEdge;
+    pfd->mBounds.BSize(aWM) = 0;
+    // Initialize mBlockDirAlign (though it doesn't make much difference
+    // because we don't align empty boxes).
+    pfd->mBlockDirAlign = VALIGN_OTHER;
+    pfd->mFrame->SetRect(aWM, pfd->mBounds, aContainerSize);
+    if (pfd->mSpan) {
+      // For child spans, the block-start edge is relative to that of parent,
+      // which is zero (since it is empty). See NOTE in
+      // `nsLineLayout::ReflowFrame`.
+      SetSpanForEmptyLine(pfd->mSpan, aWM, aContainerSize, 0);
+    }
+  }
+}
+
 void nsLineLayout::VerticalAlignLine() {
   // Partially place the children of the block frame. The baseline for
   // this operation is set to zero so that the y coordinates for all
   // of the placed children will be relative to there.
   PerSpanData* psd = mRootSpan;
+  if (mLineIsEmpty) {
+    // This line is empty, and should be consisting of only inline elements.
+    // (inline-block elements would make the line non-empty).
+    SetSpanForEmptyLine(psd, mRootSpan->mWritingMode, ContainerSize(),
+                        mBStartEdge);
+
+    mFinalLineBSize = 0;
+    if (mGotLineBox) {
+      mLineBox->SetBounds(psd->mWritingMode, psd->mIStart, mBStartEdge,
+                          psd->mICoord - psd->mIStart, 0, ContainerSize());
+
+      mLineBox->SetLogicalAscent(0);
+    }
+    return;
+  }
   VerticalAlignFrames(psd);
 
   // *** Note that comments here still use the anachronistic term
@@ -1623,7 +1683,10 @@ void nsLineLayout::PlaceTopBottomFrames(PerSpanData* psd,
 static nscoord GetBSizeOfEmphasisMarks(nsIFrame* aSpanFrame, float aInflation) {
   RefPtr<nsFontMetrics> fm = nsLayoutUtils::GetFontMetricsOfEmphasisMarks(
       aSpanFrame->Style(), aSpanFrame->PresContext(), aInflation);
-  return fm->MaxHeight();
+  return aSpanFrame->PresContext()->NormalizeRubyMetrics()
+             ? (fm->TrimmedAscent() + fm->TrimmedDescent()) *
+                   aSpanFrame->PresContext()->RubyPositioningFactor()
+             : fm->MaxHeight();
 }
 
 void nsLineLayout::AdjustLeadings(nsIFrame* spanFrame, PerSpanData* psd,
@@ -1644,13 +1707,31 @@ void nsLineLayout::AdjustLeadings(nsIFrame* spanFrame, PerSpanData* psd,
   }
   if (aStyleText->HasEffectiveTextEmphasis()) {
     nscoord bsize = GetBSizeOfEmphasisMarks(spanFrame, aInflation);
-    LogicalSide side = aStyleText->TextEmphasisSide(mRootSpan->mWritingMode);
-    if (side == LogicalSide::BStart) {
-      requiredStartLeading += bsize;
+    LogicalSide side = aStyleText->TextEmphasisSide(
+        mRootSpan->mWritingMode, spanFrame->StyleFont()->mLanguage);
+    if (spanFrame->PresContext()->NormalizeRubyMetrics()) {
+      // Add extra leading for emphasis marks only if their bsize exceeds the
+      // space built in to the font (difference between its max ascent/descent
+      // and the em-normalized metrics that are used to position the mark).
+      RefPtr fm = nsLayoutUtils::GetInflatedFontMetricsForFrame(spanFrame);
+      float factor = spanFrame->PresContext()->RubyPositioningFactor();
+      if (side == LogicalSide::BStart) {
+        requiredStartLeading += std::max(
+            0, bsize - (fm->MaxAscent() -
+                        nscoord(NS_round(factor * fm->TrimmedAscent()))));
+      } else {
+        requiredEndLeading += std::max(
+            0, bsize - (fm->MaxDescent() -
+                        nscoord(NS_round(factor * fm->TrimmedDescent()))));
+      }
     } else {
-      MOZ_ASSERT(side == LogicalSide::BEnd,
-                 "emphasis marks must be in block axis");
-      requiredEndLeading += bsize;
+      if (side == LogicalSide::BStart) {
+        requiredStartLeading += bsize;
+      } else {
+        MOZ_ASSERT(side == LogicalSide::BEnd,
+                   "emphasis marks must be in block axis");
+        requiredEndLeading += bsize;
+      }
     }
   }
 
@@ -2195,8 +2276,12 @@ void nsLineLayout::VerticalAlignFrames(PerSpanData* psd) {
             blockEnd = BLOCKDIR_ALIGN_FRAMES_NO_MAXIMUM;
           }
         }
-        if (blockStart < minBCoord) minBCoord = blockStart;
-        if (blockEnd > maxBCoord) maxBCoord = blockEnd;
+        if (blockStart < minBCoord) {
+          minBCoord = blockStart;
+        }
+        if (blockEnd > maxBCoord) {
+          maxBCoord = blockEnd;
+        }
 #ifdef NOISY_BLOCKDIR_ALIGN
         printf(
             "     [frame]raw: a=%d h=%d bp=%d,%d logical: h=%d leading=%d y=%d "
@@ -2256,7 +2341,11 @@ void nsLineLayout::VerticalAlignFrames(PerSpanData* psd) {
         nscoord blockEnd = blockStart + minimumLineBSize;
 
         if (mStyleText->HasEffectiveTextEmphasis()) {
-          nscoord fontMaxHeight = fm->MaxHeight();
+          nscoord fontMaxHeight =
+              mPresContext->NormalizeRubyMetrics()
+                  ? mPresContext->RubyPositioningFactor() *
+                        (fm->TrimmedAscent() + fm->TrimmedDescent())
+                  : fm->MaxHeight();
           nscoord emphasisHeight =
               GetBSizeOfEmphasisMarks(spanFrame, inflation);
           nscoord delta = fontMaxHeight + emphasisHeight - minimumLineBSize;
@@ -2272,7 +2361,8 @@ void nsLineLayout::VerticalAlignFrames(PerSpanData* psd) {
               blockEnd = descent;
               delta = emphasisHeight;
             }
-            LogicalSide side = mStyleText->TextEmphasisSide(lineWM);
+            LogicalSide side = mStyleText->TextEmphasisSide(
+                lineWM, spanFrame->StyleFont()->mLanguage);
             if (side == LogicalSide::BStart) {
               blockStart -= delta;
             } else {
@@ -3316,8 +3406,12 @@ void nsLineLayout::RelativePositionFrames(PerSpanData* psd,
     overflowAreas.InkOverflow().UnionRect(
         psd->mFrame->mOverflowAreas.InkOverflow(), adjustedBounds);
   } else {
-    LogicalRect rect(wm, psd->mIStart, mBStartEdge, psd->mICoord - psd->mIStart,
-                     mFinalLineBSize);
+    // Note(dshin, bug 1940938): `mICoord` can be negative due to a negative
+    // `text-indent` value (i.e. "Outdenting"). Ensure that we have a valid
+    // overflow rect for that case.
+    const auto iStart = std::min(psd->mIStart, psd->mICoord);
+    const auto iSize = std::abs(psd->mICoord - psd->mIStart);
+    LogicalRect rect(wm, iStart, mBStartEdge, iSize, mFinalLineBSize);
     // The minimum combined area for the frames that are direct
     // children of the block starts at the upper left corner of the
     // line and is sized to match the size of the line's bounding box
@@ -3331,16 +3425,6 @@ void nsLineLayout::RelativePositionFrames(PerSpanData* psd,
 
     // Adjust the origin of the frame
     ApplyRelativePositioning(pfd);
-
-    // We must position the view correctly before positioning its
-    // descendants so that widgets are positioned properly (since only
-    // some views have widgets).
-    if (frame->HasView()) {
-      nsContainerFrame::SyncFrameViewAfterReflow(
-          mPresContext, frame, frame->GetView(),
-          pfd->mOverflowAreas.InkOverflow(),
-          nsIFrame::ReflowChildFlags::NoSizeView);
-    }
 
     // Note: the combined area of a child is in its coordinate
     // system. We adjust the childs combined area into our coordinate
@@ -3370,24 +3454,7 @@ void nsLineLayout::RelativePositionFrames(PerSpanData* psd,
         }
         frame->FinishAndStoreOverflow(r, frame->GetSize());
       }
-
-      // If we have something that's not an inline but with a complex frame
-      // hierarchy inside that contains views, they need to be
-      // positioned.
-      // All descendant views must be repositioned even if this frame
-      // does have a view in case this frame's view does not have a
-      // widget and some of the descendant views do have widgets --
-      // otherwise the widgets won't be repositioned.
-      nsContainerFrame::PositionChildViews(frame);
     }
-
-    // Do this here (rather than along with setting the overflow rect
-    // below) so we get leaf frames as well.  No need to worry
-    // about the root span, since it doesn't have a frame.
-    if (frame->HasView())
-      nsContainerFrame::SyncFrameViewAfterReflow(
-          mPresContext, frame, frame->GetView(), r.InkOverflow(),
-          nsIFrame::ReflowChildFlags::NoMoveView);
 
     overflowAreas.UnionWith(r + frame->GetPosition());
   }

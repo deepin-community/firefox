@@ -21,6 +21,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = అమరికలలో వెతకండి
 managed-notice = మీ విహారిణి మీ సంస్థ ద్వారా నిర్వహించబడుతోంది.
+managed-notice-info-icon =
+    .alt = సమాచారం
 category-list =
     .aria-label = వర్గాలు
 pane-general-title = సాధారణం
@@ -64,17 +66,6 @@ should-restart-ok = ఇప్పుడు { -brand-short-name } ను పున
 cancel-no-restart-button = రద్దుచేయి
 restart-later = తరువాత పునఃప్రారంభించు
 
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
-
 ## Preferences UI Search Results
 
 search-results-header = వెతుకుడు ఫలితాలు
@@ -86,15 +77,24 @@ startup-header = మొదలవడం
 always-check-default =
     .label = { -brand-short-name } మీ అప్రమేయ విహారిణియేనా అని ఎల్లప్పుడూ పరిశీలించు
     .accesskey = w
+is-default-browser =
+    .message = { -brand-short-name } ప్రస్తుతం మీ అప్రమేయ విహారిణి
+is-not-default-browser =
+    .message = { -brand-short-name } ప్రస్తుతం మీ అప్రమేయ విహారిణి కాదు
 is-default = { -brand-short-name } ప్రస్తుతం మీ అప్రమేయ విహారిణి
 is-not-default = { -brand-short-name } ప్రస్తుతం మీ అప్రమేయ విహారిణి కాదు
 set-as-my-default-browser =
     .label = అప్రమేయం చేయి…
     .accesskey = D
+startup-restore-windows-and-tabs =
+    .label = మునుపటి కిటికీలను, ట్యాబులను తెరువు
+    .accesskey = s
 startup-restore-warn-on-quit =
     .label = విహారిణిని మూసివేస్తున్నప్పుడు నన్ను హెచ్చరించు
 disable-extension =
     .label = పొడగింతను అచేతనించు
+tabs-group-header2 =
+    .label = ట్యాబులు
 tabs-group-header = ట్యాబులు
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab ట్యాబులను వరుసగా కాకుండా వాటిని ఇటీవల వాడిన క్రమంలో చుట్టుతిప్పుతుంది
@@ -102,6 +102,9 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = లంకెలను కొత్త విండోలలో కాక ట్యాబులలో తెరువు
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = పలు ట్యాబులను ఒకేసారి మూసివేస్తున్నప్పుడు అడుగు
+    .accesskey = m
 warn-on-open-many-tabs =
     .label = ఎక్కువ ట్యాబులను తెరిచినప్పుడు { -brand-short-name }‌ నెమ్మదిస్తూంటే నన్ను హెచ్చరించు
     .accesskey = d
@@ -119,6 +122,8 @@ browser-containers-settings =
     .label = అమరికలు…
     .accesskey = i
 containers-disable-alert-title = అన్ని కంటైనర్ ట్యాబులు మూసివేయాలా?
+startup-group =
+    .label = మొదలవడం
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -139,7 +144,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = చేతనంగా ఉంచు
 containers-remove-alert-title = ఈ కంటెయినరును తీసీవేయాలా?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] మీరు ఇప్పుడు ఈ కంటైనర్ని తీసివేస్తే, { $count } కంటైనర్ టాబు మూసివేయబడుతుంది. మీరు ఈ కంటైనర్ తొలగించాలని నిశ్చయించుకున్నారా?
@@ -151,9 +156,15 @@ containers-remove-cancel-button = ఈ కంటెయినరును తొ�
 ## General Section - Language & Appearance
 
 language-and-appearance-header = భాష, రూపురేఖలు
-preferences-web-appearance-choice-light = వెలుతురు
+preferences-web-appearance-choice-light = లేత
 preferences-web-appearance-choice-dark = చీకటి
 preferences-colors-header = రంగులు
+default-font-2 =
+    .label = అప్రమేయ ఫాంటు
+    .accesskey = D
+default-font-size-2 =
+    .label = పరిమాణం
+    .accesskey = S
 default-font = అప్రమేయ ఫాంటు
     .accesskey = D
 default-font-size = పరిమాణం
@@ -161,6 +172,8 @@ default-font-size = పరిమాణం
 advanced-fonts =
     .label = ఉన్నతం…
     .accesskey = A
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -192,6 +205,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = దస్త్రాలు & అనువర్తనాలు
+downloads-header-2 =
+    .label = దింపుకోళ్ళు
+download-save-where-2 =
+    .label = ఫైళ్ళను ఇక్కడ భద్రపరచు
+    .accesskey = v
 download-header = దింపుకోళ్ళు
 download-save-where = ఫైళ్ళను ఇక్కడ భద్రపరచు
     .accesskey = v
@@ -246,15 +264,15 @@ applications-manage-app =
 applications-always-ask =
     .label = ఎల్లప్పుడు అడుగు
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } వాడు ({ -brand-short-name }లో)
 applications-open-inapp =
@@ -283,6 +301,8 @@ applications-use-os-default-label =
 
 ##
 
+drm-group =
+    .label = డిజిటల్ హక్కుల నిర్వహణ (DRM) విషయం
 drm-content-header = డిజిటల్ హక్కుల నిర్వహణ (DRM) విషయం
 play-drm-content =
     .label = DRM-నియంత్రిత విషయాన్ని ఆడించు
@@ -290,6 +310,8 @@ play-drm-content =
 play-drm-content-learn-more = ఇంకా తెలుసుకోండి
 update-application-title = { -brand-short-name } తాజాకరణలు
 update-application-description = ఉత్తమ పనితీరు, స్థిరత్వం, భద్రతల కొరకు { -brand-short-name } తాజాగా ఉంచుకోండి.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = సంచిక { $version } <a data-l10n-name="learn-more">కొత్తవి ఏమిటి</a>
 update-history =
     .label = తాజాకరణ చరిత్రను చూపించు…
@@ -329,9 +351,11 @@ performance-limit-content-process-option = కంటెంట్ ప్రాస
     .accesskey = L
 performance-limit-content-process-enabled-desc = బహుళ ట్యాబ్లను ఉపయోగిస్తున్నప్పుడు అదనపు కంటెంట్ ప్రాసెస్లు పనితీరును మెరుగుపరుస్తాయి, అయితే మరింత మెమరీని కూడా ఉపయోగిస్తాయి.
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (అప్రమేయం)
+performance-group =
+    .label = పనితనం
 
 ## General Section - Browsing
 
@@ -354,6 +378,8 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-learn-more = ఇంకా తెలుసుకోండి
 browsing-media-control-learn-more = ఇంకా తెలుసుకోండి
 browsing-cfr-recommendations-learn-more = ఇంకా తెలుసుకోండి
+browsing-group =
+    .label = విహారణ
 
 ## General Section - Proxy
 
@@ -363,16 +389,27 @@ network-proxy-connection-learn-more = ఇంకా తెలుసుకోం�
 network-proxy-connection-settings =
     .label = అమరికలు…
     .accesskey = e
+network-proxy-group =
+    .label = నెట్‌వర్క్ అమరికలు
+    .description = { -brand-short-name } అంతర్జాలానికి ఎలా అనుసంధానమవ్వాలో స్వరూపించండి.
 
 ## Home Section
 
 home-new-windows-tabs-header = కొత్త కిటికీలు, ట్యాబులు
 home-new-windows-tabs-description2 = మీ ముంగిలి పేజీని, కొత్త కిటికీలను, కొత్త ట్యాబులను తెరచినప్పుడు ఏం కనబడాలో ఎంచుకోండి.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = అప్రమేయం చేయి
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = ముంగిలి పేజీ, కొత్త కిటికీలు
 home-newtabs-mode-label = కొత్త ట్యాబు
+home-homepage-new-tabs =
+    .label = కొత్త ట్యాబు
 home-restore-defaults =
     .label = అప్రమేయాలను పునరుద్ధరించు
     .accesskey = R
@@ -404,8 +441,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = జాల వెతుకులాట
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider }చే సిఫార్సు చేయబడినది
@@ -431,6 +467,8 @@ home-prefs-recent-activity-header =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = సంగతులు
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -456,6 +494,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = వెతుకుడు సూచనలను చిరునామా పట్టీ ఫలితాలలో చూపించు
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = స్థాన పట్టీ ఫలితాలలో వెతుకుడు సలహాలను చూపించలేము ఎందుకంటే { -brand-short-name } మీ చరిత్రను ఎప్పుడూ గుర్తుంచుకోకుండా అమర్చుకున్నారు.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -482,15 +522,21 @@ search-find-more-link = మరిన్ని శోధన యంత్రాల
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = నకిలీ కీ పదము
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = మీరు ఎంచుకున్న కీపదము ప్రస్తుతం  "{ $name }" చేత ఉపయోగించబడుతోంది. దయచేసి వేరొక దానిని ఎంచుకొనము.
 search-keyword-warning-bookmark = మీరు ఎంచుకున్న కీపదము ప్రస్తుతం ఒక ఇష్టాంశముచేత ఉపయోగించబడుతోంది.దయచేసి వేరొక దానిని ఎంచుకొనుము.
+search-engine-group =
+    .label = అప్రమేయ శోధన యంత్రం
+search-default-engine =
+    .aria-label = అప్రమేయ శోధన యంత్రం
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = తిరిగి అమరికలకు
 containers-header = కంటైనర్ ట్యాబులు
+containers-section-header =
+    .heading = కంటైనర్ ట్యాబులు
 containers-add-button =
     .label = కొత్త కంటెయినరు చేర్చు
     .accesskey = A
@@ -522,9 +568,13 @@ sync-profile-picture-with-alt =
     .alt = ప్రొఫైల్ చిత్రం మార్చు
 sync-manage-account = ఖాతా నిర్వహణ
     .accesskey = o
+sync-manage-account2 =
+    .label = ఖాతా నిర్వహణ
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } నిర్థారించబడలేదు.
 sync-signedin-login-failure = మళ్ళీ అనుసంధానించడానికి సైన్ ఇన్ అవ్వండి { $email }
@@ -552,8 +602,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = ఇప్పుడే సింక్రనించు
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = ఇప్పుడే సింక్రనించు
+    .accesskey = N
 prefs-syncing-button =
     .label = సింక్రనిస్తోంది…
+prefs-syncing-button-2 =
+    .label = సింక్రనిస్తోంది…
+    .title = ఇప్పుడే సింక్రనించు
 
 ## The list of things currently syncing.
 
@@ -563,6 +619,7 @@ sync-currently-syncing-tabs = తెరిచివున్న ట్యాబ�
 sync-currently-syncing-logins-passwords = ప్రవేశాలు, సంకేతపదాలు
 sync-currently-syncing-addresses = చిరునామాలు
 sync-currently-syncing-creditcards = క్రెడిట్ కార్డులు
+sync-currently-syncing-payment-methods = చెల్లింపు పద్ధతులు
 sync-currently-syncing-addons = పొడిగింతలు
 sync-currently-syncing-settings = అమరికలు
 sync-change-options =
@@ -593,6 +650,10 @@ sync-engine-creditcards =
     .label = క్రెడిట్ కార్డులు
     .tooltiptext = పేర్లూ, నెంబర్లూ, కాల పరిమితి తేదీలు (డెస్క్‌టాపులో మాత్రమే)
     .accesskey = C
+sync-engine-payment-methods2 =
+    .label = చెల్లింపు పద్ధతులు
+    .tooltiptext = పేర్లు, కార్డు నెంబర్లు, కాలంచెల్లు తేదీలు
+    .accesskey = n
 sync-engine-addons =
     .label = పొడగింతలు
     .tooltiptext = డెస్కుటాప్ Firefox కోసం పొడగింతలు, అలంకారాలు
@@ -605,6 +666,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = పరికరం పేరు
+sync-device-name-header-2 =
+    .label = పరికరం పేరు
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = పరికరం పేరు
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = పరికరం పేరు మార్చు
+    .accesskey = h
 sync-device-name-change =
     .label = పరికరం పేరు మార్చు…
     .accesskey = h
@@ -615,6 +686,8 @@ sync-device-name-save =
     .label = భద్రపరచు
     .accesskey = v
 sync-connect-another-device = మరొక పరికరాన్ని అనుసంధానించు
+sync-connect-another-device-2 =
+    .label = మరొక పరికరాన్ని అనుసంధానించు
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -673,12 +746,19 @@ forms-windows-sso-learn-more-link = ఇంకా తెలుసుకోండ�
 
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = చరిత్ర
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name }
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -696,6 +776,18 @@ history-remember-option-never =
     .label = ఎప్పుడూ చరిత్రను గుర్తుపెట్టుకోదు
 history-remember-option-custom =
     .label = చరిత్ర కోసం అభిమత అమరికలు వాడుతుంది
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } మీ విహరణ, దింపుకోళ్ళ, ఫారాల, వెతుకులాటల చరిత్రను గుర్తుపెట్టుకుంటుంది.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } గోప్య వీక్షణం అమరికలనే వాడుతుంది మరియు మీ వీక్షణ చరిత్రని గుర్తుంచుకోదు.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } మీ విహరణ, దింపుకోళ్ళ, ఫారాల, వెతుకులాటల చరిత్రను గుర్తుపెట్టుకుంటుంది.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } గోప్య వీక్షణం అమరికలనే వాడుతుంది మరియు మీ వీక్షణ చరిత్రని గుర్తుంచుకోదు.
 history-remember-description = { -brand-short-name } మీ విహరణ, దింపుకోళ్ళ, ఫారాల, వెతుకులాటల చరిత్రను గుర్తుపెట్టుకుంటుంది.
 history-dontremember-description = { -brand-short-name } గోప్య వీక్షణం అమరికలనే వాడుతుంది మరియు మీ వీక్షణ చరిత్రని గుర్తుంచుకోదు.
 history-private-browsing-permanent =
@@ -716,6 +808,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = చరిత్రను తుడిచివేయి…
     .accesskey = s
+history-group =
+    .label = చరిత్ర
 
 ## Privacy Section - Site Data
 
@@ -750,14 +844,14 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = మినహాయింపులను నిర్వహించండి…
     .accesskey = x
-
-## Privacy Section - Cookie Banner Handling
-
+cookies-site-data-group =
+    .label = కుకీలు, సైటు డేటా
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-learn-more = ఇంకా తెలుసుకోండి
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = చిరునామా పట్టీ
 addressbar-suggest = చిరునామా పట్టీ వాడుతునప్పుడు, వీటి నుండి సూచించు
@@ -866,6 +960,9 @@ permissions-microphone = మైక్రోఫోను
 permissions-microphone-settings =
     .label = అమరికలు…
     .accesskey = m
+permissions-speaker-settings =
+    .label = అమరికలు…
+    .accesskey = t
 permissions-notification = గమనింపులు
 permissions-notification-settings =
     .label = అమరికలు…
@@ -874,6 +971,8 @@ permissions-notification-link = ఇంకా తెలుసుకోండి
 permissions-notification-pause =
     .label = { -brand-short-name } పునఃప్రారంభమయ్యే వరకూ గమనింపులను నిలిపివేయి
     .accesskey = n
+permissions-autoplay2 =
+    .label = స్వీయారంభం
 permissions-autoplay = స్వీయారంభం
 permissions-autoplay-settings =
     .label = అమరికలు…
@@ -893,6 +992,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = మినహాయింపులు…
     .accesskey = E
+permissions-location2 =
+    .label = స్థానము
+permissions-camera2 =
+    .label = కెమేరా
+permissions-microphone2 =
+    .label = మైక్రోఫోను
+permissions-notification2 =
+    .label = గమనింపులు
 
 ## Privacy Section - Data Collection
 
@@ -909,15 +1016,14 @@ addon-recommendations-link = ఇంకా తెలుసుకోండి
 # or builds with no Telemetry support available.
 collection-health-report-disabled = ఈ బిల్డ్ కాన్ఫిగరేషన్ కోసం డేటా రిపోర్టింగ్ నిలిపివేయబడింది
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = భద్రత
+browsing-protection-group =
+    .label = మోసపూరిత జాల విషయం, ప్రమాదకరమైన సాఫ్ట్‌వేరు నుండి రక్షణ
 security-browsing-protection = మోసపూరిత జాల విషయం, ప్రమాదకరమైన సాఫ్ట్‌వేరు నుండి రక్షణ
 security-enable-safe-browsing =
     .label = ప్రమాదకరమైన, మోసపూరిత కంటెంటును నిరోధించు
@@ -942,6 +1048,7 @@ certs-view =
 certs-devices =
     .label = రక్షణ పరికరాలు…
     .accesskey = D
+certs-devices-enable-fips = FIPS చేతనంచేయి
 space-alert-over-5gb-settings-button =
     .label = అమరికలను తెరువు
     .accesskey = O
@@ -955,6 +1062,9 @@ httpsonly-radio-disabled =
 
 ## DoH Section
 
+# Variables:
+#   $status (string) - The status of the DoH connection
+preferences-doh-status = స్థితి: { $status }
 
 ## The following strings are used in the Download section of settings
 

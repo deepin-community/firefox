@@ -14,11 +14,11 @@
 #include "mozilla/dom/ConstraintValidation.h"
 #include "mozilla/dom/HTMLFormElement.h"
 #include "mozilla/dom/HTMLInputElementBinding.h"
-#include "nsIControllers.h"
 #include "nsCOMPtr.h"
 #include "nsGenericHTMLElement.h"
-#include "nsStubMutationObserver.h"
 #include "nsGkAtoms.h"
+#include "nsIControllers.h"
+#include "nsStubMutationObserver.h"
 
 class nsIControllers;
 class nsPresContext;
@@ -86,9 +86,9 @@ class HTMLTextAreaElement final : public TextControlElement,
   bool ValueChanged() const override;
   void GetTextEditorValue(nsAString& aValue) const override;
   MOZ_CAN_RUN_SCRIPT TextEditor* GetTextEditor() override;
-  TextEditor* GetTextEditorWithoutCreation() const override;
+  TextEditor* GetExtantTextEditor() const override;
   nsISelectionController* GetSelectionController() override;
-  nsFrameSelection* GetConstFrameSelection() override;
+  nsFrameSelection* GetIndependentFrameSelection() const override;
   TextControlState* GetTextControlState() const override { return mState; }
   nsresult BindToFrame(nsTextControlFrame* aFrame) override;
   MOZ_CAN_RUN_SCRIPT void UnbindFromFrame(nsTextControlFrame* aFrame) override;
@@ -121,7 +121,7 @@ class HTMLTextAreaElement final : public TextControlElement,
                       nsAttrValue& aResult) override;
   nsMapRuleToAttributesFunc GetAttributeMappingFunction() const override;
   nsChangeHint GetAttributeChangeHint(const nsAtom* aAttribute,
-                                      int32_t aModType) const override;
+                                      AttrModType aModType) const override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
   void GetEventTargetParent(EventChainPreVisitor& aVisitor) override;
@@ -167,10 +167,12 @@ class HTMLTextAreaElement final : public TextControlElement,
                                 ValidityStateType aType) override;
 
   // Web IDL binding methods
-  void GetAutocomplete(DOMString& aValue);
+  void GetAutocomplete(nsAString& aValue);
   void SetAutocomplete(const nsAString& aValue, ErrorResult& aRv) {
     SetHTMLAttr(nsGkAtoms::autocomplete, aValue, aRv);
   }
+  void GetAutocompleteInfo(AutocompleteInfo& aInfo);
+
   uint32_t Cols() { return GetColsOrDefault(); }
   void SetCols(uint32_t aCols, ErrorResult& aError) {
     uint32_t cols = aCols ? aCols : DEFAULT_COLS;
@@ -271,13 +273,14 @@ class HTMLTextAreaElement final : public TextControlElement,
       uint32_t aSelectionStart, uint32_t aSelectionEnd,
       const Optional<nsAString>& aDirecton, ErrorResult& aError);
   nsIControllers* GetControllers(ErrorResult& aError);
+  nsIControllers* GetExtantControllers() const { return mControllers; }
   // XPCOM adapter function widely used throughout code, leaving it as is.
   nsresult GetControllers(nsIControllers** aResult);
 
   MOZ_CAN_RUN_SCRIPT nsIEditor* GetEditorForBindings();
   bool HasEditor() const {
     MOZ_ASSERT(mState);
-    return !!mState->GetTextEditorWithoutCreation();
+    return !!mState->GetExtantTextEditor();
   }
 
   bool IsInputEventTarget() const { return true; }
@@ -292,6 +295,11 @@ class HTMLTextAreaElement final : public TextControlElement,
   using nsGenericHTMLFormControlElementWithState::IsSingleLineTextControl;
 
   JSObject* WrapNode(JSContext*, JS::Handle<JSObject*> aGivenProto) override;
+  void ResetIfUnchanged() {
+    if (!mValueChanged) {
+      Reset();
+    }
+  }
 
   nsCOMPtr<nsIControllers> mControllers;
   /** https://html.spec.whatwg.org/#user-interacted */
@@ -313,6 +321,7 @@ class HTMLTextAreaElement final : public TextControlElement,
   bool mIsPreviewEnabled = false;
 
   nsContentUtils::AutocompleteAttrState mAutocompleteAttrState;
+  nsContentUtils::AutocompleteAttrState mAutocompleteInfoState;
 
   void FireChangeEventIfNeeded();
 
@@ -325,11 +334,8 @@ class HTMLTextAreaElement final : public TextControlElement,
   /**
    * Get the value, whether it is from the content or the frame.
    * @param aValue the value [out]
-   * @param aIgnoreWrap whether to ignore the wrap attribute when getting the
-   *        value.  If this is true, linebreaks will not be inserted even if
-   *        wrap=hard.
    */
-  void GetValueInternal(nsAString& aValue, bool aIgnoreWrap) const;
+  void GetValueInternal(nsAString& aValue) const;
 
   /**
    * Setting the value.

@@ -4,27 +4,18 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::{
-    cmp::{min, Ordering},
-    mem,
-    rc::Rc,
-    time::Instant,
-};
+use std::{cmp::min, rc::Rc, time::Instant};
 
-use neqo_common::Encoder;
+use neqo_common::{Buffer, Encoder};
 
 use crate::{
-    frame::{
-        FrameType, FRAME_TYPE_CONNECTION_CLOSE_APPLICATION, FRAME_TYPE_CONNECTION_CLOSE_TRANSPORT,
-        FRAME_TYPE_HANDSHAKE_DONE,
-    },
-    packet::PacketBuilder,
+    frame::{FrameEncoder as _, FrameType},
+    packet,
     path::PathRef,
-    recovery::RecoveryToken,
-    CloseReason, Error,
+    recovery, CloseReason, Error,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 /// The state of the Connection.
 pub enum State {
     /// A newly created connection.
@@ -76,39 +67,10 @@ impl State {
             None
         }
     }
-}
 
-// Implement `PartialOrd` so that we can enforce monotonic state progression.
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if mem::discriminant(self) == mem::discriminant(other) {
-            return Ordering::Equal;
-        }
-        match (self, other) {
-            (Self::Init, _) => Ordering::Less,
-            (_, Self::Init) => Ordering::Greater,
-            (Self::WaitInitial, _) => Ordering::Less,
-            (_, Self::WaitInitial) => Ordering::Greater,
-            (Self::WaitVersion, _) => Ordering::Less,
-            (_, Self::WaitVersion) => Ordering::Greater,
-            (Self::Handshaking, _) => Ordering::Less,
-            (_, Self::Handshaking) => Ordering::Greater,
-            (Self::Connected, _) => Ordering::Less,
-            (_, Self::Connected) => Ordering::Greater,
-            (Self::Confirmed, _) => Ordering::Less,
-            (_, Self::Confirmed) => Ordering::Greater,
-            (Self::Closing { .. }, _) => Ordering::Less,
-            (_, Self::Closing { .. }) => Ordering::Greater,
-            (Self::Draining { .. }, _) => Ordering::Less,
-            (_, Self::Draining { .. }) => Ordering::Greater,
-            (Self::Closed(_), _) => unreachable!(),
-        }
+    #[must_use]
+    pub const fn closing(&self) -> bool {
+        matches!(self, Self::Closing { .. } | Self::Draining { .. })
     }
 }
 
@@ -146,8 +108,8 @@ impl ClosingFrame {
             // error code needs to be sent in an Initial or Handshake packet.
             Some(Self {
                 path: Rc::clone(&self.path),
-                error: CloseReason::Transport(Error::ApplicationError),
-                frame_type: 0,
+                error: CloseReason::Transport(Error::Application),
+                frame_type: FrameType::Padding,
                 reason_phrase: Vec::new(),
             })
         } else {
@@ -160,20 +122,9 @@ impl ClosingFrame {
     /// the value.
     pub const MIN_LENGTH: usize = 1 + 8 + 8 + 2 + 8;
 
-    pub fn write_frame(&self, builder: &mut PacketBuilder) {
+    pub fn write_frame<B: Buffer>(&self, builder: &mut packet::Builder<B>) {
         if builder.remaining() < Self::MIN_LENGTH {
             return;
-        }
-        match &self.error {
-            CloseReason::Transport(e) => {
-                builder.encode_varint(FRAME_TYPE_CONNECTION_CLOSE_TRANSPORT);
-                builder.encode_varint(e.code());
-                builder.encode_varint(self.frame_type);
-            }
-            CloseReason::Application(code) => {
-                builder.encode_varint(FRAME_TYPE_CONNECTION_CLOSE_APPLICATION);
-                builder.encode_varint(*code);
-            }
         }
         // Truncate the reason phrase if it doesn't fit.  As we send this frame in
         // multiple packet number spaces, limit the overall size to 256.
@@ -183,7 +134,21 @@ impl ClosingFrame {
         } else {
             &self.reason_phrase
         };
-        builder.encode_vvec(reason);
+        match &self.error {
+            CloseReason::Transport(e) => {
+                builder.encode_frame(FrameType::ConnectionCloseTransport, |b| {
+                    b.encode_varint(e.code());
+                    b.encode_varint(self.frame_type);
+                    b.encode_vvec(reason);
+                });
+            }
+            CloseReason::Application(code) => {
+                builder.encode_frame(FrameType::ConnectionCloseApplication, |b| {
+                    b.encode_varint(*code);
+                    b.encode_vvec(reason);
+                });
+            }
+        }
     }
 }
 
@@ -216,34 +181,35 @@ impl StateSignaling {
         *self = Self::HandshakeDone;
     }
 
-    pub fn write_done(&mut self, builder: &mut PacketBuilder) -> Option<RecoveryToken> {
-        if matches!(self, Self::HandshakeDone) && builder.remaining() >= 1 {
+    pub fn write_done<B: Buffer>(
+        &mut self,
+        builder: &mut packet::Builder<B>,
+    ) -> Option<recovery::Token> {
+        (matches!(self, Self::HandshakeDone) && builder.remaining() >= 1).then(|| {
             *self = Self::Idle;
-            builder.encode_varint(FRAME_TYPE_HANDSHAKE_DONE);
-            Some(RecoveryToken::HandshakeDone)
-        } else {
-            None
-        }
+            builder.encode_frame(FrameType::HandshakeDone, |_| {});
+            recovery::Token::HandshakeDone
+        })
     }
 
-    pub fn close(
+    pub fn close<A: AsRef<str>>(
         &mut self,
         path: PathRef,
         error: CloseReason,
         frame_type: FrameType,
-        message: impl AsRef<str>,
+        message: A,
     ) {
         if !matches!(self, Self::Reset) {
             *self = Self::Closing(ClosingFrame::new(path, error, frame_type, message));
         }
     }
 
-    pub fn drain(
+    pub fn drain<A: AsRef<str>>(
         &mut self,
         path: PathRef,
         error: CloseReason,
         frame_type: FrameType,
-        message: impl AsRef<str>,
+        message: A,
     ) {
         if !matches!(self, Self::Reset) {
             *self = Self::Draining(ClosingFrame::new(path, error, frame_type, message));

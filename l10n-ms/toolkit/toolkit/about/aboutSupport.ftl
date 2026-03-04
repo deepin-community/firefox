@@ -7,7 +7,6 @@ page-subtitle =
     Halaman ini mengandungi maklumat teknikal yang mungkin berguna apabila anda
     cuba menyelesaikan masalah. Jika anda mencari jawapan soalan lazim
     berkenaan { -brand-short-name }, semak di <a data-l10n-name="support-link">support website</a>.
-
 crashes-title = Laporan Ranap
 crashes-id = ID Laporan
 crashes-send-date = Dihantar
@@ -50,7 +49,6 @@ app-basics-multi-process-support = Tetingkap Multiproses
 app-basics-enterprise-policies = Polisi Syarikat
 app-basics-key-mozilla = Mozilla Location Service Key
 app-basics-safe-mode = Mod Selamat
-
 show-dir-label =
     { PLATFORM() ->
         [macos] Papar dalam Finder
@@ -113,8 +111,6 @@ media-device-channels = Saluran
 media-device-rate = Kadar
 media-device-latency = Kependaman
 
-## Codec support table
-
 ##
 
 intl-title = Pengantarabangsaan & Lokalisasi
@@ -127,38 +123,23 @@ intl-os-title = Sistem Pengoperasian
 intl-os-prefs-system-locales = Lokaliti Sistem
 intl-regional-prefs = Keutamaan Wilayah
 
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
-
 ##
 
 # Variables
 # $days (Integer) - Number of days of crashes to log
 report-crash-for-days = Laporan Ranap untuk { $days } Hari Terakhir
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes = { $minutes } minit yang lalu
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours = { $hours } jam yang lalu
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days = { $days } hari yang lalu
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports = Semua Laporan Ranap (termasuk { $reports } ranap tertangguh dalam julat masa yang diberikan)
-
 raw-data-copied = Data mentah telah disalin pada klipbod
 text-copied = Teks disalin ke klipbod
 
@@ -171,11 +152,9 @@ blocked-mismatched-version = Disekat kerana versi pemacu grafik anda tidak sepad
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Disekat kerana versi pemacu grafik anda. Cuba kemaskini peranti grafik anda kepada versi { $driverVersion } atau yang terkini.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Parameter ClearType
-
 compositing = Penggubahan
 hardware-h264 = Perkakasan Penyahkodan H264
 main-thread-no-omtc = rantaian utama, tidak OMTC
@@ -188,7 +167,6 @@ no = Tidak
 
 found = Found
 missing = Tiada
-
 gpu-description = Keterangan
 gpu-vendor-id = ID Vendor
 gpu-device-id = ID Alatan
@@ -208,14 +186,11 @@ webgl2-renderer = Pemapar WebGL2
 webgl2-version = WebGL 2 Driver Version
 webgl2-driver-extensions = WebGL 2 Driver Extensions
 webgl2-extensions = WebGL 2 Extensions
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Disenarai-sekat; kod kegagalan { $failureCode }
-
 d3d11layers-crash-guard = Pengatur huruf D3D11
 glcontext-crash-guard = OpenGL
-
 reset-on-next-restart = Set semula pada Mula semula yang Seterusnya
 gpu-process-kill-button = Batalkan Proses GPU
 gpu-device-reset-button = Set semula Trigger Device
@@ -223,10 +198,8 @@ uses-tiling = Menggunakan Jubin
 content-uses-tiling = Guna Jubin (Kandungan)
 off-main-thread-paint-enabled = Tutup Lukisan Thread Utama Didayakan
 off-main-thread-paint-worker-count = Tutup Kiraan Main Thread Painting Worker
-
 min-lib-versions = Versi minimum yang dijangka
 loaded-lib-versions = Versi yang digunakan
-
 has-seccomp-bpf = Seccomp-BPF (sistem panggil penapisan)
 has-seccomp-tsync = Seccomp Thread Synchronization
 has-user-namespaces = User Namespaces
@@ -238,12 +211,10 @@ effective-content-sandbox-level = Effective Content Process Sandbox Level
 sandbox-proc-type-content = kandungan
 sandbox-proc-type-file = kandungan fail
 sandbox-proc-type-media-plugin = media plugin
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = Asynchronous Pan/Zoom
 apz-none = tiada
 wheel-enabled = input wheel didayakan
@@ -263,8 +234,3 @@ touch-warning = async touch input dinyahdaya kerana pref tidak disokong: { $pref
 policies-inactive = Tidak aktif
 policies-active = Aktif
 policies-error = Ralat
-
-## Printing section
-
-## Normandy sections
-

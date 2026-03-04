@@ -50,17 +50,6 @@ should-restart-ok = Atosaigh { -brand-short-name } anois
 cancel-no-restart-button = Cealaigh
 restart-later = Atosaigh Ar Ball
 
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
-
 ## Preferences UI Search Results
 
 search-results-header = Torthaí an Chuardaigh
@@ -71,11 +60,17 @@ startup-header = Tosú
 always-check-default =
     .label = Seiceáil i gcónaí an é { -brand-short-name } an brabhsálaí réamhshocraithe
     .accesskey = g
+is-default-browser =
+    .message = Is é { -brand-short-name } do bhrabhsálaí réamhshocraithe faoi láthair
+is-not-default-browser =
+    .message = Ní hé { -brand-short-name } do bhrabhsálaí réamhshocraithe faoi láthair
 is-default = Is é { -brand-short-name } do bhrabhsálaí réamhshocraithe faoi láthair
 is-not-default = Ní hé { -brand-short-name } do bhrabhsálaí réamhshocraithe faoi láthair
 set-as-my-default-browser =
     .label = Úsáid mar Réamhshocrú…
     .accesskey = d
+tabs-group-header2 =
+    .label = Cluaisíní
 tabs-group-header = Cluaisíní
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab le dul trí na cluaisíní san ord ar bhain tú úsáid astu le déanaí
@@ -94,6 +89,8 @@ browser-containers-settings =
     .label = Socruithe…
     .accesskey = i
 containers-disable-alert-title = An bhfuil fonn ort gach Cluaisín Coimeádáin a dhúnadh?
+startup-group =
+    .label = Tosú
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -120,7 +117,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Ná díchumasaigh
 containers-remove-alert-title = Bain an Coimeádán seo?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Má scriosann tú an Coimeádán seo anois, dúnfar { $count } chluaisín coimeádáin. An bhfuil tú cinnte gur mhaith leat an Coimeádán seo a scriosadh?
@@ -135,6 +132,12 @@ containers-remove-cancel-button = Ná bain an Coimeádán seo
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Teanga agus Cuma
+default-font-2 =
+    .label = Cló réamhshocraithe
+    .accesskey = r
+default-font-size-2 =
+    .label = Méid
+    .accesskey = M
 default-font = Cló réamhshocraithe
     .accesskey = r
 default-font-size = Méid
@@ -164,6 +167,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Comhaid agus Feidhmchláir
+downloads-header-2 =
+    .label = Íoslódálacha
+download-save-where-2 =
+    .label = Sábháil comhaid i
+    .accesskey = S
 download-header = Íoslódálacha
 download-save-where = Sábháil comhaid i
     .accesskey = S
@@ -212,11 +220,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Fiafraigh díom i gcónaí
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Úsáid { $plugin-name } (i { -brand-short-name })
 
@@ -239,6 +247,8 @@ applications-use-other-label =
 
 ##
 
+drm-group =
+    .label = Ábhar DRM (Bainistíocht Ceart Digiteach)
 drm-content-header = Ábhar DRM (Bainistíocht Ceart Digiteach)
 play-drm-content =
     .label = Seinn ábhar DRM
@@ -246,6 +256,8 @@ play-drm-content =
 play-drm-content-learn-more = Tuilleadh eolais
 update-application-title = Nuashonruithe { -brand-short-name }
 update-application-description = Coinnigh { -brand-short-name } cothrom le dáta chun an fheidhmíocht, an chobhsaíocht, agus an tslándáil is fearr a dheimhniú.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Leagan { $version } <a data-l10n-name="learn-more">Is geal gach nua</a>
 update-history =
     .label = Taispeáin Stair na Nuashonruithe…
@@ -280,9 +292,11 @@ performance-limit-content-process-option = Teorainn próiseála ábhair
 performance-limit-content-process-enabled-desc = Beidh an brabhsálaí níos freagraí agus tuilleadh próiseas ábhair ar siúl má úsáidtear cluaisíní iomadúla, cé go n-úsáideann sé níos mó cuimhne.
 performance-limit-content-process-blocked-desc = Ní féidir mionathrú a dhéanamh ar an líon próisis ábhair ach le hilphróiseáil { -brand-short-name } amháin. <a data-l10n-name="learn-more">Foghlaim conas seiceáil má tá an ilphróiseáil cumasaithe.</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = Úsáid { $num } (réamhshocrú)
+performance-group =
+    .label = Feidhmíocht
 
 ## General Section - Browsing
 
@@ -303,6 +317,8 @@ browsing-search-on-start-typing =
     .label = Cuardaigh téacs nuair a thosóidh mé ag clóscríobh
     .accesskey = t
 browsing-cfr-recommendations-learn-more = Tuilleadh eolais
+browsing-group =
+    .label = Brabhsáil
 
 ## General Section - Proxy
 
@@ -312,12 +328,17 @@ network-proxy-connection-settings =
     .label = Socruithe…
     .accesskey = e
 
-## Home Section
+## Home Section - Default Browser
 
+set-as-my-default-browser-2 =
+    .label = Úsáid mar Réamhshocrú
+    .accesskey = d
 
-## Home Section - Home Page Customization
+## Custom Homepage subpage
 
 home-newtabs-mode-label = Cluaisíní nua
+home-homepage-new-tabs =
+    .label = Cluaisíní nua
 home-mode-choice-blank =
     .label = Leathanach Bán
 home-homepage-custom-url =
@@ -338,10 +359,6 @@ choose-bookmark =
     .accesskey = L
 
 ## Home Section - Firefox Home Content Customization
-
-
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
 
 home-prefs-recommended-by-header =
     .label = Molta ag { $provider }
@@ -367,6 +384,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Taispeáin moltaí cuardaigh i dtorthaí sa mbarra suímh
     .accesskey = s
+search-suggestions-cant-show-2 =
+    .message = Ní thaispeánfar moltaí cuardaigh sa mbarra suímh toisc go ndúirt tú le { -brand-short-name } gan do stair bhrabhsála a mheabhrú.
 search-suggestions-cant-show = Ní thaispeánfar moltaí cuardaigh sa mbarra suímh toisc go ndúirt tú le { -brand-short-name } gan do stair bhrabhsála a mheabhrú.
 search-one-click-desc = Roghnaigh innill chuardaigh mhalartacha le taispeáint faoin bharra suímh agus faoin bharra cuardaigh nuair a thosaíonn tú ag clóscríobh.
 search-choose-engine-column =
@@ -387,15 +406,21 @@ search-find-more-link = Tuilleadh inneall cuardaigh
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Eochairfhocail Dhúblach
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Roghnaigh tú eochairfhocal atá in úsáid faoi láthair ag “{ $name }”. Roghnaigh ceann eile le do thoil.
 search-keyword-warning-bookmark = Roghnaigh tú eochairfhocal atá in úsáid faoi láthair ag leabharmharc. Roghnaigh ceann eile le do thoil.
+search-engine-group =
+    .label = Inneall Cuardaigh Réamhshocraithe
+search-default-engine =
+    .aria-label = Inneall Cuardaigh Réamhshocraithe
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Fill ar na Socruithe
 containers-header = Cluaisíní Coimeádáin
+containers-section-header =
+    .heading = Cluaisíní Coimeádáin
 containers-add-button =
     .label = Coimeádán Nua
     .accesskey = C
@@ -427,9 +452,13 @@ sync-profile-picture-with-alt =
     .alt = Athraigh an pictiúr próifíle
 sync-manage-account = Bainistigh mo chuntas
     .accesskey = o
+sync-manage-account2 =
+    .label = Bainistigh mo chuntas
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = Níl { $email } deimhnithe.
 sync-signedin-login-failure = Logáil isteach chun athcheangal { $email }
@@ -439,9 +468,6 @@ sync-signedin-login-failure = Logáil isteach chun athcheangal { $email }
 sync-sign-in =
     .label = Logáil isteach
     .accesskey = g
-
-## Sync section - enabling or disabling sync.
-
 
 ## The list of things currently syncing.
 
@@ -467,6 +493,16 @@ sync-engine-creditcards =
 ## The device name controls.
 
 sync-device-name-header = Ainm an Ghléis
+sync-device-name-header-2 =
+    .label = Ainm an Ghléis
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Ainm an Ghléis
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Athraigh Ainm an Ghléis
+    .accesskey = h
 sync-device-name-change =
     .label = Athraigh Ainm an Ghléis
     .accesskey = h
@@ -491,9 +527,6 @@ sync-verification-not-sent-body = Ní rabhthas ábalta an ríomhphost deimhnithe
 
 privacy-header = Príobháideachas
 
-## Privacy Section - Logins and Passwords
-
-
 ## Privacy Section - Passwords
 
 forms-exceptions =
@@ -510,15 +543,19 @@ forms-master-pw-change =
     .accesskey = P
 forms-master-pw-fips-desc = Theip ar athrú an fhocail faire.
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Stair
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = Cad is mian leat { -brand-short-name } a dhéanamh?
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -536,6 +573,12 @@ history-remember-option-never =
     .label = Ná meabhraigh an stair riamh
 history-remember-option-custom =
     .label = Úsáid socruithe saincheaptha don stair
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = Úsáidfidh { -brand-short-name } na socruithe céanna mar a úsáidtear sa bhrabhsáil phríobháideach, agus ní mheabhróidh sé stair ar bith agus tú ag brabhsáil an Ghréasáin.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = Úsáidfidh { -brand-short-name } na socruithe céanna mar a úsáidtear sa bhrabhsáil phríobháideach, agus ní mheabhróidh sé stair ar bith agus tú ag brabhsáil an Ghréasáin.
 history-dontremember-description = Úsáidfidh { -brand-short-name } na socruithe céanna mar a úsáidtear sa bhrabhsáil phríobháideach, agus ní mheabhróidh sé stair ar bith agus tú ag brabhsáil an Ghréasáin.
 history-private-browsing-permanent =
     .label = Bain úsáid as Brabhsáil Phríobháideach i gcónaí
@@ -549,19 +592,17 @@ history-clear-on-close-option =
 history-clear-on-close-settings =
     .label = Socruithe…
     .accesskey = c
+history-group =
+    .label = Stair
 
 ## Privacy Section - Site Data
 
 sitedata-header = Fianáin agus Sonraí Suímh
 sitedata-learn-more = Tuilleadh eolais
+cookies-site-data-group =
+    .label = Fianáin agus Sonraí Suímh
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Barra Suímh
 addressbar-suggest = Agus an barra suímh in úsáid, mol
@@ -611,9 +652,6 @@ content-blocking-fingerprinters-label =
     .label = Méarlorgairí
     .accesskey = M
 
-## Privacy Section - Tracking
-
-
 ## Privacy Section - Permissions
 
 permissions-header = Ceadanna
@@ -649,6 +687,14 @@ permissions-block-popups-exceptions-button =
 permissions-addon-exceptions =
     .label = Eisceachtaí…
     .accesskey = E
+permissions-location2 =
+    .label = Suíomh
+permissions-camera2 =
+    .label = Ceamara
+permissions-microphone2 =
+    .label = Micreafón
+permissions-notification2 =
+    .label = Fógraí
 
 ## Privacy Section - Data Collection
 
@@ -660,9 +706,6 @@ addon-recommendations-link = Tuilleadh eolais
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Díchumasaíodh tuairisciú sonraí don chumraíocht leagain seo
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -693,12 +736,7 @@ certs-view =
 certs-devices =
     .label = Gléasanna Slándála…
     .accesskey = d
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = Cumasaigh FIPS
 
 ## The following strings are used in the Download section of settings
 

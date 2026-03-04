@@ -5,19 +5,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "RemoteLazyInputStream.h"
+
 #include "RemoteLazyInputStreamChild.h"
 #include "RemoteLazyInputStreamParent.h"
+#include "RemoteLazyInputStreamStorage.h"
+#include "RemoteLazyInputStreamThread.h"
 #include "chrome/common/ipc_message_utils.h"
 #include "mozilla/ErrorNames.h"
 #include "mozilla/Logging.h"
+#include "mozilla/NonBlockingAsyncInputStream.h"
 #include "mozilla/PRemoteLazyInputStream.h"
+#include "mozilla/SlicedInputStream.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/InputStreamParams.h"
 #include "mozilla/ipc/MessageChannel.h"
 #include "mozilla/ipc/ProtocolMessageUtils.h"
 #include "mozilla/net/SocketProcessParent.h"
-#include "mozilla/SlicedInputStream.h"
-#include "mozilla/NonBlockingAsyncInputStream.h"
 #include "nsIAsyncInputStream.h"
 #include "nsIAsyncOutputStream.h"
 #include "nsID.h"
@@ -26,8 +29,6 @@
 #include "nsNetUtil.h"
 #include "nsStreamUtils.h"
 #include "nsStringStream.h"
-#include "RemoteLazyInputStreamStorage.h"
-#include "RemoteLazyInputStreamThread.h"
 
 namespace mozilla {
 
@@ -157,7 +158,8 @@ RemoteLazyInputStream::RemoteLazyInputStream(nsIInputStream* aStream)
 
 static already_AddRefed<RemoteLazyInputStreamChild> BindChildActor(
     nsID aId, mozilla::ipc::Endpoint<PRemoteLazyInputStreamChild> aEndpoint) {
-  auto* thread = RemoteLazyInputStreamThread::GetOrCreate();
+  RefPtr<RemoteLazyInputStreamThread> thread =
+      RemoteLazyInputStreamThread::GetOrCreate();
   if (NS_WARN_IF(!thread)) {
     return nullptr;
   }
@@ -803,7 +805,8 @@ void RemoteLazyInputStream::StreamNeeded() {
   MOZ_LOG(gRemoteLazyStreamLog, LogLevel::Debug,
           ("StreamNeeded %s", Describe().get()));
 
-  auto* thread = RemoteLazyInputStreamThread::GetOrCreate();
+  RefPtr<RemoteLazyInputStreamThread> thread =
+      RemoteLazyInputStreamThread::GetOrCreate();
   if (NS_WARN_IF(!thread)) {
     return;
   }
@@ -1216,7 +1219,8 @@ RemoteLazyInputStream::AsyncLengthWait(nsIInputStreamLengthCallback* aCallback,
 
     if (mActor) {
       if (aCallback) {
-        auto* thread = RemoteLazyInputStreamThread::GetOrCreate();
+        RefPtr<RemoteLazyInputStreamThread> thread =
+            RemoteLazyInputStreamThread::GetOrCreate();
         if (NS_WARN_IF(!thread)) {
           return NS_ERROR_ILLEGAL_DURING_SHUTDOWN;
         }
@@ -1324,7 +1328,8 @@ void RemoteLazyInputStream::IPCWrite(IPC::MessageWriter* aWriter) {
     MOZ_ALWAYS_SUCCEEDS(
         PRemoteLazyInputStream::CreateEndpoints(&parentEp, &childEp));
 
-    auto* thread = RemoteLazyInputStreamThread::GetOrCreate();
+    RefPtr<RemoteLazyInputStreamThread> thread =
+        RemoteLazyInputStreamThread::GetOrCreate();
     if (thread) {
       thread->Dispatch(NS_NewRunnableFunction(
           "RemoteLazyInputStreamChild::SendClone",

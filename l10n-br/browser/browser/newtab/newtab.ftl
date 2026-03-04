@@ -8,11 +8,21 @@
 newtab-page-title = Ivinell nevez
 newtab-settings-button =
     .title = Personelait ho pajenn Ivinell Nevez
+newtab-customize-panel-icon-button =
+    .title = Personelaat ar bejenn-mañ
+newtab-customize-panel-icon-button-label = Personelaat
+newtab-personalize-settings-icon-label =
+    .title = Personelaat an ivinell nevez
+    .aria-label = Arventennoù
+newtab-settings-dialog-label =
+    .aria-label = Arventennoù
 newtab-personalize-icon-label =
     .title = Personelaat un ivinell nevez
     .aria-label = Personelaat un ivinell nevez
 newtab-personalize-dialog-label =
     .aria-label = Personelaat
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -46,6 +56,9 @@ newtab-topsites-add-shortcut-header = Berradenn nevez
 newtab-topsites-edit-topsites-header = Kemmañ al lec'hienn wellañ
 newtab-topsites-edit-shortcut-header = Kemmañ ar verradenn
 newtab-topsites-add-shortcut-label = Ouzhpennañ ur verradenn
+newtab-topsites-add-shortcut-title =
+    .title = Ouzhpennañ ur verradenn
+    .aria-label = Ouzhpennañ ur verradenn
 newtab-topsites-title-label = Titl
 newtab-topsites-title-input =
     .placeholder = Enankañ un titl
@@ -109,6 +122,14 @@ newtab-menu-save-to-pocket = Enrollañ etrezek { -pocket-brand-name }
 newtab-menu-delete-pocket = Dilemel eus { -pocket-brand-name }
 newtab-menu-archive-pocket = Diellaouiñ e { -pocket-brand-name }
 newtab-menu-show-privacy-info = Hor c’hevelerien hag ho puhez prevez
+newtab-menu-about-fakespot = A-zivout { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Stankañ
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-our-sponsors-and-your-privacy = Hor c’hevelerien hag ho puhez prevez
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -166,6 +187,8 @@ newtab-label-sponsored-by = Paeroniet gant { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } munutenn
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Paeroniet
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -224,12 +247,14 @@ newtab-pocket-learn-more = Gouzout hiroc’h
 newtab-pocket-cta-button = Staliañ { -pocket-brand-name }
 newtab-pocket-cta-text = Enrollit pennadoù a-zoare e { -pocket-brand-name } ha magit ho spered gant lennadennoù boemus.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } a zo ul lodenn eus familh { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Enrollañ
 newtab-pocket-saved = Enrollet
 
 ## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
 
+newtab-toast-dismiss-button =
+    .title = Argas
+    .aria-label = Argas
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -266,15 +291,14 @@ newtab-custom-pocket-sponsored = Istorioù paeroniet
 newtab-custom-pocket-show-recent-saves = Diskouez an enrolladennoù diwezhañ
 newtab-custom-recent-title = Oberiantiz nevesañ
 newtab-custom-recent-subtitle = Un dibab lec'hiennoù ha danvezioù nevez
-newtab-custom-recent-toggle =
-    .label = Oberiantiz nevesañ
-    .description = Un dibab lec'hiennoù ha danvezioù nevez
 newtab-custom-close-button = Serriñ
 newtab-custom-settings = Merañ muioc'h a arventennoù
 
 ## New Tab Wallpapers
 
 newtab-wallpaper-title = Drekleurioù
+newtab-wallpaper-upload-image = Kas ur skeudenn
+newtab-wallpaper-custom-color = Dibab ul liv
 newtab-wallpaper-light-red-panda = Panda ruz
 newtab-wallpaper-light-mountain = Menez gwenn
 newtab-wallpaper-light-sky = Oabl gant koumoul limestra ha roz
@@ -312,7 +336,7 @@ newtab-wallpaper-abstract-purple = Furmoù limestra
 newtab-wallpaper-abstract-orange = Furmoù orañjez
 newtab-wallpaper-abstract-blue-purple = Furmoù limestra hag orañjez
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Fotoioù
 newtab-wallpaper-beach-at-sunrise = Traezhenn e-pad ar sav-heol
@@ -321,6 +345,8 @@ newtab-wallpaper-storm-sky = Oabl arnevek
 newtab-wallpaper-sky-with-pink-clouds = Oabl gant koumoul roz
 newtab-wallpaper-red-panda-yawns-in-a-tree = Panda ruz o vazailhat en ur wezenn
 newtab-wallpaper-white-mountains = Menezioù gwenn
+newtab-wallpaper-starry-canyon = Bolz an neñv steredennet glas
+newtab-wallpaper-sand-dunes = Tevennoù traezh gwenn
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -334,20 +360,31 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+newtab-wallpaper-celestial-lunar-eclipse = Fallaenn loar
+newtab-wallpaper-celestial-starry-sky = Neñv steredennet
+newtab-wallpaper-celestial-river = Skeudenn-loarell ur stêr
+
 ## New Tab Weather
 
 # Variables:
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Paeroniet
-newtab-weather-menu-change-location = Cheñch al lec’hiadur
-newtab-weather-change-location-search-input = Klask ul lec’h
+newtab-weather-menu-change-location = Cheñch al lec’h
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Klask ul lec’h
+    .aria-label = Klask ul lec’h
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
 newtab-weather-menu-weather-display-option-simple = Eeun
+newtab-weather-menu-weather-display-option-detailed = Munudoù
 newtab-weather-menu-temperature-units = Unanenn wrezverk
 newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
+newtab-weather-menu-change-temperature-units-fahrenheit = Lakaat e Fahrenheit
+newtab-weather-menu-change-temperature-units-celsius = Lakaat e Celsius
 newtab-weather-menu-learn-more = Gouzout hiroc’h
 
 ## Topic Labels
@@ -361,13 +398,61 @@ newtab-topic-label-hobbies = C’hoarioù video
 # and understand their personal finances – from saving money to buying a home. See the
 # “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
 newtab-topic-label-finance = Arc’hant
+newtab-topic-label-society-parenting = Desaverezh/bugaleaj
 newtab-topic-label-government = Politikerezh
 newtab-topic-label-education-science = Skiantoù
 newtab-topic-label-sports = Sportoù
 newtab-topic-label-tech = Teknologiezh
 newtab-topic-label-travel = Beajiñ
+newtab-topic-label-home = Ti ha liorzherezh
 
 ## Topic Selection Modal
 
 newtab-topic-selection-save-button = Enrollañ
 newtab-topic-selection-cancel-button = Nullañ
+newtab-topic-selection-button-maybe-later = Diwezhatoc’h marteze
+newtab-topic-selection-button-update-interests = Hizivait hoc’h interestoù
+newtab-topic-selection-button-pick-interests = Dibabit hoc’h interestoù
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Heuliañ
+newtab-section-following-button = O heuliañ
+newtab-section-unfollow-button = Na heuliañ ken
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Stankañ
+newtab-section-blocked-button = Stanket
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Ket bremañ
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Stankañ { $topic }
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-followed-topics = O heuliañ
+newtab-section-mangage-topics-blocked-topics = Stanket
+newtab-custom-wallpaper-cta = Esaeañ
+
+## Strings for reporting issues with ads and content
+
+newtab-report-cancel = Nullañ
+newtab-report-submit = Kas
+
+## Strings for task / to-do list productivity widget
+
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Nevez
+newtab-widget-lists-menu-create = Krouiñ ur roll nevez
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Roll nevez

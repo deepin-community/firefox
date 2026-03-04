@@ -15,6 +15,8 @@ about-logging-set-log-file = Emopyenda marandurenda jehaipy
 about-logging-set-log-modules = Emopyenda jehaipy ra’ãha
 about-logging-start-logging = Ta’ãha moñepyrũ
 about-logging-stop-logging = Ta’ãha jejoko
+about-logging-copy-as-url = Emonguatia ñemboheko ag̃agua URL ramo
+about-logging-url-copied = Emboheko jehaikue embohasáva kuatiajokohápe URL ypyguávarõ
 about-logging-buttons-disabled = Teraguapy mbohekopyre jeregua rehegua, ñemboheko oku’éva ojeporukuaa’ỹva.
 about-logging-some-elements-disabled = Oñembohekopyre URL rupive, oĩ ñemboheko poravopyrã ndojeporukuaáiva
 about-logging-info = Marandu:
@@ -27,6 +29,9 @@ about-logging-no-log-modules = Avave
 about-logging-no-log-file = Avave
 about-logging-logging-preset-selector-text = Mboheraguapy ypygua:
 about-logging-with-profiler-stacks-checkbox = Emyandy píla resa’ỹijoha ñe’ẽmondo jehaipyrãme g̃uarã
+about-logging-with-javascript-tracing-checkbox = Emyandy JavaScript rapykuehoha
+about-logging-menu =
+    .title = Jeporavorã opapotáva
 
 ## Logging presets
 
@@ -44,6 +49,14 @@ about-logging-preset-media-playback-label = Hekoetáva mboheta
 about-logging-preset-media-playback-description = Teraguapy ra’ãha ojehechakuaa hag̃ua apañuái ñembohetaha (ha’e’ỹva videoconferencia apañuái)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Mboheraguapy ra’ãha ehecha hag̃ua WebRTC apañuái
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = Mboheraguapy ayvu eikuaa hag̃ua apañuái WebCodecs ndive ha mba’epu/ta’ãngamýi ha ta’ãnga mbopapapy’oha
+about-logging-preset-ml-label = Kuaarã Ijeheguíva
+about-logging-preset-ml-description = Mboheraguapy ra’ãha ehecha hag̃ua kuaarã ijeheguíva apañuái
+about-logging-preset-web-compat-label = Ñandutirogue jokupyty
+about-logging-preset-web-compat-description = Mboheraguapy ra’ãha ehecha hag̃ua apañuái ñanduti rehegua
+about-logging-preset-navigation = Ñeikundaha
+about-logging-preset-navigation-description = Mboheraguapy ra’ãha eikuaa hag̃ua kundahára apañuái ha jeikekue rembiasakue
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Mboheraguapy ra’ãha ehecha hag̃ua WebGPU apañuái
 about-logging-preset-gfx-label = Ta’ãnga
@@ -56,9 +69,7 @@ about-logging-preset-custom-description = Mboheraguapy ra’ãha pópe poravopyr
 # Error handling
 about-logging-error = Javy:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Tepykue oiko’ỹva “{ $v }“ “{ $k }“ mba’eñemíme g̃uarã
 about-logging-unknown-logging-preset = Tepykue ypygua tembiapo ñepyrũ ojekuaa’ỹva “{ $v }“
@@ -66,4 +77,53 @@ about-logging-unknown-profiler-preset = Mbohapeha ypygua ojekuaa’ỹva “{ $v
 about-logging-unknown-option = Poravopyrã about:logging ojekuaa’ỹva “{ $k }“
 about-logging-configuration-url-ignored = Ñembohekopyahu hejapyre URL
 about-logging-file-and-profiler-override = Nerenohẽkuaái mbaretépe marandurendágui ha emboyke mbohapeha poravopyrã oñondive
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = Oiko jejavy: { $errorText }
 about-logging-configured-via-url = Poravopyrã mbohekopyahupyre URL rupive
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = Umi mba’ete mba’ekuaarã ojejapyhýma. ¿Eñongatuse térã ehupise?
+about-logging-save-button = Ñongatu
+about-logging-upload-button = Hupi
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = Ñongatupyre { $path }-pe
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = Mba’ete mba’ekuaarã jehupi: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = Ojehupíva <a data-l10n-name="uploaded-message-url">{ $url }</a>
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> Emoherakuã URL
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = Oiko peteĩ jejavy ehupikuévo pe mba’ete: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = Oiko peteĩ jejavy eñongatukuévo mba’ete henyhẽpyréva: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = Oiko peteĩ jejavy eñongatukuévo mba’ete: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = Mba’ete { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = Mba’ete hupipyre
+about-logging-no-uploaded-profiles = Nodjehupíri gueteri mba’ete.
+about-logging-delete-uploaded-profile = Mboguete
+about-logging-view-uploaded-profile = Ehecha mba’ete
+about-logging-delete-profile-confirm-title = Mba’ete Mboguete
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = ¿Emboguesépa añetehápe ko “{ $profileName }”? Ndaikatúi ojeipe’a.
+about-logging-deleting-profile = Oguehína…

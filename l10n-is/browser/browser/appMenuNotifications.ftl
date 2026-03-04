@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Hafna
     .secondarybuttonaccesskey = H
 appmenu-update-restart-message2 = Fáðu nýjustu útgáfuna af { -brand-shorter-name }. Opnir flipar og gluggar verða endurheimtir.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Afturkalla
+    .secondarybuttonaccesskey = u
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } getur ekki uppfært sjálfkrafa í nýjustu útgáfuna.
     .buttonlabel = Uppfæra { -brand-shorter-name } samt
@@ -41,6 +44,12 @@ appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Allt í lagi
     .buttonaccesskey = A
 appmenu-addon-post-install-message3 = Sýslaðu með viðbætur þínar og þemu í gegnum forritavalmyndina.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Uppfærðu heimildir og kjörstillingar gagna hvenær sem er í <a data-l10n-name="settings-link">stillingum viðbótarinnar</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Festa forritsauka við tækjastikuna
+    .accesskey = F
 appmenu-addon-post-install-incognito-checkbox =
     .label = Leyfa þessum forritsauka að keyra í huliðsgluggum
     .accesskey = L

@@ -22,32 +22,6 @@ nsSystemAlertsService::~nsSystemAlertsService() = default;
 
 nsresult nsSystemAlertsService::Init() { return NS_OK; }
 
-NS_IMETHODIMP nsSystemAlertsService::ShowAlertNotification(
-    const nsAString& aImageUrl, const nsAString& aAlertTitle,
-    const nsAString& aAlertText, bool aAlertTextClickable,
-    const nsAString& aAlertCookie, nsIObserver* aAlertListener,
-    const nsAString& aAlertName, const nsAString& aBidi, const nsAString& aLang,
-    const nsAString& aData, nsIPrincipal* aPrincipal, bool aInPrivateBrowsing,
-    bool aRequireInteraction) {
-  nsCOMPtr<nsIAlertNotification> alert =
-      do_CreateInstance(ALERT_NOTIFICATION_CONTRACTID);
-  NS_ENSURE_TRUE(alert, NS_ERROR_FAILURE);
-  // vibrate is unused for now
-  nsTArray<uint32_t> vibrate;
-  nsresult rv = alert->Init(aAlertName, aImageUrl, aAlertTitle, aAlertText,
-                            aAlertTextClickable, aAlertCookie, aBidi, aLang,
-                            aData, aPrincipal, aInPrivateBrowsing,
-                            aRequireInteraction, false, vibrate);
-  NS_ENSURE_SUCCESS(rv, rv);
-  return ShowAlert(alert, aAlertListener);
-}
-
-NS_IMETHODIMP nsSystemAlertsService::ShowPersistentNotification(
-    const nsAString& aPersistentData, nsIAlertNotification* aAlert,
-    nsIObserver* aAlertListener) {
-  return ShowAlert(aAlert, aAlertListener);
-}
-
 NS_IMETHODIMP nsSystemAlertsService::ShowAlert(nsIAlertNotification* aAlert,
                                                nsIObserver* aAlertListener) {
   NS_ENSURE_ARG(aAlert);
@@ -57,7 +31,7 @@ NS_IMETHODIMP nsSystemAlertsService::ShowAlert(nsIAlertNotification* aAlert,
   NS_ENSURE_SUCCESS(rv, rv);
 
   RefPtr<nsAlertsIconListener> alertListener =
-      new nsAlertsIconListener(this, alertName);
+      new nsAlertsIconListener(this, aAlert, alertName);
   if (!alertListener) return NS_ERROR_OUT_OF_MEMORY;
 
   if (mSuppressForScreenSharing) {
@@ -79,6 +53,15 @@ NS_IMETHODIMP nsSystemAlertsService::CloseAlert(const nsAString& aAlertName,
   return listener->Close();
 }
 
+NS_IMETHODIMP nsSystemAlertsService::GetHistory(nsTArray<nsString>& aResult) {
+  // Neither org.freedesktop.Notifications nor
+  // org.freedesktop.portal.Notification supports getting the previous
+  // notifications
+  // https://specifications.freedesktop.org/notification-spec/latest/protocol.html
+  // https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Notification.html
+  return NS_ERROR_NOT_AVAILABLE;
+}
+
 NS_IMETHODIMP nsSystemAlertsService::GetManualDoNotDisturb(bool* aRetVal) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
@@ -98,6 +81,19 @@ NS_IMETHODIMP nsSystemAlertsService::SetSuppressForScreenSharing(
     bool aSuppress) {
   mSuppressForScreenSharing = aSuppress;
   return NS_OK;
+}
+
+NS_IMETHODIMP nsSystemAlertsService::Teardown() {
+  for (auto iter = mActiveListeners.Iter(); !iter.Done(); iter.Next()) {
+    RefPtr<nsAlertsIconListener> listener = iter.Data().forget();
+    iter.Remove();
+    listener->Disconnect();
+  }
+  return NS_OK;
+}
+
+NS_IMETHODIMP nsSystemAlertsService::PbmTeardown() {
+  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 bool nsSystemAlertsService::IsActiveListener(const nsAString& aAlertName,

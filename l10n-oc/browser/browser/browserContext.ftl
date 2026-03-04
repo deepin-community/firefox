@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Enregistrar lo ligam dins { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Copiar l'adreça electronica
@@ -162,10 +160,14 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Copiar lo ligam
     .accesskey = l
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Copiar lo ligam sens traçador
+main-context-menu-preview-link =
+    .label = Previsualizar lo ligam
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Copiar lo ligam netejat
     .accesskey = o
 
 ## Media (video/audio) controls
@@ -290,9 +292,7 @@ main-context-menu-send-to-device =
     .label = Enviar la pagina al periferic
     .accesskey = v
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Utilizar identificant salvat

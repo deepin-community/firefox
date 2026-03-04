@@ -63,7 +63,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } wužywarjow
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Synchronizěrujśo swóje cytańske znamjenja wšuźi.
 cfr-doorhanger-bookmark-fxa-body = Wjelicna namakanka! Njewóstawajśo bźez toś togo cytańskego znamjenja na swójich mobilnych rědach. Zachopśo z { -fxaccount-brand-name }.
@@ -72,6 +72,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Synchronizěrujśo něnto cytańske znam
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Tłocašk Zacyniś
     .title = Zacyniś
+fxa-adoption-addresses-backup-title = Zawěsćmy waše skłaźone adrese.
+fxa-adoption-addresses-backup-subtitle = Synchronizěrujśo swóje gronidła ze swójimi rědami ze skoděrowanim, aby swóje skłaźone adrese šćitał.
+fxa-adoption-credit-cards-backup-title = Zawěsćmy waše płaśeńske metody
+fxa-adoption-credit-cards-backup-subtitle = Synchronizěrujśo swóje gronidła ze swójimi rědami ze skoděrowanim, aby swóje płaśeńske metody šćitał.
+fxa-adoption-bookmarks-treatment-backup-title = Zawěsćmy waše cytańske znamjenja
+fxa-adoption-bookmarks-treatment-backup-subtitle = Synchronizěrujśo swóje cytańske znamjenja ze swójimi rědami ze skoděrowanim, aby swóje gronidła šćitał.
+fxa-adoption-primary-button-label = Registrěrowaś
 
 ## Protections panel
 
@@ -141,7 +148,7 @@ spotlight-public-wifi-vpn-link = Nic něnto
 spotlight-better-internet-header = Lěpšy internet z wami startujo
 spotlight-better-internet-body = Gaž { -brand-short-name } wužywaśo, głosujośo za wótwórjony a pśistupny internet, kótaryž jo lěpšy za wše.
 spotlight-peace-mind-header = Smy was zapśimjeli
-spotlight-peace-mind-body = Kuždy mjasec { -brand-short-name } pśerěznje pśez 3.000 pśeslědowakow na wužywarja blokěrujo. Dokulaž nic, pśedewšym wobuze priwatnosći ako pśeslědowaki, njeměło mjazy wami a dobrym internetom byś.
+spotlight-peace-mind-body = Kuždy mjasec { -brand-short-name } pśerěznje pśez 3.000 pśeslědowakow na wužywarja blokěrujo. Dokulaž nic, pśedewšym pógóršoty priwatnosći ako pśeslědowaki, njeměło mjazy wami a dobrym internetom byś.
 spotlight-pin-primary-button =
     { PLATFORM() ->
         [macos] Na doku wobchowaś
@@ -229,8 +236,26 @@ fox-doodle-pin-secondary = Nic něnto
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
-set-default-pdf-handler-headline = <strong>Waše PDF se něnto w { -brand-short-name } wócynjaju.</strong> Wobźěłajśo abo signěrujćśoformulary direktnje w swójom wobglědowaku. Aby to změnił, pytajśo za „PDF“ w swójich nastajenjach.
+set-default-pdf-handler-headline = <strong>Waše PDF se něnto w { -brand-short-name } wócynjaju.</strong> Wobźěłajśo abo signěrujśo formulary direktnje w swójom wobglědowaku. Aby to změnił, pytajśo za „PDF“ w swójich nastajenjach.
 set-default-pdf-handler-primary = Som zrozměł
+
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Pódpišćo na dypkatej liniji – abo hynźi!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Kresliśo, zapišćo abo nagrajśo swóju signaturu, stajśo ju pón tam, źo cośo. Składujśo swóje signatury za pśiducy raz.
+annotations-make-default-pdf-handler-title = { -brand-short-name } k swójomu standardnemu PDF-editoroju cyniś?
+annotations-make-default-pdf-handler-subtitle = Maśo pśistup k našym rědam kuždy raz, gaž PDF wócynjaśo.
+annotations-make-default-pdf-primary-cta-label = Ako standard wužywaś
+annotations-make-default-pdf-next-label = Dalej
+annotations-make-default-pdf-primary-cta =
+    .label = Ako standard wužywaś
+annotations-make-default-pdf-next =
+    .label = Dalej
 
 ## FxA sync CFR
 
@@ -252,6 +277,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Konto załožyś
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nowy rěd we wašom pśichoźe?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Slědujśo mało jadnorym kšacam, aby swóje cytańske znamjenja, historiju a gronidła sobu wzeł, gaž na nowem rěźe zachopinaśo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kak mógu swóje daty zawěsćiś
+device-migration-fxa-spotlight-sync-header = Pśeglědujśo bźez wokomuźenja
+device-migration-fxa-spotlight-sync-body = Synchronizěrujśo wšykne waše wažne informacije z koděrowanim – na pśikład cytańske znamjenja a gronidła. Móžośo wšykno tam śěgnuś, źož { -brand-product-name } wužywaśo.
+device-migration-fxa-spotlight-sync-primary-button = Prědne kšace
 
 ## Set as Default PDF Reader Infobar
 
@@ -288,3 +316,134 @@ tail-fox-spotlight-title = Wótźaržćo gramne pśeslědowaki
 tail-fox-spotlight-subtitle = Rozžognujśo se z gramnymi wabjeńskimi pśeslědowakami a zažywśo se do wěsćejšego, malsnego internetnego dožywjenja.
 tail-fox-spotlight-primary-button = Móje wótkaze z { -brand-short-name } wócyniś
 tail-fox-spotlight-secondary-button = Nic něnto
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Starše wersije { -brand-short-name } mógu snaź wót 14. januara 2025 problemy měś.</strong>
+root-certificate-succession-infobar-march-message = <strong>Aktualizěrujśo, aby { -brand-short-name } pó 14. měrca 2025 dalej wužywał.</strong>
+root-certificate-succession-infobar-link = Cogodla musym aktualizěrowaś?
+root-certificate-succession-infobar-primary-button =
+    .label = Něnto aktualizěrowaś
+    .accesskey = N
+root-certificate-succession-infobar-secondary-button =
+    .label = Pózdźej
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Sćo zapasł wažnu aktualizaciju { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Źěle wobglědowaka skóro wěcej njefunkcioněruju, jolic njeaktualizěrujośo. Něnto jo dobry cas, aby naše nejnowše šćity a funkcije dostał.
+root-certificate-windows-background-notification-learn-more-button = Dalšne informacije
+root-certificate-windows-background-notification-update-button = { -brand-short-name } aktualizěrowaś
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Zacyniś
+    .aria-label = Zacyniś
+fxa-menu-message-sign-up-button = Registrěrowaś
+fxa-menu-message-sign-in-button = Pśizjawiś
+fxa-menu-message-sync-button = Synchronizaciju zachopiś
+fxa-menu-message-sync-devices-primary-text = Synchronizěrujśo wšykne swóje rědy
+fxa-menu-message-sync-devices-secondary-text = Wobstarajśo se ned swóje informacije – na pśikład swóje cytańske znamjenja a gronidła – wšuźi, źož { -brand-short-name } wužywaśo.
+fxa-menu-message-sync-devices-secondary-text2 = Wobstarajśo se ned swóje cytańske znamjenja, gronidła a wěcej – wšuźi, źož sćo se pśizjawił pla { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synchronizěrujśo wšykne swóje rědy
+fxa-menu-message-backup-data-primary-text = Zawěsććo swóje daty wobglědowaka
+fxa-menu-message-backup-data-secondary-text = Šćitajśo awtomatiski cytańske znamjenja, gronidła a druge informacije na wšych swójich rědach.
+fxa-menu-message-backup-data-collapsed-text = Zawěsććo daty wobglědowaka
+fxa-menu-message-backup-sync-primary-text = Źaržćo swóje daty wěste a synchronizěrowane
+fxa-menu-message-backup-sync-secondary-text = Synchronizacija nejwěcej wašych datow zawěsćujo, aby wy k nim wšuźi pśistup měł, źož { -brand-short-name } wužywaśo.
+fxa-menu-message-backup-sync-collapsed-text = Daty synchronizěrowaś a zawěsćiś
+fxa-menu-message-mobile-primary-text = Sćelśo rejtariki na telefon
+fxa-menu-message-mobile-secondary-text = Cyńśo tam dalej, źož sćo ned zastał, gaž swóje rejtariki z mobilnym rědom synchronizěrujośo.
+fxa-menu-message-mobile-collapsed-text = Ze swójim telefonom synchronizěrowaś
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Witajśo slědk
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } k swójomu standardnemu wobglědowakoju cyniś
+multi-cta-fox-doodle-pin-startmenu-checkbox = Pśipějśo { -brand-short-name } k startowemu menijoju
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } w doku wóstajiś
+       *[other] Pśipějśo { -brand-short-name } k nadawkowej rědce
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Pśeglědowanje zachopiś
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } ku głownemu wobglědowakoju cyniś
+multi-cta-fox-doodle-quick-reminder-subtitle = How jo krotke dopomnjeśe, až móžośo swój nejlubšy wobglědowak z fokusom na priwatnosć jano kliknjenje pśec měś.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Źaržćo swój nejlubšy wobglědowak z fokusom na priwatnosć jano jadno kliknjenje pšec. Nastajśo { -brand-short-name } ako swój standardny wobglědowak za wócynjanje wótkazow a źaržćo jen w swójom doku.
+       *[other] Źaržćo swój nejlubšy wobglědowak z fokusom na priwatnosć jano jadno kliknjenje pšec. Nastajśo { -brand-short-name } ako swój standardny wobglědowak za wócynjanje wótkazow a pśipnějśo jen na swóju nadawkowu rědku.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Źaržćo swój nejlubšy wobglědowak z fokusom na priwatnosć jano jadno kliknjenje pšec. Nastajśo { -brand-short-name } ako swój standardny wobglědowak za wócynjanje wótkazow a pśipnějśo jen na swóju nadawkowu rědku a startowy meni.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Z Windows 10 skóro aktualizěrowaś?
+windows-10-eos-sync-spotlight-subtitle = Zawěsććo swóje gronidła a cytańske znamjenja, aby gótowy był, na drugi rěd pśeśěgnuś.
+windows-10-eos-sync-spotlight-primary-label = Waš { -brand-short-name } zawěsćiś
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Na Windows 11 aktualizěrowaś? Njezgubujśo cytańske znamjenja a gronidła.
+windows-10-eos-sync-toast-subtitle = Zawěsććo swóje daty, aby { -brand-short-name } mógł je kuždy cas wužywaś, na toś tom PC abo na pśiducem.
+windows-10-eos-sync-toast-primary-label = Prědne kšace
+windows-10-eos-sync-toast-secondary-label = Pózdźej dopomnjeś
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } se do togo njezacytajo, na rozdźěl wót drugich wobglědowakow wjelikich technologijowych pśedewześow. To jo rozsudny dypk.
+windows-10-eos-challenger-sync-callout-subtitle = Gaž swóje cytańske znamjenja a gronidłahesła { -brand-product-name } zawěsćujośo, jo lažčej za was, wubrany wobglědowak do pśiducego rěda pśewześ.
+windows-10-eos-challenger-pin-callout-subtitle = Pśipijśo { -brand-shorter-name } k swójej nadawkowej rědce, aby wobglědowak, kótaryž sćo wubrał, jo pśecej tam, gaž jen trjebaśo.
+windows-10-eos-challenger-sync-primary-button = { -brand-shorter-name } zawěsćiś
+windows-10-eos-challenger-pin-primary-button = { -brand-shorter-name } pśipěś
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } kryptokopaki, pśeslědowaki socialnych medijow a gromaźarje palcowych wótśišćow blokěrujo
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Pśeslědowaki njamógu waš rěd identificěrowaś abo wam pśez web slědowaś – dokulaž jim to njedowólujomy.
+windows-10-eos-sync-callout-privacy-screen-2-title = Zawěsććo swóje gronidła a cytańske znamjenja za swój pśiducy rěd.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Zawěsćenje { -brand-shorter-name } wam wólažcujo, waše daty a nastajenja priwatnosći wšuźi sobu wześ.
+windows-10-eos-sync-callout-privacy-info-button = Glědajśo, což se blokěrujo
+windows-10-eos-callout-addons-title = Wopytajśo: jadnore aktualizacije, wjelike wustatkowanja
+windows-10-eos-callout-addons-subtitle = Toś te rozšyrjenja su se wubrali, aby wam pomagali, produktiwny, šćitany a bźez wótchylenja wóstaś.
+windows-10-eos-callout-addons-primary-button = Glejśo naše wuběrki
+windows-10-eos-sync-callout-addons-title = Njezgubujśo swóje dodanki, gaž wót Windows 10 aktualizěrujośo.
+windows-10-eos-sync-callout-addons-subtitle = Synchronizěrujśo něnto, aby waše dodanki { -brand-product-name } pśecej k dispoziciji byli, samo pó změnje rěda.
+windows-10-eos-sync-callout-next-button = Dalej
+windows-10-eos-sync-callout-get-started-button = Prědne kšace
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Wertikalne rejtariki a kupki rejtarikow su how!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Na wjelesere žycenje jo { -brand-product-name } rowno wózjawił nowe funkcije, aby waše pśeglědowanje optiměrowane a fokusěrowane źaržał.
+windows-10-eos-feature-toast-whats-new-button = Cytajśo, což jo nowe
+windows-10-eos-feature-toast-dismiss-button = Zachyśiś
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Striktny pśeslědowański šćit móžo k tomu wjasć, až sedła wěcej njefunkcioněruju.</strong> Wótpórajśo blokěrowanje za wažne elementy, kótarež mógli pśeslědowaki wopśimowaś, aby ceste problemy rozwězał.
+etp-strict-exceptions-infobar-learn-more = Dalšne informacije
+etp-strict-exceptions-infobar-button = Rozwězanja nałožyś
+    .accesskey = R
+etp-strict-exceptions-infobar-not-now = Nic něnto
+    .accesskey = N
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } njejo waš standardny wobglědowak
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } njejo waš głowny wobglědowak
+set-default-menu-message-row-layout-title = Cyńśo { -brand-short-name } k swójomu głownemu wobglědowakoju
+set-default-menu-message-row-layout-title-variant = Cyńśo { -brand-short-name } k swójomu standardnemu wobglědowakoju
+set-default-menu-message-row-layout-subtitle = Dostańśo malsnosć, wěstotu a priwatnosć kuždy raz, gaž pśeglědujośo.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Źaržćo { -brand-short-name } k ruce – cyńśo jen k swójomu standardnemu wobglědowakoju a zachowajśo jen w swójim doku.
+       *[other] Źaržćo { -brand-short-name } k ruce – cyńśo jen k swójomu standardnemu wobglědowakoju a zachowajśo jen w nadawkowej rědce.
+    }
+set-default-menu-message-primary-button = Ako standard wužywaś
+set-default-menu-message-primary-button-variant = Ako głowny wobglědowak nastajiś

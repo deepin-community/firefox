@@ -1,6 +1,6 @@
 "use strict";
 
-requestLongerTimeout(8);
+requestLongerTimeout(16);
 
 Services.scriptloader.loadSubScript(
   "chrome://mochitests/content/browser/browser/base/content/test/general/head.js",
@@ -22,10 +22,13 @@ async function testOnWindowBody(win, expectedReferrer, rp) {
   let browser = win.gBrowser;
   let tab = browser.selectedTab;
   let b = browser.getBrowserForTab(tab);
-  await promiseTabLoadEvent(tab, TEST_TOP_PAGE);
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: TEST_TOP_PAGE,
+  });
 
   info("Loading tracking scripts and tracking images");
-  let referrer = await SpecialPowers.spawn(
+  let { iframeReferrer, refreshReferrer } = await SpecialPowers.spawn(
     b,
     [{ rp }],
     async function ({ rp }) {
@@ -57,31 +60,76 @@ async function testOnWindowBody(win, expectedReferrer, rp) {
         await p;
       }
 
+      let iframeReferrer;
       {
         let iframe = content.document.createElement("iframe");
-        let p = new content.Promise(resolve => {
-          iframe.onload = resolve;
-        });
-        content.document.body.appendChild(iframe);
+        const loaded = ContentTaskUtils.waitForEvent(iframe, "load");
         if (rp) {
           iframe.referrerPolicy = rp;
         }
         iframe.src =
           "https://tracking.example.org/browser/toolkit/components/antitracking/test/browser/referrer.sjs?what=iframe";
-        await p;
+        content.document.body.appendChild(iframe);
+        await loaded;
 
-        p = new content.Promise(resolve => {
-          content.onmessage = event => {
-            resolve(event.data);
-          };
-        });
+        const messageEvent = ContentTaskUtils.waitForEvent(content, "message");
         iframe.contentWindow.postMessage("ping", "*");
-        return p;
+        iframeReferrer = (await messageEvent).data;
       }
+
+      let refreshReferrer;
+      {
+        let iframe = content.document.createElement("iframe");
+        {
+          let { promise: p, resolve: iframeLoaded } =
+            content.Promise.withResolvers();
+          let loadCount = 0;
+          iframe.onload = () => {
+            loadCount++;
+            if (loadCount === 1) {
+              if (rp) {
+                let policyNode = iframe.contentDocument.createElement("meta");
+                policyNode.name = "referrer";
+                policyNode.content = rp;
+                iframe.contentDocument.body.appendChild(policyNode);
+              }
+              let refresh = iframe.contentDocument.createElement("meta");
+              refresh.httpEquiv = "refresh";
+              refresh.content =
+                "0;https://tracking.example.org/browser/toolkit/components/antitracking/test/browser/referrer.sjs?what=iframe";
+              iframe.contentDocument.body.appendChild(refresh);
+            } else if (loadCount === 2) {
+              iframeLoaded();
+            }
+          };
+          iframe.src = content.location;
+          content.document.body.appendChild(iframe);
+          await p;
+        }
+
+        let { promise: p, resolve: messageReceived } =
+          content.Promise.withResolvers();
+        content.onmessage = event => {
+          messageReceived(event.data);
+        };
+
+        iframe.contentWindow.postMessage("ping", "*");
+        refreshReferrer = await p;
+      }
+      return { iframeReferrer, refreshReferrer };
     }
   );
 
-  is(referrer, expectedReferrer, "The correct referrer must be read from DOM");
+  is(
+    iframeReferrer,
+    expectedReferrer,
+    "The correct iframe referrer must be read from DOM"
+  );
+  is(
+    refreshReferrer,
+    expectedReferrer,
+    "The correct refresh referrer must be read from DOM"
+  );
 
   await fetch(
     "https://tracking.example.org/browser/toolkit/components/antitracking/test/browser/referrer.sjs?result&what=script"
@@ -207,6 +255,7 @@ async function executeTests() {
           ["network.http.referer.defaultPolicy.trackers.pbmode", test.pbPref],
           ["dom.security.https_first_pbm", false],
           ["network.http.referer.disallowCrossSiteRelaxingDefault", false],
+          ["network.http.referer.sendFromRefresh", true], // Enable sending a Referer header when navigating from a Refresh.
         ],
       });
 
@@ -503,6 +552,7 @@ add_task(async function () {
       ["privacy.trackingprotection.enabled", false],
       ["privacy.trackingprotection.pbmode.enabled", false],
       ["privacy.trackingprotection.annotate_channels", true],
+      ["network.http.referer.sendFromRefresh", true], // Enable sending a Referer header when navigating from a Refresh.
     ],
   });
 

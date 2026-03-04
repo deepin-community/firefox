@@ -38,23 +38,17 @@ energy-impact-high = Tinggi ({ $value })
 energy-impact-medium = Medium ({ $value })
 energy-impact-low = Rendah ({ $value })
 
-## Values for the Memory column
-##
-## Variables:
-##   $value (Number) - How much memory is used
-
 ## Tooltips for the action buttons
 
 close-tab =
     .title = Tutup tab
 show-addon =
     .title = Papar dalam Pengurus Add-ons
-
 # Tooltip when hovering an item of the about:performance table
 # Variables:
-#   $totalDispatches (Number) - how many dispatches occured for this page since it loaded
+#   $totalDispatches (Number) - how many dispatches occurred for this page since it loaded
 #   $totalDuration (Number) - how much CPU time was used by this page since it loaded
-#   $dispatchesSincePrevious (Number) - how many dispatches occured in the last 2 seconds
+#   $dispatchesSincePrevious (Number) - how many dispatches occurred in the last 2 seconds
 #   $durationSincePrevious (Number) - how much CPU time was used in the last 2 seconds
 item =
     .title =

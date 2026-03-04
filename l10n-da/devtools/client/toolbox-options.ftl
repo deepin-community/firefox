@@ -30,6 +30,10 @@ options-context-inspector = Inspektør
 options-show-user-agent-styles-label = Vis browser-styles
 options-show-user-agent-styles-tooltip =
     .title = Aktivering af dette vil vise de standard-styles, som indlæses af browseren.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Vis Browser Shadow DOM
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Aktivering af dette vil vise Shadow DOM-elementer håndteret af browseren.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Afkort DOM-attributter
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Slå HTTP-cache fra (når Værktøj er åben)
 options-disable-http-cache-tooltip =
     .title = Denne indstilling slår HTTP-cache fra for alle faneblade, der har Udviklerværktøj åbne. Service workers er ikke påvirket af denne indstilling.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Deaktiver JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Slå JavaScript fra *
 options-disable-javascript-tooltip =
     .title = Denne indstilling slår JavaScript fra i det aktuelle faneblad. Indstillingen vil blive glemt, når fanebladet eller Værktøj lukkes.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Aktiver source-maps
 options-source-maps-tooltip =
     .title = Hvis du aktiverer denne indstilling, vil sources blive mappet i værktøjerne.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (kun nuværende session, genindlæser siden)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Kun nuværende session, genindlæser siden
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (genindlæser siden)

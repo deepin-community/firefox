@@ -8,7 +8,7 @@ sanitize-prefs2 =
 sanitize-prefs-style =
     .style = width: 17em
 sanitize-dialog-title2 =
-    .title = Clarar datos de navigation e cookies
+    .title = Rader datos de navigation e cookies
     .style = min-width: 34em
 sanitize-dialog-title =
     .title = Vacuar le chronologia recente
@@ -19,7 +19,7 @@ sanitize-dialog-title-everything =
     .title = Vacuar tote le chronologia
     .style = min-width: 34em
 clear-data-settings-label = Quando claudite, { -brand-short-name } deberea automaticamente rader tote le
-sanitize-on-shutdown-description = Automaticamente clarar tote le elementos marcate quando { -brand-short-name } claude.
+sanitize-on-shutdown-description = Automaticamente rader tote le elementos marcate quando { -brand-short-name } se claude.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -59,10 +59,7 @@ history-section-label = Chronologia
 item-history-and-downloads =
     .label = Chronologia de navigation e de discargamentos
     .accesskey = C
-item-history-form-data-downloads =
-    .label = Chronologia
-    .accesskey = C
-item-history-form-data-downloads-description = Clara sito e chronologia de discargamento, informationes de formulario salvate, e recercas
+item-history-and-downloads-description2 = Vacua le chronologias de sitos e discargamentos
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -91,14 +88,18 @@ item-cached-content-with-size =
 item-cached-content =
     .label = Files e paginas temporari in cache
     .accesskey = F
-item-cached-content-description = Clara elementos que adjuta le sitos cargar plus velocemente
+item-cached-content-description = Elimina elementos que adjuta le sitos a cargar se plus rapidemente
 item-form-search-history =
     .label = Chronologia de recercas e formularios
     .accesskey = F
 item-site-prefs =
     .label = Parametros del sito
     .accesskey = i
-item-site-prefs-description = Remonta tu permissos e preferentias de sitos al parametros original
+item-formdata-prefs =
+    .label = Informationes de formulario salvate
+    .accesskey = o
+item-formdata-description = Clara cosas como nomines, emails, e altere elementos que tu insere in le formularios
+item-site-prefs-description = Reinitialisa tu permissiones e preferentias de sitos al parametros original
 data-section-label = Datos
 item-site-settings =
     .label = Parametros del sito
@@ -112,7 +113,7 @@ window-close =
 sanitize-button-ok =
     .label = Vacuar ora
 sanitize-button-ok2 =
-    .label = Clarar
+    .label = Rader
 sanitize-button-ok-on-shutdown =
     .label = Salvar le cambios
 # The label for the default button between the user clicking it and the window
@@ -127,3 +128,6 @@ sanitize-everything-warning = Tote le chronologia essera vacuate.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Tote le elementos seligite essera vacuate.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Calculante…

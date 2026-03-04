@@ -30,14 +30,14 @@ fxviewtabrow-just-now-timestamp = 刚刚
 
 fxviewtabrow-delete = 删除
     .accesskey = D
-fxviewtabrow-forget-about-this-site = 忘记此网站…
+fxviewtabrow-forget-about-this-site = 抹去此网站相关数据…
     .accesskey = F
 fxviewtabrow-open-in-window = 新建窗口打开
     .accesskey = N
 fxviewtabrow-open-in-private-window = 新建隐私窗口打开
     .accesskey = P
 # “Bookmark” is a verb, as in "Bookmark this page" (add to bookmarks).
-fxviewtabrow-add-bookmark = 加入书签…
+fxviewtabrow-add-bookmark = 添加书签…
     .accesskey = B
 fxviewtabrow-save-to-pocket = 保存到 { -pocket-brand-name }
     .accesskey = o
@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = 移动到末尾
     .accesskey = E
 fxviewtabrow-move-tab-window = 移动到新窗口
     .accesskey = W
+fxviewtabrow-send-to-device = 发送到设备
+    .accesskey = n
 fxviewtabrow-send-tab = 发送标签页到设备
     .accesskey = n
 fxviewtabrow-pin-tab = 固定标签页
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = 取消静音标签页
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } - 标签页选项
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = 静音“{ $tabTitle }”
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = 取消静音“{ $tabTitle }”
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

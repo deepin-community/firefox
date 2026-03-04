@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = 新建标签页
     .accesskey = w
@@ -28,10 +32,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = 关闭左侧标签页
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = 关闭上方的标签页
+    .accesskey = I
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = 关闭右侧标签页
+    .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = 关闭下方的标签页
     .accesskey = i
 close-other-tabs =
     .label = 关闭其他标签页
@@ -55,7 +65,7 @@ bookmark-selected-tabs =
     .label = 为标签页添加书签…
     .accesskey = k
 tab-context-bookmark-tab =
-    .label = 将标签页加入书签…
+    .label = 为标签页添加书签…
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = 新建身份标签页打开
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = 移动到新窗口
     .accesskey = W
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = 移动到“{ $profileName }”
 tab-context-close-multiple-tabs =
     .label = 批量关闭标签页
     .accesskey = M
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = 共享
     .accesskey = h
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = 在右侧新建标签页
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = 在下方新建标签页
+    .accesskey = w
+tab-context-new-group =
+    .label = 新建标签页群组
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -103,6 +127,14 @@ tab-context-move-tabs =
            *[other] 移动标签页
         }
     .accesskey = v
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] 发送到设备
+           *[other] 发送 { $tabCount } 个标签页到设备
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -110,3 +142,10 @@ tab-context-send-tabs-to-device =
            *[other] 发送 { $tabCount } 个标签页至设备
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] 卸载标签页
+           *[other] 卸载 { $tabCount } 个标签页
+        }
+    .accesskey = U

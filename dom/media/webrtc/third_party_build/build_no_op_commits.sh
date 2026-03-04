@@ -26,12 +26,29 @@ cd $MOZ_LIBWEBRTC_SRC
 MANUAL_INTERVENTION_COMMIT_FILE="$TMP_DIR/manual_commits.txt"
 rm -f $MANUAL_INTERVENTION_COMMIT_FILE
 
+# find the last upstream commit used by the previous update, so we don't
+# accidentally grab release branch commits that were added after we started
+# the previous update.
+LAST_UPSTREAM_COMMIT_SHA=`tail -1 $CURRENT_DIR/third_party/libwebrtc/README.mozilla.last-vendor`
+echo "previous update's last commit: $LAST_UPSTREAM_COMMIT_SHA"
+
 # Find the common commit between our previous work branch and trunk
-CURRENT_RELEASE_BASE=`git merge-base branch-heads/$MOZ_PRIOR_UPSTREAM_BRANCH_HEAD_NUM master`
+CURRENT_RELEASE_BASE=`git merge-base $LAST_UPSTREAM_COMMIT_SHA master`
 
 # Write no-op files for the cherry-picked release branch commits.  For more
 # details on what this is doing, see make_upstream_revert_noop.sh.
-COMMITS=`git log -r $CURRENT_RELEASE_BASE..branch-heads/$MOZ_PRIOR_UPSTREAM_BRANCH_HEAD_NUM --format='%h'`
+COMMIT_RANGE="$CURRENT_RELEASE_BASE..$LAST_UPSTREAM_COMMIT_SHA"
+echo ""
+echo "Libwebrtc release branch commits are usually cherry-picked from upcoming"
+echo "commits.  Since these upcoming commits will result in near-zero files"
+echo "changed, hopefully exactly 0, we need to build no-op commit files"
+echo "so that processing doesn't stop unnecessarily when running the"
+echo "fast-forward process."
+echo "Previous update (Bug $MOZ_PRIOR_FASTFORWARD_BUG) release branch commits:"
+# might be nice to indent this output for better readability
+git log $COMMIT_RANGE --oneline
+
+COMMITS=`git log -r $COMMIT_RANGE --format='%h'`
 for commit in $COMMITS; do
 
   echo "Processing release branch commit $commit for no-op handling"
@@ -48,6 +65,26 @@ for commit in $COMMITS; do
   fi
 
   CHERRY_PICK_COMMIT=`git show $commit | grep "cherry picked from commit" | tr -d "()" | awk '{ print $5; }'`
+
+  # I didn't think this was possible due to the automated tooling on
+  # Google's end, but upstream commit
+  # 847fe7905954f3ae883de2936415ff567aa9039b lists that it cherry-picks
+  # 602b06b1125ea4d107fbfbda7d314b4157c4c74b.  However,
+  # 602b06b1125ea4d107fbfbda7d314b4157c4c74b doesn't exist in the repo.
+  # That means we need to verify that we have a valid commit before
+  # processing further.  If not found we'll add it to the list of
+  # commits that need manual intervention/verification.
+  CHERRY_PICK_COMMIT_FOUND=`(git cat-file -e $CHERRY_PICK_COMMIT && echo "commit-found") || true`
+  if [ "x$CHERRY_PICK_COMMIT_FOUND" != "xcommit-found" ]; then
+    # record the commit to list at the end of this script as
+    # 'needing intervention'
+    echo "    cherry-pick sha ($CHERRY_PICK_COMMIT) in commit message,"
+    echo "    but, the sha is not found in the libwebrtc repo."
+    echo "    skipping commit $commit"
+    echo "$commit" >> $MANUAL_INTERVENTION_COMMIT_FILE
+    continue
+  fi
+
   SHORT_SHA=`git show --name-only $CHERRY_PICK_COMMIT --format='%h' | head -1`
   echo "    commit $commit cherry-picks $SHORT_SHA"
 
@@ -56,10 +93,25 @@ for commit in $COMMITS; do
 
 done
 
-# This section checks for commits that may have been cherry-picked in more
-# than one release branch.
+# This section checks for commits that may have been cherry-picked in
+# more than one release branch.  An example of multiple cherry-picks
+# across release branches can be seen when starting the following
+# updates:
+#   Bug 1934695 - updated default_config_env for v132
+#   Bug 1903098 - updated default_config_env for v126 (this is moz
+#     cherry-pick that is then cherry-picked in the upcoming release
+#     branch)
+
 TARGET_RELEASE_BASE=`git merge-base $MOZ_TARGET_UPSTREAM_BRANCH_HEAD master`
-NEW_COMMITS=`git log -r $TARGET_RELEASE_BASE..$MOZ_TARGET_UPSTREAM_BRANCH_HEAD --format='%h'`
+
+COMMIT_RANGE="$TARGET_RELEASE_BASE..$MOZ_TARGET_UPSTREAM_BRANCH_HEAD"
+echo ""
+echo "Occasionally, successive libwebrtc release branches need to cherry-pick"
+echo "the same _far_ upstream commit.  We need to examine the upcoming release"
+echo "branch commits for our new v$MOZ_NEXT_LIBWEBRTC_MILESTONE update."
+echo "Upcoming (Bug $MOZ_FASTFORWARD_BUG) release branch commits:"
+# might be nice to indent this output for better readability
+git log $COMMIT_RANGE --oneline
 
 # Convert the files that we've already generated for no-op detection into
 # something that we can use as a regular expression for searching.
@@ -68,6 +120,7 @@ KNOWN_NO_OP_COMMITS=`cd $STATE_DIR ; \
   | sed 's/\.no-op-cherry-pick-msg//' \
   | paste -sd '|' /dev/stdin`
 
+NEW_COMMITS=`git log -r $COMMIT_RANGE --format='%h'`
 for commit in $NEW_COMMITS; do
 
   echo "Processing next release branch commit $commit for no-op handling"
@@ -84,6 +137,26 @@ for commit in $NEW_COMMITS; do
   fi
 
   CHERRY_PICK_COMMIT=`git show $commit | grep "cherry picked from commit" | tr -d "()" | awk '{ print $5; }'`
+
+  # I didn't think this was possible due to the automated tooling on
+  # Google's end, but upstream commit
+  # 847fe7905954f3ae883de2936415ff567aa9039b lists that it cherry-picks
+  # 602b06b1125ea4d107fbfbda7d314b4157c4c74b.  However,
+  # 602b06b1125ea4d107fbfbda7d314b4157c4c74b doesn't exist in the repo.
+  # That means we need to verify that we have a valid commit before
+  # processing further.  If not found we'll add it to the list of
+  # commits that need manual intervention/verification.
+  CHERRY_PICK_COMMIT_FOUND=`(git cat-file -e $CHERRY_PICK_COMMIT && echo "commit-found") || true`
+  if [ "x$CHERRY_PICK_COMMIT_FOUND" != "xcommit-found" ]; then
+    # record the commit to list at the end of this script as
+    # 'needing intervention'
+    echo "    cherry-pick sha ($CHERRY_PICK_COMMIT) found in commit"
+    echo "    message, but the sha is not found in the libwebrtc repo."
+    echo "    skipping commit $commit"
+    echo "$commit" >> $MANUAL_INTERVENTION_COMMIT_FILE
+    continue
+  fi
+
   SHORT_SHA=`git show --name-only $CHERRY_PICK_COMMIT --format='%h' | head -1`
 
   # The trick here is that we only want to include no-op processing for the
@@ -99,6 +172,7 @@ for commit in $NEW_COMMITS; do
 done
 
 if [ ! -f $MANUAL_INTERVENTION_COMMIT_FILE ]; then
+  echo ""
   echo "No commits require manual intervention"
   exit
 fi
@@ -109,6 +183,10 @@ verify the source of the cherry-pick or there may be errors
 reported during the fast-forward processing.  Without this
 intervention, the common symptom is that the vendored commit
 file count (0) will not match the upstream commit file count.
+
+In some cases, these commits may be listed because invalid
+cherry-pick info (not simply missing info) is present in the
+commit message.
 "
 
 for commit in `cat $MANUAL_INTERVENTION_COMMIT_FILE`; do

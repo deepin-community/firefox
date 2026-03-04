@@ -48,15 +48,17 @@ download-cert-view-cert =
     .label = Tampilkan
 download-cert-view-text = Periksa sertifikat CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Permintaan Identifikasi Pengguna
 client-auth-site-description = Situs telah meminta identifikasi Anda dengan sertifikat:
 client-auth-choose-cert = Pilih sertifikat untuk mewakili proses identifikasi:
+client-auth-send-no-certificate =
+    .label = Jangan kirim sertifikat
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = “{ $hostname }” telah meminta Anda untuk mengidentifikasi diri Anda dengan menggunakan sebuah sertifikat:
 client-auth-cert-details = Detail sertifikat yang dipilih:
 # Variables:
 # $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
@@ -80,8 +82,13 @@ client-auth-cert-details-issued-by = Diterbitkan oleh: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Disimpan di: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Ingat pilihan ini
+client-auth-cert-remember-label = Ingat pilihan ini:
+client-auth-cert-remember-never =
+    .label = Sekali
+client-auth-cert-remember-always =
+    .label = Secara permanen
+client-auth-cert-remember-temporarily =
+    .label = Untuk sesi ini
 
 ## Set password (p12) dialog
 

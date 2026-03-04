@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Заблакаваная старонк�
 neterror-captive-portal-page-title = Злучыцца з сеткай
 neterror-dns-not-found-title = Сервер не знойдзены
 neterror-malformed-uri-page-title = Несапраўдны URL
+general-body-title = Будзьце асцярожныя. Нешта выглядае не так.
+problem-with-this-site-title = Здаецца, з гэтым сайтам ёсць праблема
 
 ## Error page actions
 
@@ -41,6 +43,13 @@ neterror-generic-error = { -brand-short-name } не можа загрузіць 
 neterror-load-error-try-again = Магчыма, сайт часова недаступны ці перагружаны. Паспрабуйце зноў крыху пазней.
 neterror-load-error-connection = Калі ніводная старонка не адкрываецца, праверце злучэнне камп'ютара з сеткай.
 neterror-load-error-firewall = Калі ваш камп'ютар ці сетка ахоўваюцца фаерволам ці проксі, пераканайцеся, што { -brand-short-name } дазволена мець доступ да сеціва.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Калі вы спрабуеце загрузіць старонку з лакальнай сеткі, пераканайцеся, што { -brand-short-name } атрымаў дазволы на лакальную сетку ў наладах прыватнасці і бяспекі macOS.
+neterror-http-error-page = Праверце, ці правільна вы ўвялі адрас сайта.
+neterror-http-empty-response = Праверце, ці правільна вы ўвялі адрас вэб-сайта, і паспрабуйце зноў праз некалькі хвілін.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } адправіў назад пустую старонку.
 neterror-captive-portal = Вы павінны ўвайсці ў гэту сетку перад тым, як зможаце атрымаць доступ у Інтэрнэт.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +58,10 @@ neterror-dns-not-found-hint-header = <strong>Калі вы ўвялі праві
 neterror-dns-not-found-hint-try-again = Паўтарыць спробу пазней
 neterror-dns-not-found-hint-check-network = Праверыць падлучэнне да сеткі
 neterror-dns-not-found-hint-firewall = Праверыць, ці мае { -brand-short-name } дазвол на доступ да Інтэрнэту (магчыма, вы падключаны, але за брандмаўарам)
+neterror-dns-not-found-offline-hint-header = <strong>Што вы можаце з гэтым зрабіць?</strong>
+neterror-dns-not-found-offline-hint-different-device = Паспрабуйце падключыцца на іншай прыладзе.
+neterror-dns-not-found-offline-hint-modem = Праверце свой мадэм ці маршрутызатар.
+neterror-dns-not-found-offline-hint-reconnect = Адключыцеся і зноў падключыцеся да Wi-Fi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +85,6 @@ neterror-dns-not-found-trr-unknown-problem = Нечаканая праблема
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } не можа абараніць ваш запыт на адрас гэтага сайта праз нашу давераную службу DNS. Вось чаму:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } не можа абараніць ваш запыт на адрас гэтага сайта праз нашага абароненага правайдара DNS. Вось чаму:
 neterror-dns-not-found-native-fallback-heuristic = DNS па HTTPS быў адключаны ў вашай сетцы.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } не змог злучыцца з { $trrDomain }.
 
@@ -83,6 +95,7 @@ neterror-file-not-found-moved = Упэўніцеся, што файл не бы�
 neterror-access-denied = Магчыма, што ён быў выдалены або перамешчаны, або дазволы на файл не даюць атрымаць да яго доступ.
 neterror-unknown-protocol = Магчыма, вам спатрэбіцца ўсталяваць іншую праграму, каб адкрыць гэты адрас.
 neterror-redirect-loop = Гэтая праблема часам вынікае з адключэння або адмовы прыняць кукі.
+neterror-unknown-socket-type-client-config = Магчыма, гэта з-за памылкі канфігурацыі вашага кліента.
 neterror-unknown-socket-type-psm-installed = Упэўніцеся, што Менеджар асабістай бяспекі ўсталяваны ў вашай сістэме.
 neterror-unknown-socket-type-server-config = Гэта звязана, магчыма, з незвычайнымі наладамі сервера.
 neterror-not-cached-intro = Запатрабаваны дакумент не даступны ў кэшы { -brand-short-name }.
@@ -96,6 +109,9 @@ neterror-proxy-connect-failure-settings = Упэўніцеся, што нала�
 neterror-proxy-connect-failure-contact-admin = Звяжыцеся з адміністратарам сеткі, каб ўпэўніцца, што проксі-сервер працуе.
 neterror-content-encoding-error = Паведамце, калі ласка, уладальнікам вэб-сайта пра гэтую праблему.
 neterror-unsafe-content-type = Паведамце, калі ласка, уладальнікам вэб-сайта пра гэтую праблему.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } не давярае { $hostname }, таму што злучэнне не бяспечнае. Паспрабуйце змяніць URL на HTTPS.
 neterror-nss-failure-not-verified = Старонка, якую вы спрабуеце адкрыць, не можа быць паказана, бо сапраўднасць атрыманых звестак нельга пацвердзіць.
 neterror-nss-failure-contact-website = Калі ласка, паведаміце ўладальніку сайта пра гэтую праблему.
 # Variables:
@@ -148,3 +164,35 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Калі вы не знаё
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> мае палітыку бяспекі, што называецца HTTP Strict Transport Security (HSTS), і гэта азначае, што { -brand-short-name } можа звязвацца з ім толькі абароненым злучэннем. Вы не можаце дадаць выключэнне для наведвання гэтага сайта.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Хутчэй за ўсё, нічога, таму што, выглядае на тое, праблема з самім сайтам.
+certerror-blocked-by-corp-headers-description = Часам сайты ўсталёўваюць абарону для сябе і такіх людзей, як вы, ад непажаданага ўзаемадзеяння з іншымі сайтамі.
+certerror-coop-learn-more = Даведацца больш пра Палітыку адкрыцця крос-паходжання (Cross Origin Opener Policies, COOP)
+certerror-coep-learn-more = Даведацца больш пра Палітыку ўбудоўвання крос-паходжання (Cross Origin Embedder Policies, COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Код памылкі: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Здаецца, ёсць праблема з інтэрнэт-злучэннем
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } не можа стварыць бяспечнае злучэнне з серверам па адрасе { $hostname }.
+fp-neterror-offline-intro = { -brand-short-name } не можа падключыцца да сервера па адрасе <strong>{ $hostname }</strong>
+fp-neterror-coop-coep-intro = { -brand-short-name } не загрузіў гэтую старонку, таму што канфігурацыя бяспекі, здаецца, не адпавядае папярэдняй старонцы.
+fp-neterror-http-auth-disabled-intro = Нехта, выдаючы сябе за сайт, можа паспрабаваць скрасці такія рэчы, як ваша імя карыстальніка, пароль або адрас электроннай пошты.
+fp-neterror-http-auth-disabled-secure-connection = Гэты сайт патрабуе бяспечнага падключэння, і вы не можаце дадаць выключэнне для яго наведвання.
+fp-neterror-why-did-this-happen = Чаму гэта здарылася?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Здаецца, гэты сайт выкарыстоўвае старое праграмнае забеспячэнне з вядомымі праблемамі бяспекі.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } не давярае { $hostname }, бо злучэнне не бяспечнае.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Пераканайцеся, што вы карыстаецеся апошняй версіяй { -brand-short-name }. Перайдзіце ў меню Даведка > Пра { -brand-short-name }. Калі вы карыстаецеся апошняй версіяй { -brand-short-name }, праблема, хутчэй за ўсё, звязана з самім сайтам.
+fp-neterror-offline-what-can-you-do-body = Паспрабуйце падлучыцца на іншай прыладзе. Праверце мадэм або маршрутызатар. Адключыцеся і паўторна падключыцеся да Wi-Fi.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Паспрабуйце змяніць URL-адрас на HTTPS. Але цалкам верагодна, праблема з самім сайтам.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Часам сайты ўсталёўваюць абарону для сябе ад непажаданага ўзаемадзеяння з іншымі сайтамі.
+fp-learn-more-about-https-connections = Даведайцеся пра HTTPS-злучэнні

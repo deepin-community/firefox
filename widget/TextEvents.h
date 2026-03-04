@@ -25,6 +25,7 @@
 #include "mozilla/ipc/IPCForwards.h"
 #include "nsCOMPtr.h"
 #include "nsHashtablesFwd.h"
+#include "nsIFrame.h"
 #include "nsISelectionListener.h"
 #include "nsITransferable.h"
 #include "nsRect.h"
@@ -237,7 +238,7 @@ class WidgetKeyboardEvent final : public WidgetInputEvent {
     //       we don't have any bug reports that user cannot input proper
     //       character with Alt and/or Ctrl key.
     //       -- On macOS, IMEInputHandler::WillDispatchKeyboardEvent() clears
-    //       MODIFIER_ALT and MDOFIEIR_CONTROL of eKeyPress event only when
+    //       MODIFIER_ALT and MODIFIER_CONTROL of eKeyPress event only when
     //       TextInputHandler::InsertText() has been called for the event.
     //       I.e., they are cleared only when an editor has focus (even if IME
     //       is disabled in password field or by |ime-mode: disabled;|) because
@@ -309,28 +310,25 @@ class WidgetKeyboardEvent final : public WidgetInputEvent {
   }
 
   bool CanUserGestureActivateTarget() const {
-    // Printable keys, 'carriage return' and 'space' are supported user gestures
-    // for activating the document. However, if supported key is being pressed
-    // combining with other operation keys, such like alt, control ..etc., we
-    // won't activate the target for them because at that time user might
-    // interact with browser or window manager which doesn't necessarily
-    // demonstrate user's intent to play media.
-    const bool isCombiningWithOperationKeys = (IsControl() && !IsAltGraph()) ||
-                                              (IsAlt() && !IsAltGraph()) ||
-                                              IsMeta();
-    const bool isEnterOrSpaceKey =
-        mKeyNameIndex == KEY_NAME_INDEX_Enter || mKeyCode == NS_VK_SPACE;
-    return (PseudoCharCode() || isEnterOrSpaceKey) &&
-           (!isCombiningWithOperationKeys ||
-            // ctrl-c/ctrl-x/ctrl-v is quite common shortcut for clipboard
-            // operation.
-            // XXXedgar, we have to find a better way to handle browser keyboard
-            // shortcut for user activation, instead of just ignoring all
-            // combinations, see bug 1641171.
-            ((mKeyCode == dom::KeyboardEvent_Binding::DOM_VK_C ||
-              mKeyCode == dom::KeyboardEvent_Binding::DOM_VK_V ||
-              mKeyCode == dom::KeyboardEvent_Binding::DOM_VK_X) &&
-             IsAccel()));
+    if (mFlags.mIsShortcutKey) {
+      // Space is quite common shortcut for playing media.
+      return mKeyCode == NS_VK_SPACE ||
+             // ctrl-c/ctrl-x/ctrl-v is quite common shortcut for clipboard
+             // operation.
+             // XXXedgar, we probably could improve this by referring to
+             // EditCommandsConstRef() if we're sure the event target on Linux
+             // and macOS is active with any edit commands.
+             ((mKeyCode == dom::KeyboardEvent_Binding::DOM_VK_C ||
+               mKeyCode == dom::KeyboardEvent_Binding::DOM_VK_V ||
+               mKeyCode == dom::KeyboardEvent_Binding::DOM_VK_X) &&
+              IsAccel());
+    }
+
+    // ESC key is ususally used to exit some state, it should not be considered
+    // as a user activation key to avoid page requests to enter again the same
+    // state to trap the user.
+    // https://html.spec.whatwg.org/multipage/interaction.html#activation-triggering-input-event
+    return mKeyNameIndex != KEY_NAME_INDEX_Escape;
   }
 
   // Returns true if this event is likely an user activation for a link or
@@ -1248,6 +1246,10 @@ class WidgetQueryContentEvent : public WidgetGUIEvent {
     bool mWidgetIsHit = false;
     // true if mContentRoot is focused editable content
     bool mIsEditableContent = false;
+    // Set to the element that a drop at the given coordinates would target
+    mozilla::dom::Element* mDropElement;
+    // Set to the frame that a drop at the given coordinates would target
+    nsIFrame* mDropFrame;
 
     Reply() = delete;
     explicit Reply(EventMessage aEventMessage) : mEventMessage(aEventMessage) {}

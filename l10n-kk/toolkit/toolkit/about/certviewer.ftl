@@ -36,6 +36,9 @@ certificate-viewer-key-size = Кілт өлшемі
 certificate-viewer-inc-locality = Заңды тұлғаның орналасқан жері
 certificate-viewer-locality = Орналасуы
 certificate-viewer-location = Орналасуы
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Журнал атауы
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Лог идентификаторы
 certificate-viewer-method = Тәсіл
 certificate-viewer-modulus = Модуль
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Сертификаттау орталы�
 certificate-viewer-certificate-policies = Сертификат саясаттары
 certificate-viewer-embedded-scts = Ендірілген SCT
 certificate-viewer-crl-endpoints = Қайта шақыру тізімдерін тарату нүктелері (CRL)
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Жүктеп алу
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (сертификат)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (сертификаттар тізбегі)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Бұл кеңейту өте маңызды деп белгіленді, яғни клиенттер оны түсінбесе, сертификаттан бас тартуы керек.
@@ -112,6 +113,8 @@ certificate-viewer-export = Экспорттау
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (белгісіз)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = сертификат
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

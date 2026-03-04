@@ -10,38 +10,56 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.mozilla.fenix.components.FenixSnackbar
+import mozilla.components.compose.base.snackbar.SnackbarTimeout
+import org.mozilla.fenix.compose.core.Action
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarState
 import org.mozilla.fenix.ext.settings
 import java.util.concurrent.atomic.AtomicBoolean
-
-internal const val UNDO_DELAY = 3000L
-internal const val ACCESSIBLE_UNDO_DELAY = 15000L
 
 /**
  * Get the recommended time an "undo" action should be available until it can automatically be
  * dismissed. The delay may be different based on the accessibility settings of the device.
+ *
+ * @return The undo delay as a [Long] in milliseconds.
  */
 fun Context.getUndoDelay(): Long {
     return if (settings().accessibilityServicesEnabled) {
-        ACCESSIBLE_UNDO_DELAY
+        SnackbarTimeout.Accessible.value
     } else {
-        UNDO_DELAY
+        SnackbarTimeout.Action.value
     }
 }
 
 /**
- * Runs [operation] after giving user time (see [UNDO_DELAY]) to cancel it.
+ * Get the recommended [SnackbarTimeout] a Snackbar should be displayed for.
+ * The timeout may be different based on the accessibility settings of the device.
+ *
+ * @return The undo delay as a [SnackbarTimeout].
+ */
+fun Context.getSnackbarTimeout(hasAction: Boolean = false): SnackbarTimeout {
+    return if (settings().accessibilityServicesEnabled) {
+        SnackbarTimeout.Accessible
+    } else if (hasAction) {
+        SnackbarTimeout.Action
+    } else {
+        SnackbarTimeout.Default
+    }
+}
+
+/**
+ * Runs [operation] after giving user time (see [Context.getUndoDelay]) to cancel it.
  * In case of cancellation, [onCancel] is executed.
  *
  * Execution of suspend blocks happens on [Dispatchers.Main].
  *
- * @param view A [View] used to determine a parent for the [FenixSnackbar].
- * @param message A message displayed as part of [FenixSnackbar].
- * @param undoActionTitle Label for the action associated with the [FenixSnackbar].
+ * @param view A [View] used to determine a parent for the [Snackbar].
+ * @param message A message displayed as part of [Snackbar].
+ * @param undoActionTitle Label for the action associated with the [Snackbar].
  * @param onCancel A suspend block to execute in case of cancellation.
- * @param operation A suspend block to execute if user doesn't cancel via the displayed [FenixSnackbar].
- * @param anchorView A [View] to which [FenixSnackbar] should be anchored.
- * @param elevation The elevation of the [FenixSnackbar].
+ * @param operation A suspend block to execute if user doesn't cancel via the displayed [Snackbar].
+ * @param anchorView A [View] to which [Snackbar] should be anchored.
+ * @param elevation The elevation of the [Snackbar].
  */
 fun CoroutineScope.allowUndo(
     view: View,
@@ -58,19 +76,31 @@ fun CoroutineScope.allowUndo(
 
     @Suppress("ComplexCondition")
     fun showUndoSnackbar() {
-        val snackbar = FenixSnackbar
+        val snackbar = Snackbar
             .make(
-                view = view,
-                duration = FenixSnackbar.LENGTH_INDEFINITE,
+                snackBarParentView = view,
+                snackbarState = SnackbarState(
+                    message = message,
+                    duration = SnackbarState.Duration.Preset.Indefinite,
+                    action = Action(
+                        label = undoActionTitle,
+                        onClick = {
+                            requestedUndo.set(true)
+                            launch {
+                                onCancel.invoke()
+                            }
+                        },
+                    ),
+                    onDismiss = {
+                        launch {
+                            if (!requestedUndo.get()) {
+                                operation.invoke(view.context)
+                            }
+                        }
+                    },
+                ),
             )
-            .setText(message)
             .setAnchorView(anchorView)
-            .setAction(undoActionTitle) {
-                requestedUndo.set(true)
-                launch {
-                    onCancel.invoke()
-                }
-            }
 
         elevation?.also {
             snackbar.view.elevation = it

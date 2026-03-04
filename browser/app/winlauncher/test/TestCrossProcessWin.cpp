@@ -79,7 +79,7 @@ class TempFile final {
  public:
   TempFile() : mFullPath{0} {
     wchar_t tempDir[MAX_PATH + 1];
-    DWORD len = ::GetTempPathW(ArrayLength(tempDir), tempDir);
+    DWORD len = ::GetTempPathW(std::size(tempDir), tempDir);
     if (!len) {
       return;
     }
@@ -243,7 +243,7 @@ static DynamicBlockList ConvertStaticBlocklistToDynamic(
             });
 
   Vector<DllBlockInfo> copied;
-  Unused << copied.resize(originalLength + 1);  // aBlockEntries + sentinel
+  (void)copied.resize(originalLength + 1);  // aBlockEntries + sentinel
 
   size_t currentStringOffset = 0;
   for (size_t i = 0; i < originalLength; ++i) {
@@ -289,9 +289,9 @@ static DynamicBlockList ConvertStaticBlocklistToDynamic(
   return blockList;
 }
 
-const DynamicBlockList gFullList =
+MOZ_RUNINIT const DynamicBlockList gFullList =
     ConvertStaticBlocklistToDynamic(gWindowsDllBlocklist);
-const DynamicBlockList gShortList =
+MOZ_RUNINIT const DynamicBlockList gShortList =
     ConvertStaticBlocklistToDynamic(kDllBlocklistShort);
 
 static bool TestDependentModules() {
@@ -467,7 +467,7 @@ class ChildProcess final {
     Vector<std::thread> threads;
     std::atomic<bool> success = true;
     for (int i = 0; i < 10; ++i) {
-      Unused << threads.emplaceBack(
+      (void)threads.emplaceBack(
           [&success](SRWLOCK* aLock) {
             // All threads call GetKernel32Exports(), but only the first thread
             // maps a write-copy section and populates it.
@@ -537,8 +537,7 @@ class ChildProcess final {
   ChildProcess(const wchar_t* aExecutable, const wchar_t* aOption)
       : mProcessId(0) {
     const wchar_t* childArgv[] = {aExecutable, aOption};
-    auto cmdLine(
-        mozilla::MakeCommandLine(mozilla::ArrayLength(childArgv), childArgv));
+    auto cmdLine(mozilla::MakeCommandLine(std::size(childArgv), childArgv));
 
     STARTUPINFOW si = {sizeof(si)};
     PROCESS_INFORMATION pi;

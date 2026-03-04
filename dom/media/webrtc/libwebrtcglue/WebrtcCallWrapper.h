@@ -9,10 +9,10 @@
 
 #include <set>
 
+#include "SystemTime.h"
 #include "domstubs.h"
 #include "jsapi/RTCStatsReport.h"
 #include "nsISupportsImpl.h"
-#include "SystemTime.h"
 
 // libwebrtc includes
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
@@ -23,6 +23,7 @@ namespace mozilla {
 class AbstractThread;
 class MediaSessionConduit;
 class SharedWebrtcState;
+class WebrtcEnvironmentWrapper;
 
 namespace media {
 class ShutdownBlockingTicket;
@@ -34,6 +35,7 @@ class WebrtcCallWrapper {
   typedef webrtc::CallConfig Config;
 
   static RefPtr<WebrtcCallWrapper> Create(
+      RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper,
       const dom::RTCStatsTimestampMaker& aTimestampMaker,
       UniquePtr<media::ShutdownBlockingTicket> aShutdownTicket,
       const RefPtr<SharedWebrtcState>& aSharedState);
@@ -83,8 +85,7 @@ class WebrtcCallWrapper {
   WebrtcCallWrapper(RefPtr<SharedWebrtcState> aSharedState,
                     UniquePtr<webrtc::VideoBitrateAllocatorFactory>
                         aVideoBitrateAllocatorFactory,
-                    UniquePtr<webrtc::RtcEventLog> aEventLog,
-                    UniquePtr<webrtc::TaskQueueFactory> aTaskQueueFactory,
+                    RefPtr<WebrtcEnvironmentWrapper> aEnvWrapper,
                     const dom::RTCStatsTimestampMaker& aTimestampMaker,
                     UniquePtr<media::ShutdownBlockingTicket> aShutdownTicket);
 
@@ -101,8 +102,7 @@ class WebrtcCallWrapper {
   const RefPtr<webrtc::AudioDecoderFactory> mAudioDecoderFactory;
   const UniquePtr<webrtc::VideoBitrateAllocatorFactory>
       mVideoBitrateAllocatorFactory;
-  const UniquePtr<webrtc::RtcEventLog> mEventLog;
-  const UniquePtr<webrtc::TaskQueueFactory> mTaskQueueFactory;
+  const RefPtr<WebrtcEnvironmentWrapper> mEnvWrapper;
 
  protected:
   // Call worker thread only.

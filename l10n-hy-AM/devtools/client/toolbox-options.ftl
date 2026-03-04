@@ -48,9 +48,6 @@ options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Գույնի անունը
 
-## Web Console section
-
-
 ## Style Editor section
 
 # The heading
@@ -67,14 +64,14 @@ options-screenshot-label = Էկրանի հանույթի պահվածք
 # Label for the checkbox that toggles screenshot to clipboard feature
 options-screenshot-clipboard-only-label = Էկրանակադրը միայն սեղմատախտակի համար
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
-options-screenshot-audio-label = Նվագարկել խցիկի փակման ձայնը
+options-screenshot-audio-label = Նվագարկել տեսախցիկի փեղկման ձայնը
 options-screenshot-audio-tooltip =
-    .title = Միացնում է խցիկի աուդիո ձայնը, երբ կորզում է պատկերը
+    .title = Միացնում է տեսախցիկի ձայնանյութը, երբ վերցվում է էկրանակադրը
 
 ## Editor section
 
 # The heading
-options-sourceeditor-label = Խմբագրիչի նախըտրանքներ
+options-sourceeditor-label = Խմբագրիչի նախապատվություններ
 options-sourceeditor-detectindentation-tooltip =
     .title = Գուշակել բացատը ըստ աղբյուրի բովանդակության
 options-sourceeditor-detectindentation-label = Հայտնաբերել ներս շեղումը
@@ -82,7 +79,7 @@ options-sourceeditor-autoclosebrackets-tooltip =
     .title = Ինքնաշխատ տեղադրել փակման փակագծերը
 options-sourceeditor-autoclosebrackets-label = Ինքնափակման փակագծեր
 options-sourceeditor-expandtab-tooltip =
-    .title = Ներդիրի նիշքի փոխարեն օգտագործեք բացատներ
+    .title = Ներդիրի ֆայլի փոխարեն օգտագործեք բացատներ
 options-sourceeditor-expandtab-label = Ներ շեղումը՝ տարածքի փոխարեն
 options-sourceeditor-tabsize-label = Ներդիրի չափը
 options-sourceeditor-keybinding-label = Ստեղների զուգորդություններ
@@ -116,5 +113,5 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Միացնել աղբյուրի քարտեզները
 options-source-maps-tooltip =
     .title = Եթե միացնեք այս ընտրանքը՝ աղբյուրները կքարտեզագրվեն գործիքներում։
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Միայն ընթացիկ շրջանը, վերաբացում է էջը

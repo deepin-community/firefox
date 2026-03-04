@@ -15,10 +15,9 @@
 #include "nsIMutableArray.h"
 #include "nsIMIMEInfo.h"
 
-#include "nsIAndroidBridge.h"
+#include "nsIGeckoViewBridge.h"
 
 #include "mozilla/jni/Utils.h"
-#include "nsTHashMap.h"
 
 // Some debug #defines
 // #define DEBUG_ANDROID_EVENTS
@@ -31,7 +30,6 @@ class AutoLocalJNIFrame;
 namespace hal {
 class BatteryInformation;
 class NetworkInformation;
-enum class ScreenOrientation : uint32_t;
 }  // namespace hal
 
 class AndroidBridge final {
@@ -45,37 +43,14 @@ class AndroidBridge final {
 
   static AndroidBridge* Bridge() { return sBridge; }
 
-  bool GetHandlersForURL(const nsAString& aURL,
-                         nsIMutableArray* handlersArray = nullptr,
-                         nsIHandlerApp** aDefaultApp = nullptr,
-                         const nsAString& aAction = u""_ns);
-
-  bool GetHandlersForMimeType(const nsAString& aMimeType,
-                              nsIMutableArray* handlersArray = nullptr,
-                              nsIHandlerApp** aDefaultApp = nullptr,
-                              const nsAString& aAction = u""_ns);
-
-  void GetMimeTypeFromExtensions(const nsACString& aFileExt,
-                                 nsCString& aMimeType);
-  void GetExtensionFromMimeType(const nsACString& aMimeType,
-                                nsACString& aFileExt);
-
   void Vibrate(const nsTArray<uint32_t>& aPattern);
 
   void GetIconForExtension(const nsACString& aFileExt, uint32_t aIconSize,
                            uint8_t* const aBuf);
 
-  // Returns a global reference to the Context for Fennec's Activity. The
-  // caller is responsible for ensuring this doesn't leak by calling
-  // DeleteGlobalRef() when the context is no longer needed.
-  jobject GetGlobalContextRef(void);
-
   void GetCurrentBatteryInformation(hal::BatteryInformation* aBatteryInfo);
 
   void GetCurrentNetworkInformation(hal::NetworkInformation* aNetworkInfo);
-
-  hal::ScreenOrientation GetScreenOrientation();
-  uint16_t GetScreenAngle();
 
   nsresult GetProxyForURI(const nsACString& aSpec, const nsACString& aScheme,
                           const nsACString& aHost, const int32_t aPort,
@@ -95,16 +70,7 @@ class AndroidBridge final {
                                      const char* methodName,
                                      const char* methodType);
 
-  static jni::Object::LocalRef ChannelCreate(jni::Object::Param);
-
-  static void InputStreamClose(jni::Object::Param obj);
-  static uint32_t InputStreamAvailable(jni::Object::Param obj);
-  static nsresult InputStreamRead(jni::Object::Param obj, char* aBuf,
-                                  uint32_t aCount, uint32_t* aRead);
-
  protected:
-  static nsTHashMap<nsStringHashKey, nsString> sStoragePaths;
-
   static AndroidBridge* sBridge;
 
   AndroidBridge();
@@ -248,26 +214,22 @@ class AutoLocalJNIFrame {
 
 }  // namespace mozilla
 
-#define NS_ANDROIDBRIDGE_CID                         \
-  {                                                  \
-    0x0FE2321D, 0xEBD9, 0x467D, {                    \
-      0xA7, 0x43, 0x03, 0xA6, 0x8D, 0x40, 0x59, 0x9E \
-    }                                                \
-  }
+#define NS_ANDROIDBRIDGE_CID \
+  {0x0FE2321D, 0xEBD9, 0x467D, {0xA7, 0x43, 0x03, 0xA6, 0x8D, 0x40, 0x59, 0x9E}}
 
-class nsAndroidBridge final : public nsIAndroidBridge {
+class nsAndroidBridge final : public nsIGeckoViewBridge {
  public:
   NS_DECL_ISUPPORTS
-  NS_DECL_NSIANDROIDBRIDGE
+  NS_DECL_NSIGECKOVIEWBRIDGE
 
-  NS_FORWARD_SAFE_NSIANDROIDEVENTDISPATCHER(mEventDispatcher)
+  NS_FORWARD_SAFE_NSIGECKOVIEWEVENTDISPATCHER(mEventDispatcher)
 
   nsAndroidBridge();
 
  private:
   ~nsAndroidBridge();
 
-  nsCOMPtr<nsIAndroidEventDispatcher> mEventDispatcher;
+  nsCOMPtr<nsIGeckoViewEventDispatcher> mEventDispatcher;
 
  protected:
 };

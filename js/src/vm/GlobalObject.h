@@ -21,6 +21,9 @@
 #include "jstypes.h"
 #include "NamespaceImports.h"
 
+#ifdef JS_HAS_INTL_API
+#  include "builtin/intl/GlobalIntlData.h"
+#endif
 #include "gc/AllocKind.h"
 #include "js/CallArgs.h"
 #include "js/Class.h"
@@ -54,13 +57,11 @@ namespace js {
 class ArgumentsObject;
 class GlobalScope;
 class GlobalLexicalEnvironmentObject;
+class MapObject;
 class PlainObject;
 class PropertyIteratorObject;
 class RegExpStatics;
-
-namespace gc {
-class FinalizationRegistryGlobalData;
-}  // namespace gc
+class SetObject;
 
 // Fixed slot capacities for PlainObjects. The global has a cached Shape for
 // PlainObject with default prototype for each of these values.
@@ -68,6 +69,7 @@ enum class PlainObjectSlotsKind {
   Slots0,
   Slots2,
   Slots4,
+  Slots6,
   Slots8,
   Slots12,
   Slots16,
@@ -83,6 +85,8 @@ static PlainObjectSlotsKind PlainObjectSlotsKindFromAllocKind(
       return PlainObjectSlotsKind::Slots2;
     case gc::AllocKind::OBJECT4:
       return PlainObjectSlotsKind::Slots4;
+    case gc::AllocKind::OBJECT6:
+      return PlainObjectSlotsKind::Slots6;
     case gc::AllocKind::OBJECT8:
       return PlainObjectSlotsKind::Slots8;
     case gc::AllocKind::OBJECT12:
@@ -109,15 +113,6 @@ class GlobalObjectData {
 
   ~GlobalObjectData();
 
-  // The global environment record's [[VarNames]] list that contains all
-  // names declared using FunctionDeclaration, GeneratorDeclaration, and
-  // VariableDeclaration declarations in global code in this global's realm.
-  // Names are only removed from this list by a |delete IdentifierReference|
-  // that successfully removes that global property.
-  using VarNamesSet =
-      GCHashSet<HeapPtr<JSAtom*>, DefaultHasher<JSAtom*>, CellAllocPolicy>;
-  VarNamesSet varNames;
-
   // The original values for built-in constructors (with their prototype
   // objects) based on JSProtoKey.
   //
@@ -126,8 +121,8 @@ class GlobalObjectData {
   // referring to the original Array constructor. The actual (writable and even
   // deletable) Object, Array, &c. properties are not stored here.
   struct ConstructorWithProto {
-    HeapPtr<JSObject*> constructor;
-    HeapPtr<JSObject*> prototype;
+    GCPtr<JSObject*> constructor;
+    GCPtr<JSObject*> prototype;
   };
   using CtorArray = mozilla::EnumeratedArray<JSProtoKey, ConstructorWithProto,
                                              size_t(JSProto_LIMIT)>;
@@ -136,7 +131,6 @@ class GlobalObjectData {
   // Built-in prototypes for this global. Note that this is different from the
   // set of built-in constructors/prototypes based on JSProtoKey.
   enum class ProtoKind {
-    IteratorProto,
     ArrayIteratorProto,
     StringIteratorProto,
     RegExpStringIteratorProto,
@@ -151,77 +145,86 @@ class GlobalObjectData {
     AsyncIteratorHelperProto,
     SegmentsProto,
     SegmentIteratorProto,
-
+#ifdef NIGHTLY_BUILD
+    IteratorRangeProto,
+#endif
     Limit
   };
-  using ProtoArray = mozilla::EnumeratedArray<ProtoKind, HeapPtr<JSObject*>,
+  using ProtoArray = mozilla::EnumeratedArray<ProtoKind, GCPtr<JSObject*>,
                                               size_t(ProtoKind::Limit)>;
   ProtoArray builtinProtos;
 
-  HeapPtr<GlobalScope*> emptyGlobalScope;
+  GCPtr<GlobalScope*> emptyGlobalScope;
 
   // The lexical environment for global let/const/class bindings.
-  HeapPtr<GlobalLexicalEnvironmentObject*> lexicalEnvironment;
+  GCPtr<GlobalLexicalEnvironmentObject*> lexicalEnvironment;
 
   // The WindowProxy associated with this global.
-  HeapPtr<JSObject*> windowProxy;
+  GCPtr<JSObject*> windowProxy;
 
   // Functions and other top-level values for self-hosted code. The "computed"
   // holder is used as the target of `SetIntrinsic` calls, but the same property
   // may also be cached on the normal intrinsics holder for `GetIntrinsic`.
-  HeapPtr<NativeObject*> intrinsicsHolder;
-  HeapPtr<NativeObject*> computedIntrinsicsHolder;
-
-  // Cache used to optimize certain for-of operations.
-  HeapPtr<NativeObject*> forOfPICChain;
+  GCPtr<NativeObject*> intrinsicsHolder;
+  GCPtr<NativeObject*> computedIntrinsicsHolder;
 
   // List of source URLs for this realm. This is used by the debugger.
-  HeapPtr<ArrayObject*> sourceURLsHolder;
+  GCPtr<ArrayObject*> sourceURLsHolder;
 
   // Realm-specific object that can be used as key in WeakMaps.
-  HeapPtr<PlainObject*> realmKeyObject;
+  GCPtr<PlainObject*> realmKeyObject;
 
   // The unique %ThrowTypeError% function for this global.
-  HeapPtr<JSFunction*> throwTypeError;
+  GCPtr<JSFunction*> throwTypeError;
 
   // The unique %eval% function (for indirect eval) for this global.
-  HeapPtr<JSFunction*> eval;
+  GCPtr<JSFunction*> eval;
 
   // Empty iterator object used for for-in with null/undefined.
-  HeapPtr<PropertyIteratorObject*> emptyIterator;
+  GCPtr<PropertyIteratorObject*> emptyIterator;
 
   // Cached shape for new arrays with Array.prototype as prototype.
-  HeapPtr<SharedShape*> arrayShapeWithDefaultProto;
+  GCPtr<SharedShape*> arrayShapeWithDefaultProto;
 
   // Shape for PlainObject with %Object.prototype% as proto, for each object
   // AllocKind.
   using PlainObjectShapeArray =
-      mozilla::EnumeratedArray<PlainObjectSlotsKind, HeapPtr<SharedShape*>,
+      mozilla::EnumeratedArray<PlainObjectSlotsKind, GCPtr<SharedShape*>,
                                size_t(PlainObjectSlotsKind::Limit)>;
   PlainObjectShapeArray plainObjectShapesWithDefaultProto;
 
   // Shape for JSFunction with %Function.prototype% as proto, for both
   // non-extended and extended functions.
-  HeapPtr<SharedShape*> functionShapeWithDefaultProto;
-  HeapPtr<SharedShape*> extendedFunctionShapeWithDefaultProto;
+  GCPtr<SharedShape*> functionShapeWithDefaultProto;
+  GCPtr<SharedShape*> extendedFunctionShapeWithDefaultProto;
 
   // Shape for BoundFunctionObject with %Function.prototype% as proto.
-  HeapPtr<SharedShape*> boundFunctionShapeWithDefaultProto;
+  GCPtr<SharedShape*> boundFunctionShapeWithDefaultProto;
+
+  // Shape for RegExpObject with %RegExp.prototype% as proto.
+  GCPtr<SharedShape*> regExpShapeWithDefaultProto;
 
   // Global state for regular expressions.
   RegExpRealm regExpRealm;
 
-  HeapPtr<ArgumentsObject*> mappedArgumentsTemplate;
-  HeapPtr<ArgumentsObject*> unmappedArgumentsTemplate;
+#ifdef JS_HAS_INTL_API
+  // Cache Intl formatters.
+  intl::GlobalIntlData globalIntlData;
+#endif
 
-  HeapPtr<PlainObject*> iterResultTemplate;
-  HeapPtr<PlainObject*> iterResultWithoutPrototypeTemplate;
+  GCPtr<ArgumentsObject*> mappedArgumentsTemplate;
+  GCPtr<ArgumentsObject*> unmappedArgumentsTemplate;
+
+  // Template objects to speed up allocation of Map/Set objects.
+  GCPtr<MapObject*> mapObjectTemplate;
+  GCPtr<SetObject*> setObjectTemplate;
+
+  GCPtr<PlainObject*> iterResultTemplate;
+  GCPtr<PlainObject*> iterResultWithoutPrototypeTemplate;
 
   // Lazily initialized script source object to use for scripts cloned from the
   // self-hosting stencil.
-  HeapPtr<ScriptSourceObject*> selfHostingScriptSource;
-
-  UniquePtr<gc::FinalizationRegistryGlobalData> finalizationRegistryData;
+  GCPtr<ScriptSourceObject*> selfHostingScriptSource;
 
   // The number of times that one of the following has occurred:
   // 1. A property of this GlobalObject is deleted.
@@ -267,8 +270,10 @@ class GlobalObject : public NativeObject {
                 "GlobalObjectData should be stored in a fixed slot for "
                 "performance reasons");
 
+ public:
   using ProtoKind = GlobalObjectData::ProtoKind;
 
+ private:
   GlobalObjectData* maybeData() {
     Value v = getReservedSlot(GLOBAL_DATA_SLOT);
     return static_cast<GlobalObjectData*>(v.toPrivate());
@@ -283,13 +288,20 @@ class GlobalObject : public NativeObject {
 
   void initBuiltinProto(ProtoKind kind, JSObject* proto) {
     MOZ_ASSERT(proto);
-    data().builtinProtos[kind].init(proto);
+    // Use set, as it's possible to construct oomTest test
+    // cases where the proto is already initialized.
+    //
+    // See Bugs 1969353 and 1928852.
+    data().builtinProtos[kind].set(proto);
   }
+
+  void setBuiltinProto(ProtoKind kind, JSObject* proto) {
+    MOZ_ASSERT(proto);
+    data().builtinProtos[kind].set(proto);
+  }
+
   bool hasBuiltinProto(ProtoKind kind) const {
     return bool(data().builtinProtos[kind]);
-  }
-  JSObject* maybeBuiltinProto(ProtoKind kind) const {
-    return data().builtinProtos[kind];
   }
   JSObject& getBuiltinProto(ProtoKind kind) const {
     MOZ_ASSERT(hasBuiltinProto(kind));
@@ -378,10 +390,22 @@ class GlobalObject : public NativeObject {
     return data().builtinConstructors[protoKey].constructor;
   }
 
+  template <typename T>
+  T* maybeGetConstructor(JSProtoKey protoKey) const {
+    JSObject* ctor = maybeGetConstructor(protoKey);
+    return ctor ? &ctor->as<T>() : nullptr;
+  }
+
   JSObject* maybeGetPrototype(JSProtoKey protoKey) const {
     MOZ_ASSERT(JSProto_Null < protoKey);
     MOZ_ASSERT(protoKey < JSProto_LIMIT);
     return data().builtinConstructors[protoKey].prototype;
+  }
+
+  template <typename T>
+  T* maybeGetPrototype(JSProtoKey protoKey) const {
+    JSObject* proto = maybeGetPrototype(protoKey);
+    return proto ? &proto->as<T>() : nullptr;
   }
 
   static bool maybeResolveGlobalThis(JSContext* cx,
@@ -575,24 +599,6 @@ class GlobalObject : public NativeObject {
     return &global->getPrototype(JSProto_BigInt);
   }
 
-#ifdef ENABLE_RECORD_TUPLE
-  static JSObject* getOrCreateRecordPrototype(JSContext* cx,
-                                              Handle<GlobalObject*> global) {
-    if (!ensureConstructor(cx, global, JSProto_Record)) {
-      return nullptr;
-    }
-    return &global->getPrototype(JSProto_Record);
-  }
-
-  static JSObject* getOrCreateTuplePrototype(JSContext* cx,
-                                             Handle<GlobalObject*> global) {
-    if (!ensureConstructor(cx, global, JSProto_Tuple)) {
-      return nullptr;
-    }
-    return &global->getPrototype(JSProto_Tuple);
-  }
-#endif
-
   static JSObject* getOrCreatePromisePrototype(JSContext* cx,
                                                Handle<GlobalObject*> global) {
     if (!ensureConstructor(cx, global, JSProto_Promise)) {
@@ -687,22 +693,6 @@ class GlobalObject : public NativeObject {
     return getOrCreateCustomErrorPrototype(cx, global, JSEXN_ERR);
   }
 
-  static NativeObject* getOrCreateSetPrototype(JSContext* cx,
-                                               Handle<GlobalObject*> global) {
-    if (!ensureConstructor(cx, global, JSProto_Set)) {
-      return nullptr;
-    }
-    return &global->getPrototype(JSProto_Set).as<NativeObject>();
-  }
-
-  static NativeObject* getOrCreateWeakSetPrototype(
-      JSContext* cx, Handle<GlobalObject*> global) {
-    if (!ensureConstructor(cx, global, JSProto_WeakSet)) {
-      return nullptr;
-    }
-    return &global->getPrototype(JSProto_WeakSet).as<NativeObject>();
-  }
-
   static JSFunction* getOrCreateTypedArrayConstructor(
       JSContext* cx, Handle<GlobalObject*> global) {
     if (!ensureConstructor(cx, global, JSProto_TypedArray)) {
@@ -757,19 +747,23 @@ class GlobalObject : public NativeObject {
                                            Handle<GlobalObject*> global);
 
  public:
+  JSObject* maybeBuiltinProto(ProtoKind kind) const {
+    return data().builtinProtos[kind];
+  }
+
   NativeObject* maybeGetIteratorPrototype() {
-    if (JSObject* obj = maybeBuiltinProto(ProtoKind::IteratorProto)) {
-      return &obj->as<NativeObject>();
+    if (!hasPrototype(JSProto_Iterator)) {
+      return nullptr;
     }
-    return nullptr;
+    return &(getPrototype(JSProto_Iterator).as<NativeObject>());
   }
 
   static JSObject* getOrCreateIteratorPrototype(JSContext* cx,
                                                 Handle<GlobalObject*> global) {
-    if (JSObject* proto = global->maybeBuiltinProto(ProtoKind::IteratorProto)) {
-      return proto;
+    if (!ensureConstructor(cx, global, JSProto_Iterator)) {
+      return nullptr;
     }
-    return createIteratorPrototype(cx, global);
+    return &global->getPrototype(JSProto_Iterator);
   }
 
   static NativeObject* getOrCreateArrayIteratorPrototype(
@@ -788,8 +782,13 @@ class GlobalObject : public NativeObject {
   static JSObject* getOrCreateRegExpStringIteratorPrototype(
       JSContext* cx, Handle<GlobalObject*> global);
 
+#ifdef NIGHTLY_BUILD
+  static JSObject* getOrCreateIteratorRangePrototype(
+      JSContext* cx, Handle<GlobalObject*> global);
+#endif
+
   void setGeneratorObjectPrototype(JSObject* obj) {
-    initBuiltinProto(ProtoKind::GeneratorObjectProto, obj);
+    setBuiltinProto(ProtoKind::GeneratorObjectProto, obj);
   }
 
   static JSObject* getOrCreateGeneratorObjectPrototype(
@@ -995,21 +994,20 @@ class GlobalObject : public NativeObject {
 
   RegExpRealm& regExpRealm() { return data().regExpRealm; }
 
+#ifdef JS_HAS_INTL_API
+  intl::GlobalIntlData& globalIntlData() { return data().globalIntlData; }
+#endif
+
   // Infallibly test whether the given value is the eval function for this
   // global.
   bool valueIsEval(const Value& val);
 
-  void removeFromVarNames(JSAtom* name) { data().varNames.remove(name); }
-
-  // Whether the given name is in [[VarNames]].
-  bool isInVarNames(JSAtom* name) { return data().varNames.has(name); }
-
-  // Add a name to [[VarNames]].  Reports OOM on failure.
-  [[nodiscard]] bool addToVarNames(JSContext* cx, JS::Handle<JSAtom*> name);
-
   static ArgumentsObject* getOrCreateArgumentsTemplateObject(JSContext* cx,
                                                              bool mapped);
   ArgumentsObject* maybeArgumentsTemplateObject(bool mapped) const;
+
+  static MapObject* getOrCreateMapTemplateObject(JSContext* cx);
+  static SetObject* getOrCreateSetTemplateObject(JSContext* cx);
 
   static const size_t IterResultObjectValueSlot = 0;
   static const size_t IterResultObjectDoneSlot = 1;
@@ -1027,7 +1025,6 @@ class GlobalObject : public NativeObject {
       JSContext* cx, Handle<GlobalObject*> global);
 
   // Implemented in vm/Iteration.cpp.
-  static bool initIteratorProto(JSContext* cx, Handle<GlobalObject*> global);
   template <ProtoKind Kind, const JSClass* ProtoClass,
             const JSFunctionSpec* Methods, const bool needsFuseProperty = false>
   static bool initObjectIteratorProto(JSContext* cx,
@@ -1056,10 +1053,6 @@ class GlobalObject : public NativeObject {
     return realm()->getDebuggers(nogc);
   }
   bool hasDebuggers() const { return realm()->hasDebuggers(); }
-
-  inline NativeObject* getForOfPICObject() { return data().forOfPICChain; }
-  static NativeObject* getOrCreateForOfPICObject(JSContext* cx,
-                                                 Handle<GlobalObject*> global);
 
   JSObject* maybeWindowProxy() const { return data().windowProxy; }
 
@@ -1132,16 +1125,18 @@ class GlobalObject : public NativeObject {
     data().boundFunctionShapeWithDefaultProto = shape;
   }
 
+  SharedShape* maybeRegExpShapeWithDefaultProto() const {
+    return data().regExpShapeWithDefaultProto;
+  }
+  void setRegExpShapeWithDefaultProto(SharedShape* shape) {
+    data().regExpShapeWithDefaultProto = shape;
+  }
+
   static PropertyIteratorObject* getOrCreateEmptyIterator(JSContext* cx);
 
   // Returns an object that represents the realm, used by embedder.
   static JSObject* getOrCreateRealmKeyObject(JSContext* cx,
                                              Handle<GlobalObject*> global);
-
-  gc::FinalizationRegistryGlobalData* getOrCreateFinalizationRegistryData();
-  gc::FinalizationRegistryGlobalData* maybeFinalizationRegistryData() const {
-    return data().finalizationRegistryData.get();
-  }
 
   static size_t offsetOfGlobalDataSlot() {
     return getFixedSlotOffset(GLOBAL_DATA_SLOT);
@@ -1202,6 +1197,24 @@ JSObject* GenericCreatePrototype(JSContext* cx, JSProtoKey key) {
       InheritanceProtoKeyForStandardClass(key) == JSProto_Object,
       "subclasses (of anything but Object) can't use GenericCreatePrototype");
   return GlobalObject::createBlankPrototype(cx, cx->global(), &T::protoClass_);
+}
+
+// Which object(s) should be marked as having a RealmFuse property in
+// GenericFinishInit.
+enum class WhichHasRealmFuseProperty {
+  Proto,
+  ProtoAndCtor,
+};
+
+template <WhichHasRealmFuseProperty FuseProperty>
+inline bool GenericFinishInit(JSContext* cx, HandleObject ctor,
+                              HandleObject proto) {
+  if constexpr (FuseProperty == WhichHasRealmFuseProperty::ProtoAndCtor) {
+    if (!JSObject::setHasRealmFuseProperty(cx, ctor)) {
+      return false;
+    }
+  }
+  return JSObject::setHasRealmFuseProperty(cx, proto);
 }
 
 inline JSProtoKey StandardProtoKeyOrNull(const JSObject* obj) {

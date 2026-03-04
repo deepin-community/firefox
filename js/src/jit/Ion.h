@@ -7,7 +7,6 @@
 #ifndef jit_Ion_h
 #define jit_Ion_h
 
-#include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Likely.h"
 #include "mozilla/MemoryReporting.h"
@@ -70,7 +69,6 @@ class WarpSnapshot;
 
 [[nodiscard]] bool OptimizeMIR(MIRGenerator* mir);
 LIRGraph* GenerateLIR(MIRGenerator* mir);
-CodeGenerator* GenerateCode(MIRGenerator* mir, LIRGraph* lir);
 CodeGenerator* CompileBackEnd(MIRGenerator* mir, WarpSnapshot* snapshot);
 
 void LinkIonScript(JSContext* cx, HandleScript calleescript);

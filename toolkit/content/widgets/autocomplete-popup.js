@@ -87,7 +87,7 @@
                 }
                 this._disabledItemClicked = false;
                 break;
-              case "mousemove":
+              case "mousemove": {
                 if (Date.now() - this.mLastMoveTime <= 30) {
                   return;
                 }
@@ -110,6 +110,7 @@
 
                 this.mLastMoveTime = Date.now();
                 break;
+              }
             }
           },
         };
@@ -359,7 +360,7 @@
 
       // We need to get the ceiling of the calculated value to ensure that the
       // box fully contains all of its contents and doesn't cause a scrollbar.
-      this.richlistbox.style.height = Math.ceil(height) + "px";
+      this.richlistbox.style.maxHeight = Math.ceil(height) + "px";
     }
 
     _appendCurrentResult(invalidateReason) {

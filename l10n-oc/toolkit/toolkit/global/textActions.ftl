@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = C
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Copiar sens seguiment del site
-    .accesskey = n
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Copiar lo ligam netejat
+    .accesskey = o
 text-action-paste =
     .label = Pegar
     .accesskey = P

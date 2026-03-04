@@ -12,11 +12,6 @@ DIRS = [
     "pingsender",
 ]
 
-if CONFIG["COMPILE_ENVIRONMENT"]:
-    EXPORTS.mozilla += ["!dap_ffi_generated.h"]
-
-    CbindgenHeader("dap_ffi_generated.h", inputs=["dap/ffi"])
-
 DEFINES["MOZ_APP_VERSION"] = '"%s"' % CONFIG["MOZ_APP_VERSION"]
 
 LOCAL_INCLUDES += [
@@ -29,20 +24,15 @@ SPHINX_TREES["/toolkit/components/telemetry"] = "docs"
 with Files("docs/**"):
     SCHEDULES.exclusive = ["docs"]
 
-if CONFIG["ENABLE_TESTS"]:
-    DIRS += ["tests/gtest"]
-
-TEST_DIRS += ["tests", "dap/ffi-gtest"]
+TEST_DIRS += ["tests/gtest", "tests"]
 
 XPCSHELL_TESTS_MANIFESTS += [
-    "dap/tests/xpcshell/xpcshell.toml",
     "tests/unit/xpcshell.toml",
 ]
 BROWSER_CHROME_MANIFESTS += ["tests/browser/browser.toml"]
 
 XPIDL_SOURCES += [
     "core/nsITelemetry.idl",
-    "dap/nsIDAPTelemetry.idl",
 ]
 
 XPIDL_MODULE = "telemetry"
@@ -55,8 +45,6 @@ EXPORTS.mozilla += [
     "core/ipc/TelemetryComms.h",
     "core/ipc/TelemetryIPC.h",
     "core/Telemetry.h",
-    "dap/DAPTelemetry.h",
-    "dap/DAPTelemetryBindings.h",
     "other/CombinedStacks.h",
     "other/ProcessedStack.h",
 ]
@@ -65,7 +53,7 @@ EXPORTS.mozilla.telemetry += [
     "core/Stopwatch.h",
 ]
 
-SOURCES += [
+UNIFIED_SOURCES += [
     "core/Stopwatch.cpp",
     "core/Telemetry.cpp",
     "core/TelemetryCommon.cpp",
@@ -73,7 +61,6 @@ SOURCES += [
     "core/TelemetryHistogram.cpp",
     "core/TelemetryScalar.cpp",
     "core/TelemetryUserInteraction.cpp",
-    "dap/DAPTelemetry.cpp",
     "other/CombinedStacks.cpp",
     "other/ProcessedStack.cpp",
     "other/TelemetryIOInterposeObserver.cpp",
@@ -81,18 +68,18 @@ SOURCES += [
 
 # Android and iOS don't support Legacy Telemetry.
 if CONFIG["MOZ_WIDGET_TOOLKIT"] not in ("android", "uikit"):
-    SOURCES += [
+    UNIFIED_SOURCES += [
         "core/ipc/TelemetryIPC.cpp",
         "core/ipc/TelemetryIPCAccumulator.cpp",
     ]
 else:
-    SOURCES += [
+    UNIFIED_SOURCES += [
         "core/ipc/TelemetryIPCAccumulatorStub.cpp",
         "core/ipc/TelemetryIPCStub.cpp",
     ]
 
 if CONFIG["OS_ARCH"] == "WINNT":
-    SOURCES += [
+    UNIFIED_SOURCES += [
         "other/UntrustedModules.cpp",
         "other/UntrustedModulesBackupService.cpp",
         "other/UntrustedModulesDataSerializer.cpp",
@@ -101,7 +88,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
 XPCOM_MANIFESTS += [
     "components.conf",
     "core/components.conf",
-    "dap/components.conf",
 ]
 
 EXTRA_COMPONENTS += ["TelemetryStartup.manifest"]
@@ -120,12 +106,10 @@ EXTRA_JS_MODULES += [
     "app/TelemetryStorage.sys.mjs",
     "app/TelemetryTimestamps.sys.mjs",
     "app/TelemetryUtils.sys.mjs",
-    "dap/DAPTelemetrySender.sys.mjs",
-    "dap/DAPVisitCounter.sys.mjs",
+    "app/UsageReporting.sys.mjs",
     "pings/CoveragePing.sys.mjs",
     "pings/EventPing.sys.mjs",
     "pings/HealthPing.sys.mjs",
-    "pings/ModulesPing.sys.mjs",
     "pings/TelemetrySession.sys.mjs",
     "pings/UntrustedModulesPing.sys.mjs",
     "pings/UpdatePing.sys.mjs",

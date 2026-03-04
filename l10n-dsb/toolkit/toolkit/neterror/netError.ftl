@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Zablokěrowany bok
 neterror-captive-portal-page-title = Se pla seśi pśizjawiś
 neterror-dns-not-found-title = Serwer njejo se namakał
 neterror-malformed-uri-page-title = Njepłaśiwy URL
+general-body-title = Buźćo wobglědniwy. Něco njejo w pórěźe.
+problem-with-this-site-title = Zda se, až jo problem z toś tym sedłom
 
 ## Error page actions
 
@@ -40,7 +42,14 @@ neterror-error-reporting-automatic = Dajśo zmólki ako toś te k wěsći, aby {
 neterror-generic-error = { -brand-short-name } njamóžo toś ten bok někakeje pśicyny dla cytaś.
 neterror-load-error-try-again = Sedło njeby mógło nachylu k dispoziciji staś abo by mógło pśeśěžone byś. Wopytajśo za mało wokognuśow hyšći raz.
 neterror-load-error-connection = Jolic njamóžośo někotare boki cytaś, pśespytajśo zwisk wašeje licadłoweje seśi.
-neterror-load-error-firewall = Jolic wašo licadło abo waša seś šćita se z wognjoweju murju abo proksy, zawěsććo, až { -brand-short-name } ma pšawo na web pśistup měś.
+neterror-load-error-firewall = Jolic wašo licadło abo waša seś šćita se z wognjoweju murju abo proksy, zawěsććo, až { -brand-short-name } ma pšawo k weboju pśistup měś.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Jolic wopytujośo, bok lokalneje seśi zacytaś, pśeglědujśo pšosym, lěc { -brand-short-name } jo dostał pšawa lokalneje seśi w nastajenjach priwatnosći a wěstoty.
+neterror-http-error-page = Pśeglědujśo, lěc sćo korektnje zapódał adresu websedła.
+neterror-http-empty-response = Pśeglědujśo, lěc sćo adresu websedła korektnje zapódał a wopytajśo za mało wokognuśow hyšći raz.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } jo pósłał prozny bok slědk.
 neterror-captive-portal = Musyśo se pla toś teje seśi pśizjawiś, nježli až móžośo pśistup k internetoju měś.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +58,10 @@ neterror-dns-not-found-hint-header = <strong>Jeli sćo zapódał pšawu adresu, 
 neterror-dns-not-found-hint-try-again = Pózdźej hyšći raz wopytaś
 neterror-dns-not-found-hint-check-network = Waš seśowy zwisk pśeglědowaś
 neterror-dns-not-found-hint-firewall = Pśeglědujśo, lěc { -brand-short-name } ma pšawo na pśistup k weboju (sćo snaź zwězany, ale za wognjoweju murju)
+neterror-dns-not-found-offline-hint-header = <strong>Co móžośo pśeśiwo tomu cyniś?</strong>
+neterror-dns-not-found-offline-hint-different-device = Wopytajśo z drugim rědom zwězaś.
+neterror-dns-not-found-offline-hint-modem = Pśeglědajśo swój modem abo router.
+neterror-dns-not-found-offline-hint-reconnect = Źělśo wót a zwěžćo zasej z WLAN.
 
 ## TRR-only specific messages
 ## Variables:
@@ -59,7 +72,7 @@ neterror-dns-not-found-trr-only-reason = { -brand-short-name } njamóžo wašo n
 neterror-dns-not-found-trr-only-reason2 = { -brand-short-name } njamóžo wašo napšašowanje za adresu toś togo sedła pśez našogo póbitowarja wěstego DNS šćitaś. Pśicyna jo:
 neterror-dns-not-found-trr-third-party-warning2 = Móžośo ze swójim standardnym  DNS-resolwerom pókšacowaś. Ale, tśeśi póbitowaŕ mógał wiźeś, ku kótarym websedłam se  woglědujośo.
 neterror-dns-not-found-trr-only-could-not-connect = { -brand-short-name } njejo mógał z { $trrDomain } zwězaś.
-neterror-dns-not-found-trr-only-timeout = Zwězowanje z { $trrDomain } jo dleje trałoako wócakane.
+neterror-dns-not-found-trr-only-timeout = Zwězowanje z { $trrDomain } jo dleje trało ako wócakane.
 neterror-dns-not-found-trr-offline = Njejsćo z internetom zwězany.
 neterror-dns-not-found-trr-unknown-host2 = Toś to websedło njejo se namakało wót { $trrDomain }.
 neterror-dns-not-found-trr-server-problem = Problem z { $trrDomain } jo nastał.
@@ -72,7 +85,6 @@ neterror-dns-not-found-trr-unknown-problem = Njewócakany problem.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } njamóžo wašo napšašowanje za adresu toś togo sedła pśez naš dowěry gódny DNS resolwer šćitaś. Pśicyna jo:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } njamóžo wašo napšašowanje za adresu toś togo sedła pśez našogo póbitowarja wěstego DNS šćitaś. Pśicyna jo:
 neterror-dns-not-found-native-fallback-heuristic = DNS pśez HTTPS jo se znjemóžnił we wašej seśi.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } njejo mógał z { $trrDomain } zwězaś.
 
@@ -82,7 +94,8 @@ neterror-file-not-found-filename = Pśeglědajśo datajowe mě za wjelikopisańs
 neterror-file-not-found-moved = Pśespytajśo, lěć dataja jo se pśesunuła, pśemjeniła abo wótpórała.
 neterror-access-denied = Snaź jo se wótpórała, pśesunuła, abo datajowe pšawa zajźuju pśistupoju.
 neterror-unknown-protocol = Snaź musyśo druge programy instalěrowaś, aby se toś ta adresa wócyniła.
-neterror-redirect-loop = Toś ten problem zawinujo se wótergi pśez znjemóžnjanje abo wótpokaowanje cookiejow.
+neterror-redirect-loop = Toś ten problem zawinujo se wótergi pśez znjemóžnjanje abo wótpokazowanje cookiejow.
+neterror-unknown-socket-type-client-config = To mógło dla zmólki konfiguracije z wašym klientom byś.
 neterror-unknown-socket-type-psm-installed = Skontrolěrujśo, lěc Personal Security Manager jo instalěrowany na wašom systemje.
 neterror-unknown-socket-type-server-config = Pśicyna jo snaź njestandardna konfiguracija na serwerje.
 neterror-not-cached-intro = Póžedany dokument njestoj w pufrowaku { -brand-short-name } k dispoziciji.
@@ -91,16 +104,19 @@ neterror-not-cached-try-again = Klikniśo na Hyšći raz, aby dokument hyšći r
 neterror-net-offline = Klikniśo na “Hyšći raz", aby do online-modusa pśejšeł a bok znowego zacytał.
 neterror-proxy-resolve-failure-settings = Pśekontrolěrujśo proksy-nastajenja, aby zawěsćił, až su korektne.
 neterror-proxy-resolve-failure-connection = Skontrolěrujśo, lěc wašo licadło ma funkcioněrujucy seśowy zwisk.
-neterror-proxy-resolve-failure-firewall = Jolic wašo licadło abo waša seś šćita se z wognjoweju murju abo proksy, zawěsććo, až { -brand-short-name } ma pšawo na Web pśistup měś.
+neterror-proxy-resolve-failure-firewall = Jolic wašo licadło abo waša seś šćita se z wognjoweju murju abo proksy, zawěsććo, až { -brand-short-name } ma pšawo k weboju pśistup měś.
 neterror-proxy-connect-failure-settings = Pśekontrolěrujśo proksy-nastajenja, aby se zawěsćiło, až wóne su korektne.
 neterror-proxy-connect-failure-contact-admin = Stajśo ze swójim seśowym administratorom, aby zawěsćił, až proksy-serwer źěła.
-neterror-content-encoding-error = Pšosym stejśo se z wobsejźarjami websedła do zwiska, aby je wó toś tom problemje informěrował.
-neterror-unsafe-content-type = Pšosym stejśo se z wobsejźarjami websedła do zwiska, aby je wó toś tom problemje informěrował.
+neterror-content-encoding-error = Pšosym stajśo se z wobsejźarjami websedła do zwiska, aby je wó toś tom problemje informěrował.
+neterror-unsafe-content-type = Pšosym stajśo se z wobsejźarjami websedła do zwiska, aby je wó toś tom problemje informěrował.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } { $hostname } njedowěri, dokulaž zwisk njejo wěsty. Wopytajśo URL do HTTPS změniś.
 neterror-nss-failure-not-verified = Bok, kótaryž cośo se woglědaś, njedajo se pokazaś, dokulaž awtentiskosć dostanych datow njedajo se pśeglědaś.
 neterror-nss-failure-contact-website = Pšosym stajśo se z wobsejźarjami websedła do zwiska, aby je wó toś tom problemje informěrował.
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
-certerror-intro = { -brand-short-name } jo namakał potencielne wobgrozenje wěstoty a njejo togodla zwězał z <b>{ $hostname }</b>. Jolic se k toś tomu sedłoju woglědujośo, mógli napadowarje wopytaś, daty ako waše gronidło, e-mailowe adrese abo drobnostki kreditowych kórtow kšadnuś.
+certerror-intro = { -brand-short-name } jo namakał potencielne wobgrozenje wěstoty a njejo togodla zwězał z <b>{ $hostname }</b>. Jolic se k toś tomu sedłoju woglědujośo, mógli napadowarje wopytaś, daty ako waše gronidła, e-mailowe adrese abo drobnostki kreditowych kórtow kšadnuś.
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-sts-intro = { -brand-short-name } jo namakał potencielne wěstotne wobgrozenje a jo pśetergnuł zwisk z <b>{ $hostname }</b>, dokulaž se toś to websedło wěsty zwisk pomina.
@@ -137,7 +153,7 @@ certerror-unknown-issuer-what-can-you-do-about-it-contact-admin = Jolic słuša�
 certerror-expired-cert-what-can-you-do-about-it-clock = Zeger wašogo licadła jo na { DATETIME($now, dateStyle: "medium") } nastajony. Kontrolěrujśo, lěc su korektny datum, korektny cas a korektna casowa cona w systemowych nastajenjach wašogo licadła nastajone a aktualizěrujśo pótom <b>{ $hostname }</b>.
 certerror-expired-cert-what-can-you-do-about-it-contact-website = Jeli waš časnik hižo korektny čas pokazuje, je websydło najskerje wopak konfigurowane a njemóžeće ničo činić, zo byšće tutón problem rozrisał. Móžeće administratora websydła wo tutym problemje informować.
 certerror-bad-cert-domain-what-can-you-do-about-it = Nejskerjej websedło problem zawinujo, a njedajo nic, což móžośo cyniś, aby jen rozwězał. Móžośo administratora websedła wó problemje informěrowaś.
-certerror-mitm-what-can-you-do-about-it-antivirus = Jolic waša antiwirusowa software funkciju ma, kótaraž skoděrowane zwiski (cesto “webskannowanje” abo “https-skannowanje” pomjenjone), móžośo toś tu funkciju znjemóžniś. Jolic to njefunkcioněrujo, móžośo antiwirusowu software wótwónoźeś a znowego instalěrowaś.
+certerror-mitm-what-can-you-do-about-it-antivirus = Jolic waša antiwirusowa software funkciju ma, kótaraž skoděrowane zwiski (cesto “webscannowanje” abo “https-scannowanje” pomjenjone), móžośo toś tu funkciju znjemóžniś. Jolic to njefunkcioněrujo, móžośo antiwirusowu software wótwónoźeś a znowego instalěrowaś.
 certerror-mitm-what-can-you-do-about-it-corporate = Jolic sćo we firmowej seśi, móžośo se ze swójim IT-wótźělenim do zwiska stajiś.
 # Variables:
 # $mitm (String) - The name of the software intercepting communications between you and the website (or “man in the middle”)
@@ -148,3 +164,35 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Jolic se z <b>{ $mitm }</b>
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> ma wěstotne pšawidło z mjenim HTTP Strict Transport Security (HSTS), kótarež wóznamjenijo, až { -brand-short-name } móžo se jano wěsće zwězaś. Njamóžośo wuwześe pśidaś, aby se toś tomu sydłoju woglědał.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Nejskerjej nic, dokulaž jo wěrjepódobnje, až problem jo ze sedłom samym.
+certerror-blocked-by-corp-headers-description = Wótergi websedła same a luźe ako wy pśed njewitanymi interakcijami z drugimi sedłami šćitaju.
+certerror-coop-learn-more = Dalšne informacije wó Cross Origin Opener Policies (COOP)
+certerror-coep-learn-more = Dalšne informacije wó Cross Origin Embedder Policies (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Zmólkowy kode: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Zda se, až jo problem z wašym internetnym zwiskom
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } njamóžo wěsty zwisk z serwerom na { $hostname } nawězaś.
+fp-neterror-offline-intro = { -brand-short-name } njamóžo ze serwerom <strong>{ $hostname }</strong> zwězaś
+fp-neterror-coop-coep-intro = { -brand-short-name } njejo zacytał toś ten bok, dokulaž se zda, ako njeby wěstotna konfiguracija z pjerwjejšnym bokom wótpowědował.
+fp-neterror-http-auth-disabled-intro = Něchten, kótaryž wudawa, až jo sedło, mógał wěcy ako wašo wužywaŕske mě, gronidło abo e-mailowu adresu kšadnuś.
+fp-neterror-http-auth-disabled-secure-connection = Toś to sedło se wěsty zwisk pomina, a njamóžośo wuwześe pśidaś, aby se k njomu  woglědał.
+fp-neterror-why-did-this-happen = Cogodla jo se to stało?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Zda se, až toś to sedło staru software ze znatymi wěstotnymi problemami wužywa.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } { $hostname } njedowěri, dokulaž zwisk njejo wěsty.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Zawěsććo, až nejnowšu wersiju { -brand-short-name } wužywaśo. Źiśo k Pomoc > Wó { -brand-short-name } w meniju. Jolic nejnowšu wersiju { -brand-short-name } wužywaśo, ma nejskerjej sedło toś ten problem.
+fp-neterror-offline-what-can-you-do-body = Wopytajśo z drugim rědom zwězaś. Pśeglědajśo swój modem abo router. Źělśo zwisk WLAN a zwěžćo znowego.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Wopytajśo URL do HTTPS změniś. Ale zda se, až jo problem ze sedłom samym.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Wótergi se websedła pśed njewitanymi interakcijami z drugimi sedłami šćitaju.
+fp-learn-more-about-https-connections = Zgóńśo wěcej wó zwiskach HTTPS

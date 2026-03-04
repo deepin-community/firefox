@@ -36,7 +36,7 @@ about-reader-estimated-read-time =
        *[many] { $range } минут
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Уменьшить размер шрифта
@@ -75,19 +75,24 @@ about-reader-customtheme-tab = Настраиваемая
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Текст
-    .title = Изменить цвет
-about-reader-custom-colors-background = Фон
-    .title = Изменить цвет
-about-reader-custom-colors-unvisited-links = Непосещённые ссылки
-    .title = Изменить цвет
-about-reader-custom-colors-visited-links = Посещённые ссылки
-    .title = Изменить цвет
-about-reader-custom-colors-selection-highlight = Подсветка для чтения вслух
-    .title = Изменить цвет
 about-reader-reset-button = Восстановить по умолчанию
+about-reader-custom-colors-foreground2 =
+    .label = Текст
+    .title = Изменить цвет
+about-reader-custom-colors-background2 =
+    .label = Фон
+    .title = Изменить цвет
+about-reader-custom-colors-unvisited-links2 =
+    .label = Непосещённые ссылки
+    .title = Изменить цвет
+about-reader-custom-colors-visited-links2 =
+    .label = Посещённые ссылки
+    .title = Изменить цвет
+about-reader-custom-colors-selection-highlight2 =
+    .label = Подсветка для чтения вслух
+    .title = Изменить цвет
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Текст
 about-reader-text-size-label = Размер текста
@@ -115,3 +120,5 @@ about-reader-text-alignment-center =
     .title = Выровнять по центру
 about-reader-text-alignment-right =
     .title = Выровнять по правому краю
+about-reader-text-alignment-justify =
+    .title = Выравнивание по ширине

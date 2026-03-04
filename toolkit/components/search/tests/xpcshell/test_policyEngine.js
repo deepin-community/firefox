@@ -7,37 +7,16 @@
 
 "use strict";
 
-const { EnterprisePolicyTesting } = ChromeUtils.importESModule(
-  "resource://testing-common/EnterprisePolicyTesting.sys.mjs"
-);
-
 const CONFIG = [
-  { identifier: "appDefaultEngine" },
+  // Let it start with z so it is not the first one lexicographically
+  // and we can test if the globalDefault is respected.
+  { identifier: "zAppDefaultEngine" },
   { identifier: "otherEngine" },
   { identifier: "otherEngineToMakeDefault" },
+  { globalDefault: "zAppDefaultEngine" },
 ];
 
 SearchSettings.SETTINGS_INVALIDATION_DELAY = 100;
-
-/**
- * Loads a new enterprise policy, and re-initialise the search service
- * with the new policy. Also waits for the search service to write the settings
- * file to disk.
- *
- * @param {object} policy
- *   The enterprise policy to use.
- */
-async function setupPolicyEngineWithJson(policy) {
-  Services.search.wrappedJSObject.reset();
-
-  await EnterprisePolicyTesting.setupPolicyEngineWithJson(policy);
-
-  let settingsWritten = SearchTestUtils.promiseSearchNotification(
-    "write-settings-to-disk-complete"
-  );
-  await Services.search.init();
-  await settingsWritten;
-}
 
 add_setup(async function () {
   // This initializes the policy engine for xpcshell tests
@@ -72,11 +51,6 @@ add_task(async function test_enterprise_policy_engine() {
   Assert.ok(engine, "Should have installed the engine.");
 
   Assert.equal(engine.name, "policy", "Should have the correct name");
-  Assert.equal(
-    engine.description,
-    "Test policy engine",
-    "Should have a description"
-  );
   Assert.deepEqual(engine.aliases, ["p"], "Should have the correct alias");
 
   let submission = engine.getSubmission("foo");
@@ -93,15 +67,20 @@ add_task(async function test_enterprise_policy_engine() {
     "Should have the correct suggest url"
   );
 
-  Services.search.defaultEngine = engine;
+  await Services.search.setDefault(
+    engine,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "other",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "other-policy",
       displayName: "policy",
       loadPath: "[policy]",
       submissionUrl: "blank:",
-      verified: "verified",
     },
   });
 });
@@ -161,7 +140,7 @@ add_task(async function test_enterprise_policy_hidden_default() {
   await setupPolicyEngineWithJson({
     policies: {
       SearchEngines: {
-        Remove: ["appDefaultEngine"],
+        Remove: ["zAppDefaultEngine"],
       },
     },
   });
@@ -169,11 +148,15 @@ add_task(async function test_enterprise_policy_hidden_default() {
   Services.search.resetToAppDefaultEngine();
 
   Assert.ok(
-    Services.search.getEngineById("appDefaultEngine").hidden,
+    Services.search.getEngineById("zAppDefaultEngine").hidden,
     "Should have removed the application default engine"
   );
 
-  Assert.equal(Services.search.defaultEngine.identifier, "otherEngine");
+  Assert.equal(
+    Services.search.defaultEngine.id,
+    "otherEngine",
+    "Should have the expected engine set as default"
+  );
 });
 
 add_task(async function test_enterprise_policy_default() {
@@ -188,7 +171,49 @@ add_task(async function test_enterprise_policy_default() {
   Services.search.resetToAppDefaultEngine();
 
   Assert.equal(
-    Services.search.defaultEngine.identifier,
-    "otherEngineToMakeDefault"
+    Services.search.defaultEngine.id,
+    "otherEngineToMakeDefault",
+    "Should have the expected engine set as default"
+  );
+});
+
+add_task(async function test_enterprise_policy_invalid_default() {
+  consoleAllowList.push("Search engine lookup failed");
+  await setupPolicyEngineWithJson({
+    policies: {
+      SearchEngines: {
+        Default: "Invalid Engine",
+      },
+    },
+  });
+
+  Services.search.resetToAppDefaultEngine();
+
+  Assert.equal(
+    Services.search.defaultEngine.id,
+    "zAppDefaultEngine",
+    "Should have the expected engine set as default"
+  );
+});
+
+add_task(async function test_enterprise_policy_private_default() {
+  Services.prefs.setBoolPref(
+    SearchUtils.BROWSER_SEARCH_PREF + "separatePrivateDefault.ui.enabled",
+    true
+  );
+
+  await setupPolicyEngineWithJson({
+    policies: {
+      SearchEngines: {
+        DefaultPrivate: "otherEngineToMakeDefault",
+      },
+    },
+  });
+
+  Services.search.resetToAppDefaultEngine();
+  Assert.equal(
+    Services.search.defaultPrivateEngine.id,
+    "otherEngineToMakeDefault",
+    "Should have the expected engine set as default"
   );
 });

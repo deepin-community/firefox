@@ -6,15 +6,14 @@ use api::BorderRadius;
 use api::units::*;
 use euclid::{Point2D, Rect, Box2D, Size2D, Vector2D, point2, point3};
 use euclid::{default, Transform2D, Transform3D, Scale, approxeq::ApproxEq};
-use malloc_size_of::{MallocShallowSizeOf, MallocSizeOf, MallocSizeOfOps};
 use plane_split::{Clipper, Polygon};
 use std::{i32, f32, fmt, ptr};
 use std::borrow::Cow;
 use std::num::NonZeroUsize;
-use std::os::raw::c_void;
 use std::sync::Arc;
 use std::mem::replace;
 
+use crate::internal_types::FrameVec;
 
 // Matches the definition of SK_ScalarNearlyZero in Skia.
 const NEARLY_ZERO: f32 = 1.0 / 4096.0;
@@ -108,7 +107,6 @@ impl<T> VecHelper<T> for Vec<T> {
         replace(self, Vec::with_capacity(len + 8))
     }
 }
-
 
 // Represents an optimized transform where there is only
 // a scale and translation (which are guaranteed to maintain
@@ -579,8 +577,24 @@ where
 impl<U> PointHelpers<U> for Point2D<f32, U> {
     fn snap(&self) -> Self {
         Point2D::new(
-            (self.x + 0.5).floor(),
-            (self.y + 0.5).floor(),
+            self.x.round(),
+            self.y.round(),
+        )
+    }
+}
+
+pub trait VectorHelpers<U>
+where
+    Self: Sized,
+{
+    fn snap(&self) -> Self;
+}
+
+impl<U> VectorHelpers<U> for Vector2D<f32, U> {
+    fn snap(&self) -> Self {
+        Vector2D::new(
+            self.x.round(),
+            self.y.round(),
         )
     }
 }
@@ -1384,7 +1398,7 @@ impl Preallocator {
     }
 
     /// Record the size of a vector to preallocate it the next frame.
-    pub fn record_vec<T>(&mut self, vec: &Vec<T>) {
+    pub fn record_vec<T>(&mut self, vec: &[T]) {
         let len = vec.len();
         if len > self.size {
             self.size = len;
@@ -1411,56 +1425,23 @@ impl Preallocator {
             vec.reserve(cap - len);
         }
     }
+
+    /// Preallocate vector storage.
+    ///
+    /// The preallocated amount depends on the length recorded in the last
+    /// record_vec call.
+    pub fn preallocate_framevec<T>(&self, vec: &mut FrameVec<T>) {
+        let len = vec.len();
+        let cap = self.preallocation_size();
+        if len < cap {
+            vec.reserve(cap - len);
+        }
+    }
 }
 
 impl Default for Preallocator {
     fn default() -> Self {
         Self::new(0)
-    }
-}
-
-/// Arc wrapper to support measurement via MallocSizeOf.
-///
-/// Memory reporting for Arcs is tricky because of the risk of double-counting.
-/// One way to measure them is to keep a table of pointers that have already been
-/// traversed. The other way is to use knowledge of the program structure to
-/// identify which Arc instances should be measured and which should be skipped to
-/// avoid double-counting.
-///
-/// This struct implements the second approach. It identifies the "main" pointer
-/// to the Arc-ed resource, and measures the buffer as if it were an owned pointer.
-/// The programmer should ensure that there is at most one PrimaryArc for a given
-/// underlying ArcInner.
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
-#[derive(Clone, Debug, Hash, PartialEq, Eq)]
-pub struct PrimaryArc<T>(pub Arc<T>);
-
-impl<T> ::std::ops::Deref for PrimaryArc<T> {
-    type Target = Arc<T>;
-
-    #[inline]
-    fn deref(&self) -> &Arc<T> {
-        &self.0
-    }
-}
-
-impl<T> MallocShallowSizeOf for PrimaryArc<T> {
-    fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        unsafe {
-            // This is a bit sketchy, but std::sync::Arc doesn't expose the
-            // base pointer.
-            let raw_arc_ptr: *const Arc<T> = &self.0;
-            let raw_ptr_ptr: *const *const c_void = raw_arc_ptr as _;
-            let raw_ptr = *raw_ptr_ptr;
-            (ops.size_of_op)(raw_ptr)
-        }
-    }
-}
-
-impl<T: MallocSizeOf> MallocSizeOf for PrimaryArc<T> {
-    fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
-        self.shallow_size_of(ops) + (**self).size_of(ops)
     }
 }
 

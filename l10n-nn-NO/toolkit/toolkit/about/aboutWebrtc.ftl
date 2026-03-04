@@ -227,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT (ms)
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Videoramme-statistik - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = side lagra til: { $path }
 about-webrtc-debug-mode-off-state-msg = sporingslogg finn ein på: { $path }
@@ -320,6 +317,3 @@ about-webrtc-hide-msg-sdp = Skjul SDP
 about-webrtc-media-context-show-msg = Vis media-kontekst
 about-webrtc-media-context-hide-msg = Gøym medie-kontekst
 about-webrtc-media-context-heading = Medie-kontekst
-
-##
-

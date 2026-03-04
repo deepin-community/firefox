@@ -7,9 +7,9 @@
 #ifndef mozilla_dom_BrowserHost_h
 #define mozilla_dom_BrowserHost_h
 
-#include "nsIRemoteTab.h"
-#include "mozilla/dom/RemoteBrowser.h"
 #include "mozilla/dom/BrowserParent.h"
+#include "mozilla/dom/RemoteBrowser.h"
+#include "nsIRemoteTab.h"
 
 class nsPIDOMWindowOuter;
 
@@ -87,8 +87,8 @@ class BrowserHost : public RemoteBrowser,
   void DestroyComplete() override;
 
   bool Show(const OwnerShowInfo&) override;
-  void UpdateDimensions(const nsIntRect& aRect,
-                        const ScreenIntSize& aSize) override;
+  void UpdateDimensions(const LayoutDeviceIntRect& aRect,
+                        const LayoutDeviceIntSize& aSize) override;
 
   void UpdateEffects(EffectsInfo aInfo) override;
 

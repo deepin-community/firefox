@@ -8,8 +8,9 @@
 #define mozilla_dom_URLClassifierParent_h
 
 #include "mozilla/dom/PContent.h"
-#include "mozilla/dom/PURLClassifierParent.h"
+#include "mozilla/dom/PURLClassifierLocalByNameParent.h"
 #include "mozilla/dom/PURLClassifierLocalParent.h"
+#include "mozilla/dom/PURLClassifierParent.h"
 #include "nsIURIClassifier.h"
 #include "nsIUrlClassifierFeature.h"
 
@@ -35,7 +36,7 @@ class URLClassifierParent : public nsIURIClassifierCallback,
     if (mIPCOpen) {
       ClassifierInfo info = ClassifierInfo(
           nsCString(aList), nsCString(aProvider), nsCString(aFullHash));
-      Unused << Send__delete__(this, Some(info), aErrorCode);
+      (void)Send__delete__(this, Some(info), aErrorCode);
     }
     return NS_OK;
   }
@@ -43,7 +44,7 @@ class URLClassifierParent : public nsIURIClassifierCallback,
   // Custom.
   void ClassificationFailed() {
     if (mIPCOpen) {
-      Unused << Send__delete__(this, Nothing(), NS_ERROR_FAILURE);
+      (void)Send__delete__(this, Nothing(), NS_ERROR_FAILURE);
     }
   }
 
@@ -75,6 +76,32 @@ class URLClassifierLocalParent : public nsIUrlClassifierFeatureCallback,
 
  private:
   ~URLClassifierLocalParent() = default;
+
+  // Override PURLClassifierLocalParent::ActorDestroy.
+  void ActorDestroy(ActorDestroyReason aWhy) override { mIPCOpen = false; }
+
+  bool mIPCOpen = true;
+};
+
+//////////////////////////////////////////////////////////////
+// URLClassifierLocalByNameParent
+
+class URLClassifierLocalByNameParent : public nsIUrlClassifierFeatureCallback,
+                                       public PURLClassifierLocalByNameParent {
+ public:
+  NS_DECL_THREADSAFE_ISUPPORTS
+
+  mozilla::ipc::IPCResult StartClassify(
+      nsIURI* aURI, const nsTArray<IPCURLClassifierFeature>& aFeatureNames,
+      nsIUrlClassifierFeature::listType aListType);
+
+  // nsIUrlClassifierFeatureCallback.
+  NS_IMETHOD
+  OnClassifyComplete(
+      const nsTArray<RefPtr<nsIUrlClassifierFeatureResult>>& aResults) override;
+
+ private:
+  ~URLClassifierLocalByNameParent() = default;
 
   // Override PURLClassifierLocalParent::ActorDestroy.
   void ActorDestroy(ActorDestroyReason aWhy) override { mIPCOpen = false; }

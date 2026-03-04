@@ -50,19 +50,32 @@ extensions = [
     "bzlink",
 ]
 
+myst_enable_extensions = [
+    "colon_fence",
+    "smartquotes",
+    "deflist",
+    "html_admonition",
+    "fieldlist",
+]
+
 # JSDoc must run successfully for dirs specified, so running
 # tree-wide (the default) will not work currently.
 # When adding more paths to this list, please ensure that they are not
-# excluded from valid-jsdoc in the top-level .eslintrc.js.
+# excluded from the valid-jsdoc and require-jsdoc sections in the top-level
+# eslint-rollouts.config.mjs.
 js_source_path = [
     "../browser/components/backup",
     "../browser/components/backup/actors",
     "../browser/components/backup/resources",
+    "../browser/components/customizableui",
     "../browser/components/extensions",
     "../browser/components/migration",
     "../browser/components/migration/content",
+    "../browser/components/mozcachedohttp",
+    "../browser/components/mozcachedohttp/actors",
     "../browser/components/uitour",
     "../browser/components/urlbar",
+    "../browser/components/urlbar/content",
     "../js/xpconnect/loader",
     "../remote/marionette",
     "../testing/mochitest/BrowserTestUtils",
@@ -73,13 +86,18 @@ js_source_path = [
     "../toolkit/actors",
     "../toolkit/components/extensions",
     "../toolkit/components/extensions/parent",
-    "../toolkit/components/featuregates",
-    "../toolkit/components/ml/content/ONNXPipeline.mjs",
+    "../toolkit/components/ml/content/backends/ONNXPipeline.mjs",
+    "../toolkit/modules/BrowserUtils.sys.mjs",
     "../toolkit/mozapps/extensions",
     "../toolkit/components/prompts/src",
     "../toolkit/components/pictureinpicture",
     "../toolkit/components/pictureinpicture/content",
-    "../toolkit/components/search",
+    # This is limited to SearchService.sys.mjs for now, as we only need to
+    # generate docs for that file currently. Other search files
+    # (e.g. SearchEngineSelector) are failing due to
+    # https://github.com/pyodide/sphinx-js/issues/242 or a variant of it.
+    "../toolkit/components/search/SearchService.sys.mjs",
+    "../toolkit/components/uniffi-bindgen-gecko-js/components/generated",
 ]
 root_for_relative_js_paths = ".."
 jsdoc_config_path = "jsdoc.json"
@@ -126,11 +144,12 @@ if on_rtd:
 else:
     # We only need to set the RTD theme when not on RTD because the RTD
     # environment handles this otherwise.
-    import sphinx_rtd_theme
 
     html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
+# As we parse the error messages and they can be translated, force
+# the english locale
+os.environ["LANG"] = "C"
 
 html_static_path = ["_static"]
 htmlhelp_basename = "FirefoxTreeDocs"

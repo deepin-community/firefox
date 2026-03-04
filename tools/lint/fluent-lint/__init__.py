@@ -127,12 +127,8 @@ class Linter(visitor.Visitor):
         self.state["node_can_be_resource_comment"] = self.state[
             "node_can_be_resource_comment"
         ] and (
-            # This is the root node.
-            node_name == "Resource"
-            # Empty space is allowed.
-            or node_name == "Span"
-            # Comments are allowed
-            or node_name == "Comment"
+            # This is the root node, empty space is allowed, comments are allowed
+            node_name in {"Resource", "Span", "Comment"}
         )
 
         if self.debug_print_json:
@@ -142,7 +138,7 @@ class Linter(visitor.Visitor):
             # Only debug print the root node.
             self.debug_print_json = False
 
-        super(Linter, self).generic_visit(node)
+        super().generic_visit(node)
 
     def visit_Attribute(self, node):
         # Only visit values for Attribute nodes, the identifier comes from dom.
@@ -221,7 +217,7 @@ class Linter(visitor.Visitor):
             self.add_error(
                 node,
                 "ID01",
-                "Identifiers may only contain lowercase characters and -",
+                f"Identifiers may only contain lowercase characters and - (ID: {node.name})",
             )
         if (
             len(node.name) < self.minimum_id_length
@@ -231,7 +227,7 @@ class Linter(visitor.Visitor):
             self.add_error(
                 node,
                 "ID02",
-                f"Identifiers must be at least {self.minimum_id_length} characters long",
+                f"Identifiers must be at least {self.minimum_id_length} characters long (ID: {node.name}",
             )
 
     def visit_TextElement(self, node):
@@ -281,7 +277,7 @@ class Linter(visitor.Visitor):
             ):
                 found_brands = []
                 for brand in self.brand_names:
-                    if brand in text:
+                    if re.search(rf"\b{re.escape(brand)}\b", text):
                         found_brands.append(brand)
                 if found_brands:
                     self.add_error(
@@ -335,7 +331,7 @@ class Linter(visitor.Visitor):
         # Store the variable used for the SelectExpression, excluding functions
         # like PLATFORM()
         if (
-            type(node.selector) == ast.VariableReference
+            type(node.selector) is ast.VariableReference
             and node.selector.id.name not in self.state["variables"]
         ):
             self.state["variables"].append(node.selector.id.name)
@@ -475,9 +471,9 @@ def get_exclusions(root):
     ) as f:
         exclusions = list(yaml.safe_load_all(f))[0]
         for error_type in exclusions:
-            exclusions[error_type]["files"] = set(
-                [mozpath.join(root, x) for x in exclusions[error_type]["files"]]
-            )
+            exclusions[error_type]["files"] = set([
+                mozpath.join(root, x) for x in exclusions[error_type]["files"]
+            ])
         return exclusions
 
 
@@ -517,7 +513,7 @@ def lint(paths, config, fix=None, **lintargs):
     brand_names = get_branding_list(root, brand_files)
     results = []
     for path in files:
-        contents = open(path, "r", encoding="utf-8").read()
+        contents = open(path, encoding="utf-8").read()
         linter = Linter(
             path,
             config,

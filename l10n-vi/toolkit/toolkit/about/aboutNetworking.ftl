@@ -39,6 +39,7 @@ about-networking-dns-lookup = Tra cứu DNS
 about-networking-dns-lookup-button = Xem
 about-networking-dns-domain = Tên miền:
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = Chỉ số RCWN
 about-networking-rcwn-status = Trạng thái RCWN
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Trang này đã được chuyển đến 
 
 about-networking-networkid-is-up = Liên kết hoạt động
 about-networking-networkid-status-known = Tình trạng liên kết đã biết
-
-##
-

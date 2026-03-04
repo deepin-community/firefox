@@ -4,14 +4,12 @@
 
 about-reader-loading = Se ye cargando…
 about-reader-load-error = No s'ha puesto cargar l'articlo dende a pachina
-
 about-reader-color-scheme-light = Claro
     .title = Colors claras
 about-reader-color-scheme-dark = Fosco
     .title = Colors foscas
 about-reader-color-scheme-sepia = Sepia
     .title = Colors sepia
-
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -23,7 +21,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minutos
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Reducir la mida d'a letra

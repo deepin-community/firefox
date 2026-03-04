@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/CrossShadowBoundaryRange.h"
+
 #include "nsContentUtils.h"
+#include "nsIContentInlines.h"
 #include "nsINode.h"
 #include "nsRange.h"
-#include "nsIContentInlines.h"
 
 namespace mozilla::dom {
 template already_AddRefed<CrossShadowBoundaryRange>
@@ -58,7 +59,8 @@ NS_IMPL_CYCLE_COLLECTING_ADDREF(CrossShadowBoundaryRange)
 
 NS_IMPL_CYCLE_COLLECTING_RELEASE_WITH_INTERRUPTABLE_LAST_RELEASE(
     CrossShadowBoundaryRange,
-    DoSetRange(RawRangeBoundary(), RawRangeBoundary(), nullptr, nullptr),
+    DoSetRange(RawRangeBoundary(TreeKind::Flat),
+               RawRangeBoundary(TreeKind::Flat), nullptr, nullptr),
     AbstractRange::MaybeCacheToReuse(*this))
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(CrossShadowBoundaryRange)
@@ -90,12 +92,12 @@ already_AddRefed<CrossShadowBoundaryRange> CrossShadowBoundaryRange::Create(
     const RangeBoundaryBase<EPT, ERT>& aEndBoundary, nsRange* aOwner) {
   RefPtr<CrossShadowBoundaryRange> range;
   if (!sCachedRanges || sCachedRanges->IsEmpty()) {
-    range = new CrossShadowBoundaryRange(aStartBoundary.Container(), aOwner);
+    range = new CrossShadowBoundaryRange(aStartBoundary.GetContainer(), aOwner);
   } else {
     range = sCachedRanges->PopLastElement().forget();
   }
 
-  range->Init(aStartBoundary.Container());
+  range->Init(aStartBoundary.GetContainer());
   range->DoSetRange(aStartBoundary, aEndBoundary, nullptr, aOwner);
   return range.forget();
 }
@@ -109,25 +111,17 @@ void CrossShadowBoundaryRange::DoSetRange(
   // and aEndBoundary could have different roots.
   StaticRange::DoSetRange(aStartBoundary, aEndBoundary, nullptr);
 
-  nsINode* startRoot = RangeUtils::ComputeRootNode(mStart.Container());
-  nsINode* endRoot = RangeUtils::ComputeRootNode(mEnd.Container());
+  nsINode* startRoot = RangeUtils::ComputeRootNode(mStart.GetContainer());
+  nsINode* endRoot = RangeUtils::ComputeRootNode(mEnd.GetContainer());
 
   nsINode* previousCommonAncestor = mCommonAncestor;
-  if (startRoot == endRoot) {
-    MOZ_ASSERT(!startRoot && !endRoot);
-    MOZ_ASSERT(!aOwner);
-    // This should be the case when Release() is called.
-    mCommonAncestor = startRoot;
-    mOwner = nullptr;
-  } else {
-    mCommonAncestor =
-        nsContentUtils::GetClosestCommonShadowIncludingInclusiveAncestor(
-            mStart.Container(), mEnd.Container());
-    MOZ_ASSERT_IF(mOwner, mOwner == aOwner);
-    if (!mOwner) {
-      mOwner = aOwner;
-    }
-  }
+  mCommonAncestor =
+      startRoot == endRoot
+          ? startRoot
+          : nsContentUtils::GetClosestCommonShadowIncludingInclusiveAncestor(
+                mStart.GetContainer(), mEnd.GetContainer());
+  MOZ_ASSERT_IF(mOwner, mOwner == aOwner || !aOwner);
+  mOwner = aOwner;
 
   if (previousCommonAncestor != mCommonAncestor) {
     if (previousCommonAncestor) {
@@ -138,8 +132,8 @@ void CrossShadowBoundaryRange::DoSetRange(
     }
   }
 }
-void CrossShadowBoundaryRange::ContentRemoved(nsIContent* aChild,
-                                              nsIContent* aPreviousSibling) {
+void CrossShadowBoundaryRange::ContentWillBeRemoved(nsIContent* aChild,
+                                                    const ContentRemoveInfo&) {
   // It's unclear from the spec about what should the selection be after
   // DOM mutation. See https://github.com/w3c/selection-api/issues/168
   //
@@ -150,10 +144,19 @@ void CrossShadowBoundaryRange::ContentRemoved(nsIContent* aChild,
 
   RefPtr<CrossShadowBoundaryRange> kungFuDeathGrip(this);
 
-  const nsINode* startContainer = mStart.Container();
-  const nsINode* endContainer = mEnd.Container();
+  const nsINode* startContainer = mStart.GetContainer();
+  const nsINode* endContainer = mEnd.GetContainer();
+  MOZ_ASSERT(startContainer && endContainer);
 
   if (startContainer == aChild || endContainer == aChild) {
+    mOwner->ResetCrossShadowBoundaryRange();
+    return;
+  }
+
+  // This is a special case that the startContainer and endContainer could
+  // anonymous contents created by the frame of aChild, and they are
+  // unbounded from the document now.
+  if (!startContainer->IsInComposedDoc() || !endContainer->IsInComposedDoc()) {
     mOwner->ResetCrossShadowBoundaryRange();
     return;
   }
@@ -165,8 +168,8 @@ void CrossShadowBoundaryRange::ContentRemoved(nsIContent* aChild,
     }
   }
 
-  if (mStart.Container()->IsShadowIncludingInclusiveDescendantOf(aChild) ||
-      mEnd.Container()->IsShadowIncludingInclusiveDescendantOf(aChild)) {
+  if (startContainer->IsShadowIncludingInclusiveDescendantOf(aChild) ||
+      endContainer->IsShadowIncludingInclusiveDescendantOf(aChild)) {
     mOwner->ResetCrossShadowBoundaryRange();
     return;
   }
@@ -174,16 +177,17 @@ void CrossShadowBoundaryRange::ContentRemoved(nsIContent* aChild,
   nsINode* container = aChild->GetParentNode();
 
   auto MaybeCreateNewBoundary =
-      [container, aChild, aPreviousSibling](
+      [container, aChild](
           const nsINode* aContainer,
           const RangeBoundary& aBoundary) -> Maybe<RawRangeBoundary> {
     if (container == aContainer) {
       // We're only interested if our boundary reference was removed, otherwise
       // we can just invalidate the offset.
       if (aChild == aBoundary.Ref()) {
-        return Some<RawRangeBoundary>({container, aPreviousSibling});
+        return Some<RawRangeBoundary>(
+            {container, aChild->GetPreviousSibling(), TreeKind::Flat});
       }
-      RawRangeBoundary newBoundary;
+      RawRangeBoundary newBoundary(TreeKind::Flat);
       newBoundary.CopyFrom(aBoundary, RangeBoundaryIsMutationObserved::Yes);
       newBoundary.InvalidateOffset();
       return Some(newBoundary);
@@ -197,8 +201,9 @@ void CrossShadowBoundaryRange::ContentRemoved(nsIContent* aChild,
       MaybeCreateNewBoundary(endContainer, mEnd);
 
   if (newStartBoundary || newEndBoundary) {
-    SetStartAndEnd(newStartBoundary ? newStartBoundary.ref() : mStart.AsRaw(),
-                   newEndBoundary ? newEndBoundary.ref() : mEnd.AsRaw());
+    DoSetRange(newStartBoundary ? newStartBoundary.ref() : mStart.AsRaw(),
+               newEndBoundary ? newEndBoundary.ref() : mEnd.AsRaw(), nullptr,
+               mOwner);
   }
 }
 
@@ -220,7 +225,7 @@ void CrossShadowBoundaryRange::CharacterDataChanged(
        &aInfo](const RangeBoundary& aBoundary) -> Maybe<RawRangeBoundary> {
     // If the changed node contains our start boundary and the change starts
     // before the boundary we'll need to adjust the offset.
-    if (aContent == aBoundary.Container() &&
+    if (aContent == aBoundary.GetContainer() &&
         // aInfo.mChangeStart is the offset where the change starts, if it's
         // smaller than the offset of aBoundary, it means the characters
         // before the selected content is changed (i.e, removed), so the
@@ -231,7 +236,7 @@ void CrossShadowBoundaryRange::CharacterDataChanged(
       RawRangeBoundary newStart =
           nsRange::ComputeNewBoundaryWhenBoundaryInsideChangedText(
               aInfo, aBoundary.AsRaw());
-      return Some(newStart);
+      return Some(newStart.AsRangeBoundaryInFlatTree());
     }
     return Nothing();
   };

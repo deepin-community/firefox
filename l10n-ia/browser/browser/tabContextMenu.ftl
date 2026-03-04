@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nove scheda
     .accesskey = N
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Clauder le schedas a sinistra
     .accesskey = C
+close-tabs-to-the-start-vertical =
+    .label = Clauder le schedas superior
+    .accesskey = s
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Clauder le schedas a dextra
     .accesskey = h
+close-tabs-to-the-end-vertical =
+    .label = Clauder le schedas inferior
+    .accesskey = i
 close-other-tabs =
     .label = Clauder le altere schedas
     .accesskey = l
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Displaciar a un nove fenestra
     .accesskey = n
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Mover verso { $profileName }
 tab-context-close-multiple-tabs =
     .label = Clauder plure schedas
     .accesskey = a
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Compartir
     .accesskey = o
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nove scheda a dextra
+    .accesskey = d
+tab-context-new-tab-open-vertical =
+    .label = Nove scheda infra
+    .accesskey = i
+tab-context-new-group =
+    .label = Nove gruppo
+    .accesskey = g
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -105,6 +129,15 @@ tab-context-move-tabs =
            *[other] Displaciar schedas
         }
     .accesskey = i
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Inviar a apparato
+            [one] Inviar un scheda a apparato
+           *[other] Inviar { $tabCount } schedas a apparato
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -112,3 +145,10 @@ tab-context-send-tabs-to-device =
            *[other] Inviar { $tabCount } schedas al apparato
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Evacuar scheda
+           *[other] Evacuar { $tabCount } schedas
+        }
+    .accesskey = L

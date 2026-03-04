@@ -7,14 +7,15 @@
 #ifndef DOM_SVG_SVGGEOMETRYPROPERTY_H_
 #define DOM_SVG_SVGGEOMETRYPROPERTY_H_
 
-#include "mozilla/SVGImageFrame.h"
-#include "mozilla/dom/SVGElement.h"
+#include <type_traits>
+
 #include "ComputedStyle.h"
 #include "SVGAnimatedLength.h"
+#include "mozilla/SVGImageFrame.h"
+#include "mozilla/dom/SVGElement.h"
 #include "nsComputedDOMStyle.h"
 #include "nsGkAtoms.h"
 #include "nsIFrame.h"
-#include <type_traits>
 
 namespace mozilla::dom::SVGGeometryProperty {
 namespace ResolverTypes {
@@ -41,11 +42,14 @@ SVGGEOMETRYPROPERTY_GENERATETAG(R, LengthPercentNoAuto, XY, nsStyleSVGReset);
 
 #undef SVGGEOMETRYPROPERTY_GENERATETAG
 
+using StyleSizeGetter = AnchorResolvedSize (nsStylePosition::*)(
+    const AnchorPosResolutionParams& aParams) const;
+
 struct Height;
 struct Width {
   using ResolverType = ResolverTypes::LengthPercentWidthHeight;
   constexpr static auto CtxDirection = SVGContentUtils::X;
-  constexpr static auto Getter = &nsStylePosition::mWidth;
+  constexpr static StyleSizeGetter Getter = &nsStylePosition::GetWidth;
   constexpr static auto SizeGetter = &gfx::Size::width;
   static AspectRatio AspectRatioRelative(AspectRatio aAspectRatio) {
     return aAspectRatio.Inverted();
@@ -56,7 +60,7 @@ struct Width {
 struct Height {
   using ResolverType = ResolverTypes::LengthPercentWidthHeight;
   constexpr static auto CtxDirection = SVGContentUtils::Y;
-  constexpr static auto Getter = &nsStylePosition::mHeight;
+  constexpr static StyleSizeGetter Getter = &nsStylePosition::GetHeight;
   constexpr static auto SizeGetter = &gfx::Size::height;
   static AspectRatio AspectRatioRelative(AspectRatio aAspectRatio) {
     return aAspectRatio;
@@ -110,10 +114,12 @@ float ResolveImpl(ComputedStyle const& aStyle, const SVGElement* aElement,
       std::is_same<Tag, Tags::Width>{} || std::is_same<Tag, Tags::Height>{},
       "Wrong tag");
 
-  auto const& value = aStyle.StylePosition()->*Tag::Getter;
-  if (value.IsLengthPercentage()) {
+  auto const value = std::invoke(
+      Tag::Getter, aStyle.StylePosition(),
+      AnchorPosResolutionParams{nullptr, aStyle.StyleDisplay()->mPosition});
+  if (value->IsLengthPercentage()) {
     return ResolvePureLengthPercentage<Tag::CtxDirection>(
-        aElement, value.AsLengthPercentage());
+        aElement, value->AsLengthPercentage());
   }
 
   if (aElement->IsSVGElement(nsGkAtoms::image)) {
@@ -130,7 +136,9 @@ float ResolveImpl(ComputedStyle const& aStyle, const SVGElement* aElement,
     }
 
     using Other = typename Tag::CounterPart;
-    auto const& valueOther = aStyle.StylePosition()->*Other::Getter;
+    auto const valueOther = std::invoke(
+        Other::Getter, aStyle.StylePosition(),
+        AnchorPosResolutionParams{nullptr, aStyle.StyleDisplay()->mPosition});
 
     gfx::Size intrinsicImageSize;
     AspectRatio aspectRatio;
@@ -139,10 +147,10 @@ float ResolveImpl(ComputedStyle const& aStyle, const SVGElement* aElement,
       return 0.f;
     }
 
-    if (valueOther.IsLengthPercentage()) {
+    if (valueOther->IsLengthPercentage()) {
       // We are |auto|, but the other side has specifed length.
       float lengthOther = ResolvePureLengthPercentage<Other::CtxDirection>(
-          aElement, valueOther.AsLengthPercentage());
+          aElement, valueOther->AsLengthPercentage());
 
       if (aspectRatio) {
         // Preserve aspect ratio if it's present.
@@ -270,10 +278,10 @@ bool ResolveAll(const SVGElement* aElement,
 #undef SVGGEOMETRYPROPERTY_EVAL_ALL
 
 nsCSSUnit SpecifiedUnitTypeToCSSUnit(uint8_t aSpecifiedUnit);
-nsCSSPropertyID AttrEnumToCSSPropId(const SVGElement* aElement,
-                                    uint8_t aAttrEnum);
+NonCustomCSSPropertyId AttrEnumToCSSPropId(const SVGElement* aElement,
+                                           uint8_t aAttrEnum);
 
-bool IsNonNegativeGeometryProperty(nsCSSPropertyID aProp);
+bool IsNonNegativeGeometryProperty(NonCustomCSSPropertyId aProp);
 bool ElementMapsLengthsToStyle(SVGElement const* aElement);
 
 }  // namespace mozilla::dom::SVGGeometryProperty

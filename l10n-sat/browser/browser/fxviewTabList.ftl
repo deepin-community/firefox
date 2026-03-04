@@ -15,6 +15,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 fxviewtabrow-tabs-list-tab =
     .title = ᱢᱤᱫᱴᱟᱝ ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱨᱮ { $targetURI } ᱡᱷᱤᱡᱽ ᱢᱮ
 # Variables:
+#   $tabTitle (string) - Title of tab being closed
+fxviewtabrow-close-tab-button =
+    .title = { $tabTitle } ᱵᱚᱸᱫᱚᱭ ᱢᱮ
+# Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
     .title = { $tabTitle } ᱵᱚᱸᱫᱚᱭ ᱢᱮ
@@ -41,7 +45,32 @@ fxviewtabrow-copy-link = ᱞᱤᱝᱠ ᱱᱚᱠᱚᱞ ᱢᱮ
     .accesskey = L
 fxviewtabrow-close-tab = ᱴᱮᱵᱽ ᱵᱚᱸᱫᱚᱭ ᱢᱮ
     .accesskey = C
+fxviewtabrow-move-tab = ᱴᱮᱵᱽ ᱩᱪᱟᱹᱲ ᱢᱮ
+    .accesskey = v
+fxviewtabrow-move-tab-start = ᱮᱦᱚᱵ ᱥᱮᱫ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
+    .accesskey = S
+fxviewtabrow-move-tab-end = ᱢᱩᱪᱟᱹᱫ ᱥᱮᱫ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
+    .accesskey = E
+fxviewtabrow-move-tab-window = ᱱᱟᱶᱟ ᱡᱷᱚᱨᱠᱟ ᱨᱮ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
+    .accesskey = W
+fxviewtabrow-send-tab = ᱥᱟᱫᱷᱚᱱ ᱛᱮ ᱵᱷᱮᱡᱟᱭ ᱢᱮ
+    .accesskey = n
+fxviewtabrow-pin-tab = ᱴᱟᱵᱽ ᱞᱟᱴᱷᱟᱭ ᱢᱮ
+    .accesskey = P
+fxviewtabrow-unpin-tab = ᱴᱮᱵᱽ ᱚᱪᱚᱜᱽ ᱢᱮ
+    .accesskey = p
+fxviewtabrow-mute-tab = ᱴᱮᱵᱽ ᱢᱭᱩᱴ ᱢᱮ
+    .accesskey = M
+fxviewtabrow-unmute-tab = ᱴᱮᱵᱽ ᱠᱚ ᱟᱹᱱᱢᱭᱩᱴ ᱢᱮ
+    .accesskey = m
 # Variables:
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = { $tabTitle } ᱞᱟᱹᱜᱤᱫ ᱢᱚᱱᱮᱛᱮᱭᱟᱜᱠᱚ
+
+## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+
+fxviewtabrow-mute-tab-button-no-context =
+    .title = ᱴᱮᱵᱽ ᱢᱭᱩᱴ ᱢᱮ
+fxviewtabrow-unmute-tab-button-no-context =
+    .title = ᱴᱮᱵᱽ ᱟᱹᱱᱢᱭᱩᱴ ᱢᱮ

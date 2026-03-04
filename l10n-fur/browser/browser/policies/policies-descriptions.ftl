@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Ative compilazion automatiche pai recapits.
 policy-AutofillCreditCardEnabled = Ative compilazion automatiche pai metodis di paiament.
 policy-AutoLaunchProtocolsFromOrigins = Definìs une liste di protocoi esternis che a puedin jessi doprâts da lis origjinis listadis cence domandâ conferme al utent.
 policy-BackgroundAppUpdate2 = Abilite o disabilite l'inzornadôr in sotfont.
+policy-Backup = Disative il salvament o il ripristinament dai dâts dal profîl.
 policy-BlockAboutAddons = Bloche l'acès al gjestôr dai components adizionâi (about:addons).
 policy-BlockAboutConfig = Bloche l'acès aae pagjine about:config.
 policy-BlockAboutProfiles = Bloche l'acès ae pagjine about:profiles.
@@ -49,8 +50,8 @@ policy-DisableFirefoxScreenshots = Disabilite la funzionalitât Firefox Screensh
 policy-DisableFirefoxStudies = Impedìs a { -brand-short-name } di puartâ indenant studis.
 policy-DisableForgetButton = Impedìs l'acès al boton Dismentee.
 policy-DisableFormHistory = No sta visâti lis ricercjis e no stâ creâ la cronologjie.
-policy-DisablePrimaryPasswordCreation = Se true (vêr), no si pues creâ une password primarie.
-policy-DisablePasswordReveal = Impedìs di rivelâ lis passwords tes credeziâls salvadis.
+policy-DisablePrimaryPasswordCreation = Se true (vêr), no si pues creâ une password principâl.
+policy-DisablePasswordReveal = Impedìs di palesâ lis passwords tes credeziâls salvadis.
 policy-DisablePocket2 = Disabilite la funzionalitât par salvâ lis pagjinis web su { -pocket-brand-name }.
 policy-DisablePrivateBrowsing = Disabilite la navigazion privade.
 policy-DisableProfileImport = Disabilite il comant dal menù par impuartâ i dâts di un altri navigadôr.
@@ -67,9 +68,9 @@ policy-DNSOverHTTPS = Configure DNS sore HTTPS.
 policy-DontCheckDefaultBrowser = Disative il control pal navigadôr predefinît al inviament.
 policy-DownloadDirectory = Stabilìs e bloche la cartele pai file discjariâts.
 # “lock” means that the user won’t be able to change this setting
-policy-EnableTrackingProtection = Abilite o disabilite il bloc dai contignûts e, in maniere opzionâl, blochilu.
+policy-EnableTrackingProtection = Abilite o disabilite il bloc dai contignûts e, in maniere facoltative, blochilu.
 # “lock” means that the user won’t be able to change this setting
-policy-EncryptedMediaExtensions = Abilite o disabilite lis estensions multimediâls cifradis (Encrypted Media Extensions) e, in maniere opzionâl, blochilis.
+policy-EncryptedMediaExtensions = Abilite o disabilite lis estensions multimediâls cifradis (Encrypted Media Extensions) e, in maniere facoltative, blochilis.
 policy-ExemptDomainFileTypePairsFromFileTypeDownloadWarnings = Disabilite i avîs associâts ae estension dai files par determinâts gjenars di file su cierts dominis.
 # A “locked” extension can’t be disabled or removed by the user. This policy
 # takes 3 keys (“Install”, ”Uninstall”, ”Locked”), you can either keep them in
@@ -79,11 +80,12 @@ policy-ExtensionSettings = Gjestìs ducj i aspiets relatîfs ae instalazion des 
 policy-ExtensionUpdate = Ative o disative i inzornaments automatics des estensions.
 policy-FirefoxHome2 = Configure { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configure { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configure lis funzions di IA gjenerative.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Cuant che si scrîf une peraule singule te sbare de direzion, sfuarce la navigazion direte su sîts intranet invezit di cirî in rêt.
 policy-Handlers = Configure i gjestôrs di aplicazion predefinîts.
 policy-HardwareAcceleration = Se false (fals), distude la acelerazion vie hardware.
 # “lock” means that the user won’t be able to change this setting
-policy-Homepage = Stabilìs e, in maniere opzionâl, bloche la pagjine iniziâl.
+policy-Homepage = Stabilìs e, in maniere facoltative, bloche la pagjine iniziâl.
 policy-HttpAllowlist = Origjins che no saran inzornadis a HTTPS.
 policy-HttpsOnlyMode = Permet la ativazion de modalitât Dome-HTTPS.
 policy-InstallAddonsPermission = Permet a cierts sîts web di instalâ components adizionâi.
@@ -97,9 +99,10 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Ripristine sui sîts s
 ##
 
 policy-LocalFileLinks = Permet a specifics sîts web di colegâsi a files locâi.
+policy-LocalNetworkAccess = Ative o disative i controi di acès ae rêt locâl.
 policy-ManagedBookmarks = Al configure une liste di segnelibris gjestîts di un aministradôr che l'utent nol pues modificâ.
 policy-ManualAppUpdateOnly = Permet dome i inzornaments manuâi e no sta visâ l'utent se a son disponibii inzornaments.
-policy-PrimaryPassword = Domande o impedìs la utilizazion i une password primarie.
+policy-PrimaryPassword = Domande o impedìs la utilizazion i une password principâl.
 policy-PrintingEnabled = Ative o disative la stampe.
 policy-NetworkPrediction = Ative o disatie la predizion di rêt (pre-recupar dal DNS).
 policy-NewTabPage = Ative o disative la pagjine Gnove schede.
@@ -117,6 +120,7 @@ policy-PostQuantumKeyAgreementEnabled = Ative l'acuardi de clâf post-cuantistic
 policy-PDFjs = Disative o configure PDF.js, il visualizadôr PDF integrât in { -brand-short-name }.
 policy-Permissions2 = Configure i permès par fotocjamare, microfon, posizion, notifichis e pe riproduzion automatiche.
 policy-PictureInPicture = Ative o disative il Picture-in-Picture.
+policy-PopupBlocking2 = Permet a cierts sîts web di mostrâ barcons a comparse e di jessi indreçâts di ricuadris di tiercis bandis.
 policy-PopupBlocking = Permet a cierts sîts web di visualizâ i barcons a comparse in maniere predefinide.
 policy-Preferences = Stabilìs e bloche il valôr par un grup di preferencis.
 policy-PrivateBrowsingModeAvailability = Met la disponibilitât de modalitât di navigazion privade.
@@ -130,6 +134,8 @@ policy-SearchSuggestEnabled = Ative o disative i sugjeriments di ricercje.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Zonte o elimine modui PKCS #11.
 policy-ShowHomeButton = Mostre il boton pagjine iniziâl te sbare dai struments.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = No sta visualizâ lis cundizions di utilizazion e la informative su la riservatece al inviament. Tu declaris di acetâ e di vê la autoritât par acetâ lis cundizions di utilizazion par cont di dutis lis personis che a dopraran chest navigadôr che tu ur furnissis.
 policy-SSLVersionMax = Stabilìs la massime version di SSL.
 policy-SSLVersionMin = Stabilìs la minime version di SSL.
 policy-StartDownloadsInTempDirectory = Sfuarce l'inviament dai discjariaments intune cartele locâl temporanie invezit che te cartele predefinide pai file discjariâts.
@@ -137,6 +143,9 @@ policy-SupportMenu = Zonte un element personalizât dal menù di supuart al men�
 policy-TranslateEnabled = Ative o disative la traduzion des pagjinis web.
 policy-UserMessaging = No sta mostrâ cierts messaçs al utent.
 policy-UseSystemPrintDialog = Stampe doprant il dialic di stampe dal sisteme.
+policy-VisualSearchEnabled = Ative o disative la ricercje visive.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bloche l'acès a cierts sîts web. Consulte la documentazion par vê plui detais sul formât.
 policy-Windows10SSO = Permet di doprâ l'acès unic di Windows pai accounts Microsoft, di vore e di scuele.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permet la utilizazion di Windows single sign-on pai accounts Microsoft Entra.

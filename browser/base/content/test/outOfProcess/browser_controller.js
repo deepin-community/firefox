@@ -1,3 +1,9 @@
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 function checkCommandState(testid, undoEnabled, copyEnabled, deleteEnabled) {
   is(
     !document.getElementById("cmd_undo").hasAttribute("disabled"),
@@ -42,19 +48,9 @@ add_task(async function test_controllers_subframes() {
 
   gURLBar.focus();
 
-  let canTabMoveFocusToRootElement = !SpecialPowers.getBoolPref(
-    "dom.disable_tab_focus_to_root_element"
-  );
   for (let stepNum = 0; stepNum < browsingContexts.length; stepNum++) {
     let useTab = stepNum > 0;
-    // When canTabMoveFocusToRootElement is true, this kepress will move the
-    // focus to a root element, which will trigger an extra "select" command
-    // compare to the case when canTabMoveFocusToRootElement is false.
-    await keyAndUpdate(
-      useTab ? "VK_TAB" : "VK_F6",
-      {},
-      canTabMoveFocusToRootElement ? 6 : 4
-    );
+    await keyAndUpdate(useTab ? "VK_TAB" : "VK_F6", {}, 4);
 
     // Since focus may be switching into a separate process here,
     // need to wait for the focus to have been updated.
@@ -66,27 +62,20 @@ add_task(async function test_controllers_subframes() {
 
     // Force the UI to update on platforms that don't
     // normally do so until menus are opened.
-    if (AppConstants.platform != "macosx") {
-      goUpdateGlobalEditMenuItems(true);
-    }
+    goUpdateGlobalEditMenuItems(true);
 
-    await SpecialPowers.spawn(
-      browsingContexts[stepNum],
-      [{ canTabMoveFocusToRootElement, useTab }],
-      args => {
-        // Both the tab key and document navigation with F6 will focus
-        // the root of the document within the frame.
-        // When dom.disable_tab_focus_to_root_element is true, only F6 will do this.
-        let document = content.document;
-        let expectedElement =
-          args.canTabMoveFocusToRootElement || !args.useTab
-            ? document.documentElement
-            : document.getElementById("input");
-        Assert.equal(document.activeElement, expectedElement, "root focused");
-      }
-    );
+    await SpecialPowers.spawn(browsingContexts[stepNum], [{ useTab }], args => {
+      // Both the tab key and document navigation with F6 will focus
+      // the root of the document within the frame.
+      // When dom.disable_tab_focus_to_root_element is true, only F6 will do this.
+      let document = content.document;
+      let expectedElement = !args.useTab
+        ? document.documentElement
+        : document.getElementById("input");
+      Assert.equal(document.activeElement, expectedElement, "root focused");
+    });
 
-    if (canTabMoveFocusToRootElement || !useTab) {
+    if (!useTab) {
       // XXX Currently, Copy is always enabled when the root (not an editor element)
       // is focused. Possibly that should only be true if a listener is present?
       checkCommandState(
@@ -100,9 +89,7 @@ add_task(async function test_controllers_subframes() {
       await keyAndUpdate("VK_TAB", {}, 1);
     }
 
-    if (AppConstants.platform != "macosx") {
-      goUpdateGlobalEditMenuItems(true);
-    }
+    goUpdateGlobalEditMenuItems(true);
 
     await SpecialPowers.spawn(browsingContexts[stepNum], [], () => {
       Assert.equal(
@@ -132,9 +119,7 @@ add_task(async function test_controllers_subframes() {
 
     // Select all text; this causes the Copy and Delete commands to be enabled.
     await keyAndUpdate("a", { accelKey: true }, 1);
-    if (AppConstants.platform != "macosx") {
-      goUpdateGlobalEditMenuItems(true);
-    }
+    goUpdateGlobalEditMenuItems(true);
 
     checkCommandState("step " + stepNum + " selected", true, true, true);
 

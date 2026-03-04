@@ -18,6 +18,7 @@
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/SharedLibrary.h"
 #include "mozilla/StaticPrefs_gl.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/layers/CompositorOptions.h"
@@ -30,7 +31,7 @@ namespace gl {
 using namespace mozilla::gfx;
 using namespace mozilla::widget;
 
-WGLLibrary sWGLLib;
+MOZ_RUNINIT WGLLibrary sWGLLib;
 
 /*
 ScopedWindow::~ScopedWindow()
@@ -97,7 +98,9 @@ bool WGLLibrary::EnsureInitialized() {
 #define SYMBOL(X)                 \
   {                               \
     (PRFuncPtr*)&mSymbols.f##X, { \
-      { "wgl" #X }                \
+      {                           \
+        "wgl" #X                  \
+      }                           \
     }                             \
   }
 #define END_OF_SYMBOLS \
@@ -475,6 +478,21 @@ already_AddRefed<GLContext> GLContextProviderWGL::CreateHeadless(
   bool forbidHardware =
       static_cast<bool>(desc.flags & CreateContextFlags::FORBID_HARDWARE);
   if (!foundFormats && forbidHardware) {
+    const int kAttribs[] = {LOCAL_WGL_DRAW_TO_PBUFFER_ARB,
+                            true,
+                            LOCAL_WGL_SUPPORT_OPENGL_ARB,
+                            true,
+                            LOCAL_WGL_ACCELERATION_ARB,
+                            LOCAL_WGL_NO_ACCELERATION_ARB,
+                            0};
+    if (!wgl.mSymbols.fChoosePixelFormat(wgl.RootDc(), kAttribs, nullptr, 1,
+                                         &chosenFormat, &foundFormats)) {
+      foundFormats = 0;
+      return nullptr;
+    }
+  }
+
+  if (!foundFormats && !forbidHardware) {
     const int kAttribs[] = {LOCAL_WGL_DRAW_TO_PBUFFER_ARB,
                             true,
                             LOCAL_WGL_SUPPORT_OPENGL_ARB,

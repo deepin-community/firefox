@@ -34,15 +34,13 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   LanguageDetector:
-    "resource://gre/modules/translation/LanguageDetector.sys.mjs",
-  ReaderWorker: "resource://gre/modules/reader/ReaderWorker.sys.mjs",
+    "resource://gre/modules/translations/LanguageDetector.sys.mjs",
+  ReaderWorker: "moz-src:///toolkit/components/reader/ReaderWorker.sys.mjs",
   Readerable: "resource://gre/modules/Readerable.sys.mjs",
 });
 
 const gIsFirefoxDesktop =
   Services.appinfo.ID == "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
-
-Services.telemetry.setEventRecordingEnabled("readermode", true);
 
 export var ReaderMode = {
   DEBUG: 0,
@@ -58,7 +56,7 @@ export var ReaderMode = {
   enterReaderMode(docShell, win) {
     this.enterTime = Date.now();
 
-    Services.telemetry.recordEvent("readermode", "view", "on", null, {
+    Glean.readermode.viewOn.record({
       subcategory: "feature",
     });
 
@@ -99,7 +97,7 @@ export var ReaderMode = {
       ((win.scrollY + win.innerHeight) / win.document.body.clientHeight) * 100
     );
 
-    Services.telemetry.recordEvent("readermode", "view", "off", null, {
+    Glean.readermode.viewOff.record({
       subcategory: "feature",
       reader_time: `${timeSpentInReaderMode}`,
       scroll_position: `${scrollPosition}`,
@@ -212,8 +210,9 @@ export var ReaderMode = {
    * to parse certain URIs (e.g. about: URIs).
    *
    * @param doc A document to parse.
-   * @return {Promise}
-   * @resolves JS object representing the article, or null if no article is found.
+   * @returns {Promise}
+   *   Resolves to a JS object representing the article, or null if no article is
+   *   found.
    */
   parseDocument(doc) {
     if (
@@ -232,8 +231,9 @@ export var ReaderMode = {
    *
    * @param url URL to download and parse.
    * @param attrs OriginAttributes to use for the request.
-   * @return {Promise}
-   * @resolves JS object representing the article, or null if no article is found.
+   * @returns {Promise}
+   *   Resolves to a JS object representing the article, or null if no article is
+   *   found.
    */
   async downloadAndParseDocument(url, attrs = {}, docContentType = "document") {
     let result = await this._downloadDocument(url, attrs, docContentType);
@@ -250,6 +250,7 @@ export var ReaderMode = {
     }
 
     let article = await this._readerParse(doc);
+    article.textPlainDoc = result.textPlainDoc;
     // If we have to redirect, reject to the caller with the parsed article,
     // so we can update the URL before displaying it.
     if (newURL) {
@@ -272,9 +273,6 @@ export var ReaderMode = {
       );
       return null;
     }
-    let histogram = Services.telemetry.getHistogramById(
-      "READER_MODE_DOWNLOAD_RESULT"
-    );
     try {
       attrs.firstPartyDomain = Services.eTLD.getSchemelessSite(uri);
     } catch (e) {
@@ -289,7 +287,9 @@ export var ReaderMode = {
       xhr.onload = () => {
         if (xhr.status !== 200) {
           reject("Reader mode XHR failed with status: " + xhr.status);
-          histogram.add(DOWNLOAD_ERROR_XHR);
+          Glean.readermode.downloadResult.accumulateSingleSample(
+            DOWNLOAD_ERROR_XHR
+          );
           return;
         }
 
@@ -297,7 +297,9 @@ export var ReaderMode = {
           xhr.responseType === "text" ? xhr.responseText : xhr.responseXML;
         if (!doc) {
           reject("Reader mode XHR didn't return a document");
-          histogram.add(DOWNLOAD_ERROR_NO_DOC);
+          Glean.readermode.downloadResult.accumulateSingleSample(
+            DOWNLOAD_ERROR_NO_DOC
+          );
           return;
         }
 
@@ -324,9 +326,14 @@ export var ReaderMode = {
         }
 
         // We treat redirects as download successes here:
-        histogram.add(DOWNLOAD_SUCCESS);
+        Glean.readermode.downloadResult.accumulateSingleSample(
+          DOWNLOAD_SUCCESS
+        );
 
         let result = { doc };
+        if (xhr.responseType != "document") {
+          result.textPlainDoc = true;
+        }
         if (responseURL != givenURL) {
           result.newURL = xhr.responseURL;
         }
@@ -348,13 +355,11 @@ export var ReaderMode = {
    * in Reader.worker.js.
    *
    * @param doc The document to parse.
-   * @return {Promise}
-   * @resolves JS object representing the article, or null if no article is found.
+   * @returns {Promise}
+   *   Resolves to a JS object representing the article, or null if no article is
+   *   found.
    */
   async _readerParse(doc) {
-    let histogram = Services.telemetry.getHistogramById(
-      "READER_MODE_PARSE_RESULT"
-    );
     if (this.parseNodeLimit) {
       let numTags = doc.getElementsByTagName("*").length;
       if (numTags > this.parseNodeLimit) {
@@ -365,7 +370,9 @@ export var ReaderMode = {
             numTags +
             " elements found"
         );
-        histogram.add(PARSE_ERROR_TOO_MANY_ELEMENTS);
+        Glean.readermode.parseResult.accumulateSingleSample(
+          PARSE_ERROR_TOO_MANY_ELEMENTS
+        );
         return null;
       }
     }
@@ -407,6 +414,7 @@ export var ReaderMode = {
 
     let options = {
       classesToPreserve: CLASSES_TO_PRESERVE,
+      debug: Services.prefs.getBoolPref("reader.debug", false),
     };
 
     let article = null;
@@ -418,12 +426,14 @@ export var ReaderMode = {
       ]);
     } catch (e) {
       console.error("Error in ReaderWorker: ", e);
-      histogram.add(PARSE_ERROR_WORKER);
+      Glean.readermode.parseResult.accumulateSingleSample(PARSE_ERROR_WORKER);
     }
 
     if (!article) {
       this.log("Worker did not return an article");
-      histogram.add(PARSE_ERROR_NO_ARTICLE);
+      Glean.readermode.parseResult.accumulateSingleSample(
+        PARSE_ERROR_NO_ARTICLE
+      );
       return null;
     }
 
@@ -446,31 +456,32 @@ export var ReaderMode = {
 
     this._assignReadTime(article);
 
-    histogram.add(PARSE_SUCCESS);
+    Glean.readermode.parseResult.accumulateSingleSample(PARSE_SUCCESS);
     return article;
   },
 
   /**
    * Sets a global language string value if the result is confident
    *
-   * @return Promise
-   * @resolves when the language is detected
+   * @returns {Promise<void>}
+   *   Resolves when the language is detected
    */
   _assignLanguage(article) {
     return lazy.LanguageDetector.detectLanguage(article.textContent).then(
       result => {
-        article.language = result.confident ? result.language : null;
+        article.detectedLanguage = result.confident ? result.language : null;
       }
     );
   },
 
   _maybeAssignTextDirection(article) {
-    // TODO: Remove the hardcoded language codes below once bug 1320265 is resolved.
+    // Assign `article.dir` a value if not set and if we have a valid detected language.
     if (
       !article.dir &&
-      ["ar", "fa", "he", "ug", "ur"].includes(article.language)
+      typeof article.detectedLanguage === "string" &&
+      article.detectedLanguage
     ) {
-      article.dir = "rtl";
+      article.dir = Services.intl.getScriptDirection(article.detectedLanguage);
     }
   },
 
@@ -480,7 +491,7 @@ export var ReaderMode = {
    * @param article the article object to assign the reading time estimate to.
    */
   _assignReadTime(article) {
-    let lang = article.language || "en";
+    let lang = article.detectedLanguage || "en";
     const readingSpeed = this._getReadingSpeedForLanguage(lang);
     const charactersPerMinuteLow = readingSpeed.cpm - readingSpeed.variance;
     const charactersPerMinuteHigh = readingSpeed.cpm + readingSpeed.variance;
@@ -509,12 +520,12 @@ export var ReaderMode = {
       ["fr", { cpm: 998, variance: 126 }],
       ["he", { cpm: 833, variance: 130 }],
       ["it", { cpm: 950, variance: 140 }],
-      ["jw", { cpm: 357, variance: 56 }],
+      ["ja", { cpm: 357, variance: 56 }],
       ["nl", { cpm: 978, variance: 143 }],
       ["pl", { cpm: 916, variance: 126 }],
       ["pt", { cpm: 913, variance: 145 }],
       ["ru", { cpm: 986, variance: 175 }],
-      ["sk", { cpm: 885, variance: 145 }],
+      ["sl", { cpm: 885, variance: 145 }],
       ["sv", { cpm: 917, variance: 156 }],
       ["tr", { cpm: 1054, variance: 156 }],
       ["zh", { cpm: 255, variance: 29 }],
@@ -523,21 +534,19 @@ export var ReaderMode = {
     return readingSpeed.get(lang) || readingSpeed.get("en");
   },
   /**
-   *
    * Check if the document to be parsed is text document.
+   *
    * @param doc the doc object to be parsed.
    * @return boolean
-   *
    */
   _isDocumentPlainText(doc) {
     return doc.contentType == "text/plain";
   },
   /**
-   *
    * The document to be parsed is text document and is converted to HTML format.
+   *
    * @param doc the doc object to be parsed.
    * @return doc
-   *
    */
   _convertPlainTextDocument(doc) {
     let preTag = doc.querySelector("pre");

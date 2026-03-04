@@ -13,6 +13,16 @@ contentanalysis-slow-agent-dialog-header = Идёт сканирование
 contentanalysis-slow-agent-dialog-body-file = { $agent } проверяет «{ $filename }» на соответствие политике данных вашей организации. Это может занять некоторое время.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } проверяет «{ $filename }» и { $count } дополнительный элемент на соответствие политикам данных вашей организации. Это может занять некоторое время.
+        [few] { $agent } проверяет «{ $filename }» и { $count } дополнительных элемента на соответствие политикам данных вашей организации. Это может занять некоторое время.
+       *[many] { $agent } проверяет «{ $filename }» и { $count } дополнительных элементов на соответствие политикам данных вашей организации. Это может занять некоторое время.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } проверяет вставленное вами содержимое на соответствие политике данных вашей организации. Это может занять некоторое время.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +35,9 @@ contentanalysis-operationtype-clipboard = буфер обмена
 contentanalysis-operationtype-dropped-text = пропущенный текст
 contentanalysis-operationtype-print = печать
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = загрузка «{ $filename }»
+contentanalysis-upload-description = загрузка «{ $filename }»
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = загрузка «{ $filename }»
 contentanalysis-warndialogtitle = Это содержимое может быть небезопасным
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +52,6 @@ contentanalysis-genericresponse-message = Контент-анализ сформ
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Ваша организация использует программное обеспечение для предотвращения потери данных, которое заблокировало это содержимое: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Произошла ошибка связи с программным обеспечением для предотвращения потери данных. Передача запрещена для ресурса: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Произошла ошибка связи с { $agent }. Передача запрещена для ресурса: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Не удалось соединиться с { $agent }. Передача запрещена для ресурса: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Не удалось проверить подпись для { $agent }. Передача запрещена для ресурса: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +70,18 @@ contentanalysis-error-message-upload-file = Выгрузка «{ $filename }» �
 contentanalysis-error-message-dropped-text = Перетаскивание запрещено.
 contentanalysis-error-message-clipboard = Вставка запрещена.
 contentanalysis-error-message-print = Печать запрещена.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Время ожидания соединения с { $agent } истекло. { $contentName } было заблокировано.
 contentanalysis-block-dialog-title-upload-file = Вам не разрешено загружать этот файл
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = В соответствии с политикой защиты данных вашей организации, вам не разрешено загружать файл «{ $filename }». Свяжитесь с вашим администратором для получения дополнительных сведений.
+contentanalysis-block-dialog-title-download-file = Вам не разрешено скачивать этот файл
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = В соответствии с политикой защиты данных вашей организации, вам не разрешено скачивать файл «{ $filename }». Свяжитесь с вашим администратором для получения дополнительных сведений.
 contentanalysis-block-dialog-title-clipboard = Вам не разрешено вставлять это содержимое
 contentanalysis-block-dialog-body-clipboard = Согласно политикам защиты данных вашей организации, вам не разрешено вставлять это содержимое. Свяжитесь с вашим администратором для получения дополнительных сведений.
 contentanalysis-block-dialog-title-dropped-text = Вам не разрешено сбрасывать это содержимое

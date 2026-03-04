@@ -25,6 +25,8 @@ return-to-amo-subtitle = { -brand-short-name } をインストールしました
 return-to-amo-addon-title = <img data-l10n-name="icon"/> <b>{ $addon-name }</b> をインストールしてみましょう。
 return-to-amo-add-extension-label = 拡張機能を追加
 return-to-amo-add-theme-label = テーマを追加
+return-to-amo-theme-install-complete-label = テーマをインストールしました
+return-to-amo-extension-install-complete-label = 拡張機能をインストールしました
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -51,9 +53,6 @@ mr1-onboarding-import-primary-button-label-attribution = { $previous } からイ
 mr1-onboarding-theme-header = 自分らしく
 mr1-onboarding-theme-subtitle = テーマで { -brand-short-name } をパーソナライズできます。
 mr1-onboarding-theme-secondary-button-label = 後で
-newtab-wallpaper-onboarding-title = カラフルな壁紙を試しましょう
-newtab-wallpaper-onboarding-subtitle = 壁紙を選んで新しいタブをカラフルに彩りましょう。
-newtab-wallpaper-onboarding-primary-button-label = 壁紙を設定
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = システムテーマ
 mr1-onboarding-theme-label-light = Light
@@ -208,7 +207,9 @@ mr2022-onboarding-set-default-subtitle = 非営利のブラウザーを使いま
 mr2022-onboarding-get-started-primary-subtitle = この最新版はユーザー中心で設計されており、これまで以上に簡単にウェブを巡ることができます。 きっと気に入っていただける新機能が満載です。
 mr2022-onboarding-get-started-primary-button-label = 今すぐ設定する
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = 高速セットアップ
 mr2022-onboarding-import-subtitle = { -brand-short-name } をあなたの好みの設定にしましょう。ブックマーク、パスワード、その他を以前の古いブラウザーから追加します。
@@ -336,11 +337,16 @@ onboarding-easy-setup-security-and-privacy-subtitle = 私たちの非営利組�
 
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = 端末を切り替える時も暗号化されます
-onboarding-mobile-download-security-and-privacy-subtitle = 同期した端末でも { -brand-short-name } があなたのパスワードやブックマークを暗号化して保護します。さらに開いているタブを他の端末から持ち出すことができます。
+onboarding-mobile-download-security-and-privacy-subtitle = 同期した端末でも { -brand-short-name } があなたのパスワードやブックマークを暗号化して保護します。さらに開いているタブを他の端末で持ち歩くことができます。
 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } はあなたの味方です
 onboarding-gratitude-security-and-privacy-subtitle = Mozilla Foundation による { -brand-short-name } をご使用くださりありがとうございます。あなたのご支援によって、私たちはインターネットをすべての人々のために安全でアクセシブルなものにすることができます。
+# Sign up or Sign in screen
+onboarding-sign-up-title = 端末間でデータを同期する
+onboarding-sign-up-description = アカウント登録すると、パスワードやブックマークなど、すべての重要な情報を安全に保管し、ログインしたどの端末でも利用できるようになります。
+onboarding-sign-up-button = 登録またはログイン
+onboarding-sign-up-secondary-button = ブラウジングを開始
 
 ## New user time and familiarity survey strings
 
@@ -360,3 +366,191 @@ onboarding-new-user-survey-familiarity-based-option-1 = 初めて使う
 onboarding-new-user-survey-familiarity-based-option-2 = 何度か使っている
 onboarding-new-user-survey-familiarity-based-option-3 = よく使っている
 onboarding-new-user-survey-familiarity-based-option-4 = 以前使ったことがあり、久しぶりに使う
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = タブを配置したい場所を教えてください
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = サイドバー設定でいつでも垂直タブに切り替えられます。
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = あなたのタブをお好みの場所に
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = 多くのタブを開いておきたいときは、サイドバーに配置して能率的に表示しましょう。または、いつでも従来のように最上部の配置に切り替えられます。
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = タブのレイアウトを選んでください
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = タブをサイドバーに配置して能率的な表示にすることで作業に集中できます。または、いつでも従来のように最上部の配置に切り替えられます。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = タブをサイドに配置
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = タブを最上部に配置
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = 垂直タブがここに表示されます
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = 垂直タブの導入
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = タブをサイドバーに配置してみましょう。サイドバー設定でいつでも切り替えられます。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = 垂直タブを試す
+onboarding-flair-text = 新機能！
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = 水平タブのままにする
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = ブラウザーウィンドウのタブが画面の側面に { -brand-shorter-name } サイドバーの一部として表示されます。
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = ブラウザーウィンドウのタブが画面の側面に { -brand-shorter-name } サイドバーの一部として表示されます。
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = ブラウザーウィンドウのタブが最上部に表示されます。
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = ブラウザーウィンドウのタブが最上部に表示されます。
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = サイドバーで AI チャットボットを試してみよう
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = AI によるウェブコンテンツの要約、アイデアのブレーンストーミング、メッセージの下書きなどをブラウジングしながら。複数の AI プロバイダーから選んでください。いつでも切り替えられます。<a data-l10n-name="learn-more">詳細情報</a>
+onboarding-genai-sidebar-primary-button = チャットボットを選ぶ
+onboarding-genai-sidebar-secondary-button = ブラウジングを始める
+
+## New user onboarding checklist
+
+onboarding-checklist-title = { -brand-short-name } のセットアップを完了してください
+onboarding-checklist-subtitle = これらのステップを完了して、ブラウジングを最大限快適にしましょう。
+onboarding-checklist-set-default = { -brand-short-name } を 既定のブラウザーに設定する
+onboarding-checklist-pin = { -brand-short-name } をタスクバーにピン留めする
+onboarding-checklist-import = 以前のブラウザーからインポートする
+onboarding-checklist-extension = 拡張機能を追加する
+onboarding-checklist-sign-up = アカウント登録またはログインする
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = タブをグループ化して整理しましょう
+tab-groups-onboarding-feature-callout-subtitle = タブを別のタブの上にドラッグすると最初のグループが作成できます。
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = いつでも [タブを一覧表示] メニューからタブグループを見つけられます。
+tab-groups-onboarding-create-group-title-2 = タブグループはここで見つけられます。
+tab-groups-onboarding-create-group-no-alltabs-button-title = アドレスバーで検索するとグループを見つけられます。
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = タブグループを閉じても、[タブを一覧表示] メニューからいつでも再び開けます。
+tab-groups-onboarding-saved-groups-title-2 = タブグループを閉じても、ここで開き直すことができます。
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = アドレスバーで検索すると閉じてしまったタブグループを見つけられます。
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = タブグループは [タブを一覧表示] メニューからいつでも再び開けます。
+tab-groups-onboarding-session-restore-title = タブグループはいつでもここで開き直せます。
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = { -brand-product-name } プロファイルにご挨拶
+multi-profile-spotlight-body = 仕事用と趣味用のブラウジングを簡単に切り替えられます。検索履歴やパスワードなど、プロファイルごとにユーザーのブラウジング情報が保存され、完全に別のデータとして整理できます。
+multi-profile-spotlight-cta = プロファイルを作成
+multi-profile-callout-title = 仕事用と趣味用で別のプロファイルを作成
+multi-profile-callout-subtitle = プロファイルには検索履歴やパスワードなどのブラウジング情報が保存され、完全に分かれています。
+multi-profile-callout-cta = プロファイルを作成
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = ダウンロード、同期、モバイル GO!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = QR コードをスキャンしてモバイル版 { -brand-product-name } をダウンロードしてください。インストールが完了したら [モバイル端末と同期] するだけで、パスワードやブックマークなどのデータを持ち歩けます。
+dismiss-button-label = 閉じる
+sync-to-mobile-button-label = モバイル端末と同期
+desktop-to-mobile-qr-code-alt =
+    .aria-label = モバイル版 { -brand-product-name } のダウンロード用 QR コード
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Windows 11 にアップグレードしますか？
+    { -brand-product-name } のデータをバックアップしましょう。
+create-backup-screen-1-subtitle = 1-2 分でパスワードやブックマークなどを自動的に保護します。
+create-backup-screen-1-flair = 推奨
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">詳細情報</a>
+create-backup-screen-1-sync-label = { -brand-product-name } と同期
+create-backup-screen-1-sync-body = ログインしているすべての端末のデータをバックアップします
+create-backup-screen-1-backup-label = PC にバックアップ
+create-backup-screen-1-backup-body = 自分の端末または OneDrive に保存します
+create-backup-select-tile-button-label = 選択
+create-backup-back-button-label = 戻る
+create-backup-show-fewer =
+    .label = このような表示を少なくする
+create-backup-screen-2-title = バックアップする { -brand-product-name } のデータを選択してください
+create-backup-screen-2-subtitle = 時間はかかりません。データは 1 日 1 回バックアップされます
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = 簡単セットアップ
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = ブックマーク、履歴、設定など
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = パスワードと支払い情報は含みません
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = 暗号化なし
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = すべてのデータ
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = パスワードと支払い情報を含みます
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = パスワードで暗号化
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = どこにバックアップを保存しますか？
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = バックアップファイルを作成します
+create-backup-screen-3-subtitle = データを暗号化する必要があります。思い出しやすい場所に保管しておいてください。
+fx-backup-opt-in-header = ファイルの保存場所を選択
+fx-backup-opt-in-filepath-label = OneDrive など新しい端末に転送する予定の場所を選択してください。
+fx-backup-opt-in-create-password-label = パスワードを入力
+fx-backup-opt-in-confirm-btn-label = 続ける
+fx-backup-opt-in-cancel-btn-label = 戻る
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = バックアップの設定を完了しました
+fx-backup-confirmation-screen-close-button = 閉じる
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = すべての閲覧データを含みます
+fx-backup-confirmation-screen-all-data-item-text-2 = 端末に保存します
+fx-backup-confirmation-screen-all-data-item-text-3 = 暗号化されパスワードで保護されます
+fx-backup-confirmation-screen-easy-setup-item-text-1 = ブックマーク、履歴、設定などのデータを含みます
+fx-backup-confirmation-screen-easy-setup-item-text-2 = 端末に保存します
+fx-backup-confirmation-screen-easy-setup-item-text-3 = パスワードと支払い方法は含みません
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = 機密性の高い情報を含むには <a data-l10n-name="settings">設定</a> を開いてください。
+fx-backup-confirmation-screen-item-subtext-1 = バックアップはあと数分で開始され、1 日 1 回実行されます。進捗状況は <a data-l10n-name="settings">設定</a> で確認できます。
+fx-backup-confirmation-screen-item-subtext-2 = 再インストールが必要になった場合には、{ -brand-short-name } がバックアップを探します
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = バックアップから復元
+restore-from-backup-title = あなた好みの { -brand-short-name } に戻しましょう
+restore-from-backup-subtitle = ブラウジングに必要なすべてのブックマーク、履歴および他のデータをバックアップデータから復元します。
+restore-from-backup-secondary-button = 復元しない
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = お帰りなさい！ { -brand-short-name } が復元されました。
+restored-from-backup-success-with-checklist-subtitle = クリック一つでお気に入りのプライバシー優先ブラウザーを使い続けましょう。
+restored-from-backup-success-no-checklist-subtitle = <a data-l10n-name="settings">設定</a> でこの端末のバックアップをオンにしてください。
+restored-from-backup-success-with-checklist-primary-button = 保存して続ける
+restored-from-backup-success-with-checklist-secondary-button = この手順をスキップ
+restored-from-backup-success-no-checklist-primary-button = 続ける
+restored-from-backup-error-title = 申し訳ありません。バックアップファイルに問題があるようです。
+restored-from-backup-error-subtitle = 別の { -brand-short-name } バックアップファイルがあれば、それで復元を試してください。<a data-l10n-name="restore-problems">まだ問題がある場合はこちら</a>。
+restored-from-backup-error-primary-button = 閉じる
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = { -brand-short-name } をカスタマイズしましょう
+onboarding-personalization-subtitle = いくつかの質問にご回答ください。 { -brand-short-name } を使いこなす、おすすめの機能と拡張機能を紹介します。
+onboarding-personalization-use-case-title = { -brand-short-name } を何のために使いますか？
+onboarding-personalization-use-case-personal-option = 個人
+onboarding-personalization-use-case-school-option = 学校
+onboarding-personalization-use-case-work-option = 仕事
+onboarding-personalization-motivation-title = { -brand-short-name } のどの機能を重視しますか？
+onboarding-personalization-motivation-privacy-option = プライバシーとセキュリティ
+onboarding-personalization-motivation-productivity-option = 生産性
+onboarding-personalization-motivation-other-option = その他

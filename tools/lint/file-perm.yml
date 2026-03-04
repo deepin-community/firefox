@@ -8,12 +8,12 @@ file-perm:
         - .c
         - .cc
         - .cpp
+        - .css
         - .flac
         - .h
         - .html
         - .idl
         - .js
-        - .jsm
         - .json
         - .jsx
         - .m
@@ -29,6 +29,7 @@ file-perm:
         - .rst
         - .svg
         - .toml
+        - .ts
         - .ttf
         - .wasm
         - .webidl

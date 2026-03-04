@@ -40,6 +40,8 @@
 #define NS_CRL_TRAILER "-----END CRL-----"
 
 #define SECU_Strerror PORT_ErrorToString
+/* where to wrap the columns when outputting Usage messages */
+#define SECU_MAX_COL_LEN 79
 
 typedef struct {
     enum {
@@ -213,7 +215,7 @@ SECU_PrintCertificateNames(CERTCertDBHandle *handle, PRFileDesc *out,
 int SECU_CheckCertNameExists(CERTCertDBHandle *handle, char *nickname);
 
 /* Dump contents of cert req */
-extern int SECU_PrintCertificateRequest(FILE *out, SECItem *der, char *m,
+extern int SECU_PrintCertificateRequest(FILE *out, const SECItem *der, const char *m,
                                         int level);
 
 /* Dump contents of certificate */
@@ -223,7 +225,7 @@ extern int SECU_PrintCertificate(FILE *out, const SECItem *der, const char *m,
 extern int SECU_PrintCertificateBasicInfo(FILE *out, const SECItem *der, const char *m,
                                           int level);
 
-extern int SECU_PrintDumpDerIssuerAndSerial(FILE *out, SECItem *der, char *m,
+extern int SECU_PrintDumpDerIssuerAndSerial(FILE *out, const SECItem *der, const char *m,
                                             int level);
 
 /* Dump contents of a DER certificate name (issuer or subject) */
@@ -244,6 +246,9 @@ extern void SECU_PrintRSAPublicKey(FILE *out, SECKEYPublicKey *pk, char *m, int 
 
 /* Dump contents of a DSA public key */
 extern void SECU_PrintDSAPublicKey(FILE *out, SECKEYPublicKey *pk, char *m, int level);
+
+/* Dump contents of a ML-DSA public key */
+extern void SECU_PrintMLDSAPublicKey(FILE *out, SECKEYPublicKey *pk, char *m, int level);
 
 /* Print the MD5 and SHA1 fingerprints of a cert */
 extern int SECU_PrintFingerprints(FILE *out, SECItem *derCert, char *m,
@@ -270,10 +275,10 @@ extern SECStatus SEC_PrintCertificateAndTrust(CERTCertificate *cert,
                                               const char *label,
                                               CERTCertTrust *trust);
 
-extern int SECU_PrintCrl(FILE *out, SECItem *der, char *m, int level);
+extern int SECU_PrintCrl(FILE *out, const SECItem *der, const char *m, int level);
 
 extern void
-SECU_PrintCRLInfo(FILE *out, CERTCrl *crl, char *m, int level);
+SECU_PrintCRLInfo(FILE *out, CERTCrl *crl, const char *m, int level);
 
 extern void SECU_PrintString(FILE *out, const SECItem *si, const char *m,
                              int level);
@@ -425,6 +430,11 @@ SECStatus parseGroupList(const char *arg, SSLNamedGroup **enabledGroups,
 SECStatus parseSigSchemeList(const char *arg,
                              const SSLSignatureScheme **enabledSigSchemes,
                              unsigned int *enabledSigSchemeCount);
+const char *SECU_NamedGroupToGroupName(SSLNamedGroup grp);
+const char *SECU_SignatureSchemeName(SSLSignatureScheme schmeme);
+const char *SECU_NamedGroupGetNextName(size_t i);
+const char *SECU_SignatureSchemeGetNextScheme(size_t i);
+
 typedef struct {
     SECItem label;
     PRBool hasContext;

@@ -14,8 +14,78 @@ ChromeUtils.defineESModuleGetters(lazy, {
 export class AboutTranslationsParent extends JSWindowActorParent {
   #isDestroyed = false;
 
+  /**
+   * A dedicated handle to this.#observe.bind(this), which we need to register non-static
+   * per-instance observers when the actor is created as well as remove when it is destroyed.
+   *
+   * @type {Function | null}
+   *
+   * @see {AboutTranslationsParent.actorCreated}
+   * @see {AboutTranslationsParent.didDestroy}
+   */
+  #boundObserve = null;
+
+  /**
+   * Retrieves the display name for a language.
+   *
+   * @returns {Intl.DisplayNames}
+   */
+  #languageDisplayNames = null;
+
+  actorCreated() {
+    lazy.TranslationsParent.ensurePrefObservers();
+    this.#boundObserve = this.#observe.bind(this);
+    Services.obs.addObserver(
+      this.#boundObserve,
+      "translations:model-records-changed"
+    );
+    Services.obs.addObserver(
+      this.#boundObserve,
+      "translations:enabled-state-changed"
+    );
+  }
+
   didDestroy() {
+    if (this.#boundObserve) {
+      Services.obs.removeObserver(
+        this.#boundObserve,
+        "translations:model-records-changed"
+      );
+      Services.obs.removeObserver(
+        this.#boundObserve,
+        "translations:enabled-state-changed"
+      );
+      this.#boundObserve = null;
+    }
     this.#isDestroyed = true;
+  }
+
+  /**
+   * Observes notifications for about:translations updates.
+   *
+   * @param {nsISupports} _subject
+   * @param {string} topic
+   * @param {string} data
+   *
+   * @see {nsIObserver}
+   */
+  #observe(_subject, topic, data) {
+    if (this.#isDestroyed) {
+      return;
+    }
+
+    switch (topic) {
+      case "translations:model-records-changed": {
+        this.sendAsyncMessage("AboutTranslations:RebuildTranslator");
+        break;
+      }
+      case "translations:enabled-state-changed": {
+        this.sendAsyncMessage("AboutTranslations:EnabledStateChanged", {
+          enabled: data === "enabled",
+        });
+        break;
+      }
+    }
   }
 
   async receiveMessage({ name, data }) {
@@ -25,12 +95,10 @@ export class AboutTranslationsParent extends JSWindowActorParent {
           return undefined;
         }
 
-        const { fromLanguage, toLanguage } = data;
+        const { languagePair } = data;
         try {
-          const port = await lazy.TranslationsParent.requestTranslationsPort(
-            fromLanguage,
-            toLanguage
-          );
+          const port =
+            await lazy.TranslationsParent.requestTranslationsPort(languagePair);
 
           // At the time of writing, you can't return a port via the `sendQuery` API,
           // so results can't just be returned. The `sendAsyncMessage` method must be
@@ -39,8 +107,7 @@ export class AboutTranslationsParent extends JSWindowActorParent {
           this.sendAsyncMessage(
             "AboutTranslations:SendTranslationsPort",
             {
-              fromLanguage,
-              toLanguage,
+              languagePair,
               port,
             },
             [port] // Mark the port as transferable.
@@ -51,14 +118,64 @@ export class AboutTranslationsParent extends JSWindowActorParent {
 
         return undefined;
       }
+      case "AboutTranslations:GetDisplayName": {
+        const { language } = data;
+
+        if (!this.#languageDisplayNames) {
+          this.#languageDisplayNames =
+            lazy.TranslationsParent.createLanguageDisplayNames();
+        }
+
+        try {
+          return this.#languageDisplayNames.of(language);
+        } catch {
+          // No display name could be retrieved.
+          return "";
+        }
+      }
       case "AboutTranslations:GetSupportedLanguages": {
         return lazy.TranslationsParent.getSupportedLanguages();
       }
       case "AboutTranslations:IsTranslationsEngineSupported": {
         return lazy.TranslationsParent.getIsTranslationsEngineSupported();
       }
-      default:
+      case "AboutTranslations:GetEnabledState": {
+        return lazy.TranslationsParent.AIFeature.isEnabled;
+      }
+      case "AboutTranslations:OpenSupportPage": {
+        const browser = this.browsingContext.top.embedderElement;
+        browser.ownerGlobal.openTrustedLinkIn(
+          "https://support.mozilla.org/kb/website-translation",
+          "tab",
+          {
+            forceForeground: true,
+            triggeringPrincipal:
+              Services.scriptSecurityManager.getSystemPrincipal(),
+          }
+        );
+
+        return undefined;
+      }
+      case "AboutTranslations:Telemetry": {
+        const { telemetryFunctionName, telemetryData } = data;
+        const aboutTranslationsTelemetry =
+          lazy.TranslationsParent.telemetry().aboutTranslationsPage();
+        const telemetryFunction =
+          aboutTranslationsTelemetry[telemetryFunctionName];
+
+        if (typeof telemetryFunction !== "function") {
+          throw new Error(
+            `Unknown AboutTranslationsTelemetry function name '${telemetryFunctionName}'`
+          );
+        }
+
+        aboutTranslationsTelemetry[telemetryFunctionName](telemetryData);
+
+        return undefined;
+      }
+      default: {
         throw new Error("Unknown AboutTranslations message: " + name);
+      }
     }
   }
 }

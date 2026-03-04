@@ -10,8 +10,8 @@
 #ifndef txNodeSet_h__
 #define txNodeSet_h__
 
-#include "txExprResult.h"
 #include "nsError.h"
+#include "txExprResult.h"
 #include "txXPathNode.h"
 
 class txNodeSet : public txAExprResult {
@@ -44,7 +44,8 @@ class txNodeSet : public txAExprResult {
    * @param  aNode the txXPathNode to add to the NodeSet
    * @return errorcode.
    */
-  nsresult add(const txXPathNode& aNode);
+  nsresult add(const txXPathNode& aNode) { return add(txXPathNode(aNode)); }
+  nsresult add(txXPathNode&& aNode);
 
   /**
    * Adds the nodes in specified NodeSet to this NodeSet. The resulting
@@ -72,7 +73,10 @@ class txNodeSet : public txAExprResult {
    * @param  aNode the Node to append to the NodeSet
    * @return errorcode.
    */
-  nsresult append(const txXPathNode& aNode);
+  nsresult append(const txXPathNode& aNode) {
+    return append(txXPathNode(aNode));
+  }
+  nsresult append(txXPathNode&& aNode);
 
   /**
    * Appends the nodes in the specified NodeSet to the end of this NodeSet

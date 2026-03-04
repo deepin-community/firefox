@@ -11,8 +11,6 @@ info: |
 includes: [propertyHelper.js]
 ---*/
 
-verifyNotEnumerable(this, "parseInt");
-verifyWritable(this, "parseInt");
-verifyConfigurable(this, "parseInt");
+verifyPrimordialCallableProperty(this, "parseInt", "parseInt", 2);
 
 reportCompare(0, 0);

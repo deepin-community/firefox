@@ -4,10 +4,6 @@
 
 addons-page-title = Tontoney juwalkaa
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -153,29 +149,6 @@ addon-install-from-file-filter-name = Tontoney
 addon-open-about-debugging = Hanseyan tontoney
     .accesskey = a
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -186,7 +159,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } nda { -brand-short-name } { $version } ši cere kanbe.
 # Variables:
 #   $version (string) - Application version.
@@ -201,12 +174,8 @@ details-notification-unsigned2 =
     .message = { $name } mana hin ka korosandi ka goy nda { -brand-short-name }. War ma hawgay.
 details-notification-unsigned-link = Alhabar tontoni
 details-notification-blocked = { $name } kay saajaw wala tabatiyan-jaŋay sabbu se.
-details-notification-blocked2 =
-    .message = { $name } kay saajaw wala tabatiyan-jaŋay sabbu se.
 details-notification-blocked-link = Alhabar tontoni
 details-notification-softblocked = { $name } bayray ra, ga hin ka saajaw wala tabatiyan šenday tee.
-details-notification-softblocked2 =
-    .message = { $name } bayray ra, ga hin ka saajaw wala tabatiyan šenday tee.
 details-notification-softblocked-link = Alhabar tontoni
 details-notification-gmp-pending = { $name } ga kaa ka sinja kayna da.
 details-notification-gmp-pending2 =

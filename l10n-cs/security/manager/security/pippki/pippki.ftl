@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Zobrazit
 download-cert-view-text = Zobrazit certifikát CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Vydal: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Uloženo na: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Zapamatovat si toto rozhodnutí
+client-auth-cert-remember-label = Zapamatovat si toto rozhodnutí:
+client-auth-cert-remember-never =
+    .label = Jednou
+client-auth-cert-remember-always =
+    .label = Trvale
+client-auth-cert-remember-temporarily =
+    .label = Pro tuto relaci
 
 ## Set password (p12) dialog
 

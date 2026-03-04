@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Enrollañ an ere etrezek { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Eilañ ar chomlec'h postel
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Eilañ an ere
     .accesskey = E
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Eilañ an ere hep an heulierien
-    .accesskey = E
+main-context-menu-preview-link =
+    .label = Alberz al liamm
+    .accesskey = A
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Eilañ an ere naet
+    .accesskey = i
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Gwelout an deskrivadur
     .accesskey = d
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Klask ar skeudenn gant { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Enrollañ ar video evel…
     .accesskey = v
@@ -290,9 +297,7 @@ main-context-menu-send-to-device =
     .label = Kas ar bajenn d’an trevnad
     .accesskey = t
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Implijout un titour kennaskañ enrollet
@@ -319,6 +324,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Ouzhpennañ ur ger-alc'hwez evit ar c'hlask-mañ …
     .accesskey = k
+main-context-menu-add-engine =
+    .label = Ouzhpennañ ul lusker enklask
+    .accesskey = l
 main-context-menu-link-send-to-device =
     .label = Kas an ere d’an trevnad
     .accesskey = t
@@ -389,3 +397,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Diguzhañ ar ger-tremen
     .accesskey = D
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nevez

@@ -12,7 +12,17 @@ all-tabs-menu-hidden-tabs =
 all-tabs-menu-manage-user-context =
     .label = Handsam behaldarar
     .accesskey = H
-all-tabs-menu-close-duplicate-tabs =
-    .label = Lat att duplikatfaner
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Lat att alle dupliserte faner
+all-tabs-menu-synced-tabs =
+    .label = Faner frå andre einingar
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Nylege fanegrupper
+all-tabs-menu-current-window-header = Gjeldande vindauge
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Vis alle
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Fanegrupper

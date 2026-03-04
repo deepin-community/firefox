@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Eguerova ipahápe
     .accesskey = E
 fxviewtabrow-move-tab-window = Eguerova ovetã pyahúpe
     .accesskey = W
+fxviewtabrow-send-to-device = Emondo mba’e’okápe
+    .accesskey = n
 fxviewtabrow-send-tab = Emondo Tendayke Mba’e’okápe
     .accesskey = n
 fxviewtabrow-pin-tab = Emboja tendayke
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Emoĩjey tendayke pukue
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Jeporavorã { $tabTitle } peg̃uarã
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Embogue { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Emyandy mba’epu { $tabTitle }-pe g̃uarã
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

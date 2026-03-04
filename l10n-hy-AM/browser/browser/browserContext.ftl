@@ -87,7 +87,7 @@ toolbar-button-account =
 ## Save Page
 
 main-context-menu-page-save =
-    .label = Պահպանել Էջը որպես…
+    .label = Պահել Էջը որպես…
     .accesskey = P
 
 ## Simple menu items
@@ -131,41 +131,43 @@ main-context-menu-open-link-new-tab =
     .label = Բացել հղումը նոր ներդիրում
     .accesskey = Բ
 main-context-menu-open-link-container-tab =
-    .label = Բացել հղումը Նոր Պարունակ Ներդիրում
+    .label = Բացել հղումը նոր պարունակ ներդիրում
     .accesskey = դ
 main-context-menu-open-link-new-window =
-    .label = Հղումը Բացել Նոր Պատուհանում
+    .label = Բացել հղումը նոր պատուհանում
     .accesskey = Բ
 main-context-menu-open-link-new-private-window =
-    .label = Բացել հղումը Գաղտնի Դիտարկմամբ
+    .label = Բացել հղումը նոր գաղտնի պատուհանում
     .accesskey = Դ
 main-context-menu-bookmark-link-2 =
     .label = Էջանշել հղումը…
     .accesskey = B
 main-context-menu-save-link =
-    .label = Պահպանել Հղումը Որպես…
-    .accesskey = ո
+    .label = Պահել հղումը որպես…
+    .accesskey = մ
 main-context-menu-save-link-to-pocket =
-    .label = Պահպանել հղումը { -pocket-brand-name }-ում
+    .label = Պահել հղումը { -pocket-brand-name }-ում
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Պատճենել Էլ. փոստի հասցեն
     .accesskey = Է
 main-context-menu-copy-phone =
-    .label = Պատճենել հեռախոսի համարը
+    .label = Պատճենել հեռախոսահամարը
     .accesskey = o
 main-context-menu-copy-link-simple =
     .label = Պատճենել հղումը
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Պատճենել առանց կայքի հետագծման
+main-context-menu-preview-link =
+    .label = Նախադիտման հղում
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Պատճենել մաքուր հղումը
     .accesskey = u
 
 ## Media (video/audio) controls
@@ -187,8 +189,8 @@ main-context-menu-media-mute =
     .label = Անձայն
     .accesskey = Ա
 main-context-menu-media-unmute =
-    .label = Ձայնով
-    .accesskey = ա
+    .label = Միացնել ձայնը
+    .accesskey = ձ
 main-context-menu-media-play-speed-2 =
     .label = Արագություն
     .accesskey = d
@@ -230,16 +232,16 @@ main-context-menu-media-watch-pip =
     .label = Նայել «Նկարը Նկարում»-ով
     .accesskey = u
 main-context-menu-image-reload =
-    .label = Կրկին բեռնել Նկարը
-    .accesskey = Կ
+    .label = Կրկին բեռնել պատկերը
+    .accesskey = R
 main-context-menu-image-view-new-tab =
     .label = Բացել պատկերը նոր ներդիրում
-    .accesskey = I
+    .accesskey = Ն
 main-context-menu-video-view-new-tab =
     .label = Բացել տեսանյութը նոր ներդիրում
     .accesskey = ն
 main-context-menu-image-copy =
-    .label = Պատճենել նկարը
+    .label = Պատճենել պատկերը
     .accesskey = ր
 main-context-menu-image-copy-link =
     .label = Պատճենել պատկերի հղումը
@@ -251,28 +253,33 @@ main-context-menu-audio-copy-link =
     .label = Պատճենել ձայնանյութի հղումը
     .accesskey = o
 main-context-menu-image-save-as =
-    .label = Պահպանել նկարը որպես…
+    .label = Պահել պատկերը որպես…
     .accesskey = պ
 main-context-menu-image-email =
-    .label = Նկարը ուղարկել էլ. փոստով...
+    .label = Ուղարկել պատկերը էլ. փոստով...
     .accesskey = ա
 main-context-menu-image-set-image-as-background =
-    .label = Կայել նկարը որպես աշխատասեղանի ետնապատկեր…
+    .label = Կայել պատկերը որպես աշխատասեղանի ետնապատկեր…
     .accesskey = Կ
 main-context-menu-image-copy-text =
     .label = Պատճենել տեքստը պատկերից
     .accesskey = x
 main-context-menu-image-info =
-    .label = Տեսնել նկարի տվյալները
+    .label = Տեսնել պատկերի տվյալները
     .accesskey = Տ
 main-context-menu-image-desc =
     .label = Դիտել նկարագրությունը
     .accesskey = ն
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Որոնել պատկերը { $engine }-ով
+    .accesskey = ր
 main-context-menu-video-save-as =
-    .label = Պահպանել տեսանյութը որպես...
+    .label = Պահել տեսանյութը որպես...
     .accesskey = լ
 main-context-menu-audio-save-as =
-    .label = Պահպանել ձայնանյութը որպես...
+    .label = Պահել ձայնանյութը որպես...
     .accesskey = պ
 main-context-menu-video-take-snapshot =
     .label = Ստանալ էկրանի պատկերը…
@@ -283,23 +290,24 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Ուղարկել ձայնանյութն էլ. փոստով...
     .accesskey = ձ
+main-context-menu-send-to-device-2 =
+    .label = Ուղարկել սարքի
+    .accesskey = n
 main-context-menu-save-to-pocket =
-    .label = Պահպանել էջը { -pocket-brand-name }-ում
+    .label = Պահել էջը { -pocket-brand-name }-ում
     .accesskey = k
 main-context-menu-send-to-device =
     .label = Ուղարկել էջը սարքին
     .accesskey = ս
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
-    .label = Օգտագործեք պահված մուտքագրումը
+    .label = Օգտվել պահված մուտքանունից
     .accesskey = o
 # Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
-    .label = Օգտագործեք պահված գաղտնաբառը
+    .label = Օգտվել պահված գաղտնաբառից
     .accesskey = o
 
 ##
@@ -309,7 +317,7 @@ main-context-menu-use-relay-mask =
     .accesskey = Է
 main-context-menu-suggest-strong-password =
     .label = Առաջարկել ուժեղ գաղտնաբառ…
-    .accesskey = S
+    .accesskey = Ա
 main-context-menu-manage-logins2 =
     .label = Կառավարել մուտքագրումները
     .accesskey = M
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Ավելացնել հիմնաբառ այս որոնման համար…
     .accesskey = Բ
+main-context-menu-add-engine =
+    .label = Ավելացնել որոնիչ
+    .accesskey = ո
 main-context-menu-link-send-to-device =
     .label = Ուղարկել հղումը սարքին
     .accesskey = ս
@@ -341,7 +352,7 @@ main-context-menu-frame-add-bookmark =
     .label = Էջանշել շրջանակը...
     .accesskey = m
 main-context-menu-frame-save-as =
-    .label = Պահպանել շրջանակը որպես…
+    .label = Պահել շրջանակը որպես…
     .accesskey = Պ
 main-context-menu-frame-print =
     .label = Տպել շրջանակը…
@@ -365,7 +376,7 @@ main-context-menu-take-frame-screenshot =
     .label = Ստանալ էկրանի հանույթը
     .accesskey = o
 main-context-menu-view-page-source =
-    .label = Դիտել Էջի Կոդը
+    .label = Դիտել էջի աղբյուրը
     .accesskey = Դ
 main-context-menu-bidi-switch-text =
     .label = Փոխարկել տեքստի ուղղությունը
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Բացահայտել գաղտնաբառը
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Նոր

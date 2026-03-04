@@ -38,11 +38,11 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   ClientID: "resource://gre/modules/ClientID.sys.mjs",
   CoveragePing: "resource://gre/modules/CoveragePing.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
   TelemetryArchive: "resource://gre/modules/TelemetryArchive.sys.mjs",
   TelemetryEnvironment: "resource://gre/modules/TelemetryEnvironment.sys.mjs",
   TelemetryEventPing: "resource://gre/modules/EventPing.sys.mjs",
   TelemetryHealthPing: "resource://gre/modules/HealthPing.sys.mjs",
-  TelemetryModules: "resource://gre/modules/ModulesPing.sys.mjs",
   TelemetryReportingPolicy:
     "resource://gre/modules/TelemetryReportingPolicy.sys.mjs",
   TelemetrySend: "resource://gre/modules/TelemetrySend.sys.mjs",
@@ -52,7 +52,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource://gre/modules/UntrustedModulesPing.sys.mjs",
   UninstallPing: "resource://gre/modules/UninstallPing.sys.mjs",
   UpdatePing: "resource://gre/modules/UpdatePing.sys.mjs",
-  jwcrypto: "resource://services-crypto/jwcrypto.sys.mjs",
+  UsageReporting: "resource://gre/modules/UsageReporting.sys.mjs",
 });
 
 if (
@@ -146,18 +146,18 @@ export var TelemetryController = Object.freeze({
    * it should only contain alphanumeric characters and '-' for separation, i.e. satisfy:
    * /^[a-z0-9][a-z0-9-]+[a-z0-9]$/i
    *
-   * @param {String} aType The type of the ping.
-   * @param {Object} aPayload The actual data payload for the ping.
-   * @param {Object} [aOptions] Options object.
-   * @param {Boolean} [aOptions.addClientId=false] true if the ping should contain the client
+   * @param {string} aType The type of the ping.
+   * @param {object} aPayload The actual data payload for the ping.
+   * @param {object} [aOptions] Options object.
+   * @param {boolean} [aOptions.addClientId=false] true if the ping should contain the client
    *                  id, false otherwise.
-   * @param {Boolean} [aOptions.addEnvironment=false] true if the ping should contain the
+   * @param {boolean} [aOptions.addEnvironment=false] true if the ping should contain the
    *                  environment data.
-   * @param {Object}  [aOptions.overrideEnvironment=null] set to override the environment data.
-   * @param {Boolean} [aOptions.usePingSender=false] if true, send the ping using the PingSender.
-   * @param {String} [aOptions.overrideClientId=undefined] if set, override the
+   * @param {object}  [aOptions.overrideEnvironment=null] set to override the environment data.
+   * @param {boolean} [aOptions.usePingSender=false] if true, send the ping using the PingSender.
+   * @param {string} [aOptions.overrideClientId=undefined] if set, override the
    *                 client id to the provided value. Implies aOptions.addClientId=true.
-   * @param {String} [aOptions.overrideProfileGroupId=undefined] if set, override the
+   * @param {string} [aOptions.overrideProfileGroupId=undefined] if set, override the
    *                 profile group id to the provided value. Implies aOptions.addClientId=true.
    * @returns {Promise} Test-only - a promise that resolves with the ping id once the ping is stored or sent.
    */
@@ -182,19 +182,19 @@ export var TelemetryController = Object.freeze({
   /**
    * Save a ping to disk.
    *
-   * @param {String} aType The type of the ping.
-   * @param {Object} aPayload The actual data payload for the ping.
-   * @param {Object} [aOptions] Options object.
-   * @param {Boolean} [aOptions.addClientId=false] true if the ping should contain the client
+   * @param {string} aType The type of the ping.
+   * @param {object} aPayload The actual data payload for the ping.
+   * @param {object} [aOptions] Options object.
+   * @param {boolean} [aOptions.addClientId=false] true if the ping should contain the client
    *                  id, false otherwise.
-   * @param {Boolean} [aOptions.addEnvironment=false] true if the ping should contain the
+   * @param {boolean} [aOptions.addEnvironment=false] true if the ping should contain the
    *                  environment data.
-   * @param {Boolean} [aOptions.overwrite=false] true overwrites a ping with the same name,
+   * @param {boolean} [aOptions.overwrite=false] true overwrites a ping with the same name,
    *                  if found.
-   * @param {Object}  [aOptions.overrideEnvironment=null] set to override the environment data.
-   * @param {String} [aOptions.overrideClientId=undefined] if set, override the
+   * @param {object}  [aOptions.overrideEnvironment=null] set to override the environment data.
+   * @param {string} [aOptions.overrideClientId=undefined] if set, override the
    *                 client id to the provided value. Implies aOptions.addClientId=true.
-   * @param {String} [aOptions.overrideProfileGroupId=undefined] if set, override the
+   * @param {string} [aOptions.overrideProfileGroupId=undefined] if set, override the
    *                 profile group id to the provided value. Implies aOptions.addClientId=true.
    *
    * @returns {Promise} A promise that resolves with the ping id when the ping is saved to
@@ -222,7 +222,7 @@ export var TelemetryController = Object.freeze({
   /**
    * Save an aborted-session ping to disk without adding it to the pending pings.
    *
-   * @param {Object} aPayload The ping payload data.
+   * @param {object} aPayload The ping payload data.
    * @return {Promise} Promise that is resolved when the ping is saved.
    */
   saveAbortedSessionPing(aPayload) {
@@ -256,7 +256,6 @@ export var TelemetryController = Object.freeze({
    * should be included in the orderly shutdown process.
    *
    * @param {Function} aFnShutdown The function to call as telemetry shuts down.
-
    */
   registerSyncPingShutdown(afnShutdown) {
     Impl.registerSyncPingShutdown(afnShutdown);
@@ -265,6 +264,7 @@ export var TelemetryController = Object.freeze({
   /**
    * Allows waiting for TelemetryControllers delayed initialization to complete.
    * The returned promise is guaranteed to resolve before TelemetryController is shutting down.
+   *
    * @return {Promise} Resolved when delayed TelemetryController initialization completed.
    */
   promiseInitialized() {
@@ -274,6 +274,7 @@ export var TelemetryController = Object.freeze({
   /**
    * Allows to trigger TelemetryControllers delayed initialization now and waiting for its completion.
    * The returned promise is guaranteed to resolve before TelemetryController is shutting down.
+   *
    * @return {Promise} Resolved when delayed TelemetryController initialization completed.
    */
   ensureInitialized() {
@@ -368,29 +369,19 @@ var Impl = {
   /**
    * Assemble a complete ping following the common ping format specification.
    *
-   * @param {String} aType The type of the ping.
-   * @param {Object} aPayload The actual data payload for the ping.
-   * @param {Object} aOptions Options object.
-   * @param {Boolean} aOptions.addClientId true if the ping should contain the client
+   * @param {string} aType The type of the ping.
+   * @param {object} aPayload The actual data payload for the ping.
+   * @param {object} aOptions Options object.
+   * @param {boolean} aOptions.addClientId true if the ping should contain the client
    *                  id, false otherwise.
-   * @param {Boolean} aOptions.addEnvironment true if the ping should contain the
+   * @param {boolean} aOptions.addEnvironment true if the ping should contain the
    *                  environment data.
-   * @param {Object}  [aOptions.overrideEnvironment=null] set to override the environment data.
-   * @param {String} [aOptions.overrideClientId=undefined] if set, override the
+   * @param {object}  [aOptions.overrideEnvironment=null] set to override the environment data.
+   * @param {string} [aOptions.overrideClientId=undefined] if set, override the
    *                 client id to the provided value. Implies aOptions.addClientId=true.
-   * @param {String} [aOptions.overrideProfileGroupId=undefined] if set, override the
+   * @param {string} [aOptions.overrideProfileGroupId=undefined] if set, override the
    *                 profile group id to the provided value. Implies aOptions.addClientId=true.
-   * @param {Boolean} [aOptions.useEncryption=false] if true, encrypt data client-side before sending.
-   * @param {Object}  [aOptions.publicKey=null] the public key to use if encryption is enabled (JSON Web Key).
-   * @param {String}  [aOptions.encryptionKeyId=null] the public key ID to use if encryption is enabled.
-   * @param {String}  [aOptions.studyName=null] the study name to use.
-   * @param {String}  [aOptions.schemaName=null] the schema name to use if encryption is enabled.
-   * @param {String}  [aOptions.schemaNamespace=null] the schema namespace to use if encryption is enabled.
-   * @param {String}  [aOptions.schemaVersion=null] the schema version to use if encryption is enabled.
-   * @param {Boolean} [aOptions.addPioneerId=false] true if the ping should contain the Pioneer id, false otherwise.
-   * @param {Boolean} [aOptions.overridePioneerId=undefined] if set, override the
-   *                  pioneer id to the provided value. Only works if aOptions.addPioneerId=true.
-   * @returns {Object} An object that contains the assembled ping data.
+   * @returns {object} An object that contains the assembled ping data.
    */
   assemblePing: function assemblePing(aType, aPayload, aOptions = {}) {
     this._log.trace(
@@ -450,28 +441,18 @@ var Impl = {
    * Depending on configuration, the ping will be sent to the server (immediately or later)
    * and archived locally.
    *
-   * @param {String} aType The type of the ping.
-   * @param {Object} aPayload The actual data payload for the ping.
-   * @param {Object} [aOptions] Options object.
-   * @param {Boolean} [aOptions.addClientId=false] true if the ping should contain the client
+   * @param {string} aType The type of the ping.
+   * @param {object} aPayload The actual data payload for the ping.
+   * @param {object} [aOptions] Options object.
+   * @param {boolean} [aOptions.addClientId=false] true if the ping should contain the client
    *                  id, false otherwise.
-   * @param {Boolean} [aOptions.addEnvironment=false] true if the ping should contain the
+   * @param {boolean} [aOptions.addEnvironment=false] true if the ping should contain the
    *                  environment data.
-   * @param {Object}  [aOptions.overrideEnvironment=null] set to override the environment data.
-   * @param {Boolean} [aOptions.usePingSender=false] if true, send the ping using the PingSender.
-   * @param {Boolean} [aOptions.useEncryption=false] if true, encrypt data client-side before sending.
-   * @param {Object}  [aOptions.publicKey=null] the public key to use if encryption is enabled (JSON Web Key).
-   * @param {String}  [aOptions.encryptionKeyId=null] the public key ID to use if encryption is enabled.
-   * @param {String}  [aOptions.studyName=null] the study name to use.
-   * @param {String}  [aOptions.schemaName=null] the schema name to use if encryption is enabled.
-   * @param {String}  [aOptions.schemaNamespace=null] the schema namespace to use if encryption is enabled.
-   * @param {String}  [aOptions.schemaVersion=null] the schema version to use if encryption is enabled.
-   * @param {Boolean} [aOptions.addPioneerId=false] true if the ping should contain the Pioneer id, false otherwise.
-   * @param {Boolean} [aOptions.overridePioneerId=undefined] if set, override the
-   *                  pioneer id to the provided value. Only works if aOptions.addPioneerId=true.
-   * @param {String} [aOptions.overrideClientId=undefined] if set, override the
+   * @param {object}  [aOptions.overrideEnvironment=null] set to override the environment data.
+   * @param {boolean} [aOptions.usePingSender=false] if true, send the ping using the PingSender.
+   * @param {string} [aOptions.overrideClientId=undefined] if set, override the
    *                 client id to the provided value. Implies aOptions.addClientId=true.
-   * @param {String} [aOptions.overrideProfileGroupId=undefined] if set, override the
+   * @param {string} [aOptions.overrideProfileGroupId=undefined] if set, override the
    *                 profile group id to the provided value. Implies aOptions.addClientId=true.
    * @returns {Promise} Test-only - a promise that is resolved with the ping id once the ping is stored or sent.
    */
@@ -491,9 +472,7 @@ var Impl = {
       this._log.trace(
         "_submitPingLogic - Waiting on client id or profile group id"
       );
-      Services.telemetry
-        .getHistogramById("TELEMETRY_PING_SUBMISSION_WAITING_CLIENTID")
-        .add();
+      Glean.telemetry.pingSubmissionWaitingClientid.add(1);
       // We can safely call |getClientID| here and during initialization: we would still
       // spawn and return one single loading task.
       this._clientID = await lazy.ClientID.getClientID();
@@ -502,58 +481,6 @@ var Impl = {
 
     let pingData = this.assemblePing(aType, aPayload, aOptions);
     this._log.trace("submitExternalPing - ping assembled, id: " + pingData.id);
-
-    if (aOptions.useEncryption === true) {
-      try {
-        if (!aOptions.publicKey) {
-          throw new Error("Public key is required when using encryption.");
-        }
-
-        if (
-          !(
-            aOptions.schemaName &&
-            aOptions.schemaNamespace &&
-            aOptions.schemaVersion
-          )
-        ) {
-          throw new Error(
-            "Schema name, namespace, and version are required when using encryption."
-          );
-        }
-
-        const payload = {};
-        payload.encryptedData = await lazy.jwcrypto.generateJWE(
-          aOptions.publicKey,
-          new TextEncoder().encode(JSON.stringify(aPayload))
-        );
-
-        payload.schemaVersion = aOptions.schemaVersion;
-        payload.schemaName = aOptions.schemaName;
-        payload.schemaNamespace = aOptions.schemaNamespace;
-
-        payload.encryptionKeyId = aOptions.encryptionKeyId;
-
-        if (aOptions.addPioneerId === true) {
-          if (aOptions.overridePioneerId) {
-            // The caller provided a substitute id, let's use that
-            // instead of querying the pref.
-            payload.pioneerId = aOptions.overridePioneerId;
-          } else {
-            // This will throw if there is no pioneer ID set.
-            payload.pioneerId = Services.prefs.getStringPref(
-              "toolkit.telemetry.pioneerId"
-            );
-          }
-          payload.studyName = aOptions.studyName;
-        }
-
-        pingData.payload = payload;
-      } catch (e) {
-        this._log.error("_submitPingLogic - Unable to encrypt ping", e);
-        // Do not attempt to continue
-        throw e;
-      }
-    }
 
     // Always persist the pings if we are allowed to. We should not yield on any of the
     // following operations to keep this function synchronous for the majority of the calls.
@@ -579,28 +506,18 @@ var Impl = {
   /**
    * Submit ping payloads to Telemetry.
    *
-   * @param {String} aType The type of the ping.
-   * @param {Object} aPayload The actual data payload for the ping.
-   * @param {Object} [aOptions] Options object.
-   * @param {Boolean} [aOptions.addClientId=false] true if the ping should contain the client
+   * @param {string} aType The type of the ping.
+   * @param {object} aPayload The actual data payload for the ping.
+   * @param {object} [aOptions] Options object.
+   * @param {boolean} [aOptions.addClientId=false] true if the ping should contain the client
    *                  id, false otherwise.
-   * @param {Boolean} [aOptions.addEnvironment=false] true if the ping should contain the
+   * @param {boolean} [aOptions.addEnvironment=false] true if the ping should contain the
    *                  environment data.
-   * @param {Object}  [aOptions.overrideEnvironment=null] set to override the environment data.
-   * @param {Boolean} [aOptions.usePingSender=false] if true, send the ping using the PingSender.
-   * @param {Boolean} [aOptions.useEncryption=false] if true, encrypt data client-side before sending.
-   * @param {Object}  [aOptions.publicKey=null] the public key to use if encryption is enabled (JSON Web Key).
-   * @param {String}  [aOptions.encryptionKeyId=null] the public key ID to use if encryption is enabled.
-   * @param {String}  [aOptions.studyName=null] the study name to use.
-   * @param {String}  [aOptions.schemaName=null] the schema name to use if encryption is enabled.
-   * @param {String}  [aOptions.schemaNamespace=null] the schema namespace to use if encryption is enabled.
-   * @param {String}  [aOptions.schemaVersion=null] the schema version to use if encryption is enabled.
-   * @param {Boolean} [aOptions.addPioneerId=false] true if the ping should contain the Pioneer id, false otherwise.
-   * @param {Boolean} [aOptions.overridePioneerId=undefined] if set, override the
-   *                  pioneer id to the provided value. Only works if aOptions.addPioneerId=true.
-   * @param {String} [aOptions.overrideClientId=undefined] if set, override the
+   * @param {object}  [aOptions.overrideEnvironment=null] set to override the environment data.
+   * @param {boolean} [aOptions.usePingSender=false] if true, send the ping using the PingSender.
+   * @param {string} [aOptions.overrideClientId=undefined] if set, override the
    *                 client id to the provided value. Implies aOptions.addClientId=true.
-   * @param {String} [aOptions.overrideProfileGroupId=undefined] if set, override the
+   * @param {string} [aOptions.overrideProfileGroupId=undefined] if set, override the
    *                 profile group id to the provided value. Implies aOptions.addClientId=true.
    * @returns {Promise} Test-only - a promise that is resolved with the ping id once the ping is stored or sent.
    */
@@ -611,6 +528,27 @@ var Impl = {
         ", aOptions: " +
         JSON.stringify(aOptions)
     );
+
+    const disabledPings =
+      lazy.NimbusFeatures.legacyTelemetry.getVariable("disabledPings") ?? [];
+    const UNCONTROLLABLE_PINGS = [
+      "main",
+      "first-shutdown",
+      "new-profile",
+      "deletion-request",
+    ];
+    if (disabledPings.includes(aType)) {
+      if (UNCONTROLLABLE_PINGS.includes(aType)) {
+        this._log.warn(
+          `submitExternalPing - type: ${aType} not controllable, but is in the list of disabledPings ${JSON.stringify(disabledPings)}. Ping will submit as normal. Please remove ping type "${aType}" from the Nimbus config.`
+        );
+      } else {
+        this._log.trace(
+          `submitExternalPing - type ${aType} disabled by Nimbus.`
+        );
+        return Promise.reject(new Error("Ping disabled."));
+      }
+    }
 
     // Reject pings sent after shutdown.
     if (this._shutDown) {
@@ -625,10 +563,7 @@ var Impl = {
     const typeUuid = /^[a-z0-9][a-z0-9-]+[a-z0-9]$/i;
     if (!typeUuid.test(aType)) {
       this._log.error("submitExternalPing - invalid ping type: " + aType);
-      let histogram = Services.telemetry.getKeyedHistogramById(
-        "TELEMETRY_INVALID_PING_TYPE_SUBMITTED"
-      );
-      histogram.add(aType, 1);
+      Glean.telemetry.invalidPingTypeSubmitted[aType].add(1);
       return Promise.reject(new Error("Invalid type string submitted."));
     }
     // Enforce that the payload is an object.
@@ -640,10 +575,7 @@ var Impl = {
       this._log.error(
         "submitExternalPing - invalid payload type: " + typeof aPayload
       );
-      let histogram = Services.telemetry.getHistogramById(
-        "TELEMETRY_INVALID_PAYLOAD_SUBMITTED"
-      );
-      histogram.add(1);
+      Glean.telemetry.invalidPayloadSubmitted.add(1);
       return Promise.reject(new Error("Invalid payload type submitted."));
     }
 
@@ -655,18 +587,18 @@ var Impl = {
   /**
    * Save a ping to disk.
    *
-   * @param {String} aType The type of the ping.
-   * @param {Object} aPayload The actual data payload for the ping.
-   * @param {Object} aOptions Options object.
-   * @param {Boolean} aOptions.addClientId true if the ping should contain the client id,
+   * @param {string} aType The type of the ping.
+   * @param {object} aPayload The actual data payload for the ping.
+   * @param {object} aOptions Options object.
+   * @param {boolean} aOptions.addClientId true if the ping should contain the client id,
    *                  false otherwise.
-   * @param {Boolean} aOptions.addEnvironment true if the ping should contain the
+   * @param {boolean} aOptions.addEnvironment true if the ping should contain the
    *                  environment data.
-   * @param {Boolean} aOptions.overwrite true overwrites a ping with the same name, if found.
-   * @param {Object}  [aOptions.overrideEnvironment=null] set to override the environment data.
-   * @param {String} [aOptions.overrideClientId=undefined] if set, override the
+   * @param {boolean} aOptions.overwrite true overwrites a ping with the same name, if found.
+   * @param {object}  [aOptions.overrideEnvironment=null] set to override the environment data.
+   * @param {string} [aOptions.overrideClientId=undefined] if set, override the
    *                 client id to the provided value. Implies aOptions.addClientId=true.
-   * @param {String} [aOptions.overrideProfileGroupId=undefined] if set, override the
+   * @param {string} [aOptions.overrideProfileGroupId=undefined] if set, override the
    *                 profile group id to the provided value. Implies aOptions.addClientId=true.
    *
    * @returns {Promise} A promise that resolves with the ping id when the ping is saved to
@@ -731,7 +663,7 @@ var Impl = {
   /**
    * Save an aborted-session ping to disk without adding it to the pending pings.
    *
-   * @param {Object} aPayload The ping payload data.
+   * @param {object} aPayload The ping payload data.
    * @return {Promise} Promise that is resolved when the ping is saved.
    */
   saveAbortedSessionPing(aPayload) {
@@ -908,11 +840,8 @@ var Impl = {
           lazy.TelemetryStorage.removeFHRDatabase();
 
           // The init sequence is forced to run on shutdown for short sessions and
-          // we don't want to start TelemetryModules as the timer registration will fail.
+          // we don't want to start everything.
           if (!this._shuttingDown) {
-            // Report the modules loaded in the Firefox process.
-            lazy.TelemetryModules.start();
-
             // Send coverage ping.
             await lazy.CoveragePing.startup();
 
@@ -1065,6 +994,9 @@ var Impl = {
         if (aData == TelemetryUtils.Preferences.FhrUploadEnabled) {
           return this._onUploadPrefChange();
         }
+        if (aData == "datareporting.usage.uploadEnabled") {
+          return lazy.UsageReporting._onUsagePrefChange();
+        }
     }
     return undefined;
   },
@@ -1117,7 +1049,7 @@ var Impl = {
         await lazy.ClientID.resetIdentifiers();
         this._clientID = await lazy.ClientID.getClientID();
         this._profileGroupID = await lazy.ClientID.getProfileGroupID();
-        Services.telemetry.scalarSet("telemetry.data_upload_optin", true);
+        Glean.telemetry.dataUploadOptin.set(true);
 
         await this.saveUninstallPing().catch(e =>
           this._log.warn("_onUploadPrefChange - saveUninstallPing failed", e)
@@ -1191,16 +1123,20 @@ var Impl = {
     );
   },
 
-  QueryInterface: ChromeUtils.generateQI(["nsISupportsWeakReference"]),
+  QueryInterface: ChromeUtils.generateQI(["nsIObserver"]),
 
   _attachObservers() {
     if (TelemetryControllerBase.IS_UNIFIED_TELEMETRY) {
       // Watch the FHR upload setting to trigger "deletion-request" pings.
       Services.prefs.addObserver(
         TelemetryUtils.Preferences.FhrUploadEnabled,
-        this,
-        true
+        this
       );
+    }
+    if (AppConstants.MOZ_APP_NAME == "firefox") {
+      // Firefox-only: watch the usage reporting setting to enable, disable, and
+      // trigger "usage-deletion-request" pings.
+      Services.prefs.addObserver("datareporting.usage.uploadEnabled", this);
     }
   },
 
@@ -1214,11 +1150,15 @@ var Impl = {
         this
       );
     }
+    if (AppConstants.MOZ_APP_NAME == "firefox") {
+      Services.prefs.removeObserver("datareporting.usage.uploadEnabled", this);
+    }
   },
 
   /**
    * Allows waiting for TelemetryControllers delayed initialization to complete.
    * This will complete before TelemetryController is shutting down.
+   *
    * @return {Promise} Resolved when delayed TelemetryController initialization completed.
    */
   promiseInitialized() {
@@ -1228,6 +1168,7 @@ var Impl = {
   /**
    * Allows to trigger TelemetryControllers delayed initialization now and waiting for its completion.
    * This will complete before TelemetryController is shutting down.
+   *
    * @return {Promise} Resolved when delayed TelemetryController initialization completed.
    */
   ensureInitialized() {

@@ -27,7 +27,6 @@
 #include <winternl.h>  // for NT_SUCCESS()
 
 #include "nsDebug.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/UniquePtr.h"
 #include "nsWindowsHelpers.h"
 
@@ -400,7 +399,7 @@ bool CheckBrowserUserChoiceHashes() {
 
   const wchar_t* exts[] = {L"https", L"http", L".html", L".htm"};
 
-  for (size_t i = 0; i < ArrayLength(exts); ++i) {
+  for (size_t i = 0; i < std::size(exts); ++i) {
     switch (CheckUserChoiceHash(exts[i], userSid.get())) {
       case CheckUserChoiceHashResult::OK_V1:
         break;

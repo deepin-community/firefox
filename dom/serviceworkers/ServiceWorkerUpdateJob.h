@@ -9,7 +9,7 @@
 
 #include "ServiceWorkerJob.h"
 #include "ServiceWorkerRegistration.h"
-
+#include "mozilla/dom/ServiceWorkerLifetimeExtension.h"
 #include "nsIRequest.h"
 
 namespace mozilla::dom {
@@ -29,17 +29,19 @@ class ServiceWorkerRegistrationInfo;
 class ServiceWorkerUpdateJob : public ServiceWorkerJob {
  public:
   // Construct an update job to be used only for updates.
-  ServiceWorkerUpdateJob(nsIPrincipal* aPrincipal, const nsACString& aScope,
-                         nsCString aScriptSpec,
-                         ServiceWorkerUpdateViaCache aUpdateViaCache);
+  ServiceWorkerUpdateJob(
+      nsIPrincipal* aPrincipal, const nsACString& aScope, nsCString aScriptSpec,
+      ServiceWorkerUpdateViaCache aUpdateViaCache,
+      const ServiceWorkerLifetimeExtension& aLifetimeExtension);
 
   already_AddRefed<ServiceWorkerRegistrationInfo> GetRegistration() const;
 
  protected:
   // Construct an update job that is overriden as another job type.
-  ServiceWorkerUpdateJob(Type aType, nsIPrincipal* aPrincipal,
-                         const nsACString& aScope, nsCString aScriptSpec,
-                         ServiceWorkerUpdateViaCache aUpdateViaCache);
+  ServiceWorkerUpdateJob(
+      Type aType, nsIPrincipal* aPrincipal, const nsACString& aScope,
+      nsCString aScriptSpec, ServiceWorkerUpdateViaCache aUpdateViaCache,
+      const ServiceWorkerLifetimeExtension& aLifetimeExtension);
 
   virtual ~ServiceWorkerUpdateJob();
 
@@ -89,6 +91,13 @@ class ServiceWorkerUpdateJob : public ServiceWorkerJob {
 
   RefPtr<ServiceWorkerRegistrationInfo> mRegistration;
   ServiceWorkerUpdateViaCache mUpdateViaCache;
+  // The lifetime extension to be applied each time we interact with the
+  // potentially new installing ServiceWorker.  A `FullLifetimeExtension` value
+  // here (as used by/on behalf of window clients) means a fresh extension will
+  // be granted with every lifecycle event, whereas a
+  // `PropagatedLifetimeExtension` for updates initiated via ServiceWorkers will
+  // have the same deadline applied each time.
+  ServiceWorkerLifetimeExtension mLifetimeExtension;
   serviceWorkerScriptCache::OnFailure mOnFailure;
 };
 

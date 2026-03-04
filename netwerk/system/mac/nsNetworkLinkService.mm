@@ -2,7 +2,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <numeric>
 #include <vector>
 #include <algorithm>
 
@@ -34,7 +33,7 @@
 #include "mozilla/Base64.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Services.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "nsNetworkLinkService.h"
 #include "../../base/IPv6Utils.h"
 #include "../LinkServiceCommon.h"
@@ -89,6 +88,8 @@ static void CFReleaseSafe(CFTypeRef cf) {
     ::CFRelease(cf);
   }
 }
+
+mozilla::Atomic<bool, mozilla::MemoryOrdering::Relaxed> sHasNonLocalIPv6{true};
 
 NS_IMPL_ISUPPORTS(nsNetworkLinkService, nsINetworkLinkService, nsIObserver,
                   nsITimerCallback, nsINamed)
@@ -425,6 +426,7 @@ bool nsNetworkLinkService::RoutingFromKernel(nsTArray<nsCString>& aHash) {
     LOG(("RoutingFromKernel: Can create a socket for network id"));
     return false;
   }
+  auto sockfd_guard = mozilla::MakeScopeExit([sockfd] { close(sockfd); });
 
   MOZ_ASSERT(!NS_IsMainThread());
 
@@ -528,6 +530,7 @@ bool nsNetworkLinkService::IPv6NetworkId(SHA1Sum* sha1) {
   std::vector<prefix_and_netmask> prefixAndNetmaskStore;
 
   if (!getifaddrs(&ifap)) {
+    bool hasNonLocalIPv6 = false;
     struct ifaddrs* ifa;
     for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
       if (ifa->ifa_addr == NULL) {
@@ -536,6 +539,7 @@ bool nsNetworkLinkService::IPv6NetworkId(SHA1Sum* sha1) {
       if ((AF_INET6 == ifa->ifa_addr->sa_family) &&
           !(ifa->ifa_flags & (IFF_POINTOPOINT | IFF_LOOPBACK))) {
         // only IPv6 interfaces that aren't pointtopoint or loopback
+        hasNonLocalIPv6 = true;
         struct sockaddr_in6* sin_netmask =
             (struct sockaddr_in6*)ifa->ifa_netmask;
         if (sin_netmask) {
@@ -569,6 +573,7 @@ bool nsNetworkLinkService::IPv6NetworkId(SHA1Sum* sha1) {
         }
       }
     }
+    sHasNonLocalIPv6 = hasNonLocalIPv6;
     freeifaddrs(ifap);
   }
   if (prefixAndNetmaskStore.empty()) {
@@ -650,18 +655,18 @@ void nsNetworkLinkService::calculateNetworkIdInternal(void) {
     if (mNetworkId != output) {
       // new id
       if (found4 && !found6) {
-        Telemetry::Accumulate(Telemetry::NETWORK_ID2, 1);  // IPv4 only
+        glean::network::id.AccumulateSingleSample(1);  // IPv4 only
       } else if (!found4 && found6) {
-        Telemetry::Accumulate(Telemetry::NETWORK_ID2, 3);  // IPv6 only
+        glean::network::id.AccumulateSingleSample(3);  // IPv6 only
       } else {
-        Telemetry::Accumulate(Telemetry::NETWORK_ID2, 4);  // Both!
+        glean::network::id.AccumulateSingleSample(4);  // Both!
       }
       mNetworkId = output;
       idChanged = true;
     } else {
       // same id
       LOG(("Same network id"));
-      Telemetry::Accumulate(Telemetry::NETWORK_ID2, 2);
+      glean::network::id.AccumulateSingleSample(2);
     }
   } else {
     // no id
@@ -670,7 +675,7 @@ void nsNetworkLinkService::calculateNetworkIdInternal(void) {
     if (!mNetworkId.IsEmpty()) {
       mNetworkId.Truncate();
       idChanged = true;
-      Telemetry::Accumulate(Telemetry::NETWORK_ID2, 0);
+      glean::network::id.AccumulateSingleSample(0);
     }
   }
 
@@ -746,7 +751,7 @@ void nsNetworkLinkService::DNSConfigChanged(uint32_t aDelayMs) {
           self->mDNSConfigChangedTimers.RemoveElement(aTimer);
         },
         TimeDuration::FromMilliseconds(aDelayMs), nsITimer::TYPE_ONE_SHOT,
-        "nsNetworkLinkService::GetDnsSuffixListInternal", target));
+        "nsNetworkLinkService::GetDnsSuffixListInternal"_ns, target));
     mDNSConfigChangedTimers.AppendElement(timer);
   } else {
     MOZ_ALWAYS_SUCCEEDS(target->Dispatch(NS_NewRunnableFunction(
@@ -767,7 +772,7 @@ nsresult nsNetworkLinkService::Init(void) {
 
   if (inet_pton(AF_INET, ROUTE_CHECK_IPV4, &mRouteCheckIPv4) != 1) {
     LOG(("Cannot parse address " ROUTE_CHECK_IPV4));
-    MOZ_DIAGNOSTIC_ASSERT(false, "Cannot parse address " ROUTE_CHECK_IPV4);
+    MOZ_DIAGNOSTIC_CRASH("Cannot parse address " ROUTE_CHECK_IPV4);
     return NS_ERROR_UNEXPECTED;
   }
 
@@ -996,4 +1001,9 @@ void nsNetworkLinkService::ReachabilityChanged(SCNetworkReachabilityRef target,
   // If a new interface is up or the order of interfaces is changed, we should
   // update the DNS suffix list.
   service->DNSConfigChanged(0);
+}
+
+// static
+bool nsINetworkLinkService::HasNonLocalIPv6Address() {
+  return sHasNonLocalIPv6;
 }

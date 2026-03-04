@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ScriptResponseHeaderProcessor.h"
+
+#include "mozilla/StaticPrefs_javascript.h"
 #include "mozilla/Try.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerScope.h"
@@ -30,7 +32,7 @@ nsresult ScriptResponseHeaderProcessor::ProcessCrossOriginEmbedderPolicyHeader(
     // the main script, but it must pass CORP checking.
     // see: wpt window-simple-success.https.html, the worker import script
     // test-incrementer.js without coep header.
-    Unused << NS_WARN_IF(!aWorkerPrivate->MatchEmbedderPolicy(aPolicy));
+    (void)NS_WARN_IF(!aWorkerPrivate->MatchEmbedderPolicy(aPolicy));
   }
 
   return NS_OK;
@@ -38,16 +40,33 @@ nsresult ScriptResponseHeaderProcessor::ProcessCrossOriginEmbedderPolicyHeader(
 
 // Enforce strict MIME type checks for worker-imported scripts
 // https://github.com/whatwg/html/pull/4001
-nsresult ScriptResponseHeaderProcessor::EnsureJavaScriptMimeType(
+nsresult ScriptResponseHeaderProcessor::EnsureExpectedModuleType(
     nsIRequest* aRequest) {
   nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
   MOZ_ASSERT(channel);
   nsAutoCString mimeType;
   channel->GetContentType(mimeType);
-  if (!nsContentUtils::IsJavascriptMIMEType(NS_ConvertUTF8toUTF16(mimeType))) {
-    return NS_ERROR_DOM_NETWORK_ERR;
+  NS_ConvertUTF8toUTF16 typeString(mimeType);
+
+  if (mModuleType == JS::ModuleType::JavaScriptOrWasm) {
+    if (nsContentUtils::IsJavascriptMIMEType(typeString)) {
+      return NS_OK;
+    }
+#ifdef NIGHTLY_BUILD
+    if (StaticPrefs::javascript_options_experimental_wasm_esm_integration()) {
+      if (nsContentUtils::HasWasmMimeTypeEssence(typeString)) {
+        return NS_OK;
+      }
+    }
+#endif
   }
-  return NS_OK;
+
+  if (mModuleType == JS::ModuleType::JSON &&
+      nsContentUtils::IsJsonMimeType(typeString)) {
+    return NS_OK;
+  }
+
+  return NS_ERROR_DOM_NETWORK_ERR;
 }
 
 nsresult ScriptResponseHeaderProcessor::ProcessCrossOriginEmbedderPolicyHeader(

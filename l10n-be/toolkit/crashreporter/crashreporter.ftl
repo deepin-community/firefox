@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = У { -brand-short-name } узнікла пр
 crashreporter-plea = Каб дапамагчы вызначыць і выправіць праблему, вы можаце падаць справаздачу пра крах.
 crashreporter-information = Гэта праграма запускаецца пасля краху, каб паведаміць { -vendor-short-name } аб праблеме.  Яна не павінна запускацца непасрэдна.
 crashreporter-error = { -brand-short-name } пацярпеў крах ад нечаканай праблемы. На жаль, паведамляльнік пра крах не здольны падаць справаздачу пра гэты збой.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Падрабязнасці: { $details }
+crashreporter-error-details-header = Падрабязнасці:
 crashreporter-no-run-message = Гэта праграма запускаецца пасля краху, каб паведаміць распрацоўшчыку праграмы пра праблему.  Яна не павінна запускацца непасрэдна.
 crashreporter-button-details = Падрабязнасці…
 crashreporter-loading-details = Загрузка...
 crashreporter-view-report-title = Змесціва справаздачы
 crashreporter-comment-prompt = Дадаць заўвагу (заўвагі прылюдна бачныя)
 crashreporter-report-info = Гэтая справаздача таксама ўтрымлівае тэхнічныя звесткі пра стан праграмы падчас яе краху.
-crashreporter-send-report = Паведаміць { -vendor-short-name } пра падзенне, каб яны маглі выправіць праблему.
-crashreporter-include-url = Уключыць адрас старонкі, на якой я быў(-ла).
+crashreporter-checkbox-test-hardware = Праверыць наяўнасць апаратных і канфігурацыйных праблем на маёй прыладзе.
+crashreporter-checkbox-send-report = Паведаміць { -vendor-short-name } пра падзенне, каб яны маглі выправіць праблему.
+crashreporter-checkbox-include-url = Уключыць адрас старонкі, на якой я быў(-ла).
 crashreporter-submit-status = Ваша справаздача пра крах будзе даслана перад выхадам або перазапускам.
+crashreporter-submit-waiting-hardware-tests = Праверка апаратных і канфігурацыйных праблем…
 crashreporter-submit-in-progress = Падача вашай справаздачы…
 crashreporter-submit-success = Справаздача паспяхова пададзена!
 crashreporter-submit-failure = Здарылася праблема падчас падачы вашай справаздачы.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Вы можаце пабачыць падрабя�
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Не ўдалося запусціць аналізатар мінідампаў
 # $path (String) - the file path
 crashreporter-error-opening-file = Не ўдалося адкрыць файл ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Адсутнічае хатні каталог
 # $to (String) - the destination path
 crashreporter-error-moving-path = Не ўдалося перамясціць { $from } у { $to }
 crashreporter-error-version-eol = Канец жыццёвага цыкла версіі: справаздачы аб збоях больш не прымаюцца.
+crashreporter-error-failed-to-generate-minidump = Праграме не ўдалося стварыць інфармацыю пра збой.

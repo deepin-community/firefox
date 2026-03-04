@@ -30,6 +30,10 @@ options-context-inspector = מפקח
 options-show-user-agent-styles-label = הצגת סגנונות דפדפן
 options-show-user-agent-styles-tooltip =
     .title = הפעלת אפשרות זו תציג את סגנונות בררת המחדל שנטענים על־ידי הדפדפן.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = הצגת ה־Shadow DOM של הדפדפן
+options-show-user-agent-shadow-dom-tooltip =
+    .title = הפעלת אפשרות זו תציג רכיבים של Shadow DOM המטופלים על־ידי הדפדפן.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = חיתוך רכיבי DOM
 options-collapse-attrs-tooltip =
@@ -112,9 +116,11 @@ options-sourceeditor-keybinding-default-label = בררת מחדל
 # The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = הגדרות מתקדמות
 # The label for the checkbox that toggles the HTTP cache on or off
-options-disable-http-cache-label = נטרול מטמון HTTP (כשארגז הכלים פתוח)
+options-disable-http-cache-label = השבתת מטמון HTTP (כשארגז הכלים פתוח)
 options-disable-http-cache-tooltip =
     .title = הפעלת אפשרות זו תשבית את מטמון ה־HTTP עבור כל הלשוניות בהן פתוח ארגז הכלים. Service Workers אינם מושפעים מאפשרות זו.
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = השבתת JavaScript
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = השבתת JavaScript *
 options-disable-javascript-tooltip =
@@ -129,6 +135,10 @@ options-enable-remote-tooltip2 =
 options-enable-f12-label = שימוש במקש F12 כדי לפתוח או לסגור את כלי הפיתוח
 options-enable-f12-tooltip =
     .title = הפעלת אפשרות זו תקשר את מקש F12 לפתיחה או סגירת ארגז הכלים של כלי הפיתוח
+# The label for checkbox that toggles custom formatters for objects
+options-enable-custom-formatters-label = לאפשר יוצרי תבניות מותאמים אישית
+options-enable-custom-formatters-tooltip =
+    .title = הפעלת אפשרות זו תאפשר לאתרים להגדיר יוצרי תבניות מותאמים אישית עבור אובייקטי DOM
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
 options-enable-service-workers-http-label = הפעלת Service Workers על גבי HTTP (כשארגז הכלים פתוח)
 options-enable-service-workers-http-tooltip =
@@ -137,5 +147,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = הפעלת מפות מקור
 options-source-maps-tooltip =
     .title = אם אפשרות זו תופעל המקורות ימופו בכלים.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (הפעלה נוכחית בלבד, טוען מחדש את הדף)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * הפעלה נוכחית בלבד, יש לטעון מחדש את הדף
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (טוען מחדש את הדף)

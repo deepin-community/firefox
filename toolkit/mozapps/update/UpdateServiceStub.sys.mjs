@@ -18,14 +18,14 @@ if (AppConstants.ENABLE_WEBDRIVER) {
     lazy,
     "Marionette",
     "@mozilla.org/remote/marionette;1",
-    "nsIMarionette"
+    Ci.nsIMarionette
   );
 
   XPCOMUtils.defineLazyServiceGetter(
     lazy,
     "RemoteAgent",
     "@mozilla.org/remote/agent;1",
-    "nsIRemoteAgent"
+    Ci.nsIRemoteAgent
   );
 } else {
   lazy.Marionette = { running: false };
@@ -121,11 +121,13 @@ export class UpdateServiceStub {
     const aus = Cc["@mozilla.org/updates/update-service;1"].getService(
       Ci.nsIApplicationUpdateService
     );
-    Cc["@mozilla.org/updates/update-manager;1"].getService(Ci.nsIUpdateManager);
+    await Cc["@mozilla.org/updates/update-manager;1"]
+      .getService(Ci.nsIUpdateManager)
+      .internal.reload(false);
     Cc["@mozilla.org/updates/update-checker;1"].getService(Ci.nsIUpdateChecker);
 
     // Run update service initialization
-    await aus.internal.init();
+    await aus.internal.init(false);
   }
 
   async #init(force_update_init) {
@@ -509,6 +511,7 @@ function cleanupDir(dir, recurse) {
 
 /**
  * Logs a string to the error console.
+ *
  * @param   string
  *          The string to write to the error console.
  */

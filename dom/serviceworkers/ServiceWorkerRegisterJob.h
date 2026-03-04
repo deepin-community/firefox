@@ -16,11 +16,15 @@ namespace mozilla::dom {
 // spec algorithms.
 class ServiceWorkerRegisterJob final : public ServiceWorkerUpdateJob {
  public:
-  ServiceWorkerRegisterJob(nsIPrincipal* aPrincipal, const nsACString& aScope,
-                           const nsACString& aScriptSpec,
-                           ServiceWorkerUpdateViaCache aUpdateViaCache);
+  ServiceWorkerRegisterJob(
+      nsIPrincipal* aPrincipal, const nsACString& aScope,
+      const WorkerType& aType, const nsACString& aScriptSpec,
+      ServiceWorkerUpdateViaCache aUpdateViaCache,
+      const ServiceWorkerLifetimeExtension& aLifetimeExtension);
 
  private:
+  WorkerType mType;
+
   // Implement the Register algorithm steps and then call the parent class
   // Update() to complete the job execution.
   virtual void AsyncExecute() override;

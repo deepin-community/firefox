@@ -24,7 +24,7 @@ about-private-browsing-info-description-simplified = ඔබ සියළුම �
 about-private-browsing-learn-more-link = තව දැනගන්න
 about-private-browsing-hide-activity = පිරික්සන සෑම තැනකින්ම ඔබගේ ක්‍රියාකාරකම් හා ස්ථානය සඟවන්න
 about-private-browsing-get-privacy = පිරික්සන සැමතැනට පෞද්ගලිකත්‍ව රැකවරණය ලබා ගන්න
-about-private-browsing-hide-activity-1 = පිරික්සුම් ක්‍රියාකාරකම් සහ ස්ථානය { -mozilla-vpn-brand-name } මගින් සඟවන්න. තනි එබීමකින් පොදු වයි-ෆයි හරහා පවා ආරක්‍ෂිත සම්බන්ධතාවයක් සාදයි.
+about-private-browsing-hide-activity-1 = පිරික්සුම් ක්‍රියාකාරකම් සහ ස්ථානය { -mozilla-vpn-brand-name } මගින් සඟවන්න. තනි එබීමකින් පොදු වයි-ෆයි හරහා පවා ආරක්‍ෂිත සම්බන්‍ධතාවක් සාදයි.
 about-private-browsing-prominent-cta = { -mozilla-vpn-brand-name } සමඟ රහසිගතව සිටින්න
 about-private-browsing-focus-promo-cta = { -focus-brand-name } බාගන්න
 about-private-browsing-focus-promo-header = { -focus-brand-name }: යන ගමන් රහසිගතව පිරික්සන්න
@@ -68,6 +68,4 @@ about-private-browsing-pin-promo-title = සුරකින ලද දත්ත�
 about-private-browsing-cookie-banners-promo-header = දත්තකඩ පතාක ඉවරයි!
 about-private-browsing-cookie-banners-promo-button = දත්තකඩ පතාක අවම කරන්න
 about-private-browsing-cookie-banners-promo-message = { -brand-short-name } සඳහා ඔබ වෙනුවෙන් දත්තකඩ උත්පතන වලට ස්වයංක්‍රීයව පිළිතුරු දීමට ඉඩ දෙන්න. එවිට, අවධානය වෙනතකට යොමු නොකර දිගටම පිරික්සීමට හැකිය. { -brand-short-name } හැකි නම් සියළුම ඉල්ලීම් ප්‍රතික්‍ෂේප කරයි.
-
-## Strings for Felt Privacy v1 experiments in 119
-
+about-private-browsing-cookie-banners-promo-body = අපි දැන් බොහෝ දත්තකඩ පතාක ස්වයංක්‍රීයව ප්‍රතික්‍ෂේප කරන්නෙමු, එවිට ඔබව අවම ලුහුබැඳීමකට පමණක් ලක්වන අතර අවධානය වෙනතකට නොයවා පිරික්සීමට හැකිය.

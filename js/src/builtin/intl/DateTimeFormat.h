@@ -8,6 +8,8 @@
 #define builtin_intl_DateTimeFormat_h
 
 #include "builtin/SelfHostingDefines.h"
+#include "builtin/temporal/Calendar.h"
+#include "builtin/temporal/TimeZone.h"
 #include "js/Class.h"
 #include "vm/NativeObject.h"
 
@@ -18,6 +20,17 @@ class DateIntervalFormat;
 
 namespace js {
 
+enum class DateTimeValueKind {
+  Number,
+  TemporalDate,
+  TemporalTime,
+  TemporalDateTime,
+  TemporalYearMonth,
+  TemporalMonthDay,
+  TemporalZonedDateTime,
+  TemporalInstant,
+};
+
 class DateTimeFormatObject : public NativeObject {
  public:
   static const JSClass class_;
@@ -26,7 +39,10 @@ class DateTimeFormatObject : public NativeObject {
   static constexpr uint32_t INTERNALS_SLOT = 0;
   static constexpr uint32_t DATE_FORMAT_SLOT = 1;
   static constexpr uint32_t DATE_INTERVAL_FORMAT_SLOT = 2;
-  static constexpr uint32_t SLOT_COUNT = 3;
+  static constexpr uint32_t DATE_TIME_VALUE_KIND_SLOT = 3;
+  static constexpr uint32_t CALENDAR_SLOT = 4;
+  static constexpr uint32_t TIMEZONE_SLOT = 5;
+  static constexpr uint32_t SLOT_COUNT = 6;
 
   static_assert(INTERNALS_SLOT == INTL_INTERNALS_OBJECT_SLOT,
                 "INTERNALS_SLOT must match self-hosting define for internals "
@@ -63,22 +79,51 @@ class DateTimeFormatObject : public NativeObject {
     setFixedSlot(DATE_INTERVAL_FORMAT_SLOT, PrivateValue(dateIntervalFormat));
   }
 
+  DateTimeValueKind getDateTimeValueKind() const {
+    const auto& slot = getFixedSlot(DATE_TIME_VALUE_KIND_SLOT);
+    if (slot.isUndefined()) {
+      return DateTimeValueKind::Number;
+    }
+    return static_cast<DateTimeValueKind>(slot.toInt32());
+  }
+
+  void setDateTimeValueKind(DateTimeValueKind kind) {
+    setFixedSlot(DATE_TIME_VALUE_KIND_SLOT,
+                 Int32Value(static_cast<int32_t>(kind)));
+  }
+
+  temporal::CalendarValue getCalendar() const {
+    const auto& slot = getFixedSlot(CALENDAR_SLOT);
+    if (slot.isUndefined()) {
+      return temporal::CalendarValue();
+    }
+    return temporal::CalendarValue(slot);
+  }
+
+  void setCalendar(const temporal::CalendarValue& calendar) {
+    setFixedSlot(CALENDAR_SLOT, calendar.toSlotValue());
+  }
+
+  temporal::TimeZoneValue getTimeZone() const {
+    const auto& slot = getFixedSlot(TIMEZONE_SLOT);
+    if (slot.isUndefined()) {
+      return temporal::TimeZoneValue();
+    }
+    return temporal::TimeZoneValue(slot);
+  }
+
+  void setTimeZone(const temporal::TimeZoneValue& timeZone) {
+    setFixedSlot(TIMEZONE_SLOT, timeZone.toSlotValue());
+  }
+
+  void maybeClearCache(DateTimeValueKind kind);
+
  private:
   static const JSClassOps classOps_;
   static const ClassSpec classSpec_;
 
   static void finalize(JS::GCContext* gcx, JSObject* obj);
 };
-
-/**
- * Returns a new instance of the standard built-in DateTimeFormat constructor.
- *
- * Usage: dateTimeFormat = intl_CreateDateTimeFormat(locales, options, required,
- * defaults)
- */
-[[nodiscard]] extern bool intl_CreateDateTimeFormat(JSContext* cx,
-                                                    unsigned argc,
-                                                    JS::Value* vp);
 
 /**
  * Returns an array with the calendar type identifiers per Unicode
@@ -100,55 +145,6 @@ class DateTimeFormatObject : public NativeObject {
  */
 [[nodiscard]] extern bool intl_defaultCalendar(JSContext* cx, unsigned argc,
                                                JS::Value* vp);
-
-/**
- * 6.4.1 IsValidTimeZoneName ( timeZone )
- *
- * Verifies that the given string is a valid time zone name. If it is a valid
- * time zone name, its IANA time zone name is returned. Otherwise returns null.
- *
- * ES2017 Intl draft rev 4a23f407336d382ed5e3471200c690c9b020b5f3
- *
- * Usage: ianaTimeZone = intl_IsValidTimeZoneName(timeZone)
- */
-[[nodiscard]] extern bool intl_IsValidTimeZoneName(JSContext* cx, unsigned argc,
-                                                   JS::Value* vp);
-
-/**
- * Return the canonicalized time zone name. Canonicalization resolves link
- * names to their target time zones.
- *
- * Usage: ianaTimeZone = intl_canonicalizeTimeZone(timeZone)
- */
-[[nodiscard]] extern bool intl_canonicalizeTimeZone(JSContext* cx,
-                                                    unsigned argc,
-                                                    JS::Value* vp);
-
-/**
- * Return the default time zone name. The time zone name is not canonicalized.
- *
- * Usage: icuDefaultTimeZone = intl_defaultTimeZone()
- */
-[[nodiscard]] extern bool intl_defaultTimeZone(JSContext* cx, unsigned argc,
-                                               JS::Value* vp);
-
-/**
- * Return the raw offset from GMT in milliseconds for the default time zone.
- *
- * Usage: defaultTimeZoneOffset = intl_defaultTimeZoneOffset()
- */
-[[nodiscard]] extern bool intl_defaultTimeZoneOffset(JSContext* cx,
-                                                     unsigned argc,
-                                                     JS::Value* vp);
-
-/**
- * Return true if the given string is the default time zone as returned by
- * intl_defaultTimeZone(). Otherwise return false.
- *
- * Usage: isIcuDefaultTimeZone = intl_isDefaultTimeZone(icuDefaultTimeZone)
- */
-[[nodiscard]] extern bool intl_isDefaultTimeZone(JSContext* cx, unsigned argc,
-                                                 JS::Value* vp);
 
 /**
  * Returns a String value representing x (which must be a Number value)
@@ -183,6 +179,59 @@ class DateTimeFormatObject : public NativeObject {
 [[nodiscard]] extern bool intl_resolveDateTimeFormatComponents(JSContext* cx,
                                                                unsigned argc,
                                                                JS::Value* vp);
+
+namespace intl {
+
+enum class DateTimeFormatKind {
+  /**
+   * Call CreateDateTimeFormat with `required = Any` and `defaults = All`.
+   */
+  All,
+
+  /**
+   * Call CreateDateTimeFormat with `required = Date` and `defaults = Date`.
+   */
+  Date,
+
+  /**
+   * Call CreateDateTimeFormat with `required = Time` and `defaults = Time`.
+   */
+  Time,
+};
+
+/**
+ * Returns a new instance of the standard built-in DateTimeFormat constructor.
+ */
+[[nodiscard]] extern DateTimeFormatObject* CreateDateTimeFormat(
+    JSContext* cx, JS::Handle<JS::Value> locales, JS::Handle<JS::Value> options,
+    DateTimeFormatKind kind);
+
+/**
+ * Returns a possibly cached instance of the standard built-in DateTimeFormat
+ * constructor.
+ */
+[[nodiscard]] extern DateTimeFormatObject* GetOrCreateDateTimeFormat(
+    JSContext* cx, JS::Handle<JS::Value> locales, JS::Handle<JS::Value> options,
+    DateTimeFormatKind kind);
+
+/**
+ * Returns a String value representing |millis| (which must be a valid time
+ * value) according to the effective locale and the formatting options of the
+ * given DateTimeFormat.
+ */
+[[nodiscard]] extern bool FormatDateTime(
+    JSContext* cx, JS::Handle<DateTimeFormatObject*> dateTimeFormat,
+    double millis, JS::MutableHandle<JS::Value> result);
+
+/**
+ * Shared `toLocaleString` implementation for Temporal objects.
+ */
+[[nodiscard]] extern bool TemporalObjectToLocaleString(
+    JSContext* cx, const JS::CallArgs& args, DateTimeFormatKind formatKind,
+    JS::Handle<JS::Value> toLocaleStringTimeZone = JS::UndefinedHandleValue);
+
+}  // namespace intl
+
 }  // namespace js
 
 #endif /* builtin_intl_DateTimeFormat_h */

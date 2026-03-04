@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Orriaren zati batek huts egin du</strong>. Arazoaren berri eman eta ahalik eta azkarren konpontzeko, bidali mesedez txostena { -brand-product-name }(r)i.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -32,3 +31,20 @@ pending-crash-reports-send =
     .label = Bidali
 pending-crash-reports-always-send =
     .label = Bidali beti
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message-new =
+    { $reportCount ->
+        [one] Bidali gabeko hutsegite-txosten bat duzu ikerketapean dauden hutsegiteekin zerikusia duena. Bidaltzeak { -brand-product-name } hobetzen lagunduko digu. Jakinarazpen hau ixteak txosten hau ezikusiko du.
+       *[other] Bidali gabeko { $reportCount } hutsegite-txosten dituzu ikerketapean dauden hutsegiteekin zerikusia dutenak. Bidaltzeak { -brand-product-name } hobetzen lagunduko digu. Jakinarazpen hau ixteak txosten hau ezikusiko du.
+    }
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message =
+    { $reportCount ->
+        [one] Bidali gabeko hutsegite-txosten bat duzu ikerketapean dauden hutsegiteekin bat datorrena. Bidaltzeak { -brand-product-name } hobetzen lagunduko digu. Jakinarazpen hau ixteak txosten hau ezikusiko du.
+       *[other] Bidali gabeko { $reportCount } hutsegite-txosten dituzu ikerketapean dauden hutsegiteekin bat datozenak. Bidaltzeak { -brand-product-name } hobetzen lagunduko digu. Jakinarazpen hau ixteak txosten hau ezikusiko du.
+    }
+requested-crash-reports-dont-show-again =
+    .label = Ez erakutsi berriro
+    .accesskey = z

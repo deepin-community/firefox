@@ -11,9 +11,9 @@
 #ifndef mozilla_dom_NodeIterator_h
 #define mozilla_dom_NodeIterator_h
 
-#include "nsTraversal.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsStubMutationObserver.h"
+#include "nsTraversal.h"
 
 class nsINode;
 
@@ -60,8 +60,8 @@ class NodeIterator final : public nsStubMutationObserver, public nsTraversal {
     bool MoveForward(nsINode* aRoot, nsINode* aNode);
     void MoveBackward(nsINode* aParent, nsINode* aNode);
 
-    void AdjustAfterRemoval(nsINode* aRoot, nsINode* aContainer,
-                            nsIContent* aChild, nsIContent* aPreviousSibling);
+    void AdjustForRemoval(nsINode* aRoot, nsINode* aContainer,
+                          nsIContent* aChild);
 
     void Clear() { mNode = nullptr; }
 

@@ -22,9 +22,6 @@ PR_BEGIN_EXTERN_C
 #elif defined(WIN95) || defined(WINCE)
 #include "md/_win95.h"
 #include "md/_win32_errors.h"
-#elif defined(OS2)
-#include "md/_os2.h"
-#include "md/_os2_errors.h"
 #else
 #error unknown Windows platform
 #endif
@@ -43,12 +40,6 @@ PR_BEGIN_EXTERN_C
 #elif defined(OPENBSD)
 #include "md/_openbsd.h"
 
-#elif defined(BSDI)
-#include "md/_bsdi.h"
-
-#elif defined(HPUX)
-#include "md/_hpux.h"
-
 #elif defined(LINUX) || defined(__GNU__) || defined(__GLIBC__)
 #include "md/_linux.h"
 
@@ -57,12 +48,6 @@ PR_BEGIN_EXTERN_C
 
 #elif defined(SOLARIS)
 #include "md/_solaris.h"
-
-#elif defined(SCO)
-#include "md/_scoos.h"
-
-#elif defined(UNIXWARE)
-#include "md/_unixware.h"
 
 #elif defined(QNX)
 #include "md/_qnx.h"

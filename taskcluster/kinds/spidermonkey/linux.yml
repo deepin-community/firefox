@@ -77,88 +77,6 @@ sm-plain-linux64/opt:
             - linux64-pkgconf
             - sysroot-x86_64-linux-gnu
 
-sm-smoosh-linux64/debug:
-    description: "Spidermonkey SmooshMonkey"
-    index:
-        job-name: sm-smoosh-linux64-debug
-    treeherder:
-        platform: linux64/debug
-        symbol: SM(smoosh)
-        tier: 3
-    run:
-        spidermonkey-variant: smooshdebug
-    run-on-projects: []
-    fetches:
-        toolchain:
-            - linux64-clang
-            - linux64-rust
-            - linux64-cbindgen
-            - linux64-dump_syms
-            - linux64-breakpad-injector
-            - linux64-minidump-stackwalk
-            - linux64-llvm-symbolizer
-            - linux64-pkgconf
-            - sysroot-x86_64-linux-gnu
-    when:
-        files-changed:
-            - 'third_party/rust/jsparagus/**'
-            - 'js/src/frontend/Frontend2.cpp'
-            - 'js/src/frontend/Frontend2.h'
-            - 'js/src/frontend/SourceNotes.h'
-            - 'js/src/frontend/smoosh/**'
-            - 'js/public/Symbol.h'
-            - 'js/src/vm/AsyncFunctionResolveKind.h'
-            - 'js/src/vm/BytecodeFormatFlags.h'
-            - 'js/src/vm/CheckIsObjectKind.h'
-            - 'js/src/vm/FunctionFlags.h'
-            - 'js/src/vm/FunctionPrefixKind.h'
-            - 'js/src/vm/GeneratorAndAsyncKind.h'
-            - 'js/src/vm/GeneratorResumeKind.h'
-            - 'js/src/vm/Opcodes.h'
-            - 'js/src/vm/ThrowMsgKind.h'
-            - 'js/src/vm/StencilEnums.h'
-
-sm-smoosh-linux64/opt:
-    description: "Spidermonkey SmooshMonkey"
-    index:
-        job-name: sm-smoosh-linux64-opt
-    treeherder:
-        symbol: SM(smoosh)
-        platform: linux64/opt
-        tier: 3
-    run:
-        spidermonkey-variant: smoosh
-    run-on-projects: []
-    fetches:
-        toolchain:
-            - linux64-clang
-            - linux64-rust
-            - linux64-cbindgen
-            - linux64-dump_syms
-            - linux64-breakpad-injector
-            - linux64-minidump-stackwalk
-            - linux64-llvm-symbolizer
-            - linux64-pkgconf
-            - sysroot-x86_64-linux-gnu
-    when:
-        files-changed:
-            - 'third_party/rust/jsparagus/**'
-            - 'js/src/frontend/Frontend2.cpp'
-            - 'js/src/frontend/Frontend2.h'
-            - 'js/src/frontend/SourceNotes.h'
-            - 'js/src/frontend/smoosh/**'
-            - 'js/public/Symbol.h'
-            - 'js/src/vm/AsyncFunctionResolveKind.h'
-            - 'js/src/vm/BytecodeFormatFlags.h'
-            - 'js/src/vm/CheckIsObjectKind.h'
-            - 'js/src/vm/FunctionFlags.h'
-            - 'js/src/vm/FunctionPrefixKind.h'
-            - 'js/src/vm/GeneratorAndAsyncKind.h'
-            - 'js/src/vm/GeneratorResumeKind.h'
-            - 'js/src/vm/Opcodes.h'
-            - 'js/src/vm/ThrowMsgKind.h'
-            - 'js/src/vm/StencilEnums.h'
-
 sm-nojit-linux64/opt:
     description: "Spidermonkey no JIT"
     index:
@@ -281,6 +199,87 @@ sm-arm64-sim-linux64/debug:
     worker:
         env:
             MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    fetches:
+        toolchain:
+            - linux64-clang
+            - linux64-rust
+            - linux64-cbindgen
+            - linux64-dump_syms
+            - linux64-breakpad-injector
+            - linux64-minidump-stackwalk
+            - linux64-llvm-symbolizer
+            - linux64-pkgconf
+            - sysroot-x86_64-linux-gnu
+
+sm-mips64-sim-linux64/debug:
+    description: "Spidermonkey MIPS64 sim"
+    index:
+        job-name: sm-mips64-sim-linux64-debug
+    treeherder:
+        platform: linux64/debug
+        symbol: SM(mips64)
+        tier: 3
+    run:
+        spidermonkey-variant: mips64-sim
+    worker:
+        env:
+            MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    # Disable by default but allow try pushes to explicitly request.
+    run-on-projects: []
+    fetches:
+        toolchain:
+            - linux64-clang
+            - linux64-rust
+            - linux64-cbindgen
+            - linux64-dump_syms
+            - linux64-breakpad-injector
+            - linux64-minidump-stackwalk
+            - linux64-llvm-symbolizer
+            - linux64-pkgconf
+            - sysroot-x86_64-linux-gnu
+
+sm-loong64-sim-linux64/debug:
+    description: "Spidermonkey LOONG64 sim"
+    index:
+        job-name: sm-loong64-sim-linux64-debug
+    treeherder:
+        platform: linux64/debug
+        symbol: SM(loong64)
+        tier: 3
+    run:
+        spidermonkey-variant: loong64-sim
+    worker:
+        env:
+            MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    # Disable by default but allow try pushes to explicitly request.
+    run-on-projects: []
+    fetches:
+        toolchain:
+            - linux64-clang
+            - linux64-rust
+            - linux64-cbindgen
+            - linux64-dump_syms
+            - linux64-breakpad-injector
+            - linux64-minidump-stackwalk
+            - linux64-llvm-symbolizer
+            - linux64-pkgconf
+            - sysroot-x86_64-linux-gnu
+
+sm-riscv64-sim-linux64/debug:
+    description: "Spidermonkey RISCV64 sim"
+    index:
+        job-name: sm-riscv64-sim-linux64-debug
+    treeherder:
+        platform: linux64/debug
+        symbol: SM(riscv64)
+        tier: 3
+    run:
+        spidermonkey-variant: riscv64-sim
+    worker:
+        env:
+            MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    # Disable by default but allow try pushes to explicitly request.
+    run-on-projects: []
     fetches:
         toolchain:
             - linux64-clang
@@ -435,7 +434,7 @@ sm-msan-linux64/opt:
             MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
     run:
         spidermonkey-variant: msan
-    # Disable by default by allow try pushes to explicitly request.
+    # Disable by default but allow try pushes to explicitly request.
     run-on-projects: []
     fetches:
         toolchain:
@@ -540,6 +539,58 @@ sm-fuzzing-linux64/opt:
             - linux64-pkgconf
             - sysroot-x86_64-linux-gnu
 
+sm-fuzzing-linux32/opt:
+    description: "Spidermonkey Fuzzing"
+    index:
+        job-name: sm-linux32-fuzzing
+    treeherder:
+        platform: linux32/opt
+        symbol: SM(f)
+    worker:
+        env:
+            MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    run:
+        spidermonkey-variant: fuzzing
+        spidermonkey-platform: linux
+    fetches:
+        toolchain:
+            - linux64-clang
+            - linux64-rust
+            - linux64-cbindgen
+            - linux64-dump_syms
+            - linux64-breakpad-injector
+            - linux64-minidump-stackwalk
+            - linux32-llvm-symbolizer
+            - linux64-pkgconf
+            - sysroot-i686-linux-gnu
+            - sysroot-x86_64-linux-gnu
+
+sm-fuzzing-linux32/debug:
+    description: "Spidermonkey Fuzzing"
+    index:
+        job-name: sm-linux32-fuzzing-debug
+    treeherder:
+        platform: linux32/debug
+        symbol: SM(f)
+    worker:
+        env:
+            MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    run:
+        spidermonkey-variant: fuzzing-debug
+        spidermonkey-platform: linux
+    fetches:
+        toolchain:
+            - linux64-clang
+            - linux64-rust
+            - linux64-cbindgen
+            - linux64-dump_syms
+            - linux64-breakpad-injector
+            - linux64-minidump-stackwalk
+            - linux32-llvm-symbolizer
+            - linux64-pkgconf
+            - sysroot-i686-linux-gnu
+            - sysroot-x86_64-linux-gnu
+
 sm-fuzzilli-linux64/debug:
     description: "Spidermonkey Fuzzilli debug"
     index:
@@ -559,6 +610,27 @@ sm-fuzzilli-linux64/debug:
             - linux64-cbindgen
             - linux64-pkgconf
             - sysroot-x86_64-linux-gnu
+
+sm-fuzzilli-linux64-aarch64/debug:
+    description: "Spidermonkey Fuzzilli debug AArch64"
+    index:
+        job-name: sm-linux64-aarch64-fuzzilli-debug
+    treeherder:
+        platform: linux64-aarch64/debug
+        symbol: SM(fuzzilli)
+    worker:
+        env:
+            MOZ_JS_UPLOAD_BINARIES_DEFAULT: "1"
+    run:
+        spidermonkey-variant: fuzzilli-aarch64
+    fetches:
+        toolchain:
+            - linux64-clang
+            - linux64-rust
+            - linux64-cbindgen
+            - linux64-pkgconf
+            - sysroot-x86_64-linux-gnu
+            - sysroot-aarch64-linux-gnu
 
 sm-gdb-linux64/debug:
     description: "Spidermonkey GDB Pretty-printers"
@@ -582,47 +654,5 @@ sm-gdb-linux64/debug:
             - linux64-breakpad-injector
             - linux64-minidump-stackwalk
             - linux64-llvm-symbolizer
-            - linux64-pkgconf
-            - sysroot-x86_64-linux-gnu
-
-sm-rt-linux64/debug:
-    description: "SpiderMonkey Records&Tuples"
-    index:
-        job-name: sm-rt-linux64-debug
-    treeherder:
-        platform: linux64/debug
-        symbol: SM(rt)
-    run:
-        spidermonkey-variant: rtdebug
-    fetches:
-        toolchain:
-            - linux64-clang
-            - linux64-cbindgen
-            - linux64-dump_syms
-            - linux64-breakpad-injector
-            - linux64-minidump-stackwalk
-            - linux64-llvm-symbolizer
-            - linux64-rust
-            - linux64-pkgconf
-            - sysroot-x86_64-linux-gnu
-
-sm-temporal-linux64/debug:
-    description: "SpiderMonkey Temporal"
-    index:
-        job-name: sm-temporal-linux64-debug
-    treeherder:
-        platform: linux64/debug
-        symbol: SM(temporal)
-    run:
-        spidermonkey-variant: temporaldebug
-    fetches:
-        toolchain:
-            - linux64-clang
-            - linux64-cbindgen
-            - linux64-dump_syms
-            - linux64-breakpad-injector
-            - linux64-minidump-stackwalk
-            - linux64-llvm-symbolizer
-            - linux64-rust
             - linux64-pkgconf
             - sysroot-x86_64-linux-gnu

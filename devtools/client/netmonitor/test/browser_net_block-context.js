@@ -23,8 +23,23 @@ add_task(async function () {
   await navigateTo(HTTPS_SIMPLE_URL);
   await wait;
 
+  const requestListBlockingButton = document.querySelector(
+    ".requests-list-blocking-button"
+  );
+  is(
+    requestListBlockingButton.getAttribute("aria-pressed"),
+    "false",
+    "The block toolbar button should not be highlighted"
+  );
+  ok(
+    !requestListBlockingButton.classList.contains(
+      "requests-list-blocking-button-enabled"
+    ),
+    "The button should not have the requests-list-blocking-button-enabled class when there's no blocked items"
+  );
+
   info("Opening the blocked requests panel");
-  document.querySelector(".requests-list-blocking-button").click();
+  requestListBlockingButton.click();
 
   info("Adding sample block strings");
   const waitForBlockingContents = waitForDOM(
@@ -36,6 +51,32 @@ add_task(async function () {
   await waitForBlockingContents;
 
   is(getListitems(document), 2);
+
+  is(
+    requestListBlockingButton.getAttribute("aria-pressed"),
+    "true",
+    "The block toolbar button should be highlighted"
+  );
+  ok(
+    requestListBlockingButton.classList.contains(
+      "requests-list-blocking-button-enabled"
+    ),
+    "The button should have the requests-list-blocking-button-enabled class after adding blocked items"
+  );
+  is(
+    document
+      .querySelector(".devtools-search-icon")
+      .getAttribute("aria-pressed"),
+    "false",
+    "The search toolbar button should not be highlighted"
+  );
+  is(
+    document
+      .querySelector(".devtools-http-custom-request-icon")
+      .getAttribute("aria-pressed"),
+    "false",
+    "The new request toolbar button should not be highlighted"
+  );
 
   info("Reloading page, URLs should be blocked in request list");
   await reloadPage(monitor, { isRequestBlocked: true });
@@ -82,6 +123,13 @@ add_task(async function () {
   await reloadPage(monitor, { isRequestBlocked: false });
   is(checkIfRequestIsBlocked(document), false);
 
+  ok(
+    !requestListBlockingButton.classList.contains(
+      "requests-list-blocking-button-enabled"
+    ),
+    "The button should not have the requests-list-blocking-button-enabled class after removing blocked items"
+  );
+
   return teardown(monitor);
 });
 
@@ -106,11 +154,11 @@ async function openMenuAndClick(monitor, store, document, itemSelector) {
 async function reloadPage(monitor, { isRequestBlocked = false } = {}) {
   const wait = waitForNetworkEvents(monitor, 1);
   if (isRequestBlocked) {
-    // Note: Do not use navigateTo or reloadBrowser here as the request will
+    // Note: Do not use navigateTo or reloadSelectedTab here as the request will
     // be blocked and no navigation happens
     gBrowser.selectedBrowser.reload();
   } else {
-    await reloadBrowser();
+    await reloadSelectedTab();
   }
   await wait;
 }

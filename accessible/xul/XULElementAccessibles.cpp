@@ -42,11 +42,10 @@ void XULLabelAccessible::Shutdown() {
   HyperTextAccessible::Shutdown();
 }
 
-void XULLabelAccessible::DispatchClickEvent(nsIContent* aContent,
-                                            uint32_t aActionIndex) const {
+void XULLabelAccessible::DispatchClickEvent(uint32_t aActionIndex) const {
   // Bug 1578140: For labels inside buttons, The base implementation of
   // DispatchClickEvent doesn't fire a command event on the button.
-  RefPtr<nsXULElement> el = nsXULElement::FromNodeOrNull(aContent);
+  RefPtr<nsXULElement> el = nsXULElement::FromNodeOrNull(mContent);
   if (el) {
     el->Click(mozilla::dom::CallerType::System);
   }
@@ -147,10 +146,7 @@ void XULLinkAccessible::Value(nsString& aValue) const {
 
 ENameValueFlag XULLinkAccessible::NativeName(nsString& aName) const {
   mContent->AsElement()->GetAttr(nsGkAtoms::value, aName);
-  if (!aName.IsEmpty()) return eNameOK;
-
-  nsTextEquivUtils::GetNameFromSubtree(this, aName);
-  return aName.IsEmpty() ? eNameOK : eNameFromSubtree;
+  return eNameOK;
 }
 
 role XULLinkAccessible::NativeRole() const { return roles::LINK; }

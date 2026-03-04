@@ -25,6 +25,8 @@ return-to-amo-subtitle = Super, imaš { -brand-short-name }
 return-to-amo-addon-title = Sada instalirajmo <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Dodaj proširenje
 return-to-amo-add-theme-label = Dodaj temu
+return-to-amo-theme-install-complete-label = Tema je instalirana
+return-to-amo-extension-install-complete-label = Proširenje je instalirano
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -51,11 +53,8 @@ mr1-onboarding-sign-in-button-label = Prijavi se
 #   $previous (Str) - Previous browser name, such as Edge, Chrome
 mr1-onboarding-import-primary-button-label-attribution = Uvezi iz { $previous }
 mr1-onboarding-theme-header = Učini ga svojim
-mr1-onboarding-theme-subtitle = Personaliziraj { -brand-short-name } temom.
+mr1-onboarding-theme-subtitle = Prilagodi { -brand-short-name } s temom.
 mr1-onboarding-theme-secondary-button-label = Ne sada
-newtab-wallpaper-onboarding-title = Dodaj nešto boje
-newtab-wallpaper-onboarding-subtitle = Odaberi sliku pozadinu kako bi tvoja nova kartica dobila svjež izgled.
-newtab-wallpaper-onboarding-primary-button-label = Postavi sliku pozadine
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema sustava
 mr1-onboarding-theme-label-light = Svijetla
@@ -154,7 +153,7 @@ fx100-thank-you-hero-text =
 fx100-thank-you-subtitle = To je naše 100. izdanje! Hvala što nam pomažeš izgraditi bolji i zdraviji internet.
 fx100-thank-you-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] Ostavi { -brand-short-name } u Docku
+        [macos] Dodaj { -brand-short-name } u Dock
        *[other] Prikvači { -brand-short-name } na programsku traku
     }
 fx100-upgrade-thanks-header = 100 puta hvala
@@ -186,7 +185,7 @@ mr2022-onboarding-welcome-pin-subtitle = Pokreni { -brand-short-name } s bilo ko
 # Primary button string used on welcome page for when Firefox is not pinned.
 mr2022-onboarding-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] Ostavi { -brand-short-name } u Docku
+        [macos] Dodaj { -brand-short-name } u Dock
        *[other] Prikvači { -brand-short-name } na programsku traku
     }
 # Primary button string used on welcome page for when Firefox is not pinned on MSIX
@@ -200,12 +199,12 @@ mr2022-onboarding-set-default-only-subtitle = Započni s preglednikom koji podr�
 ## MR2022 Existing User Pin Firefox Screen Strings
 
 # Title used on multistage onboarding page for existing users when Firefox is not pinned
-mr2022-onboarding-existing-pin-header = Hvala vam što volite { -brand-product-name }
+mr2022-onboarding-existing-pin-header = Hvala ti što voliš { -brand-product-name }
 # Subtitle is used on onboarding page for existing users when Firefox is not pinned
-mr2022-onboarding-existing-pin-subtitle = Pokrenite zdraviji Internet s bilo kojeg mjesta jednim klikom. Naše najnovije ažuriranje prepuno je novih stvari za koje mislimo da ćete ih obožavati.
+mr2022-onboarding-existing-pin-subtitle = Pokreni zdraviji internet s bilo kojeg mjesta jednim klikom. Naša najnovija izdanja su prepuna novih stvari za koje mislimo da ćeš ih obožavati.
 # Subtitle will be used on the welcome screen for existing users
 # when they already have Firefox pinned but not set as default
-mr2022-onboarding-existing-set-default-only-subtitle = Koristite preglednik koji štiti vašu privatnost dok jurite po webu. Naše najnovije ažuriranje prepuno je stvari koje ćete obožavati.
+mr2022-onboarding-existing-set-default-only-subtitle = Koristi preglednik koji štiti tvoju privatnost dok pregledavaš web. Naše najnovije izdanje je prepuno stvari koje ćeš obožavati.
 mr2022-onboarding-existing-pin-checkbox-label = Također dodajte { -brand-short-name } privatno pregledavanje
 
 ## MR2022 New User Set Default screen strings
@@ -226,10 +225,12 @@ mr2022-onboarding-set-default-subtitle = Koristite preglednik koji podržava nep
 mr2022-onboarding-get-started-primary-subtitle = Naša najnovija verzija je izgrađena oko tebe, što više nego ikad olakšava kretanje po webu. Prepun je funkcija za koje mislimo da ćeš ih obožavati.
 mr2022-onboarding-get-started-primary-button-label = Postavi u tren oka
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Super brzo postavljanje
-mr2022-onboarding-import-subtitle = Postavi { -brand-short-name } kako te se sviđa. Dodaj oznake, lozinke i još mnogo toga iz svog starog preglednika.
+mr2022-onboarding-import-subtitle = Postavi { -brand-short-name } kako ti se sviđa. Dodaj zabilješke, lozinke i još mnogo toga iz svog starog preglednika.
 mr2022-onboarding-import-primary-button-label-no-attribution = Uvezi iz prethodnog preglednika
 
 ## If your language uses grammatical genders, in the description for the
@@ -240,7 +241,7 @@ mr2022-onboarding-import-primary-button-label-no-attribution = Uvezi iz prethodn
 mr2022-onboarding-colorway-title = Odaberi boju koja te inspirira
 mr2022-onboarding-colorway-subtitle = Neovisni glasovi mogu promijeniti kulturu.
 mr2022-onboarding-colorway-primary-button-label-continue = Postavi i nastavi
-mr2022-onboarding-existing-colorway-checkbox-label = Postavi „{ -firefox-home-brand-name }” kao tvoju šarenu početnu web stranicu
+mr2022-onboarding-existing-colorway-checkbox-label = Postavi „{ -firefox-home-brand-name }” kao tvoju šarenu početnu web-stranicu
 mr2022-onboarding-colorway-label-default = Standardno
 mr2022-onboarding-colorway-tooltip-default2 =
     .title = Aktualne { -brand-short-name } boje
@@ -273,7 +274,7 @@ mr2022-onboarding-colorway-description-innovator = <b>Ti si inovator.</b> Posvud
 ## MR2022 Multistage Mobile Download screen strings
 
 mr2022-onboarding-mobile-download-title = Prebaci se s prijenosnog računala na mobitel i natrag
-mr2022-onboarding-mobile-download-subtitle = Ugrabi kartice s jednog uređaja i nastavi tamo gdje si stao/la na drugom. Osim toga, sinkroniziraj zabilješke i lozinke gdje god koristiš { -brand-product-name }.
+mr2022-onboarding-mobile-download-subtitle = Ugrabi kartice s jednog uređaja i nastavi tamo gdje si stao/la na drugom uređaju. Osim toga, sinkroniziraj zabilješke i lozinke gdje god koristiš { -brand-product-name }.
 mr2022-onboarding-mobile-download-cta-text = Snimi QR kod za preuzimanje { -brand-product-name } za mobilni uređaj ili si <a data-l10n-name="download-label">pošalji poveznicu za preuzimanje.</a>
 mr2022-onboarding-no-mobile-download-cta-text = Snimi QR kod za preuzimanje { -brand-product-name } za mobilni uređaj.
 
@@ -284,14 +285,14 @@ mr2022-upgrade-onboarding-pin-private-window-header = Dobij slobodu privatnog pr
 mr2022-upgrade-onboarding-pin-private-window-subtitle = Bez spremljenih kolačića ili povijesti, izravno s tvoje radne površine. Pregledavaj kao da nitko ne gleda.
 mr2022-upgrade-onboarding-pin-private-window-primary-button-label =
     { PLATFORM() ->
-        [macos] Drži { -brand-short-name } privatno pregledavanje u Docku
-       *[other] Prikvači { -brand-short-name } privatno pregledavanje u programsku traku
+        [macos] Dodaj { -brand-short-name } privatno pregledavanje u Dock
+       *[other] Prikvači { -brand-short-name } privatno pregledavanje na programsku traku
     }
 
 ## MR2022 Privacy Segmentation screen strings
 
 mr2022-onboarding-privacy-segmentation-title = Uvijek poštujemo tvoju privatnost
-mr2022-onboarding-privacy-segmentation-subtitle = Od inteligentnih prijedloga do pametnijeg pretraživanja, neprestano radimo na stvaranju boljeg, osobnijeg { -brand-product-name }.
+mr2022-onboarding-privacy-segmentation-subtitle = Od inteligentnih prijedloga do pametnijeg pretraživanja, neprestano radimo na stvaranju boljeg, osobnijeg { -brand-product-name }a.
 mr2022-onboarding-privacy-segmentation-text-cta = Što želiš vidjeti kada ponudimo nove funkcije koje koriste tvoje podatke za poboljšanje pregledavanja?
 mr2022-onboarding-privacy-segmentation-button-primary-label = Koristi { -brand-product-name } preporuke
 mr2022-onboarding-privacy-segmentation-button-secondary-label = Prikaži detaljne informacije
@@ -319,7 +320,7 @@ mr2022-onboarding-default-image-alt =
 mr2022-onboarding-import-image-alt =
     .aria-label = Osoba koja vozi skateboard s kutijom softverskih ikona
 mr2022-onboarding-mobile-download-image-alt =
-    .aria-label = Žabe koje skaču po ljiljanima s QR kodom za preuzimanje { -brand-product-name } za mobitel u centru
+    .aria-label = Žabe koje skaču po ljiljanima s QR kodom za preuzimanje { -brand-product-name }a za mobilne uređaje u centru
 mr2022-onboarding-pin-private-image-alt =
     .aria-label = Čarobni štapić prikazuje { -brand-product-name } logotip privatnog pregledavanja iz šešira
 mr2022-onboarding-privacy-segmentation-image-alt =
@@ -334,7 +335,7 @@ mr2022-onboarding-colorways-image-alt =
 onboarding-device-migration-image-alt =
     .aria-label = Lisica na ekranu prijenosnog računala maše. Prijenosno računalo ima priključen miš.
 onboarding-device-migration-title = Dobro došli natrag!
-onboarding-device-migration-subtitle = Prijavite se u svoj { -fxaccount-brand-name(capitalization: "sentence") } kako biste prenijeli zabilješke, lozinke i povijest na svoj novi uređaj.
+onboarding-device-migration-subtitle = Prijavi se na tvoj { -fxaccount-brand-name(capitalization: "sentence") } za prijenos zabilješki, lozinki i povijesti na tvoj novi uređaj.
 onboarding-device-migration-subtitle2 = Prijavite se u svoj račun kako biste prenijeli zabilješke, lozinke i povijest na svoj novi uređaj.
 onboarding-device-migration-primary-button-label = Prijava
 
@@ -355,14 +356,19 @@ onboarding-easy-setup-security-and-privacy-subtitle = Naš neprofitni preglednik
 onboarding-mobile-download-security-and-privacy-title = Ostanite zaštićeni kada prenosite podatke između uređaja
 onboarding-mobile-download-security-and-privacy-subtitle = Kada ste sinkronizirani, { -brand-short-name } šifrira vaše lozinke, zabilješke i još mnogo toga. Osim toga, možete preuzeti kartice sa svojih drugih uređaja.
 # Gratitude screen
-onboarding-gratitude-security-and-privacy-title = { -brand-short-name } vam čuva leđa
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } te štiti
 onboarding-gratitude-security-and-privacy-subtitle = Hvala što koristiš { -brand-short-name } kojeg podupire Mozilla zaklada. Uz tvoju podršku, radimo na tome da učinimo Internet sigurnijim i dostupnijim za sve.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sinkroniziraj svoje podatke na svim uređajima
+onboarding-sign-up-description = Registriraj se i sve tvoji važni podaci – lozinke, oznake i više – će se sigurno spremiti i biti dostupni kada se prijaviš na bilo koji uređaj.
+onboarding-sign-up-button = Registriraj se ili se prijavi
+onboarding-sign-up-secondary-button = Počni pregledavati
 
 ## New user time and familiarity survey strings
 
-onboarding-new-user-time-based-survey-title = Koliko dugo koristite { -brand-short-name }?
-onboarding-new-user-familiarity-based-survey-title = Koliko ste upoznati s { -brand-short-name }?
-onboarding-new-user-survey-subtitle = Vaše povratne informacije pomažu nam da { -brand-short-name } postane još bolji.
+onboarding-new-user-time-based-survey-title = Kako dugo koristiš { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Kako dobro poznaš { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Tvoje povratne informacije pomažu poboljšati { -brand-short-name }.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Dalje
 onboarding-new-user-survey-legal-link-label = Odabirom „{ onboarding-new-user-survey-next-button-label }” prihvaćaš { -brand-product-name }<a data-l10n-name="privacy_notice">napomene o privatnosti</a>
@@ -376,3 +382,191 @@ onboarding-new-user-survey-familiarity-based-option-1 = Ja sam potpuno novi kori
 onboarding-new-user-survey-familiarity-based-option-2 = Koristio sam ga par puta
 onboarding-new-user-survey-familiarity-based-option-3 = Poznam ga vrlo dobro
 onboarding-new-user-survey-familiarity-based-option-4 = Koristio/la sam ga u prošlosti, ali je prošlo dosta vremena
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Reci nam gdje želiš prikazati kartice
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Promijeni položaj kad god želiš u postavkama bočne trake.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Tvoje kartice na tvoj način
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Imaš puno otvorenih kartica? Isprobaj prikaz kartica na strani. Ili ostavi klasični prikaz kartica u gornjem dijelu prozora. Promijeni bilo kada.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Odaberi raspored kartica
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Isprobaj prikaz kartica na strani. Ili ostavi klasični prikaz kartica u gornjem dijelu prozora. Promijeni bilo kada.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Kartice na strani
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Kartice gore
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Sada postoje okomito poredane kartice
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Predstavljamo okomite kartice
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Isprobaj kartice na strani. Promijeni kad god želiš u postavkama bočne trake.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Isprobaj okomite kartice
+onboarding-flair-text = Novo!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Zadrži vodoravne kartice
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Prozor preglednika koji prikazuje kartice uzduž ruba ekrana kao dio bočne trake { -brand-shorter-name(case: "gen") }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Prozor preglednika koji prikazuje kartice uzduž ruba ekrana kao dio bočne trake { -brand-shorter-name(case: "gen") }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Prozor preglednika koji prikazuje kartice u gornjem rubu.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Prozor preglednika koji prikazuje kartice u gornjem rubu.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Isprobaj UI chatbot u bočnoj traci
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Sažmi web sadržaj, sakupljaj ideje, izradi predloške za poruke – sve to dok pregledavaš. Biraj između više usluga. Promijeni bilo kada. <a data-l10n-name="learn-more">Saznaj više</a>
+onboarding-genai-sidebar-primary-button = Odaberi chatbot
+onboarding-genai-sidebar-secondary-button = Počni pregledavati
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Završi postavljanje { -brand-short-name(case: "gen") }
+onboarding-checklist-subtitle = Dovrši ove korake za što bolje pregledavanje.
+onboarding-checklist-set-default = Postavi { -brand-short-name } kao standardni preglednik
+onboarding-checklist-pin = Prikvači { -brand-short-name } na programsku traku
+onboarding-checklist-import = Uvezi iz prethodnog preglednika
+onboarding-checklist-extension = Dodaj proširenje
+onboarding-checklist-sign-up = Registriraj se ili se prijavi na svoj račun
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Isprobaj grupe kartica za manje nereda, bolje fokusiranje
+tab-groups-onboarding-feature-callout-subtitle = Uredi popis kartica povlačenjem jedne kartice na drugu za stvaranje tvoje prve grupe.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Grupe kartica možete pronaći u izborniku Popis svih kartica u bilo kojem trenutku.
+tab-groups-onboarding-create-group-title-2 = Pronađi svoje grupe kartica u bilo kojem trenutku.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Pronađi svoje grupe pretraživanjem u adresnoj traci.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Kada zatvorite grupu kartica, možete ju ponovno otvoriti iz izbornika Popis svih kartica u bilo kojem trenutku.
+tab-groups-onboarding-saved-groups-title-2 = Kada zatvoriš grupu kartica, ovdje je možeš ponovo otvoriti u bilo kojem trenutku.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Pronađi svoje zatvorene grupe pretraživanjem u adresnoj traci.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Grupe kartica možete ponovno otvoriti iz izbornika Popis svih kartica u bilo kojem trenutku.
+tab-groups-onboarding-session-restore-title = Ponovo otvori svoje grupe kartica u bilo kojem trenutku.
+tab-groups-onboarding-dismiss = U redu
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Upoznaj { -brand-product-name } profile
+multi-profile-spotlight-body = Jednostavno promijeni način pregledavanja između posla i zabave. Profili čuvaju podatke o pregledavanju, uključujući povijest pretraživanja i lozinke odvojeno.
+multi-profile-spotlight-cta = Stvori profil
+multi-profile-callout-title = Stvori različite profile za posao i zabavu
+multi-profile-callout-subtitle = Profili omogućuju odvojiti podatke o pregledavanju, poput povijesti pretraživanja i lozinki.
+multi-profile-callout-cta = Stvori profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Preuzmi, sinkroniziraj i kreni!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Snimi QR kod za preuzimanje { -brand-product-name }a za mobilne uređaje. Nakon instalacije odaberi „Sinkroniziraj s mobilnim uređajem” za pristup lozinkama, zabilješkama i još mnogo toga gdje god se nalaziš.
+dismiss-button-label = Odbaci
+sync-to-mobile-button-label = Sinkroniziraj s mobilnim uređajem
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR kod za preuzimanje { -brand-product-name }a za mobilne uređaje
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Nadograđuješ na Windows 11?
+    Sigurnosno kopirajmo tvoje { -brand-product-name } podatke.
+create-backup-screen-1-subtitle = Automatski zaštiti svoje lozinke, zabilješke i još više u roku od jedne do dvije minute.
+create-backup-screen-1-flair = Preporučeno
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Saznaj više</a>
+create-backup-screen-1-sync-label = Koristi { -brand-product-name } za sinkronizaciju
+create-backup-screen-1-sync-body = Sigurnosno kopira sve prijavljene uređaje
+create-backup-screen-1-backup-label = Sigurnosno kopiraj na računalo
+create-backup-screen-1-backup-body = Sprema na tvoj uređaj ili na OneDrive
+create-backup-select-tile-button-label = Odaberi
+create-backup-back-button-label = Natrag
+create-backup-show-fewer =
+    .label = Prikaži manje ovakvih poruka
+create-backup-screen-2-title = Odaberi { -brand-product-name } podatke za sigurnosno kopiranje
+create-backup-screen-2-subtitle = Traje samo minutu. Tvoji se podaci sigurnosno kopiraju jednom dnevno.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Jednostavno postavljanje
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Zabilješke, povijest, postavke i još više
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Ne uključuje lozinke i načine plaćanja
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Nije šifrirano
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Svi podaci
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Uključuje lozinke i načine plaćanja
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Šifrirano s lozinkom
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Gdje želiš spremiti svoju sigurnosnu kopiju?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Stvori lozinku za datoteku sigurnosne kopije
+create-backup-screen-3-subtitle = Zahtijava da šifriraš podatke. Spremi ih na mjestu koje ćeš upamtiti.
+fx-backup-opt-in-header = Odaberi mjesto datoteke
+fx-backup-opt-in-filepath-label = Odaberi mjesto koje ćeš prenijeti na novi uređaj, poput OneDrivea.
+fx-backup-opt-in-create-password-label = Upiši lozinku
+fx-backup-opt-in-confirm-btn-label = Nastavi
+fx-backup-opt-in-cancel-btn-label = Natrag
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Tvoja je sigurnosna kopija zakazana
+fx-backup-confirmation-screen-close-button = Zatvori
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Uključeni su svi podaci pregledavanja
+fx-backup-confirmation-screen-all-data-item-text-2 = Spremljeno na tvoj uređaj
+fx-backup-confirmation-screen-all-data-item-text-3 = Šifrirano i zaštićeno lozinkom
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Uključene su zabilješke, povijest, postavke i drugi podaci
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Spremljeno na tvoj uređaj
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Lozinke i načini plaćanja nisu uključeni
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Idi na <a data-l10n-name="settings">Postavke</a> za uključivanje osjetljivih podataka.
+fx-backup-confirmation-screen-item-subtext-1 = Sigurnosno kopiranje će započeti za nekoliko minuta i pokretat će se jednom dnevno. Napredak možeš provjeriti u <a data-l10n-name="settings">Postavkama</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } će potražiti tvoju sigurnosnu kopiju, ako moraš ponovo instalirati.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Obnovi iz sigurnosne kopije
+restore-from-backup-title = Vratimo { -brand-short-name } kako se tebi sviđa
+restore-from-backup-subtitle = Obnovi sve svoje zabilješke, povijest i ostale podatke i nastavi pregledavati.
+restore-from-backup-secondary-button = Nemoj obnoviti
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Vratili smo se! { -brand-short-name } podaci su obnovljeni.
+restored-from-backup-success-with-checklist-subtitle = Želiš zadržati tvoj omiljen privatni preglednik nadohvat ruke?
+restored-from-backup-success-no-checklist-subtitle = Sigurnosno kopiranje za ovaj uređaj možeš uključiti u <a data-l10n-name="settings">Postavkama</a>.
+restored-from-backup-success-with-checklist-primary-button = Spremi i nastavi
+restored-from-backup-success-with-checklist-secondary-button = Preskoči ovaj korak
+restored-from-backup-success-no-checklist-primary-button = Nastavi
+restored-from-backup-error-title = Hmm, došlo je do problema s tvojom datotekom sigurnosne kopije.
+restored-from-backup-error-subtitle = Ako imaš neku drugu { -brand-short-name } datoteku sigurnosne kopije, pokušaj obnoviti podatke iz nje. <a data-l10n-name="restore-problems">Još uvijek imaš probleme?</a>
+restored-from-backup-error-primary-button = Zatvori
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Prilagodi svoje { -brand-short-name } iskustvo
+onboarding-personalization-subtitle = Odgovori na nekoliko pitanja i predložit ćemo ti funkcije i proširenja koja će poboljšati tvoje korištenje preglednika { -brand-short-name }.
+onboarding-personalization-use-case-title = Za što ćeš koristiti { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Osobno
+onboarding-personalization-use-case-school-option = Škola
+onboarding-personalization-use-case-work-option = Posao
+onboarding-personalization-motivation-title = Koje { -brand-short-name } funkcije su ti najvažnije?
+onboarding-personalization-motivation-privacy-option = Privatnost i sigurnost
+onboarding-personalization-motivation-productivity-option = Produktivnost
+onboarding-personalization-motivation-other-option = Drugo

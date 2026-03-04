@@ -1,5 +1,5 @@
 // META: title=validation tests for WebNN API element-wise unary operations
-// META: global=window,dedicatedworker
+// META: global=window
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -9,7 +9,7 @@
 
 const kElementwiseUnaryOperators = [
   'abs', 'ceil', 'cos', 'erf', 'exp', 'floor', 'identity', 'log', 'neg',
-  'reciprocal', 'sign', 'sin', 'sqrt', 'tan'
+  'reciprocal', 'roundEven', 'sign', 'sin', 'sqrt', 'tan'
 ];
 
 kElementwiseUnaryOperators.forEach((operatorName) => {

@@ -14,7 +14,13 @@ about-glean-header = Дар бораи { -glean-brand-name }
 about-glean-interface-description =
     «<a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>»
     китобхонаи ҷамъоварии маълумотест, ки дар лоиҳаҳои «{ -vendor-short-name }» истифода мешавад.
-    Интерфейси мазкур барои таҳиягарон ва озмоишгарон барномарезӣ шудааст, то ки онҳо барои ба таври дастӣ <a data-l10n-name="fog-link">санҷидани абзорҳо</a> аз он истифода баранд.
+    Интерфейси мазкур барои таҳиягарон ва озмоишгарон барномарезӣ шудааст, то ки онҳо тавонанд барои ба таври дастӣ <a data-l10n-name="fog-link">санҷидани абзорҳо</a> аз он истифода баранд.
+about-glean-category-about-glean = Дар бораи «{ -glean-brand-name }»
+about-glean-category-manual-testing = Санҷиши дастӣ
+about-glean-category-adhoc-testing = Санҷиши махсус
+about-glean-category-profiler = Истифодаи профилсоз
+about-glean-category-about-data = Дар бораи «Маълумот»
+about-glean-category-metrics-table = Ҷадвали нишондиҳандаҳо
 about-glean-upload-enabled = Боркунии маълумот фаъол аст.
 about-glean-upload-disabled = Боркунии маълумот ғайрифаъол аст.
 about-glean-upload-enabled-local = Боркунии маълумот танҳо барои интиқол ба сервери маҳаллӣ фаъол аст.
@@ -41,6 +47,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Барои гирифтани машварати муфассал дар бораи роҳҳои гуногун ҷиҳати сабт ё пайдо кардани маълумот, лутфан, ба варақаи
+    <strong>«Дар бораи маълумот»</strong> муроҷиат намоед.
 about-glean-about-testing-header = Дар бораи «Санҷиш»
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -82,6 +91,102 @@ about-glean-adhoc-note =
     Лутфан, таваҷҷуҳ намоед, ки шумо аз «Glean JS API» тавассути консоли «devtools» истифода мебаред.
     Ин маънои онро дорад, ки категорияи андозагирӣ ва номи андозагирӣ дар
     <code>camelCase</code> бар хилофи «API»-ҳои «Rust» ва «C++»  шаклбандӣ карда шудааст.
+about-glean-profiler-explanation =
+    Барои дидани шакли пурраи ҳамаи нишондиҳандаҳои сабтшуда, шумо метавонед аз «{ -profiler-brand-name }» истифода баред.
+    Аввал шумо бояд <a data-l10n-name="firefox-profiler-link">профили самаранокиро сабт кунед</a>.
+    Пас аз сабт кардани профил, <q>«Диаграммаи маркерҳо»</q>-ро интихоб кунед ва ба маркерҳо дар зери <q>«Телеметрия»</q> нигаред.
+about-glean-profiler-explanation-profiler =
+    Дар профили самаранокӣ шумо метавонед ҳамаи нишондиҳандаҳои ҷамъшударо, аз он ҷумла, санаи ҷамъоварӣ ва қиматҳои ҳақиқии ҷамъшуда, аз назар гузаронед. Вақте ки шумо ба маркерҳо курсори мушро алоҳида равона мекунед,
+    шумо метавонед тафтиш кунед, ки қимати дуруст ҷамъоварӣ шудааст ва ин ҷамъоварӣ дар вақти лозима рӯй додааст.
 controls-button-label-verbose = Татбиқ кардани танзимот ва фиристодани пинг
+about-glean-feedback-settings-only =
+    .message = Танзимот татбиқ карда шуд!
+about-glean-feedback-settings-and-ping =
+    .message = Танзимот татбиқ карда шуд ва дархост фиристода шуд!
 about-glean-about-data-header = Дар бораи «Маълумот»
+about-glean-about-data-description = Якчанд абзори гуногун мавҷуданд, ки шумо метавонед барои дидани маълумоти шахсии худ, вобаста аз он, ки шумо чиро ҷустуҷӯ мекунед, истифода баред.
+about-glean-about-data-description-list-intro =
+    Лутфан, барои истифода кардан аз ҳар як абзори мушаххас
+    ба рӯйхати дар поён овардашуда муроҷиат кунед:
+about-glean-about-data-list-item-dictionary =
+    Барои дидани маълумоти ҷамъшуда аз ҷониби «{ -glean-brand-name }» дар ҳар як барнома, лутфан, ба
+    <a data-l10n-name="glean-dictionary-link">Луғати «{ -glean-brand-name }»</a> муроҷиат кунед.
+about-glean-about-data-list-item-about-telemetry =
+    Барои дидани маълумоти ҷамъшуда аз тарафи телеметрияи соқит, лутфан, ба
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a> муроҷиат кунед.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Барои дидани барчаспҳои ислоҳи хатоҳо, дидани пингҳои пурра, дидани ҷараёнҳои рӯйдодҳои 
+    зинда ё дидани нишондиҳандаҳои намоишӣ, лутфан, ба 
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a> муроҷиат кунед.
+about-glean-about-data-list-item-firefox-profiler = Барои сабт кардани профили самаранокӣ ва дидани ҳамаи нишондиҳандаҳои сабтшуда, лутфан, аз <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a> истифода баред.
+about-glean-metrics-table-header = Ҳамаи нишондиҳандаҳо
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Категория
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Ном
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Навъ
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Қимат
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Амалҳо
+about-glean-metrics-table-settings-button = Танзимот
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Танзимоти ҷадвали меъёрҳо
+about-glean-metrics-table-settings-category-general = Умумӣ
+about-glean-metrics-table-settings-hide-empty-value-rows = Пинҳон кардани сатрҳо бо қиматҳои холӣ
+about-glean-metrics-table-settings-category-visualizations = Намудорсозӣ
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Мисол
+about-glean-metrics-table-settings-category-visualizations-histogram = Гистограмма
+about-glean-metrics-table-settings-histograms-chart-max = Баландии ҳадди аксар барои диаграмма
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Баландии ҳадди аксар барои миқёс
+about-glean-metrics-table-settings-histograms-box-padding = Фосиласозии қуттӣ
+about-glean-metrics-table-settings-histograms-chart-padding = Фосиласозии диаграмма
+about-glean-metrics-table-settings-histograms-left-padding = Фосиласозии иловагӣ аз тарафи чап
+about-glean-metrics-table-settings-category-visualizations-timeline = Хати вақт
+about-glean-metrics-table-settings-timelines-height = Баландӣ
+about-glean-metrics-table-settings-timelines-width = Васеӣ
+about-glean-metrics-table-settings-timelines-chart-padding = Фосиласозии диаграмма
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Радиуси доира
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Инҳирофи ҷойгиршавии меҳвари Y аз X
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Инҳирофи ҷойгиршавии меҳвари Y аз Y
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Поло
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Ин амал нишондиҳандаҳои ҷадвали зеринро аз рӯйи категория, ном, навъ ва қимат поло мекунад (агар қимат навъи оддӣ бошад).
+about-glean-button-load-all = Бор кардани ҳамаи қиматҳо
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Содир кардани маълумот
+about-glean-button-load-value = Бор кардан
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Ҳуҷҷатҳо
+about-glean-button-watch = Назорат кардан
+# Meaning "to stop watching"
+about-glean-button-unwatch = Бекор кардани назорат
+about-glean-no-data-to-display = Ягон маълумот барои намоиш нест.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Нишондиҳандаҳои <code>DualLabeledCounter</code> ҳоло дар намуди <code>about:glean</code> дастгирӣ карда намешаванд.
+about-glean-unknown-metric-type-warning = Навъи нишондиҳандаҳои номаълум.
+about-glean-enable-new-features-promo =
+    .message = Мо барои илова кардани хусусиятҳои нав кор карда истодаем! Онҳо ҳоло ҳам дар вазъи таҳияи фаъол қарор доранд, аммо агар шумо хоҳед, ки онҳоро фаъол созед, тугмаи амалро дар ин ҷой зер кунед.
+    .heading = Хусусиятҳои нав ба наздикӣ дастрас мешаванд!
+about-glean-enable-new-features-button = Фаъол кардани хусусиятҳои нав
+about-glean-disable-new-features-button = Ғайрифаъол кардани хусусиятҳои нав
 about-glean-about-data-explanation = Барои дидани маълумоти ҷамъшуда, лутфан, ба <a data-l10n-name="glean-dictionary-link">Луғати «{ -glean-brand-name }»</a> муроҷиат кунед.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Пингҳои дарунсохт
+about-glean-ping-list-optgroup-custom =
+    .label = Пингҳои фармоишӣ

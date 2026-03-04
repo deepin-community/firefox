@@ -16,10 +16,7 @@
 
 const TP_PREF = "privacy.trackingprotection.enabled";
 const TP_PB_PREF = "privacy.trackingprotection.pbmode.enabled";
-const APS_PREF =
-  "privacy.partition.always_partition_third_party_non_cookie_storage";
 const TPC_PREF = "network.cookie.cookieBehavior";
-const DTSCBN_PREF = "dom.testing.sync-content-blocking-notifications";
 const BENIGN_PAGE =
   // eslint-disable-next-line @microsoft/sdl/no-insecure-url
   "http://tracking.example.org/browser/browser/base/content/test/protectionsUI/benignPage.html";
@@ -45,7 +42,6 @@ registerCleanupFunction(function () {
   Services.prefs.clearUserPref(TP_PREF);
   Services.prefs.clearUserPref(TP_PB_PREF);
   Services.prefs.clearUserPref(TPC_PREF);
-  Services.prefs.clearUserPref(DTSCBN_PREF);
 });
 
 function notFound(id) {
@@ -239,30 +235,46 @@ async function testContentBlocking(tab) {
   info("Testing with Tracking Protection ENABLED.");
 
   info("Load a test page not containing tracking elements");
-  await promiseTabLoadEvent(tab, BENIGN_PAGE);
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: BENIGN_PAGE,
+  });
   await testBenignPage();
 
   info(
     "Load a test page not containing tracking elements which has an exception."
   );
 
-  await promiseTabLoadEvent(tab, "https://example.org/?round=1");
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: "https://example.org/?round=1",
+  });
 
   ContentBlockingAllowList.add(tab.linkedBrowser);
   // Load another page from the same origin to ensure there is an onlocationchange
   // notification which would trigger an oncontentblocking notification for us.
-  await promiseTabLoadEvent(tab, "https://example.org/?round=2");
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: "https://example.org/?round=2",
+  });
 
   await testBenignPageWithException();
 
   ContentBlockingAllowList.remove(tab.linkedBrowser);
 
   info("Load a test page containing tracking elements");
-  await promiseTabLoadEvent(tab, gTrackingPageURL);
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: gTrackingPageURL,
+  });
   await testTrackingPage(tab.ownerGlobal);
 
   info("Disable CB for the page (which reloads the page)");
-  let tabReloadPromise = promiseTabLoadEvent(tab);
+  let reloadURI = tab.linkedBrowser.currentURI.spec;
+  let tabReloadPromise = BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: reloadURI,
+  });
   tab.ownerGlobal.gProtectionsHandler.disableForCurrentPage();
   await tabReloadPromise;
   let isPrivateBrowsing = PrivateBrowsingUtils.isWindowPrivate(tab.ownerGlobal);
@@ -270,18 +282,18 @@ async function testContentBlocking(tab) {
   await testTrackingPageUnblocked(blockedByTP, tab.ownerGlobal);
 
   info("Re-enable TP for the page (which reloads the page)");
-  tabReloadPromise = promiseTabLoadEvent(tab);
+  reloadURI = tab.linkedBrowser.currentURI.spec;
+  tabReloadPromise = BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: reloadURI,
+  });
   tab.ownerGlobal.gProtectionsHandler.enableForCurrentPage();
   await tabReloadPromise;
   await testTrackingPage(tab.ownerGlobal);
 }
 
 add_task(async function testNormalBrowsing() {
-  await SpecialPowers.pushPrefEnv({ set: [[APS_PREF, false]] });
-
   await UrlClassifierTestUtils.addTestTrackers();
-
-  Services.prefs.setBoolPref(DTSCBN_PREF, true);
 
   tabbrowser = gBrowser;
   let tab = (tabbrowser.selectedTab = BrowserTestUtils.addTab(tabbrowser));
@@ -317,10 +329,7 @@ add_task(async function testNormalBrowsing() {
 
 add_task(async function testPrivateBrowsing() {
   await SpecialPowers.pushPrefEnv({
-    set: [
-      ["dom.security.https_first_pbm", false],
-      [APS_PREF, false],
-    ],
+    set: [["dom.security.https_first_pbm", false]],
   });
   let privateWin = await BrowserTestUtils.openNewBrowserWindow({
     private: true,
@@ -362,8 +371,6 @@ add_task(async function testPrivateBrowsing() {
 
 add_task(async function testThirdPartyCookies() {
   requestLongerTimeout(3);
-
-  await SpecialPowers.pushPrefEnv({ set: [[APS_PREF, false]] });
 
   await UrlClassifierTestUtils.addTestTrackers();
   gTrackingPageURL = COOKIE_PAGE;

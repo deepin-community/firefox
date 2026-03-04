@@ -57,6 +57,13 @@ class DefaultTopSitesStorage(
         }
     }
 
+    override fun addTopSites(topSites: List<Pair<String, String>>, isDefault: Boolean) {
+        scope.launch {
+            pinnedSitesStorage.addAllPinnedSites(topSites = topSites, isDefault = isDefault)
+            notifyObservers { onStorageUpdated() }
+        }
+    }
+
     override fun removeTopSite(topSite: TopSite) {
         scope.launch {
             if (topSite is TopSite.Default || topSite is TopSite.Pinned) {
@@ -94,7 +101,8 @@ class DefaultTopSitesStorage(
         var providerTopSites = emptyList<TopSite>()
         var numSitesRequired = totalSites - pinnedSites.size
 
-        if (topSitesProvider != null &&
+        if (numSitesRequired > 0 &&
+            topSitesProvider != null &&
             providerConfig != null &&
             providerConfig.showProviderTopSites &&
             pinnedSites.size < providerConfig.maxThreshold
@@ -103,8 +111,14 @@ class DefaultTopSitesStorage(
                 providerTopSites = topSitesProvider
                     .getTopSites(allowCache = true)
                     .filter { providerConfig.providerFilter?.invoke(it) ?: true }
-                    .take(numSitesRequired)
+                    // The total amount of pinned and provider top sites that are returned in
+                    // `topSites` should not exceed the `providerConfig.maxThreshold`.
+                    // To maintain this constraint, first determine the amount of provider top
+                    // sites that can be taken from the available pool provider top sites, and
+                    // then ensure the number of provider top sites added does not exceed the
+                    // `limit`.
                     .take(providerConfig.maxThreshold - pinnedSites.size)
+                    .take(providerConfig.limit)
                 topSites.addAll(providerTopSites)
                 numSitesRequired -= providerTopSites.size
             } catch (e: Exception) {

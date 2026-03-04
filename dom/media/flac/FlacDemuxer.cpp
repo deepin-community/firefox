@@ -6,14 +6,13 @@
 
 #include "FlacDemuxer.h"
 
-#include "mozilla/Maybe.h"
 #include "BitReader.h"
-#include "prenv.h"
 #include "FlacFrameParser.h"
-#include "VideoUtils.h"
 #include "TimeUnits.h"
+#include "VideoUtils.h"
+#include "mozilla/Maybe.h"
+#include "prenv.h"
 
-extern mozilla::LazyLogModule gMediaDemuxerLog;
 #define LOG(msg, ...) \
   DDMOZ_LOG(gMediaDemuxerLog, LogLevel::Debug, msg, ##__VA_ARGS__)
 #define LOGV(msg, ...) \
@@ -618,12 +617,10 @@ bool FlacTrackDemuxer::Init() {
   do {
     uint32_t read = 0;
     nsresult ret = mSource.ReadAt(offset, buffer, BUFFER_SIZE, &read);
-    if (NS_FAILED(ret) || read < BUFFER_SIZE) {
-      // Assume that if we can't read that many bytes while parsing the header,
-      // that something is wrong.
+    if (NS_FAILED(ret)) {
       return false;
     }
-    if (!mParser->IsHeaderBlock(ubuffer, BUFFER_SIZE)) {
+    if (!mParser->IsHeaderBlock(ubuffer, read)) {
       // Not a header and we haven't reached the end of the metadata blocks.
       // Will fall back to using the frames header instead.
       break;
@@ -853,7 +850,7 @@ RefPtr<FlacTrackDemuxer::SamplesPromise> FlacTrackDemuxer::GetSamples(
       return SamplesPromise::CreateAndReject(NS_ERROR_DOM_MEDIA_DEMUXER_ERR,
                                              __func__);
     }
-    frames->AppendSample(frame);
+    frames->AppendSample(std::move(frame));
   }
 
   LOGV("GetSamples() End mSamples.Length=%zu aNumSamples=%d offset=%" PRId64

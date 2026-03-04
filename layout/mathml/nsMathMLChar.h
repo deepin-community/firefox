@@ -7,13 +7,13 @@
 #ifndef nsMathMLChar_h___
 #define nsMathMLChar_h___
 
+#include "gfxTextRun.h"
+#include "nsBoundingMetrics.h"
 #include "nsColor.h"
 #include "nsMathMLOperators.h"
 #include "nsPoint.h"
 #include "nsRect.h"
 #include "nsString.h"
-#include "nsBoundingMetrics.h"
-#include "gfxTextRun.h"
 
 class gfxContext;
 class nsGlyphTable;
@@ -47,31 +47,22 @@ enum {
 };
 
 // A single glyph in our internal representation is either
-// 1) a 'code@font' pair from the mathfontFONTFAMILY.properties table. The
-// 'code' is interpreted as a Unicode point. The 'font' is a numeric
-// identifier given to the font to which the glyph belongs, which is 0 for the
-// FONTFAMILY and > 0 for 'external' fonts.
-// 2) a glyph index from the Open Type MATH table. In that case, all the glyphs
-// come from the font containing that table and 'font' is just set to -1.
+// 1) a code pair from the mathfontFONTFAMILY.properties table, interpreted
+// as a Unicode point.
+// 2) a glyph index from the Open Type MATH table.
 struct nsGlyphCode {
   union {
-    char16_t code[2];
+    char16_t code;
     uint32_t glyphID;
   };
-  int8_t font;
+  bool isGlyphID = true;
 
-  bool IsGlyphID() const { return font == -1; }
-
-  int32_t Length() const {
-    return (IsGlyphID() || code[1] == char16_t('\0') ? 1 : 2);
-  }
-  bool Exists() const { return IsGlyphID() ? glyphID != 0 : code[0] != 0; }
+  bool Exists() const { return isGlyphID ? glyphID != 0 : code != 0; }
   bool operator==(const nsGlyphCode& other) const {
-    return (other.font == font && ((IsGlyphID() && other.glyphID == glyphID) ||
-                                   (!IsGlyphID() && other.code[0] == code[0] &&
-                                    other.code[1] == code[1])));
+    return (other.isGlyphID == isGlyphID &&
+            (isGlyphID ? other.glyphID == glyphID : other.code == code));
   }
-  bool operator!=(const nsGlyphCode& other) const { return !operator==(other); }
+  bool operator!=(const nsGlyphCode&) const = default;
 };
 
 // Class used to handle stretchy symbols (accent, delimiter and boundary
@@ -87,8 +78,8 @@ class nsMathMLChar {
     mComputedStyle = nullptr;
     mUnscaledAscent = 0;
     mScaleX = mScaleY = 1.0;
-    mDraw = DRAW_NORMAL;
-    mMirrored = false;
+    mDrawingMethod = DrawingMethod::Normal;
+    mMirroringMethod = MirroringMethod::None;
   }
 
   // not a virtual destructor: this class is not intended to be subclassed
@@ -177,16 +168,28 @@ class nsMathMLChar {
   // mScaleX, mScaleY are the factors by which we scale the char.
   float mScaleX, mScaleY;
 
-  // mDraw indicates how we draw the stretchy operator:
-  // - DRAW_NORMAL: we render the mData string normally.
-  // - DRAW_VARIANT: we draw a larger size variant given by mGlyphs[0].
-  // - DRAW_PARTS: we assemble several parts given by mGlyphs[0], ... mGlyphs[4]
+  // mDrawingMethod indicates how we draw the stretchy operator:
+  // - Normal: we render the mData string normally.
+  // - Variant: we draw a larger size variant given by mGlyphs[0].
+  // - Parts: we assemble several parts given by mGlyphs[0], ... mGlyphs[4]
   // XXXfredw: the MATH table can have any numbers of parts and extenders.
-  enum DrawingMethod { DRAW_NORMAL, DRAW_VARIANT, DRAW_PARTS };
-  DrawingMethod mDraw;
+  enum class DrawingMethod { Normal, Variant, Parts };
+  DrawingMethod mDrawingMethod;
 
-  // mMirrored indicates whether the character is mirrored.
-  bool mMirrored;
+  // mMirroringMethod indicates whether the character is mirrored.
+  // - None: shouldn't be mirrored.
+  // - Character: using unicode character mirroring.
+  // - Glyph: using rtlm glyph mirroring.
+  // - ScaleFallback: the font doesn't support this character, fall back
+  //                  to applying a scale of -1 on the X axis and a scale
+  //                  of 1 on the Y axis.
+  enum class MirroringMethod : uint8_t {
+    None,
+    Character,
+    Glyph,
+    ScaleFallback,
+  };
+  MirroringMethod mMirroringMethod;
 
   class StretchEnumContext;
   friend class StretchEnumContext;

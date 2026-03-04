@@ -104,6 +104,7 @@ static constexpr Register InstanceReg{Registers::invalid_reg};
 static constexpr Register WasmJitEntryReturnScratch{Registers::invalid_reg};
 static constexpr Register WasmCallRefCallScratchReg0{Registers::invalid_reg};
 static constexpr Register WasmCallRefCallScratchReg1{Registers::invalid_reg};
+static constexpr Register WasmCallRefCallScratchReg2{Registers::invalid_reg};
 static constexpr Register WasmCallRefReg{Registers::invalid_reg};
 static constexpr Register WasmTailCallInstanceScratchReg{
     Registers::invalid_reg};
@@ -207,11 +208,10 @@ class Operand {
 
 class ABIArgGenerator {
  public:
-  ABIArgGenerator() { MOZ_CRASH(); }
+  explicit ABIArgGenerator(ABIKind) { MOZ_CRASH(); }
   ABIArg next(MIRType) { MOZ_CRASH(); }
   ABIArg& current() { MOZ_CRASH(); }
   uint32_t stackBytesConsumedSoFar() const { MOZ_CRASH(); }
-  void increaseStackOffset(uint32_t) { MOZ_CRASH(); }
 };
 
 }  // namespace jit

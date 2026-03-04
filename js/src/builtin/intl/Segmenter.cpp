@@ -9,24 +9,21 @@
 #include "builtin/intl/Segmenter.h"
 
 #include "mozilla/Assertions.h"
-#include "mozilla/IntegerTypeTraits.h"
-#include "mozilla/Range.h"
 #include "mozilla/UniquePtr.h"
-
-#if defined(MOZ_ICU4X)
-#  include "mozilla/intl/ICU4XGeckoDataProvider.h"
-#  include "ICU4XGraphemeClusterSegmenter.h"
-#  include "ICU4XSentenceSegmenter.h"
-#  include "ICU4XWordSegmenter.h"
-#endif
 
 #include "jspubtd.h"
 #include "NamespaceImports.h"
 
 #include "builtin/Array.h"
 #include "builtin/intl/CommonFunctions.h"
+#include "builtin/intl/LocaleNegotiation.h"
+#include "builtin/intl/StringAsciiChars.h"
 #include "gc/AllocKind.h"
 #include "gc/GCContext.h"
+#include "icu4x/GraphemeClusterSegmenter.hpp"
+#include "icu4x/Locale.hpp"
+#include "icu4x/SentenceSegmenter.hpp"
+#include "icu4x/WordSegmenter.hpp"
 #include "js/CallArgs.h"
 #include "js/PropertyDescriptor.h"
 #include "js/PropertySpec.h"
@@ -45,6 +42,7 @@
 #include "vm/NativeObject-inl.h"
 
 using namespace js;
+using namespace js::intl;
 
 const JSClassOps SegmenterObject::classOps_ = {
     nullptr,                    // addProperty
@@ -70,6 +68,9 @@ const JSClass SegmenterObject::class_ = {
 
 const JSClass& SegmenterObject::protoClass_ = PlainObject::class_;
 
+static bool segmenter_supportedLocalesOf(JSContext* cx, unsigned argc,
+                                         Value* vp);
+
 static bool segmenter_toSource(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   args.rval().setString(cx->names().Segmenter);
@@ -77,8 +78,7 @@ static bool segmenter_toSource(JSContext* cx, unsigned argc, Value* vp) {
 }
 
 static const JSFunctionSpec segmenter_static_methods[] = {
-    JS_SELF_HOSTED_FN("supportedLocalesOf", "Intl_Segmenter_supportedLocalesOf",
-                      1, 0),
+    JS_FN("supportedLocalesOf", segmenter_supportedLocalesOf, 1, 0),
     JS_FS_END,
 };
 
@@ -300,7 +300,6 @@ class SegmenterBreakIteratorType {
   bool isWordLike() const { return Interface::isWordLike(impl_); }
 };
 
-#if defined(MOZ_ICU4X)
 // Each SegmenterBreakIterator interface contains the following definitions:
 //
 // - BreakIterator: Type of the ICU4X break iterator.
@@ -321,131 +320,201 @@ class SegmenterBreakIteratorType {
 // - destroy: Static method to destroy an instance of `Segmenter`.
 
 struct GraphemeClusterSegmenterBreakIteratorLatin1 {
-  using BreakIterator = capi::ICU4XGraphemeClusterBreakIteratorLatin1;
-  using Segmenter = capi::ICU4XGraphemeClusterSegmenter;
+  using BreakIterator = icu4x::capi::GraphemeClusterBreakIteratorLatin1;
+  using Segmenter = icu4x::capi::GraphemeClusterSegmenter;
   using Char = JS::Latin1Char;
+  using StringView = diplomat::capi::DiplomatU8View;
 
   static constexpr auto& create =
-      capi::ICU4XGraphemeClusterSegmenter_segment_latin1;
+      icu4x::capi::icu4x_GraphemeClusterSegmenter_segment_latin1_mv1;
   static constexpr auto& destroy =
-      capi::ICU4XGraphemeClusterBreakIteratorLatin1_destroy;
+      icu4x::capi::icu4x_GraphemeClusterBreakIteratorLatin1_destroy_mv1;
   static constexpr auto& next =
-      capi::ICU4XGraphemeClusterBreakIteratorLatin1_next;
+      icu4x::capi::icu4x_GraphemeClusterBreakIteratorLatin1_next_mv1;
 
   static bool isWordLike(const BreakIterator*) { return false; }
 };
 
 struct GraphemeClusterSegmenterBreakIteratorTwoByte {
-  using BreakIterator = capi::ICU4XGraphemeClusterBreakIteratorUtf16;
-  using Segmenter = capi::ICU4XGraphemeClusterSegmenter;
+  using BreakIterator = icu4x::capi::GraphemeClusterBreakIteratorUtf16;
+  using Segmenter = icu4x::capi::GraphemeClusterSegmenter;
   using Char = char16_t;
+  using StringView = diplomat::capi::DiplomatString16View;
 
   static constexpr auto& create =
-      capi::ICU4XGraphemeClusterSegmenter_segment_utf16;
+      icu4x::capi::icu4x_GraphemeClusterSegmenter_segment_utf16_mv1;
   static constexpr auto& destroy =
-      capi::ICU4XGraphemeClusterBreakIteratorUtf16_destroy;
+      icu4x::capi::icu4x_GraphemeClusterBreakIteratorUtf16_destroy_mv1;
   static constexpr auto& next =
-      capi::ICU4XGraphemeClusterBreakIteratorUtf16_next;
+      icu4x::capi::icu4x_GraphemeClusterBreakIteratorUtf16_next_mv1;
 
   static bool isWordLike(const BreakIterator*) { return false; }
 };
 
 struct GraphemeClusterSegmenter {
-  using Segmenter = capi::ICU4XGraphemeClusterSegmenter;
+  using Segmenter = icu4x::capi::GraphemeClusterSegmenter;
   using BreakIteratorLatin1 =
       SegmenterBreakIteratorType<GraphemeClusterSegmenterBreakIteratorLatin1>;
   using BreakIteratorTwoByte =
       SegmenterBreakIteratorType<GraphemeClusterSegmenterBreakIteratorTwoByte>;
 
-  static constexpr auto& create = capi::ICU4XGraphemeClusterSegmenter_create;
-  static constexpr auto& destroy = capi::ICU4XGraphemeClusterSegmenter_destroy;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_GraphemeClusterSegmenter_create_mv1;
+  static constexpr auto& destroy =
+      icu4x::capi::icu4x_GraphemeClusterSegmenter_destroy_mv1;
 };
 
 struct WordSegmenterBreakIteratorLatin1 {
-  using BreakIterator = capi::ICU4XWordBreakIteratorLatin1;
-  using Segmenter = capi::ICU4XWordSegmenter;
+  using BreakIterator = icu4x::capi::WordBreakIteratorLatin1;
+  using Segmenter = icu4x::capi::WordSegmenter;
   using Char = JS::Latin1Char;
+  using StringView = diplomat::capi::DiplomatU8View;
 
-  static constexpr auto& create = capi::ICU4XWordSegmenter_segment_latin1;
-  static constexpr auto& destroy = capi::ICU4XWordBreakIteratorLatin1_destroy;
-  static constexpr auto& next = capi::ICU4XWordBreakIteratorLatin1_next;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_WordSegmenter_segment_latin1_mv1;
+  static constexpr auto& destroy =
+      icu4x::capi::icu4x_WordBreakIteratorLatin1_destroy_mv1;
+  static constexpr auto& next =
+      icu4x::capi::icu4x_WordBreakIteratorLatin1_next_mv1;
   static constexpr auto& isWordLike =
-      capi::ICU4XWordBreakIteratorLatin1_is_word_like;
+      icu4x::capi::icu4x_WordBreakIteratorLatin1_is_word_like_mv1;
 };
 
 struct WordSegmenterBreakIteratorTwoByte {
-  using BreakIterator = capi::ICU4XWordBreakIteratorUtf16;
-  using Segmenter = capi::ICU4XWordSegmenter;
+  using BreakIterator = icu4x::capi::WordBreakIteratorUtf16;
+  using Segmenter = icu4x::capi::WordSegmenter;
   using Char = char16_t;
+  using StringView = diplomat::capi::DiplomatString16View;
 
-  static constexpr auto& create = capi::ICU4XWordSegmenter_segment_utf16;
-  static constexpr auto& destroy = capi::ICU4XWordBreakIteratorUtf16_destroy;
-  static constexpr auto& next = capi::ICU4XWordBreakIteratorUtf16_next;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_WordSegmenter_segment_utf16_mv1;
+  static constexpr auto& destroy =
+      icu4x::capi::icu4x_WordBreakIteratorUtf16_destroy_mv1;
+  static constexpr auto& next =
+      icu4x::capi::icu4x_WordBreakIteratorUtf16_next_mv1;
   static constexpr auto& isWordLike =
-      capi::ICU4XWordBreakIteratorUtf16_is_word_like;
+      icu4x::capi::icu4x_WordBreakIteratorUtf16_is_word_like_mv1;
 };
 
 struct WordSegmenter {
-  using Segmenter = capi::ICU4XWordSegmenter;
+  using Segmenter = icu4x::capi::WordSegmenter;
   using BreakIteratorLatin1 =
       SegmenterBreakIteratorType<WordSegmenterBreakIteratorLatin1>;
   using BreakIteratorTwoByte =
       SegmenterBreakIteratorType<WordSegmenterBreakIteratorTwoByte>;
 
-  static constexpr auto& create = capi::ICU4XWordSegmenter_create_auto;
-  static constexpr auto& destroy = capi::ICU4XWordSegmenter_destroy;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_WordSegmenter_create_auto_with_content_locale_mv1;
+  static constexpr auto& destroy = icu4x::capi::icu4x_WordSegmenter_destroy_mv1;
 };
 
 struct SentenceSegmenterBreakIteratorLatin1 {
-  using BreakIterator = capi::ICU4XSentenceBreakIteratorLatin1;
-  using Segmenter = capi::ICU4XSentenceSegmenter;
+  using BreakIterator = icu4x::capi::SentenceBreakIteratorLatin1;
+  using Segmenter = icu4x::capi::SentenceSegmenter;
   using Char = JS::Latin1Char;
+  using StringView = diplomat::capi::DiplomatU8View;
 
-  static constexpr auto& create = capi::ICU4XSentenceSegmenter_segment_latin1;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_SentenceSegmenter_segment_latin1_mv1;
   static constexpr auto& destroy =
-      capi::ICU4XSentenceBreakIteratorLatin1_destroy;
-  static constexpr auto& next = capi::ICU4XSentenceBreakIteratorLatin1_next;
+      icu4x::capi::icu4x_SentenceBreakIteratorLatin1_destroy_mv1;
+  static constexpr auto& next =
+      icu4x::capi::icu4x_SentenceBreakIteratorLatin1_next_mv1;
 
   static bool isWordLike(const BreakIterator*) { return false; }
 };
 
 struct SentenceSegmenterBreakIteratorTwoByte {
-  using BreakIterator = capi::ICU4XSentenceBreakIteratorUtf16;
-  using Segmenter = capi::ICU4XSentenceSegmenter;
+  using BreakIterator = icu4x::capi::SentenceBreakIteratorUtf16;
+  using Segmenter = icu4x::capi::SentenceSegmenter;
   using Char = char16_t;
+  using StringView = diplomat::capi::DiplomatString16View;
 
-  static constexpr auto& create = capi::ICU4XSentenceSegmenter_segment_utf16;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_SentenceSegmenter_segment_utf16_mv1;
   static constexpr auto& destroy =
-      capi::ICU4XSentenceBreakIteratorUtf16_destroy;
-  static constexpr auto& next = capi::ICU4XSentenceBreakIteratorUtf16_next;
+      icu4x::capi::icu4x_SentenceBreakIteratorUtf16_destroy_mv1;
+  static constexpr auto& next =
+      icu4x::capi::icu4x_SentenceBreakIteratorUtf16_next_mv1;
 
   static bool isWordLike(const BreakIterator*) { return false; }
 };
 
 struct SentenceSegmenter {
-  using Segmenter = capi::ICU4XSentenceSegmenter;
+  using Segmenter = icu4x::capi::SentenceSegmenter;
   using BreakIteratorLatin1 =
       SegmenterBreakIteratorType<SentenceSegmenterBreakIteratorLatin1>;
   using BreakIteratorTwoByte =
       SegmenterBreakIteratorType<SentenceSegmenterBreakIteratorTwoByte>;
 
-  static constexpr auto& create = capi::ICU4XSentenceSegmenter_create;
-  static constexpr auto& destroy = capi::ICU4XSentenceSegmenter_destroy;
+  static constexpr auto& create =
+      icu4x::capi::icu4x_SentenceSegmenter_create_with_content_locale_mv1;
+  static constexpr auto& destroy =
+      icu4x::capi::icu4x_SentenceSegmenter_destroy_mv1;
 };
 
+class ICU4XLocaleDeleter {
+ public:
+  void operator()(icu4x::capi::Locale* ptr) {
+    icu4x::capi::icu4x_Locale_destroy_mv1(ptr);
+  }
+};
+
+using UniqueICU4XLocale =
+    mozilla::UniquePtr<icu4x::capi::Locale, ICU4XLocaleDeleter>;
+
+static UniqueICU4XLocale CreateICU4XLocale(JSContext* cx,
+                                           Handle<JSString*> str) {
+  auto* linear = str->ensureLinear(cx);
+  if (!linear) {
+    return nullptr;
+  }
+
+  icu4x::capi::icu4x_Locale_from_string_mv1_result result{};
+  {
+    intl::StringAsciiChars chars(linear);
+    if (!chars.init(cx)) {
+      return nullptr;
+    }
+
+    auto span = static_cast<mozilla::Span<const char>>(chars);
+    result =
+        icu4x::capi::icu4x_Locale_from_string_mv1({span.data(), span.size()});
+  }
+
+  if (!result.is_ok) {
+    intl::ReportInternalError(cx);
+    return nullptr;
+  }
+  return UniqueICU4XLocale{result.ok};
+}
+
 /**
- * Create a new ICU4X segmenter instance.
+ * Create a new, locale-invariant ICU4X segmenter instance.
  */
 template <typename Interface>
-static typename Interface::Segmenter* CreateSegmenter(JSContext* cx) {
-  auto result = Interface::create(mozilla::intl::GetDataProvider());
+static typename Interface::Segmenter* CreateSegmenter() {
+  return Interface::create();
+}
+
+/**
+ * Create a new ICU4X segmenter instance, tailored for |locale|.
+ */
+template <typename Interface>
+static typename Interface::Segmenter* CreateSegmenter(
+    JSContext* cx, Handle<JSString*> locale) {
+  auto loc = CreateICU4XLocale(cx, locale);
+  if (!loc) {
+    return nullptr;
+  }
+
+  auto result = Interface::create(loc.get());
   if (!result.is_ok) {
     intl::ReportInternalError(cx);
     return nullptr;
   }
   return result.ok;
 }
-#endif
 
 static bool EnsureInternalsResolved(JSContext* cx,
                                     Handle<SegmenterObject*> segmenter) {
@@ -486,10 +555,9 @@ static bool EnsureInternalsResolved(JSContext* cx,
     }
   }
 
-#if defined(MOZ_ICU4X)
   switch (granularity) {
     case SegmenterGranularity::Grapheme: {
-      auto* seg = CreateSegmenter<GraphemeClusterSegmenter>(cx);
+      auto* seg = CreateSegmenter<GraphemeClusterSegmenter>();
       if (!seg) {
         return false;
       }
@@ -497,7 +565,7 @@ static bool EnsureInternalsResolved(JSContext* cx,
       break;
     }
     case SegmenterGranularity::Word: {
-      auto* seg = CreateSegmenter<WordSegmenter>(cx);
+      auto* seg = CreateSegmenter<WordSegmenter>(cx, locale);
       if (!seg) {
         return false;
       }
@@ -505,7 +573,7 @@ static bool EnsureInternalsResolved(JSContext* cx,
       break;
     }
     case SegmenterGranularity::Sentence: {
-      auto* seg = CreateSegmenter<SentenceSegmenter>(cx);
+      auto* seg = CreateSegmenter<SentenceSegmenter>(cx, locale);
       if (!seg) {
         return false;
       }
@@ -513,7 +581,6 @@ static bool EnsureInternalsResolved(JSContext* cx,
       break;
     }
   }
-#endif
 
   segmenter->setLocale(locale);
   segmenter->setGranularity(granularity);
@@ -535,7 +602,6 @@ void SegmenterObject::finalize(JS::GCContext* gcx, JSObject* obj) {
 
   auto& segmenter = obj->as<SegmenterObject>();
   if (void* seg = segmenter.getSegmenter()) {
-#if defined(MOZ_ICU4X)
     switch (segmenter.getGranularity()) {
       case SegmenterGranularity::Grapheme: {
         DestroySegmenter<GraphemeClusterSegmenter>(seg);
@@ -550,9 +616,6 @@ void SegmenterObject::finalize(JS::GCContext* gcx, JSObject* obj) {
         break;
       }
     }
-#else
-    MOZ_CRASH("ICU4X disabled");
-#endif
   }
 }
 
@@ -570,11 +633,10 @@ static void DestroyBreakIterator(void* brk) {
  */
 template <typename T>
 static void DestroyBreakIterator(const T* segments) {
-#if defined(MOZ_ICU4X)
   void* brk = segments->getBreakIterator();
   MOZ_ASSERT(brk);
 
-  bool isLatin1 = segments->getString()->hasLatin1Chars();
+  bool isLatin1 = segments->hasLatin1StringChars();
 
   switch (segments->getGranularity()) {
     case SegmenterGranularity::Grapheme: {
@@ -602,25 +664,22 @@ static void DestroyBreakIterator(const T* segments) {
       break;
     }
   }
-#else
-  MOZ_CRASH("ICU4X disabled");
-#endif
 }
 
 void SegmentsObject::finalize(JS::GCContext* gcx, JSObject* obj) {
   MOZ_ASSERT(gcx->onMainThread());
 
   auto* segments = &obj->as<SegmentsObject>();
-  bool isLatin1 = segments->getString()->hasLatin1Chars();
 
-  if (void* chars = segments->getStringChars()) {
+  if (auto chars = segments->getStringChars()) {
     size_t length = segments->getString()->length();
-    if (isLatin1) {
+    if (chars.has<JS::Latin1Char>()) {
       intl::RemoveICUCellMemory(gcx, segments, length * sizeof(JS::Latin1Char));
+      js_free(chars.data<JS::Latin1Char>());
     } else {
       intl::RemoveICUCellMemory(gcx, segments, length * sizeof(char16_t));
+      js_free(chars.data<char16_t>());
     }
-    js_free(chars);
   }
 
   if (segments->getBreakIterator()) {
@@ -632,16 +691,16 @@ void SegmentIteratorObject::finalize(JS::GCContext* gcx, JSObject* obj) {
   MOZ_ASSERT(gcx->onMainThread());
 
   auto* iterator = &obj->as<SegmentIteratorObject>();
-  bool isLatin1 = iterator->getString()->hasLatin1Chars();
 
-  if (void* chars = iterator->getStringChars()) {
+  if (auto chars = iterator->getStringChars()) {
     size_t length = iterator->getString()->length();
-    if (isLatin1) {
+    if (chars.has<JS::Latin1Char>()) {
       intl::RemoveICUCellMemory(gcx, iterator, length * sizeof(JS::Latin1Char));
+      js_free(chars.data<JS::Latin1Char>());
     } else {
       intl::RemoveICUCellMemory(gcx, iterator, length * sizeof(char16_t));
+      js_free(chars.data<char16_t>());
     }
-    js_free(chars);
   }
 
   if (iterator->getBreakIterator()) {
@@ -659,43 +718,31 @@ static Boundaries FindBoundaryFrom(Handle<T*> segments, int32_t index) {
 
 template <typename T>
 static Boundaries GraphemeBoundaries(Handle<T*> segments, int32_t index) {
-#if defined(MOZ_ICU4X)
-  if (segments->getString()->hasLatin1Chars()) {
+  if (segments->hasLatin1StringChars()) {
     return FindBoundaryFrom<GraphemeClusterSegmenter::BreakIteratorLatin1>(
         segments, index);
   }
   return FindBoundaryFrom<GraphemeClusterSegmenter::BreakIteratorTwoByte>(
       segments, index);
-#else
-  MOZ_CRASH("ICU4X disabled");
-#endif
 }
 
 template <typename T>
 static Boundaries WordBoundaries(Handle<T*> segments, int32_t index) {
-#if defined(MOZ_ICU4X)
-  if (segments->getString()->hasLatin1Chars()) {
+  if (segments->hasLatin1StringChars()) {
     return FindBoundaryFrom<WordSegmenter::BreakIteratorLatin1>(segments,
                                                                 index);
   }
   return FindBoundaryFrom<WordSegmenter::BreakIteratorTwoByte>(segments, index);
-#else
-  MOZ_CRASH("ICU4X disabled");
-#endif
 }
 
 template <typename T>
 static Boundaries SentenceBoundaries(Handle<T*> segments, int32_t index) {
-#if defined(MOZ_ICU4X)
-  if (segments->getString()->hasLatin1Chars()) {
+  if (segments->hasLatin1StringChars()) {
     return FindBoundaryFrom<SentenceSegmenter::BreakIteratorLatin1>(segments,
                                                                     index);
   }
   return FindBoundaryFrom<SentenceSegmenter::BreakIteratorTwoByte>(segments,
                                                                    index);
-#else
-  MOZ_CRASH("ICU4X disabled");
-#endif
 }
 
 /**
@@ -721,7 +768,7 @@ static bool EnsureStringChars(JSContext* cx, Handle<T*> segments) {
     if (!chars) {
       return false;
     }
-    segments->setLatin1Chars(chars.release());
+    segments->setStringChars(SegmentsStringChars{chars.release()});
 
     intl::AddICUCellMemory(segments, length * sizeof(JS::Latin1Char));
   } else {
@@ -729,7 +776,7 @@ static bool EnsureStringChars(JSContext* cx, Handle<T*> segments) {
     if (!chars) {
       return false;
     }
-    segments->setTwoByteChars(chars.release());
+    segments->setStringChars(SegmentsStringChars{chars.release()});
 
     intl::AddICUCellMemory(segments, length * sizeof(char16_t));
   }
@@ -744,14 +791,15 @@ static auto* CreateBreakIterator(Handle<T*> segments) {
   void* segmenter = segments->getSegmenter()->getSegmenter();
   MOZ_ASSERT(segmenter);
 
-  void* chars = segments->getStringChars();
+  auto chars = segments->getStringChars();
   MOZ_ASSERT(chars);
 
   size_t length = segments->getString()->length();
 
   auto* seg = static_cast<const typename Interface::Segmenter*>(segmenter);
-  auto* ch = static_cast<const typename Interface::Char*>(chars);
-  return Interface::create(seg, ch, length);
+  auto* ch = chars.template data<typename Interface::Char>();
+  typename Interface::StringView view{ch, length};
+  return Interface::create(seg, view);
 }
 
 /**
@@ -781,8 +829,7 @@ static bool EnsureBreakIterator(JSContext* cx, Handle<T*> segments,
     return false;
   }
 
-#if defined(MOZ_ICU4X)
-  bool isLatin1 = segments->getString()->hasLatin1Chars();
+  bool isLatin1 = segments->hasLatin1StringChars();
 
   // Create a new break iterator based on the granularity and character type.
   void* brk;
@@ -823,9 +870,6 @@ static bool EnsureBreakIterator(JSContext* cx, Handle<T*> segments,
   MOZ_ASSERT(segments->getIndex() == 0, "index is initially zero");
 
   return true;
-#else
-  MOZ_CRASH("ICU4X disabled");
-#endif
 }
 
 /**
@@ -981,5 +1025,22 @@ bool js::intl_FindNextSegmentBoundaries(JSContext* cx, unsigned argc,
   }
 
   args.rval().setObject(*result);
+  return true;
+}
+
+/**
+ * Intl.Segmenter.supportedLocalesOf ( locales [ , options ] )
+ */
+static bool segmenter_supportedLocalesOf(JSContext* cx, unsigned argc,
+                                         Value* vp) {
+  CallArgs args = CallArgsFromVp(argc, vp);
+
+  // Steps 1-3.
+  auto* array = SupportedLocalesOf(cx, AvailableLocaleKind::Segmenter,
+                                   args.get(0), args.get(1));
+  if (!array) {
+    return false;
+  }
+  args.rval().setObject(*array);
   return true;
 }

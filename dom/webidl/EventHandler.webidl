@@ -32,7 +32,9 @@ interface mixin GlobalEventHandlers {
            attribute EventHandler oncancel;
            attribute EventHandler onauxclick;
            attribute EventHandler onbeforeinput;
-           [Pref="dom.element.popover.enabled"]
+           // https://html.spec.whatwg.org/#event-beforematch
+           [Pref="dom.hidden_until_found.enabled"]
+           attribute EventHandler onbeforematch;
            attribute EventHandler onbeforetoggle;
            attribute EventHandler oncanplay;
            attribute EventHandler oncanplaythrough;
@@ -42,6 +44,8 @@ interface mixin GlobalEventHandlers {
            attribute EventHandler oncontentvisibilityautostatechange;
            attribute EventHandler oncontextlost;
            attribute EventHandler oncontextmenu;
+           [Pref="dom.element.commandfor.enabled"]
+           attribute EventHandler oncommand;
            attribute EventHandler oncontextrestored;
            attribute EventHandler oncopy;
            attribute EventHandler oncuechange;
@@ -114,6 +118,8 @@ interface mixin GlobalEventHandlers {
            attribute EventHandler onpointerover;
            attribute EventHandler onpointerenter;
            attribute EventHandler onpointerleave;
+           [SecureContext, Pref="dom.event.pointer.rawupdate.enabled"]
+           attribute EventHandler onpointerrawupdate;
            attribute EventHandler ongotpointercapture;
            attribute EventHandler onlostpointercapture;
 

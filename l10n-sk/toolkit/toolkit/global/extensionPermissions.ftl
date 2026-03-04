@@ -30,4 +30,46 @@ webext-perms-description-sessions = Pristupovať k nedávno zavretým kartám
 webext-perms-description-tabs = Pristupovať ku kartám prehliadača
 webext-perms-description-tabHide = Skrývať a zobrazovať karty prehliadača
 webext-perms-description-topSites = Pristupovať k histórii prehliadania
+webext-perms-description-trialML = Sťahovať a spúšťať modely AI na zariadení
+webext-perms-description-userScripts = Povoliť neovereným skriptom tretích strán prístup k vašim údajom
 webext-perms-description-webNavigation = Pristupovať k aktivitám prehliadača v priebehu prehliadania
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Neoverené skripty môžu predstavovať bezpečnostné riziká a riziká z pohľadu ochrany súkromia, ako je napríklad spúšťanie škodlivého kódu alebo sledovanie aktivity na webových stránkach. Spúšťajte skripty iba z rozšírení alebo zdrojov, ktorým dôverujete.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Neoverené skripty môžu predstavovať riziká pre bezpečnosť a súkromie. Spúšťajte skripty iba z rozšírení alebo zdrojov, ktorým dôverujete.
+
+## Short form to be used in lists or in a string (`webext-perms-description-data-some`)
+## that formats some of the data collection permissions below using `Intl.ListFormat`.
+##
+## This is used when the data collection permissions are required.
+
+webext-perms-description-data-short-authenticationInfo = overovacie informácie
+webext-perms-description-data-short-bookmarksInfo = záložky
+webext-perms-description-data-short-browsingActivity = aktivita prehliadania
+webext-perms-description-data-short-financialAndPaymentInfo = finančné a platobné informácie
+webext-perms-description-data-short-healthInfo = zdravotné informácie
+webext-perms-description-data-short-locationInfo = poloha
+webext-perms-description-data-short-personalCommunications = osobná komunikácia
+webext-perms-description-data-short-personallyIdentifyingInfo = osobné identifikačné údaje
+webext-perms-description-data-short-searchTerms = vyhľadávané výrazy
+webext-perms-description-data-short-technicalAndInteraction = technické údaje a údaje o interakciách
+webext-perms-description-data-short-websiteActivity = aktivita na webovej stránke
+webext-perms-description-data-short-websiteContent = obsah webovej stránky
+
+## Long form to be used in `about:addons` when these data collection permissions are optional.
+
+webext-perms-description-data-long-authenticationInfo = Zdieľať overovacie informácie s vývojárom rozšírenia
+webext-perms-description-data-long-bookmarksInfo = Zdieľať informácie o záložkách s vývojárom rozšírenia
+webext-perms-description-data-long-browsingActivity = Zdieľať aktivitu prehliadania s vývojárom rozšírenia
+webext-perms-description-data-long-financialAndPaymentInfo = Zdieľať finančné a platobné informácie s vývojárom rozšírenia
+webext-perms-description-data-long-healthInfo = Zdieľať zdravotné informácie s vývojárom rozšírenia
+webext-perms-description-data-long-locationInfo = Zdieľať informácie o polohe s vývojárom rozšírenia
+webext-perms-description-data-long-personalCommunications = Zdieľajte osobnú komunikáciu s vývojárom rozšírenia
+webext-perms-description-data-long-personallyIdentifyingInfo = Zdieľať osobné identifikačné údaje s vývojárom rozšírenia
+webext-perms-description-data-long-searchTerms = Zdieľať výrazy vyhľadávania s vývojárom rozšírenia
+webext-perms-description-data-long-technicalAndInteraction = Zdieľať technické údaje a údaje o interakciách s vývojárom rozšírenia
+webext-perms-description-data-long-websiteActivity = Zdieľať aktivitu na webovej stránke s vývojárom rozšírenia
+webext-perms-description-data-long-websiteContent = Zdieľajte obsah webovej stránky s vývojárom rozšírenia

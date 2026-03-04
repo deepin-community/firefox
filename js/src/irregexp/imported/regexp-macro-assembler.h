@@ -30,8 +30,10 @@ class RegExpMacroAssembler {
   static constexpr int kMaxRegisterCount = (1 << 16);
   static constexpr int kMaxRegister = kMaxRegisterCount - 1;
   static constexpr int kMaxCaptures = (kMaxRegister - 1) / 2;
+  // Note the minimum value is chosen s.t. a negated valid offset is also a
+  // valid offset.
   static constexpr int kMaxCPOffset = (1 << 15) - 1;
-  static constexpr int kMinCPOffset = -(1 << 15);
+  static constexpr int kMinCPOffset = -kMaxCPOffset;
 
   static constexpr int kTableSizeBits = 7;
   static constexpr int kTableSize = 1 << kTableSizeBits;
@@ -40,9 +42,11 @@ class RegExpMacroAssembler {
   static constexpr int kUseCharactersValue = -1;
 
   RegExpMacroAssembler(Isolate* isolate, Zone* zone);
+  RegExpMacroAssembler(const RegExpMacroAssembler& other) V8_NOEXCEPT = default;
   virtual ~RegExpMacroAssembler() = default;
 
-  virtual Handle<HeapObject> GetCode(Handle<String> source) = 0;
+  virtual DirectHandle<HeapObject> GetCode(DirectHandle<String> source,
+                                           RegExpFlags flags) = 0;
 
   // This function is called when code generation is aborted, so that
   // the assembler could clean up internal data structures.
@@ -50,7 +54,7 @@ class RegExpMacroAssembler {
   // The maximal number of pushes between stack checks. Users must supply
   // kCheckStackLimit flag to push operations (instead of kNoStackLimitCheck)
   // at least once for every stack_limit() pushes that are executed.
-  virtual int stack_limit_slack() = 0;
+  virtual int stack_limit_slack_slot_count() = 0;
   virtual bool CanReadUnaligned() const = 0;
 
   virtual void AdvanceCurrentPosition(int by) = 0;  // Signed cp change.
@@ -69,7 +73,7 @@ class RegExpMacroAssembler {
                                       Label* on_equal) = 0;
   virtual void CheckCharacterGT(base::uc16 limit, Label* on_greater) = 0;
   virtual void CheckCharacterLT(base::uc16 limit, Label* on_less) = 0;
-  virtual void CheckGreedyLoop(Label* on_tos_equals_current_position) = 0;
+  virtual void CheckFixedLengthLoop(Label* on_tos_equals_current_position) = 0;
   virtual void CheckAtStart(int cp_offset, Label* on_at_start) = 0;
   virtual void CheckNotAtStart(int cp_offset, Label* on_not_at_start) = 0;
   virtual void CheckNotBackReference(int start_reg, bool read_backward,
@@ -105,6 +109,11 @@ class RegExpMacroAssembler {
   // The current character (modulus the kTableSize) is looked up in the byte
   // array, and if the found byte is non-zero, we jump to the on_bit_set label.
   virtual void CheckBitInTable(Handle<ByteArray> table, Label* on_bit_set) = 0;
+
+  virtual void SkipUntilBitInTable(int cp_offset, Handle<ByteArray> table,
+                                   Handle<ByteArray> nibble_table,
+                                   int advance_by) = 0;
+  virtual bool SkipUntilBitInTableUseSimd(int advance_by) { return false; }
 
   // Checks whether the given offset from the current position is before
   // the end of the string.  May overwrite the current character.
@@ -351,7 +360,8 @@ class NativeRegExpMacroAssembler: public RegExpMacroAssembler {
                      int* output, int output_size, Isolate* isolate,
                      Tagged<IrRegExpData> regexp_data);
 
-  ZoneUnorderedMap<uint32_t, Handle<FixedUInt16Array>> range_array_cache_;
+  ZoneUnorderedMap<uint32_t, IndirectHandle<FixedUInt16Array>>
+      range_array_cache_;
 };
 
 }  // namespace internal

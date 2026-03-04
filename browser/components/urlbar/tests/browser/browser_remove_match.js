@@ -6,6 +6,9 @@ ChromeUtils.defineESModuleGetters(this, {
 });
 
 add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   await SearchTestUtils.installSearchExtension({}, { setAsDefault: true });
 
   let engine = Services.search.getEngineByName("Example");
@@ -102,7 +105,7 @@ add_task(async function test_remove_form_history() {
       break;
     }
   }
-  Assert.ok(index < count, "Result found");
+  Assert.less(index, count, "Result found");
 
   EventUtils.synthesizeKey("KEY_Tab", { repeat: index });
   Assert.equal(UrlbarTestUtils.getSelectedRowIndex(window), index);

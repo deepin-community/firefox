@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Povolit
     .accesskey = P
+permissions-add =
+    .label = Přidat
+    .accesskey = P
 permissions-button-off =
     .label = Vypnout
     .accesskey = o
@@ -90,8 +93,15 @@ permissions-exceptions-cookie-desc = Zde můžete určit, které servery mohou n
 permissions-exceptions-https-only-window2 =
     .title = Servery, které mohou používat nezabezpečený protokol HTTP
     .style = { permissions-window2.style }
-permissions-exceptions-https-only-desc = Zde můžete určit, které servery mohou používat nezabezpečený protokol HTTP. Na těchto serverech se { -brand-short-name } nebude pokoušet o automatické navázání spojení skrze protokol HTTPS. Pro anonymní okna tento seznam výjimek neplatí.
-permissions-exceptions-https-only-desc2 = Zde můžete určit, které servery mohou používat nezabezpečený protokol HTTP. Na těchto serverech se { -brand-short-name } nebude pokoušet o automatické navázání spojení skrze protokol HTTPS.
+permissions-exceptions-https-only-desc = Zde můžete určit, které servery mohou používat nezabezpečený protokol HTTP. Na těchto serverech se { -brand-short-name } nebude pokoušet o navázání spojení skrze zabezpečený protokol HTTPS. Pro anonymní okna tento seznam výjimek neplatí.
+permissions-exceptions-https-only-desc2 = Zde můžete určit, které servery mohou používat nezabezpečený protokol HTTP. Na těchto serverech se { -brand-short-name } nebude pokoušet o navázání zabezpečeného spojení skrze protokol HTTPS.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Povolené webové stránky - vyskakovací okna a přesměrování třetích stran
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Zde můžete určit, které servery mohou otevírat vyskakovací okna a být přesměrovány pomocí rámů třetích stran.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Následující servery požádaly o přístup k v
 permissions-site-camera-disable-label =
     .label = Blokovat nové žádosti o přístup k vaší kameře
 permissions-site-camera-disable-desc = Tímto zakážete všem serverům, které nejsou v seznamu výše, požádat o přístup k vaší kameře. Při blokování žádostí nemusí některé funkce webových stránek správně fungovat.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Nastavení - Aplikace a služby zařízení
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Tyto servery požádaly o přístup k aplikacím a službám na tomto zařízení. Můžete to stránkám povolit nebo zakázat.
+permissions-site-localhost-disable-label =
+    .label = Blokovat nové žádosti o přístup k aplikacím a službám na tomto zařízení
+permissions-site-localhost-disable-desc = Tím se zabrání tomu, aby všechny webové stránky, které nejsou uvedeny výše, požadovaly přístup k aplikacím a službám v tomto zařízení. Tímto postupem můžete porušit některé funkce webových stránek.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Nastavení - Zařízení v místní síti
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Tyto servery požádaly o přístup k aplikacím a službám na zařízeních připojených k vaší Wi-Fi nebo místní síti. Toto můžete stránkám povolit nebo zakázat.
+permissions-site-local-network-disable-label =
+    .label = Blokovat nové žádosti o přístup k aplikacím a službám na zařízeních připojených k vaší Wi-Fi nebo místní síti.
+permissions-site-local-network-disable-desc = Tímto zabráníte jakékoli webové stránce, která není uvedena výše, v žádosti o přístup k aplikacím a službám na zařízeních připojených k vaší Wi-Fi nebo místní síti. Tento krok může vést k nefunkčnosti některých funkcí webových stránek.
 
 ## Site Permissions - Microphone
 

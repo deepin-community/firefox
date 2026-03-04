@@ -18,6 +18,7 @@ class OnboardingMapperTest {
             description = "default browser body with link text",
             primaryButton = Action("default browser primary button text", unitLambda),
             secondaryButton = Action("default browser secondary button text", unitLambda),
+            shouldShowElevation = true,
         )
 
         val onboardingPageUiData = OnboardingPageUiData(
@@ -39,6 +40,10 @@ class OnboardingMapperTest {
             onNotificationPermissionSkipClick = {},
             onAddFirefoxWidgetClick = {},
             onAddFirefoxWidgetSkipClick = {},
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeClick = {},
+            onTermsOfServiceButtonClick = {},
+            shouldShowElevation = true,
         )
 
         assertEquals(expected, actual)
@@ -52,6 +57,7 @@ class OnboardingMapperTest {
             description = "sync body",
             primaryButton = Action("sync primary button text", unitLambda),
             secondaryButton = Action("sync secondary button text", unitLambda),
+            shouldShowElevation = true,
         )
 
         val onboardingPageUiData = OnboardingPageUiData(
@@ -73,6 +79,10 @@ class OnboardingMapperTest {
             onNotificationPermissionSkipClick = {},
             onAddFirefoxWidgetClick = {},
             onAddFirefoxWidgetSkipClick = {},
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeClick = {},
+            onTermsOfServiceButtonClick = {},
+            shouldShowElevation = true,
         )
 
         assertEquals(expected, actual)
@@ -86,6 +96,7 @@ class OnboardingMapperTest {
             description = "notification body",
             primaryButton = Action("notification primary button text", unitLambda),
             secondaryButton = Action("notification secondary button text", unitLambda),
+            shouldShowElevation = true,
         )
 
         val onboardingPageUiData = OnboardingPageUiData(
@@ -107,6 +118,10 @@ class OnboardingMapperTest {
             onNotificationPermissionSkipClick = unitLambda,
             onAddFirefoxWidgetClick = {},
             onAddFirefoxWidgetSkipClick = {},
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeClick = {},
+            onTermsOfServiceButtonClick = {},
+            shouldShowElevation = true,
         )
 
         assertEquals(expected, actual)
@@ -120,6 +135,7 @@ class OnboardingMapperTest {
             description = "add search widget body with link text",
             primaryButton = Action("add search widget primary button text", unitLambda),
             secondaryButton = Action("add search widget secondary button text", unitLambda),
+            shouldShowElevation = true,
         )
 
         val onboardingPageUiData = OnboardingPageUiData(
@@ -141,16 +157,178 @@ class OnboardingMapperTest {
             onNotificationPermissionSkipClick = {},
             onAddFirefoxWidgetClick = unitLambda,
             onAddFirefoxWidgetSkipClick = unitLambda,
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeClick = {},
+            onTermsOfServiceButtonClick = {},
+            shouldShowElevation = true,
         )
 
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN a toolbar placement page WHEN mapToOnboardingPageState is called THEN creates the expected OnboardingPageState`() {
+        val toolbarOptions = listOf(
+            ToolbarOption(
+                toolbarType = ToolbarOptionType.TOOLBAR_TOP,
+                imageRes = R.drawable.ic_onboarding_top_toolbar,
+                label = "Top",
+            ),
+            ToolbarOption(
+                toolbarType = ToolbarOptionType.TOOLBAR_BOTTOM,
+                imageRes = R.drawable.ic_onboarding_bottom_toolbar,
+                label = "Bottom",
+            ),
+        )
+
+        val expected = OnboardingPageState(
+            imageRes = R.drawable.ic_onboarding_customize_toolbar,
+            title = "Pick a toolbar placement",
+            description = "Keep searches within reach",
+            primaryButton = Action("Save and continue", unitLambda),
+            toolbarOptions = toolbarOptions,
+            shouldShowElevation = true,
+        )
+
+        val onboardingPageUiData = OnboardingPageUiData(
+            type = OnboardingPageUiData.Type.TOOLBAR_PLACEMENT,
+            imageRes = R.drawable.ic_onboarding_customize_toolbar,
+            title = "Pick a toolbar placement",
+            description = "Keep searches within reach",
+            primaryButtonLabel = "Save and continue",
+            toolbarOptions = toolbarOptions,
+        )
+
+        val actual = mapToOnboardingPageState(
+            onboardingPageUiData = onboardingPageUiData,
+            onMakeFirefoxDefaultClick = {},
+            onMakeFirefoxDefaultSkipClick = {},
+            onSignInButtonClick = {},
+            onSignInSkipClick = {},
+            onNotificationPermissionButtonClick = {},
+            onNotificationPermissionSkipClick = {},
+            onAddFirefoxWidgetClick = {},
+            onAddFirefoxWidgetSkipClick = {},
+            onCustomizeToolbarButtonClick = unitLambda,
+            onCustomizeThemeClick = {},
+            onTermsOfServiceButtonClick = {},
+            onMarketingDataContinueClick = {},
+            shouldShowElevation = true,
+        )
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN a marketing data collection opt out page WHEN mapToOnboardingPageState is called THEN creates the expected OnboardingPageState`() {
+        val marketingData = OnboardingMarketingData(
+            bodyOneText = "marketing data body one",
+            bodyOneLinkText = "marketing data body one link",
+            bodyTwoText = "marketing data body two",
+        )
+
+        val expected = OnboardingPageState(
+            imageRes = R.drawable.ic_high_five,
+            title = "marketing data title",
+            description = "marketing data body",
+            primaryButton = Action("marketing data button text", unitLambda),
+            marketingData = marketingData,
+            shouldShowElevation = true,
+        )
+
+        val onboardingPageUiData = OnboardingPageUiData(
+            type = OnboardingPageUiData.Type.MARKETING_DATA,
+            imageRes = R.drawable.ic_high_five,
+            title = "marketing data title",
+            description = "marketing data body",
+            primaryButtonLabel = "marketing data button text",
+            marketingData = marketingData,
+        )
+
+        val actual = mapToOnboardingPageState(
+            onboardingPageUiData = onboardingPageUiData,
+            onMakeFirefoxDefaultClick = {},
+            onMakeFirefoxDefaultSkipClick = {},
+            onSignInButtonClick = {},
+            onSignInSkipClick = {},
+            onNotificationPermissionButtonClick = {},
+            onNotificationPermissionSkipClick = {},
+            onAddFirefoxWidgetClick = {},
+            onAddFirefoxWidgetSkipClick = {},
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeClick = {},
+            onTermsOfServiceButtonClick = {},
+            onMarketingDataContinueClick = unitLambda,
+            shouldShowElevation = true,
+        )
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `GIVEN a customize theme page UI data WHEN mapping function is called THEN equivalent page state is created`() {
+        // Page UI values
+        val imageRes = R.drawable.ic_pick_a_theme
+        val title = "Pick a theme"
+        val description = "See the web in the best light."
+        val primaryButtonLabel = "Save and continue"
+
+        // Theming options
+        val themeOptionSystem = ThemeOption(
+            label = "System auto",
+            imageRes = R.drawable.ic_pick_a_theme_system_auto,
+            themeType = ThemeOptionType.THEME_SYSTEM,
+        )
+        val themeOptionLight = ThemeOption(
+            label = "Light",
+            imageRes = R.drawable.ic_pick_a_theme_light,
+            themeType = ThemeOptionType.THEME_LIGHT,
+        )
+        val themeOptionDark = ThemeOption(
+            label = "Dark",
+            imageRes = R.drawable.ic_pick_a_theme_dark,
+            themeType = ThemeOptionType.THEME_DARK,
+        )
+        val themeOptions = listOf(themeOptionSystem, themeOptionLight, themeOptionDark)
+
+        val pageUiData = OnboardingPageUiData(
+            type = OnboardingPageUiData.Type.THEME_SELECTION,
+            imageRes = imageRes,
+            title = title,
+            description = description,
+            primaryButtonLabel = primaryButtonLabel,
+            themeOptions = themeOptions,
+        )
+
+        val expectedPageState = OnboardingPageState(
+            imageRes = imageRes,
+            title = title,
+            description = description,
+            primaryButton = Action(primaryButtonLabel, unitLambda),
+            themeOptions = themeOptions,
+            shouldShowElevation = true,
+        )
+
+        val actualPageState = mapToOnboardingPageState(
+            onboardingPageUiData = pageUiData,
+            onMakeFirefoxDefaultClick = {},
+            onMakeFirefoxDefaultSkipClick = {},
+            onSignInButtonClick = {},
+            onSignInSkipClick = {},
+            onNotificationPermissionButtonClick = {},
+            onNotificationPermissionSkipClick = {},
+            onAddFirefoxWidgetClick = {},
+            onAddFirefoxWidgetSkipClick = {},
+            onCustomizeToolbarButtonClick = {},
+            onCustomizeThemeClick = unitLambda,
+            onTermsOfServiceButtonClick = {},
+            shouldShowElevation = true,
+        )
+
+        assertEquals(expectedPageState, actualPageState)
     }
 }
 
 private val unitLambda = { dummyUnitFunc() }
 
 private fun dummyUnitFunc() {}
-
-private fun dummyStringArgFunc(string: String) {
-    print(string)
-}

@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -38,11 +32,9 @@ menu-quit =
             [windows] خ
            *[other] ت
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = ترک { -brand-shorter-name }
-
 menu-about =
     .label = دربارهٔ { -brand-shorter-name }
     .accesskey = د
@@ -221,6 +213,9 @@ menu-history-undo-menu =
     .label = زبانه‌های تازه بسته شده
 menu-history-undo-window-menu =
     .label = پنجره‌های تازه بسته شده
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = در تاریخچه جستجو کنید
 
 ## Bookmarks Menu
 
@@ -233,6 +228,9 @@ menu-bookmark-tab =
     .label = نشانک‌گذاری زبانهٔ کنونی…
 menu-edit-bookmark =
     .label = ویرایش این نشانک…
+# "Search" is a verb, as in "Search in bookmarks"
+menu-bookmarks-search =
+    .label = جست‌وجوی نشانک‌ها
 menu-bookmarks-all-tabs =
     .label = نشانک‌گذاری تمامی زبانه‌ها…
 menu-bookmarks-toolbar =
@@ -241,6 +239,15 @@ menu-bookmarks-other =
     .label = نشانک‌‌های دیگر
 menu-bookmarks-mobile =
     .label = نشانک‌های همراه
+
+## Profiles Menu
+
+menu-profiles =
+    .label = نمایه‌ها
+menu-profiles-manage-profiles =
+    .label = مدیریت نمایه‌ها
+menu-profiles-new-profile =
+    .label = نمایه جدید
 
 ## Tools Menu
 
@@ -337,3 +344,5 @@ menu-help-report-deceptive-site =
 menu-help-not-deceptive =
     .label = این یک سایت گمراه‌کننده نیست…
     .accesskey = d
+menu-report-broken-site =
+    .label = گزارش سایت ایراددار

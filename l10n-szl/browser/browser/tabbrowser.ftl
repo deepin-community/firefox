@@ -84,13 +84,6 @@ tabbrowser-unblock-tab-audio-tooltip =
 tabbrowser-confirm-close-tabs-button = Zawrzij karty
 tabbrowser-confirm-close-tabs-checkbox = Pytej przi zawiyraniu wielu kart
 
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
-
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 tabbrowser-confirm-open-multiple-tabs-title = Przitupluj ôdewrzynie
@@ -108,9 +101,6 @@ tabbrowser-confirm-open-multiple-tabs-checkbox = Dowej znać, jak skuli ôtwiyra
 tabbrowser-confirm-caretbrowsing-title = Przeglōndanie z kursorym
 tabbrowser-confirm-caretbrowsing-message = Jak prziciśniesz F7, to załōnczosz i wyłōnczosz przeglōndanie z kursorym. Ta funkcyjo pokazuje na strōnach ruchōmy kursōr, bez co idzie ôbiyrać tekst tastaturōm. Załōnczyć przeglōndanie z kursorym?
 tabbrowser-confirm-caretbrowsing-checkbox = Niy pokazuj mi zaś tego dialogowego ôkna.
-
-## Confirmation dialog for closing all duplicate tabs
-
 
 ##
 
@@ -148,6 +138,3 @@ tabbrowser-ctrl-tab-list-all-tabs =
             [few] Dej wykoz ze wszyskimi { $tabCount } kartami
            *[many] Dej wykoz ze wszyskimi { $tabCount } kartami
         }
-
-## Tab manager menu buttons
-

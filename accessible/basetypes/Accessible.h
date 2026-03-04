@@ -8,7 +8,7 @@
 
 #include "mozilla/a11y/Role.h"
 #include "mozilla/a11y/AccTypes.h"
-#include "nsString.h"
+#include "nsStringFwd.h"
 #include "nsRect.h"
 #include "Units.h"
 
@@ -20,6 +20,8 @@ struct nsRoleMapEntry;
 class nsIURI;
 
 namespace mozilla {
+class WritingMode;
+
 namespace a11y {
 
 class AccAttributes;
@@ -51,7 +53,31 @@ enum ENameValueFlag {
   /**
    * Tooltip was used as a name.
    */
-  eNameFromTooltip
+  eNameFromTooltip,
+
+  /**
+   * Labelling relations were used for the name.
+   */
+  eNameFromRelations,
+};
+
+/**
+ * Description type flags.
+ */
+enum EDescriptionValueFlag {
+  /**
+   * Description either
+   *  a) present (not empty): !description.IsEmpty()
+   *  b) no description (was missed): IsVoid() or IsEmpty(),
+   *     or NameAndDescription caching domain is not active.
+   */
+  eDescriptionOK,
+
+  /**
+   * Description was provided by ARIA (either aria-description or
+   * aria-describedby)
+   */
+  eDescriptionFromARIA,
 };
 
 /**
@@ -155,7 +181,7 @@ class Accessible {
 
   virtual Accessible* Parent() const = 0;
 
-  virtual role Role() const = 0;
+  virtual role NativeRole() const = 0;
 
   /**
    * Return child accessible at the given index.
@@ -168,6 +194,11 @@ class Accessible {
   virtual uint32_t ChildCount() const = 0;
 
   virtual int32_t IndexInParent() const = 0;
+
+  /**
+   * Returns the accessible's calculated, final, role.
+   */
+  role Role() const;
 
   bool HasChildren() const { return !!FirstChild(); }
 
@@ -315,7 +346,7 @@ class Accessible {
   /*
    * Get the description of this accessible.
    */
-  virtual void Description(nsString& aDescription) const = 0;
+  virtual EDescriptionValueFlag Description(nsString& aDescription) const = 0;
 
   /**
    * Get the value of this accessible.
@@ -382,6 +413,8 @@ class Accessible {
 
   virtual float Opacity() const = 0;
 
+  virtual WritingMode GetWritingMode() const = 0;
+
   /**
    * Get the live region attributes (if any) for this single Accessible. This
    * does not propagate attributes from ancestors. If any argument is null, that
@@ -403,6 +436,13 @@ class Accessible {
   LayoutDeviceIntPoint Position(uint32_t aCoordType);
 
   virtual Maybe<int32_t> GetIntARIAAttr(nsAtom* aAttrName) const = 0;
+
+  virtual bool GetStringARIAAttr(nsAtom* aAttrName,
+                                 nsAString& aAttrValue) const = 0;
+
+  virtual bool ARIAAttrValueIs(nsAtom* aAttrName, nsAtom* aAttrValue) const = 0;
+
+  virtual bool HasARIAAttr(nsAtom* aAttrName) const = 0;
 
   /**
    * Get the relation of the given type.
@@ -438,14 +478,14 @@ class Accessible {
                              int32_t aY) = 0;
 
   /**
+   * Return true if the accessible is scrollable.
+   */
+  virtual bool IsScrollable() const = 0;
+
+  /**
    * Return tag name of associated DOM node.
    */
   virtual nsAtom* TagName() const = 0;
-
-  /**
-   * Return input `type` attribute
-   */
-  virtual already_AddRefed<nsAtom> InputType() const = 0;
 
   /**
    * Return a landmark role if applied.
@@ -543,6 +583,8 @@ class Accessible {
 
   // Type "is" methods
 
+  bool IsAbbreviation() const { return mType == eHTMLAbbrevType; }
+
   bool IsDoc() const { return HasGenericType(eDocument); }
 
   bool IsTableRow() const { return HasGenericType(eTableRow); }
@@ -562,8 +604,6 @@ class Accessible {
   bool IsHyperText() const { return HasGenericType(eHyperText); }
 
   bool IsSelect() const { return HasGenericType(eSelect); }
-
-  bool IsActionable() const { return HasGenericType(eActionable); }
 
   bool IsText() const { return mGenericTypes & eText; }
 
@@ -585,6 +625,10 @@ class Accessible {
    */
   bool IsTextRole();
 
+  virtual bool IsEditable() const = 0;
+
+  bool IsEditableRoot() const;
+
   bool IsGenericHyperText() const { return mType == eHyperTextType; }
 
   bool IsHTMLBr() const { return mType == eHTMLBRType; }
@@ -599,6 +643,8 @@ class Accessible {
   bool IsHTMLOptGroup() const { return mType == eHTMLOptGroupType; }
 
   bool IsHTMLRadioButton() const { return mType == eHTMLRadioButtonType; }
+
+  bool IsHTMLSpinner() const { return mType == eHTMLSpinnerType; }
 
   bool IsHTMLTable() const { return mType == eHTMLTableType; }
   bool IsHTMLTableCell() const { return mType == eHTMLTableCellType; }
@@ -617,6 +663,8 @@ class Accessible {
   bool IsOuterDoc() const { return mType == eOuterDocType; }
 
   bool IsProgress() const { return mType == eProgressType; }
+
+  virtual bool IsPopover() const = 0;
 
   bool IsRoot() const { return mType == eRootType; }
 
@@ -644,8 +692,6 @@ class Accessible {
 
   bool IsDateTimeField() const { return mType == eHTMLDateTimeFieldType; }
 
-  bool IsSearchbox() const;
-
   virtual bool HasNumericValue() const = 0;
 
   /**
@@ -659,11 +705,12 @@ class Accessible {
   }
 
   /**
-   * Returns the nearest ancestor which is not a generic element.
+   * Returns the nearest ancestor in the document which is not a generic
+   * element.
    */
   Accessible* GetNonGenericParent() const {
     for (Accessible* parent = Parent(); parent; parent = parent->Parent()) {
-      if (!parent->IsGeneric()) {
+      if (parent->IsDoc() || !parent->IsGeneric()) {
         return parent;
       }
     }
@@ -727,7 +774,39 @@ class Accessible {
   /**
    * Return the localized string for the given key.
    */
-  static void TranslateString(const nsString& aKey, nsAString& aStringOut);
+  static void TranslateString(const nsString& aKey, nsAString& aStringOut,
+                              const nsTArray<nsString>& aParams = {});
+
+  /*
+   * Return calculated group level based on accessible hierarchy.
+   *
+   * @param aFast  [in] Don't climb up tree. Calculate level from aria and
+   *                    roles.
+   */
+  virtual int32_t GetLevel(bool aFast) const;
+
+  /**
+   * Return true if accessible has a primary action directly related to it, like
+   * "click", "activate", "press", "jump", "open", "close", etc. A non-primary
+   * action would be a complementary one like "showlongdesc".
+   * If an accessible has an action that is associated with an ancestor, it is
+   * not a primary action either.
+   */
+  virtual bool HasPrimaryAction() const = 0;
+
+  /**
+   * Return true if this Accessible has custom actions, even if those actions
+   * aren't currently available. Custom actions are secondary actions provided
+   * by the author using associated elements (e.g. via aria-actions), in
+   * contrast to actions provided by Gecko on the element itself (e.g. click).
+   * Custom actions are queried using RelationByType(RelationType::ACTION).
+   * However, there can be cases where there are associated custom actions, but
+   * the target elements are hidden; e.g. because the origin element isn't
+   * focused. The client might need to know there are actions even if it can't
+   * currently query them. For this case, this function will return true, even
+   * though RelationByType will return nothing.
+   */
+  virtual bool HasCustomActions() const = 0;
 
  protected:
   // Some abstracted group utility methods.
@@ -748,14 +827,6 @@ class Accessible {
    */
   virtual AccGroupInfo* GetOrCreateGroupInfo() = 0;
 
-  /*
-   * Return calculated group level based on accessible hierarchy.
-   *
-   * @param aFast  [in] Don't climb up tree. Calculate level from aria and
-   *                    roles.
-   */
-  virtual int32_t GetLevel(bool aFast) const;
-
   /**
    * Calculate position in group and group size ('posinset' and 'setsize') based
    * on accessible hierarchy.
@@ -771,25 +842,39 @@ class Accessible {
   const Accessible* ActionAncestor() const;
 
   /**
-   * Return true if accessible has a primary action directly related to it, like
-   * "click", "activate", "press", "jump", "open", "close", etc. A non-primary
-   * action would be a complementary one like "showlongdesc".
-   * If an accessible has an action that is associated with an ancestor, it is
-   * not a primary action either.
-   */
-  virtual bool HasPrimaryAction() const = 0;
-
-  /**
    * Apply states which are implied by other information common to both
    * LocalAccessible and RemoteAccessible.
    */
   void ApplyImplicitState(uint64_t& aState) const;
+
+  /**
+   * Return the minimum role that should be used as a last resort if the element
+   * does not have a more specific role.
+   */
+  mozilla::a11y::role GetMinimumRole(mozilla::a11y::role aRole) const;
+
+  /**
+   * Given a role and an accessible's state, parentage, and other attributes
+   * transform the role to reflect its correct aria role.
+   */
+  mozilla::a11y::role ARIATransformRole(mozilla::a11y::role aRole) const;
 
  private:
   static const uint8_t kTypeBits = 6;
   static const uint8_t kGenericTypesBits = 18;
 
   void StaticAsserts() const;
+
+  /*
+   * This function assumes that the current role is not valid. It searches for a
+   * fallback role in the role attribute string, and returns it. If there is no
+   * valid fallback role in the role attribute string, the function returns the
+   * native role. The aRolesToSkip parameter will cause the function to skip any
+   * roles found in the role attribute string when searching for the next valid
+   * role.
+   */
+  role FindNextValidARIARole(
+      std::initializer_list<nsStaticAtom*> aRolesToSkip) const;
 
  protected:
   uint32_t mType : kTypeBits;

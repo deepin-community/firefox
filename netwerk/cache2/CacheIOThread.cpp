@@ -6,6 +6,7 @@
 #include "CacheFileIOManager.h"
 #include "CacheLog.h"
 #include "CacheObserver.h"
+#include "GeckoProfiler.h"
 
 #include "nsIRunnable.h"
 #include "nsISupportsImpl.h"
@@ -147,7 +148,7 @@ nsresult CacheIOThread::Init() {
   RefPtr<CacheIOThread> self = this;
   mThread =
       PR_CreateThread(PR_USER_THREAD, ThreadFunc, this, PR_PRIORITY_NORMAL,
-                      PR_GLOBAL_THREAD, PR_JOINABLE_THREAD, 128 * 1024);
+                      PR_GLOBAL_THREAD, PR_JOINABLE_THREAD, 256 * 1024);
   if (!mThread) {
     // Treat this thread as already shutdown.
     MonitorAutoLock lock(mMonitor);
@@ -158,7 +159,7 @@ nsresult CacheIOThread::Init() {
   // IMPORTANT: The thread now owns this reference, so it's important that we
   // leak it here, otherwise we'll end up with a bad refcount.
   // See the dont_AddRef in ThreadFunc().
-  Unused << self.forget().take();
+  self.forget().leak();
 
   return NS_OK;
 }
@@ -173,7 +174,7 @@ nsresult CacheIOThread::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
 
   nsCOMPtr<nsIRunnable> runnable(aRunnable);
 
-  // Runnable is always expected to be non-null, hard null-check bellow.
+  // Runnable is always expected to be non-null, hard null-check below.
   MOZ_ASSERT(runnable);
 
   MonitorAutoLock lock(mMonitor);
@@ -308,8 +309,6 @@ already_AddRefed<nsIEventTarget> CacheIOThread::Target() {
 
 // static
 void CacheIOThread::ThreadFunc(void* aClosure) {
-  // XXXmstange We'd like to register this thread with the profiler, but doing
-  // so causes leaks, see bug 1323100.
   NS_SetCurrentThreadName("Cache2 I/O");
 
   mozilla::IOInterposer::RegisterCurrentThread();
@@ -321,6 +320,7 @@ void CacheIOThread::ThreadFunc(void* aClosure) {
 }
 
 void CacheIOThread::ThreadFunc() {
+  char stackTop;
   nsCOMPtr<nsIThreadInternal> threadInternal;
 
   {
@@ -333,6 +333,9 @@ void CacheIOThread::ThreadFunc() {
         MakeRefPtr<ThreadEventQueue>(MakeUnique<mozilla::EventQueue>());
     nsCOMPtr<nsIThread> xpcomThread =
         nsThreadManager::get().CreateCurrentThread(queue);
+#if defined(MOZ_GECKO_PROFILER)
+    profiler_register_thread("Cache2 I/O", &stackTop);
+#endif
 
     threadInternal = do_QueryInterface(xpcomThread);
     if (threadInternal) threadInternal->SetObserver(this);
@@ -401,6 +404,9 @@ void CacheIOThread::ThreadFunc() {
   }  // lock
 
   if (threadInternal) threadInternal->SetObserver(nullptr);
+#if defined(MOZ_GECKO_PROFILER)
+  profiler_unregister_thread();
+#endif
 }
 
 void CacheIOThread::LoopOneLevel(uint32_t aLevel) {
@@ -500,8 +506,7 @@ size_t CacheIOThread::SizeOfExcludingThis(
   for (const auto& event : mEventQueue) {
     n += event.ShallowSizeOfExcludingThis(mallocSizeOf);
     // Events referenced by the queues are arbitrary objects we cannot be sure
-    // are reported elsewhere as well as probably not implementing nsISizeOf
-    // interface.  Deliberatly omitting them from reporting here.
+    // aren't reported elsewhere.  Deliberately omitting them from reporting.
   }
 
   return n;

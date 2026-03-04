@@ -14,19 +14,19 @@ import org.mozilla.focus.helpers.FeatureSettingsHelper
 import org.mozilla.focus.helpers.MainActivityFirstrunTestRule
 import org.mozilla.focus.helpers.MockWebServerHelper
 import org.mozilla.focus.helpers.RetryTestRule
-import org.mozilla.focus.helpers.TestAssetHelper
-import org.mozilla.focus.helpers.TestHelper.mDevice
-import org.mozilla.focus.helpers.TestHelper.waitingTime
+import org.mozilla.focus.helpers.TestAssetHelper.getGenericTabAsset
+import org.mozilla.focus.helpers.TestHelper
+import org.mozilla.focus.helpers.TestSetup
 import org.mozilla.focus.testAnnotations.SmokeTest
 
 /**
  * Verifies main menu items on the homescreen and on a browser page.
  */
-class ThreeDotMainMenuTest {
+class ThreeDotMainMenuTest : TestSetup() {
     private lateinit var webServer: MockWebServer
     private val featureSettingsHelper = FeatureSettingsHelper()
 
-    @get: Rule
+    @get:Rule
     val mActivityTestRule = MainActivityFirstrunTestRule(showFirstRun = false)
 
     @Rule
@@ -34,7 +34,8 @@ class ThreeDotMainMenuTest {
     val retryTestRule = RetryTestRule(3)
 
     @Before
-    fun startWebServer() {
+    override fun setUp() {
+        super.setUp()
         webServer = MockWebServer().apply {
             dispatcher = MockWebServerHelper.AndroidAssetDispatcher()
             start()
@@ -61,7 +62,7 @@ class ThreeDotMainMenuTest {
     @SmokeTest
     @Test
     fun browserMenuItemsTest() {
-        val pageUrl = TestAssetHelper.getGenericTabAsset(webServer, 1).url
+        val pageUrl = webServer.getGenericTabAsset(1).url
 
         searchScreen {
         }.loadPage(pageUrl) {
@@ -80,35 +81,38 @@ class ThreeDotMainMenuTest {
     @SmokeTest
     @Test
     fun shareTabTest() {
-        val pageUrl = TestAssetHelper.getGenericTabAsset(webServer, 1).url
+        val pageUrl = webServer.getGenericTabAsset(1).url
 
         searchScreen {
         }.loadPage(pageUrl) {
-            progressBar.waitUntilGone(waitingTime)
+            progressBar.waitUntilGone(TestHelper.waitingTime)
         }.openMainMenu {
         }.openShareScreen {
             verifyShareAppsListOpened()
-            mDevice.pressBack()
+            TestHelper.mDevice.pressBack()
         }
     }
 
     @SmokeTest
     @Test
     fun findInPageTest() {
-        val pageUrl = TestAssetHelper.getGenericTabAsset(webServer, 1).url
+        val pageUrl = webServer.getGenericTabAsset(1).url
 
         searchScreen {
         }.loadPage(pageUrl) {
-            progressBar.waitUntilGone(waitingTime)
+            progressBar.waitUntilGone(TestHelper.waitingTime)
         }.openMainMenu {
         }.openFindInPage {
             enterFindInPageQuery("tab")
-            verifyFindNextInPageResult("1/3")
-            verifyFindNextInPageResult("2/3")
-            verifyFindNextInPageResult("3/3")
-            verifyFindPrevInPageResult("1/3")
-            verifyFindPrevInPageResult("3/3")
-            verifyFindPrevInPageResult("2/3")
+            verifyFindInPageResult("1/3")
+            clickFindInPageNextButton()
+            verifyFindInPageResult("2/3")
+            clickFindInPageNextButton()
+            verifyFindInPageResult("3/3")
+            clickFindInPagePrevButton()
+            verifyFindInPageResult("2/3")
+            clickFindInPagePrevButton()
+            verifyFindInPageResult("1/3")
             closeFindInPage()
         }
     }
@@ -116,15 +120,15 @@ class ThreeDotMainMenuTest {
     @SmokeTest
     @Test
     fun switchDesktopModeTest() {
-        val pageUrl = TestAssetHelper.getGenericTabAsset(webServer, 1).url
+        val pageUrl = webServer.getGenericTabAsset(1).url
 
         searchScreen {
         }.loadPage(pageUrl) {
-            progressBar.waitUntilGone(waitingTime)
+            progressBar.waitUntilGone(TestHelper.waitingTime)
             verifyPageContent("mobile-site")
         }.openMainMenu {
         }.switchDesktopSiteMode {
-            progressBar.waitUntilGone(waitingTime)
+            progressBar.waitUntilGone(TestHelper.waitingTime)
             verifyPageContent("desktop-site")
         }.openMainMenu {
             verifyRequestDesktopSiteIsEnabled(true)

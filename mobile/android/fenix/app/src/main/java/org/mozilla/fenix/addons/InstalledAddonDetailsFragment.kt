@@ -12,7 +12,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.CoroutineDispatcher
@@ -24,15 +23,17 @@ import mozilla.components.concept.engine.webextension.EnableSource
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.AddonManagerException
+import mozilla.components.feature.addons.ui.AddonsManagerAdapter
 import mozilla.components.feature.addons.ui.translateName
 import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.ktx.android.content.appName
+import mozilla.components.support.ktx.android.content.appVersionName
 import org.mozilla.fenix.BuildConfig
-import org.mozilla.fenix.HomeActivity
-import org.mozilla.fenix.R
 import org.mozilla.fenix.databinding.FragmentInstalledAddOnDetailsBinding
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
 import org.mozilla.fenix.ext.showToolbar
+import mozilla.components.feature.addons.R as addonsR
 
 /**
  * An activity to show the details of a installed add-on.
@@ -97,31 +98,30 @@ class InstalledAddonDetailsFragment : Fragment() {
     internal fun provideAddonManager() = requireContext().components.addonManager
 
     @VisibleForTesting
-    internal fun bindAddon(dispatchers: CoroutineDispatcher = Dispatchers.IO) {
-        lifecycleScope.launch(dispatchers) {
+    internal fun bindAddon(
+        ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+        mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    ) {
+        lifecycleScope.launch(ioDispatcher) {
             // Only needed in case we are not able to find the add-on.
             var breadcrumb: Breadcrumb? = null
             try {
-                val addons = provideAddonManager().getAddons()
+                val latestAddon = provideAddonManager().getAddonByID(addon.id)
                 runIfFragmentIsAttached {
-                    addons.find { addon.id == it.id }.let {
-                        if (it == null) {
-                            val addonsStringList = addons.joinToString { item -> item.id }
-                            breadcrumb = Breadcrumb(
-                                "Addon ${addon.id} not found, isInstalled: ${addon.isInstalled()}," +
-                                    " add-ons: $addonsStringList",
-                            )
-                            throw AddonManagerException(Exception("Addon ${addon.id} not found"))
-                        } else {
-                            withContext(Dispatchers.Main) {
-                                addon = it
-                                bindUI()
-                            }
+                    if (latestAddon == null) {
+                        breadcrumb = Breadcrumb(
+                            "Addon ${addon.id} not found, isInstalled: ${addon.isInstalled()}",
+                        )
+                        throw AddonManagerException(Exception("Addon ${addon.id} not found"))
+                    } else {
+                        withContext(mainDispatcher) {
+                            addon = latestAddon
+                            bindUI()
                         }
-                        withContext(Dispatchers.Main) {
-                            binding.addOnProgressBar.isVisible = false
-                            binding.addonContainer.isVisible = true
-                        }
+                    }
+                    withContext(mainDispatcher) {
+                        binding.addOnProgressBar.isVisible = false
+                        binding.addonContainer.isVisible = true
                     }
                 }
             } catch (e: AddonManagerException) {
@@ -130,7 +130,7 @@ class InstalledAddonDetailsFragment : Fragment() {
                     crashReporter?.recordCrashBreadcrumb(it)
                 }
                 crashReporter?.submitCaughtException(e)
-                lifecycleScope.launch(Dispatchers.Main) {
+                lifecycleScope.launch(mainDispatcher) {
                     logger.error("Unable to bind addon", e)
                     showUnableToQueryAddonsMessage()
                 }
@@ -143,7 +143,7 @@ class InstalledAddonDetailsFragment : Fragment() {
         runIfFragmentIsAttached {
             showSnackBar(
                 binding.root,
-                getString(R.string.mozac_feature_addons_failed_to_query_extensions),
+                getString(addonsR.string.mozac_feature_addons_failed_to_query_extensions),
             )
             findNavController().popBackStack()
         }
@@ -158,6 +158,25 @@ class InstalledAddonDetailsFragment : Fragment() {
         bindAllowInPrivateBrowsingSwitch()
         bindRemoveButton()
         bindReportButton()
+        context?.let {
+            val messageBarWarningView =
+                binding.root.findViewById<View>(addonsR.id.add_on_messagebar_warning)
+            val messageBarErrorView =
+                binding.root.findViewById<View>(addonsR.id.add_on_messagebar_error)
+
+            AddonsManagerAdapter.bindMessageBars(
+                it,
+                messageBarWarningView,
+                messageBarErrorView,
+                onLearnMoreLinkClicked = { link ->
+                    binding.root.openLearnMoreLink(link, addon)
+                },
+                addon,
+                addon.translateName(it),
+                it.appName,
+                it.appVersionName,
+            )
+        }
     }
 
     @VisibleForTesting
@@ -198,15 +217,6 @@ class InstalledAddonDetailsFragment : Fragment() {
                                 it.incognito != Addon.Incognito.NOT_ALLOWED && it.isAllowedInPrivateBrowsing()
                             binding.settings.isVisible = shouldSettingsBeVisible()
                             enableButtons()
-                            context?.let {
-                                showSnackBar(
-                                    binding.root,
-                                    getString(
-                                        R.string.mozac_feature_addons_successfully_enabled,
-                                        addon.translateName(it),
-                                    ),
-                                )
-                            }
                         }
                     },
                     onError = {
@@ -214,12 +224,12 @@ class InstalledAddonDetailsFragment : Fragment() {
                             switch.isClickable = true
                             enableButtons()
                             switch.isChecked = addon.isEnabled()
-                            context?.let {
+                            context?.let { ctx ->
                                 showSnackBar(
                                     binding.root,
                                     getString(
-                                        R.string.mozac_feature_addons_failed_to_enable,
-                                        addon.translateName(it),
+                                        addonsR.string.mozac_feature_addons_failed_to_enable,
+                                        addon.translateName(ctx),
                                     ),
                                 )
                             }
@@ -236,15 +246,6 @@ class InstalledAddonDetailsFragment : Fragment() {
                             switch.isClickable = true
                             privateBrowsingSwitch.isVisible = it.isEnabled()
                             enableButtons()
-                            context?.let {
-                                showSnackBar(
-                                    binding.root,
-                                    getString(
-                                        R.string.mozac_feature_addons_successfully_disabled,
-                                        addon.translateName(it),
-                                    ),
-                                )
-                            }
                         }
                     },
                     onError = {
@@ -252,12 +253,12 @@ class InstalledAddonDetailsFragment : Fragment() {
                             switch.isClickable = true
                             switch.isChecked = addon.isEnabled()
                             enableButtons()
-                            context?.let {
+                            context?.let { ctx ->
                                 showSnackBar(
                                     binding.root,
                                     getString(
-                                        R.string.mozac_feature_addons_failed_to_disable,
-                                        addon.translateName(it),
+                                        addonsR.string.mozac_feature_addons_failed_to_disable,
+                                        addon.translateName(ctx),
                                     ),
                                 )
                             }
@@ -298,7 +299,9 @@ class InstalledAddonDetailsFragment : Fragment() {
         if (addon.incognito == Addon.Incognito.NOT_ALLOWED) {
             switch.isChecked = false
             switch.isEnabled = false
-            switch.text = requireContext().getString(R.string.mozac_feature_addons_not_allowed_in_private_browsing)
+            switch.text = requireContext().getString(
+                addonsR.string.mozac_feature_addons_not_allowed_in_private_browsing,
+                )
             return
         }
 
@@ -330,17 +333,17 @@ class InstalledAddonDetailsFragment : Fragment() {
     }
 
     private fun bindReportButton() {
-        binding.reportAddOn.setOnClickListener {
-            val shouldCreatePrivateSession = (activity as HomeActivity).browsingModeManager.mode.isPrivate
+        binding.reportAddOn.setOnClickListener { v ->
+            val shouldCreatePrivateSession = v.context.components.appStore.state.mode.isPrivate
 
-            it.context.components.useCases.tabsUseCases.selectOrAddTab(
+            v.context.components.useCases.tabsUseCases.selectOrAddTab(
                 url = "${BuildConfig.AMO_BASE_URL}/android/feedback/addon/${addon.id}/",
                 private = shouldCreatePrivateSession,
                 ignoreFragment = true,
             )
 
             // Send user to the newly open tab.
-            Navigation.findNavController(it).navigate(
+            v.findNavController().navigate(
                 InstalledAddonDetailsFragmentDirections.actionGlobalBrowser(null),
             )
         }
@@ -349,12 +352,11 @@ class InstalledAddonDetailsFragment : Fragment() {
     private fun bindSettings() {
         binding.settings.apply {
             isVisible = shouldSettingsBeVisible()
-            setOnClickListener {
+            setOnClickListener { v ->
                 val settingUrl = addon.installedState?.optionsPageUrl ?: return@setOnClickListener
                 val directions = if (addon.installedState?.openOptionsPageInTab == true) {
-                    val components = it.context.components
-                    val shouldCreatePrivateSession =
-                        (activity as HomeActivity).browsingModeManager.mode.isPrivate
+                    val components = v.context.components
+                    val shouldCreatePrivateSession = v.context.components.appStore.state.mode.isPrivate
 
                     // If the addon settings page is already open in a tab, select that one
                     components.useCases.tabsUseCases.selectOrAddTab(
@@ -368,7 +370,7 @@ class InstalledAddonDetailsFragment : Fragment() {
                     InstalledAddonDetailsFragmentDirections
                         .actionInstalledAddonFragmentToAddonInternalSettingsFragment(addon)
                 }
-                Navigation.findNavController(this).navigate(directions)
+                this.findNavController().navigate(directions)
             }
         }
     }
@@ -379,7 +381,7 @@ class InstalledAddonDetailsFragment : Fragment() {
                 InstalledAddonDetailsFragmentDirections.actionInstalledAddonFragmentToAddonDetailsFragment(
                     addon,
                 )
-            Navigation.findNavController(binding.root).navigate(directions)
+            binding.root.findNavController().navigate(directions)
         }
     }
 
@@ -389,7 +391,7 @@ class InstalledAddonDetailsFragment : Fragment() {
                 InstalledAddonDetailsFragmentDirections.actionInstalledAddonFragmentToAddonPermissionsDetailsFragment(
                     addon,
                 )
-            Navigation.findNavController(binding.root).navigate(directions)
+            binding.root.findNavController().navigate(directions)
         }
     }
 
@@ -401,27 +403,18 @@ class InstalledAddonDetailsFragment : Fragment() {
                 onSuccess = {
                     runIfFragmentIsAttached {
                         setAllInteractiveViewsClickable(binding, true)
-                        context?.let {
-                            showSnackBar(
-                                binding.root,
-                                getString(
-                                    R.string.mozac_feature_addons_successfully_uninstalled,
-                                    addon.translateName(it),
-                                ),
-                            )
-                        }
                         binding.root.findNavController().popBackStack()
                     }
                 },
                 onError = { _, _ ->
                     runIfFragmentIsAttached {
                         setAllInteractiveViewsClickable(binding, true)
-                        context?.let {
+                        context?.let { ctx ->
                             showSnackBar(
                                 binding.root,
                                 getString(
-                                    R.string.mozac_feature_addons_failed_to_uninstall,
-                                    addon.translateName(it),
+                                    addonsR.string.mozac_feature_addons_failed_to_uninstall,
+                                    addon.translateName(ctx),
                                 ),
                             )
                         }

@@ -68,10 +68,7 @@
 #ifndef xpcprivate_h___
 #define xpcprivate_h___
 
-#include "mozilla/Alignment.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/CycleCollectedJSContext.h"
@@ -82,6 +79,7 @@
 #include "mozilla/LinkedList.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MemoryReporting.h"
+#include "mozilla/PodOperations.h"
 #include "mozilla/mozalloc.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/TimeStamp.h"
@@ -148,7 +146,7 @@
 #include "xpcObjectHelper.h"
 
 #include "SandboxPrivate.h"
-#include "BackstagePass.h"
+#include "SystemGlobal.h"
 
 #ifdef XP_WIN
 // Nasty MS defines
@@ -380,6 +378,10 @@ class XPCJSContext final : public mozilla::CycleCollectedJSContext,
     IDX_INDEXEDDB,
     IDX_STRUCTUREDCLONE,
     IDX_LOCKS,
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+    IDX_SUPPRESSED,
+    IDX_ERROR,
+#endif
     IDX_TOTAL_COUNT  // just a count of the above
   };
 
@@ -502,7 +504,7 @@ class XPCJSRuntime final : public mozilla::CycleCollectedJSRuntime {
   }
 
   virtual bool UsefulToMergeZones() const override;
-  void TraceNativeBlackRoots(JSTracer* trc) override;
+  void TraceAdditionalNativeBlackRoots(JSTracer* trc) override;
   void TraceAdditionalNativeGrayRoots(JSTracer* aTracer) override;
   void TraverseAdditionalNativeRoots(
       nsCycleCollectionNoteRootCallback& cb) override;
@@ -2074,20 +2076,12 @@ using AutoMarkingWrappedNativeProtoPtr =
 // Definitions in XPCVariant.cpp.
 
 // {1809FD50-91E8-11d5-90F9-0010A4E73D9A}
-#define XPCVARIANT_IID                              \
-  {                                                 \
-    0x1809fd50, 0x91e8, 0x11d5, {                   \
-      0x90, 0xf9, 0x0, 0x10, 0xa4, 0xe7, 0x3d, 0x9a \
-    }                                               \
-  }
+#define XPCVARIANT_IID \
+  {0x1809fd50, 0x91e8, 0x11d5, {0x90, 0xf9, 0x0, 0x10, 0xa4, 0xe7, 0x3d, 0x9a}}
 
 // {DC524540-487E-4501-9AC7-AAA784B17C1C}
-#define XPCVARIANT_CID                               \
-  {                                                  \
-    0xdc524540, 0x487e, 0x4501, {                    \
-      0x9a, 0xc7, 0xaa, 0xa7, 0x84, 0xb1, 0x7c, 0x1c \
-    }                                                \
-  }
+#define XPCVARIANT_CID \
+  {0xdc524540, 0x487e, 0x4501, {0x9a, 0xc7, 0xaa, 0xa7, 0x84, 0xb1, 0x7c, 0x1c}}
 
 class XPCVariant : public nsIVariant {
  public:
@@ -2101,7 +2095,7 @@ class XPCVariant : public nsIVariant {
 
   // We #define and iid so that out module local code can use QI to detect
   // if a given nsIVariant is in fact an XPCVariant.
-  NS_DECLARE_STATIC_IID_ACCESSOR(XPCVARIANT_IID)
+  NS_INLINE_DECL_STATIC_IID(XPCVARIANT_IID)
 
   static already_AddRefed<XPCVariant> newVariant(JSContext* cx,
                                                  const JS::Value& aJSVal);
@@ -2152,8 +2146,6 @@ class XPCVariant : public nsIVariant {
   bool mReturnRawObject;
 };
 
-NS_DEFINE_STATIC_IID_ACCESSOR(XPCVariant, XPCVARIANT_IID)
-
 /***************************************************************************/
 // Utilities
 
@@ -2190,6 +2182,7 @@ struct GlobalProperties {
   bool Blob : 1;
   bool ChromeUtils : 1;
   bool CSS : 1;
+  bool CSSPositionTryDescriptors : 1;
   bool CSSRule : 1;
   bool CustomStateSet : 1;
   bool Directory : 1;
@@ -2218,6 +2211,9 @@ struct GlobalProperties {
   bool Selection : 1;
   bool TextDecoder : 1;
   bool TextEncoder : 1;
+  bool TrustedHTML : 1;
+  bool TrustedScript : 1;
+  bool TrustedScriptURL : 1;
   bool URL : 1;
   bool URLSearchParams : 1;
   bool XMLHttpRequest : 1;
@@ -2265,6 +2261,7 @@ class MOZ_STACK_CLASS OptionsBase {
   bool ParseJSString(const char* name, JS::MutableHandleString prop);
   bool ParseString(const char* name, nsCString& prop);
   bool ParseString(const char* name, nsString& prop);
+  bool ParseOptionalString(const char* name, mozilla::Maybe<nsString>& prop);
   bool ParseId(const char* name, JS::MutableHandleId id);
   bool ParseUInt32(const char* name, uint32_t* prop);
 
@@ -2292,7 +2289,8 @@ class MOZ_STACK_CLASS SandboxOptions : public OptionsBase {
         discardSource(false),
         metadata(cx),
         userContextId(0),
-        originAttributes(cx) {}
+        originAttributes(cx),
+        alwaysUseFdlibm(false) {}
 
   virtual bool Parse() override;
 
@@ -2302,6 +2300,7 @@ class MOZ_STACK_CLASS SandboxOptions : public OptionsBase {
   bool wantExportHelpers;
   bool isWebExtensionContentScript;
   JS::RootedObject proto;
+  mozilla::Maybe<nsString> sandboxContentSecurityPolicy;
   nsCString sandboxName;
   JS::RootedObject sameZoneAs;
   bool forceSecureContext;
@@ -2314,6 +2313,7 @@ class MOZ_STACK_CLASS SandboxOptions : public OptionsBase {
   JS::RootedValue metadata;
   uint32_t userContextId;
   JS::RootedObject originAttributes;
+  bool alwaysUseFdlibm;
 
  protected:
   bool ParseGlobalProperties();
@@ -2447,6 +2447,14 @@ nsresult GetSandboxMetadata(JSContext* cx, JS::HandleObject sandboxArg,
 [[nodiscard]] nsresult SetSandboxMetadata(JSContext* cx,
                                           JS::HandleObject sandboxArg,
                                           JS::HandleValue metadata);
+
+[[nodiscard]] nsresult SetSandboxLocaleOverride(JSContext* cx,
+                                                JS::HandleObject sandboxArg,
+                                                const char* locale);
+
+[[nodiscard]] nsresult SetSandboxTimezoneOverride(JSContext* cx,
+                                                  JS::HandleObject sandboxArg,
+                                                  const char* timezone);
 
 bool CreateObjectIn(JSContext* cx, JS::HandleValue vobj,
                     CreateObjectInOptions& options,

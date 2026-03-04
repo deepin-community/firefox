@@ -44,10 +44,6 @@ LOCAL_INCLUDES += [
 if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'windows':
     DEFINES['UNICODE'] = True
     DEFINES['_UNICODE'] = True
-    UNIFIED_SOURCES += [
-        'skia/src/fonts/SkFontMgr_indirect.cpp',
-        'skia/src/fonts/SkRemotableFontMgr.cpp',
-    ]
 
 # We should autogenerate these SSE related flags.
 
@@ -112,6 +108,26 @@ if CONFIG['TARGET_CPU'] in ('mips32', 'mips64'):
 # Work around bug 1841199.
 if CONFIG['TARGET_CPU'] in ('mips32', 'mips64', 'ppc64'):
     DEFINES['musttail'] = 'nomusttail'
+
+if CONFIG['TARGET_CPU'] == 'loongarch64':
+    # In ABI1.0, the compilers disable 128bit SIMD defautly; in ABI2.0, it
+    # enable defaultly. The below flags can maintain compatibility.
+    CXXFLAGS += ['-mlsx']
+    if (
+        CONFIG['CC_TYPE'] == 'clang'
+        and int(CONFIG["CC_VERSION"].split(".")[0]) >= 18
+    ):
+        CXXFLAGS += ['-flax-vector-conversions=all']
+    else:
+        # gcc, clang8 for loongarch64.
+        CXXFLAGS += ['-flax-vector-conversions']
+
+    SOURCES += ['skia/src/opts/SkOpts_lasx.cpp']
+    SOURCES['skia/src/opts/SkOpts_lasx.cpp'].flags += skia_opt_flags
+    SOURCES['skia/src/core/SkBitmapProcState_opts_lasx.cpp'].flags += ['-mlasx']
+    SOURCES['skia/src/core/SkBlitRow_opts_lasx.cpp'].flags += ['-mlasx']
+    SOURCES['skia/src/core/SkSwizzler_opts_lasx.cpp'].flags += ['-mlasx']
+    SOURCES['skia/src/opts/SkOpts_lasx.cpp'].flags += ['-mlasx']
 """
 
 import json
@@ -144,11 +160,16 @@ def generate_platform_sources():
   platform_args = {
     'win' : 'win_vc="C:/" win_sdk_version="00.0.00000.0" win_toolchain_version="00.00.00000"'
   }
+  source_sets = [':core', ':skia', ':clipstack_utils', ':pathops']
   for plat in platforms:
     args = platform_args.get(plat, '')
-    output = subprocess.check_output('cd skia && bin/gn gen out/{0} --args=\'target_os="{0}" {1}\' > /dev/null && bin/gn desc out/{0} :skia sources'.format(plat, args), shell=True)
-    if output:
-      sources[plat] = parse_sources(output)
+    subprocess.check_output('cd skia && bin/gn gen out/{0} --args=\'target_os="{0}" {1}\' > /dev/null'.format(plat, args), shell=True)
+    output = b''
+    for source_set in source_sets:
+      set_output = subprocess.check_output('cd skia && bin/gn desc out/{0} {1} sources'.format(plat, source_set), shell=True)
+      if set_output:
+        output += set_output
+    sources[plat] = parse_sources(output)
 
   plat_deps = {
     ':fontmgr_win' : 'win',
@@ -185,6 +206,7 @@ def generate_separated_sources(platform_sources):
     'third_party',
     'SkAnimCodecPlayer',
     'SkCamera',
+    'SkCapture',
     'SkCanvasStack',
     'SkCanvasStateUtils',
     'SkMultiPictureDocument',
@@ -196,6 +218,7 @@ def generate_separated_sources(platform_sources):
     'SkXPS',
     'SkCreateCGImageRef',
     'skia/src/ports/SkGlobalInitialization',
+    'skia/src/utils/SkJSON',
   ]
 
   def isignorelisted(value):
@@ -207,6 +230,12 @@ def generate_separated_sources(platform_sources):
 
   separated = defaultdict(set, {
     'common': {
+      'skia/src/codec/SkCodec.cpp',
+      'skia/src/codec/SkCodecImageGenerator.cpp',
+      'skia/src/codec/SkColorPalette.cpp',
+      'skia/src/codec/SkImageGenerator_FromEncoded.cpp',
+      'skia/src/codec/SkPixmapUtils.cpp',
+      'skia/src/codec/SkSampler.cpp',
       'skia/src/effects/imagefilters/SkBlendImageFilter.cpp',
       'skia/src/effects/imagefilters/SkBlurImageFilter.cpp',
       'skia/src/effects/imagefilters/SkComposeImageFilter.cpp',
@@ -221,7 +250,7 @@ def generate_separated_sources(platform_sources):
       'skia/src/ports/SkMemory_mozalloc.cpp',
       'skia/src/ports/SkImageGenerator_none.cpp',
       'skia/modules/skcms/skcms.cc',
-      'skia/modules/src/skcms_TransformBaseline.cc',
+      'skia/modules/skcms/src/skcms_TransformBaseline.cc',
       'skia/src/core/SkImageFilterTypes.cpp',
     },
     'android': {
@@ -331,6 +360,7 @@ unified_ignorelist = [
   'SkRTree.cpp',
   'SkVertices.cpp',
   'SkSLLexer.cpp',
+  'SkTypeface_mac_ct.cpp',
 ] + opt_allowlist
 
 def write_sources(f, values, indent):

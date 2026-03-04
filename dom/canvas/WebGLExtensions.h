@@ -6,13 +6,11 @@
 #ifndef WEBGL_EXTENSIONS_H_
 #define WEBGL_EXTENSIONS_H_
 
-#include "mozilla/AlreadyAddRefed.h"
+#include "WebGLObjectModel.h"
+#include "WebGLTypes.h"
 #include "nsString.h"
 #include "nsTArray.h"
 #include "nsWrapperCache.h"
-#include "WebGLObjectModel.h"
-#include "WebGLTypes.h"
-#include "WebGLFormats.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -25,6 +23,7 @@ class Sequence;
 }  // namespace dom
 
 namespace webgl {
+struct FormatRenderableState;
 class FormatUsageAuthority;
 }  // namespace webgl
 
@@ -250,7 +249,7 @@ class WebGLExtensionColorBufferFloat : public WebGLExtensionBase {
   explicit WebGLExtensionColorBufferFloat(WebGLContext*);
   static bool IsSupported(const WebGLContext*);
 
-  void SetRenderable(const webgl::FormatRenderableState);
+  void SetRenderable(const webgl::FormatRenderableState&);
   void OnSetExplicit() override;
 };
 
@@ -259,7 +258,7 @@ class WebGLExtensionColorBufferHalfFloat : public WebGLExtensionBase {
   explicit WebGLExtensionColorBufferHalfFloat(WebGLContext*);
   static bool IsSupported(const WebGLContext*);
 
-  void SetRenderable(const webgl::FormatRenderableState);
+  void SetRenderable(const webgl::FormatRenderableState&);
   void OnSetExplicit() override;
 };
 

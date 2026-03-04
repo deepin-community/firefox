@@ -9,19 +9,22 @@
 // When the heuristic result is not the first result added, it should still be
 // selected.
 add_task(async function slowHeuristicSelected() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   // First, add a provider that adds a heuristic result on a delay.  Both this
   // provider and the one below have a high priority so that only they are used
   // during the test.
   let engine = await Services.search.getDefault();
-  let heuristicResult = new UrlbarResult(
-    UrlbarUtils.RESULT_TYPE.SEARCH,
-    UrlbarUtils.RESULT_SOURCE.SEARCH,
-    {
+  let heuristicResult = new UrlbarResult({
+    type: UrlbarUtils.RESULT_TYPE.SEARCH,
+    source: UrlbarUtils.RESULT_SOURCE.SEARCH,
+    heuristic: true,
+    payload: {
       suggestion: "test",
       engine: engine.name,
-    }
-  );
-  heuristicResult.heuristic = true;
+    },
+  });
   let heuristicProvider = new UrlbarTestUtils.TestProvider({
     results: [heuristicResult],
     name: "heuristicProvider",
@@ -32,8 +35,7 @@ add_task(async function slowHeuristicSelected() {
 
   // Second, add another provider that adds a non-heuristic result immediately
   // with suggestedIndex = 1.
-  let nonHeuristicResult = makeTipResult();
-  nonHeuristicResult.suggestedIndex = 1;
+  let nonHeuristicResult = makeTipResult({ suggestedIndex: 1 });
   let nonHeuristicProvider = new UrlbarTestUtils.TestProvider({
     results: [nonHeuristicResult],
     name: "nonHeuristicProvider",
@@ -71,15 +73,15 @@ add_task(async function oneOffRemainsSelected() {
   // provider and the one below have a high priority so that only they are used
   // during the test.
   let engine = await Services.search.getDefault();
-  let heuristicResult = new UrlbarResult(
-    UrlbarUtils.RESULT_TYPE.SEARCH,
-    UrlbarUtils.RESULT_SOURCE.SEARCH,
-    {
+  let heuristicResult = new UrlbarResult({
+    type: UrlbarUtils.RESULT_TYPE.SEARCH,
+    source: UrlbarUtils.RESULT_SOURCE.SEARCH,
+    heuristic: true,
+    payload: {
       suggestion: "test",
       engine: engine.name,
-    }
-  );
-  heuristicResult.heuristic = true;
+    },
+  });
   let heuristicProvider = new UrlbarTestUtils.TestProvider({
     results: [heuristicResult],
     name: "heuristicProvider",
@@ -90,8 +92,7 @@ add_task(async function oneOffRemainsSelected() {
 
   // Second, add another provider that adds a non-heuristic result immediately
   // with suggestedIndex = 1.
-  let nonHeuristicResult = makeTipResult();
-  nonHeuristicResult.suggestedIndex = 1;
+  let nonHeuristicResult = makeTipResult({ suggestedIndex: 1 });
   let nonHeuristicProvider = new UrlbarTestUtils.TestProvider({
     results: [nonHeuristicResult],
     name: "nonHeuristicProvider",
@@ -140,11 +141,12 @@ add_task(async function oneOffRemainsSelected() {
   await BrowserTestUtils.closeWindow(win);
 });
 
-function makeTipResult() {
-  return new UrlbarResult(
-    UrlbarUtils.RESULT_TYPE.TIP,
-    UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-    {
+function makeTipResult({ suggestedIndex }) {
+  return new UrlbarResult({
+    type: UrlbarUtils.RESULT_TYPE.TIP,
+    source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+    suggestedIndex,
+    payload: {
       helpUrl: "http://example.com/",
       type: "test",
       titleL10n: { id: "urlbar-search-tips-confirm" },
@@ -154,6 +156,6 @@ function makeTipResult() {
           l10n: { id: "urlbar-search-tips-confirm" },
         },
       ],
-    }
-  );
+    },
+  });
 }

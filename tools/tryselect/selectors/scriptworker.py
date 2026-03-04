@@ -15,7 +15,6 @@ from ..push import push_to_try
 
 TASK_TYPES = {
     "linux-signing": [
-        "build-signing-linux-shippable/opt",
         "build-signing-linux64-shippable/opt",
         "build-signing-win64-shippable/opt",
         "build-signing-win32-shippable/opt",
@@ -86,16 +85,16 @@ def get_release_graph(release):
 
 def get_nightly_graph():
     return find_task_id(
-        "gecko.v2.mozilla-central.latest.taskgraph.decision-nightly-desktop"
+        "gecko.v2.mozilla-central.latest.taskgraph.decision-nightly-all"
     )
 
 
 def print_available_task_types():
     print("Available task types:")
     for task_type, tasks in TASK_TYPES.items():
-        print(" " * 4 + "{}:".format(task_type))
+        print(" " * 4 + f"{task_type}:")
         for task in tasks:
-            print(" " * 8 + "- {}".format(task))
+            print(" " * 8 + f"- {task}")
 
 
 def get_hg_file(parameters, path):
@@ -113,7 +112,7 @@ def run(
     dry_run=False,
     message="{msg}",
     closed_tree=False,
-    push_to_lando=False,
+    push_to_vcs=False,
 ):
     if task_type == "list":
         print_available_task_types()
@@ -161,7 +160,7 @@ def run(
         if label in existing_tasks:
             del existing_tasks[label]
 
-    msg = "scriptworker tests: {}".format(task_type)
+    msg = f"scriptworker tests: {task_type}"
     return push_to_try(
         "scriptworker",
         message.format(msg=msg),
@@ -170,5 +169,5 @@ def run(
         closed_tree=closed_tree,
         try_task_config=task_config,
         files_to_change=files_to_change,
-        push_to_lando=push_to_lando,
+        push_to_vcs=push_to_vcs,
     )

@@ -9,15 +9,13 @@
 #include "nsError.h"
 #include "nsIFile.h"
 #include "nsINIParser.h"
-#include "mozilla/ResultExtensions.h"
 #include "mozilla/Try.h"
 #include "mozilla/URLPreloader.h"
 
 using namespace mozilla;
 
 nsresult nsINIParser::Init(nsIFile* aFile) {
-  nsCString result;
-  MOZ_TRY_VAR(result, URLPreloader::ReadFile(aFile));
+  nsCString result = MOZ_TRY(URLPreloader::ReadFile(aFile));
 
   return InitFromString(result);
 }
@@ -168,17 +166,19 @@ nsresult nsINIParser::GetString(const char* aSection, const char* aKey,
   return NS_ERROR_FAILURE;
 }
 
-nsresult nsINIParser::GetSections(INISectionCallback aCB, void* aClosure) {
+nsresult nsINIParser::GetSections(
+    std::function<bool(const char*)>&& aCallback) {
   for (const auto& key : mSections.Keys()) {
-    if (!aCB(key, aClosure)) {
+    if (!aCallback(key)) {
       break;
     }
   }
   return NS_OK;
 }
 
-nsresult nsINIParser::GetStrings(const char* aSection, INIStringCallback aCB,
-                                 void* aClosure) {
+nsresult nsINIParser::GetStrings(
+    const char* aSection,
+    std::function<bool(const char*, const char*)>&& aCallback) {
   if (!IsValidSection(aSection)) {
     return NS_ERROR_INVALID_ARG;
   }
@@ -186,7 +186,7 @@ nsresult nsINIParser::GetStrings(const char* aSection, INIStringCallback aCB,
   INIValue* val;
 
   for (mSections.Get(aSection, &val); val; val = val->next.get()) {
-    if (!aCB(val->key, val->value, aClosure)) {
+    if (!aCallback(val->key, val->value)) {
       return NS_OK;
     }
   }

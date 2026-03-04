@@ -1,5 +1,4 @@
 use log::info;
-use mp4parse::ParseStrictness;
 use mp4parse_capi::*;
 use std::env;
 use std::fs::File;
@@ -193,8 +192,8 @@ fn main() {
     logger.init();
 
     for filename in filenames {
-        info!("-- dump of '{}' --", filename);
+        info!("-- dump of '{filename}' --");
         dump_func(filename.as_str(), strictness);
-        info!("-- end of '{}' --", filename);
+        info!("-- end of '{filename}' --");
     }
 }

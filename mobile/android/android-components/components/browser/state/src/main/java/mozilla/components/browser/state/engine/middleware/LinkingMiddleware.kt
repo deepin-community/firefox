@@ -16,9 +16,8 @@ import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.lib.state.Middleware
-import mozilla.components.lib.state.MiddlewareContext
+import mozilla.components.lib.state.Store
 import mozilla.components.support.ktx.kotlin.isExtensionUrl
-import java.lang.IllegalArgumentException
 
 /**
  * [Middleware] that handles side-effects of linking a session to an engine session.
@@ -27,9 +26,8 @@ internal class LinkingMiddleware(
     private val scope: CoroutineScope,
 ) : Middleware<BrowserState, BrowserAction> {
 
-    @Suppress("ComplexMethod")
     override fun invoke(
-        context: MiddlewareContext<BrowserState, BrowserAction>,
+        store: Store<BrowserState, BrowserAction>,
         next: (BrowserAction) -> Unit,
         action: BrowserAction,
     ) {
@@ -38,7 +36,7 @@ internal class LinkingMiddleware(
             is TabListAction.AddTabAction -> {
                 if (action.tab.engineState.engineSession != null && action.tab.engineState.engineObserver == null) {
                     engineObserver = link(
-                        context,
+                        store,
                         action.tab.engineState.engineSession,
                         action.tab,
                         skipLoading = true,
@@ -47,12 +45,12 @@ internal class LinkingMiddleware(
                 }
             }
             is TabListAction.AddMultipleTabsAction -> {
-                if (action.tabs.any { it.engineState.engineSession != null }) {
-                    throw IllegalArgumentException("AddMultipleTabsAction does not support tabs with engine sessions")
+                require(action.tabs.none { it.engineState.engineSession != null }) {
+                    "AddMultipleTabsAction does not support tabs with engine sessions"
                 }
             }
             is EngineAction.UnlinkEngineSessionAction -> {
-                unlink(context, action)
+                unlink(store, action)
             }
             else -> {
                 // no-op
@@ -63,8 +61,8 @@ internal class LinkingMiddleware(
 
         when (action) {
             is EngineAction.LinkEngineSessionAction -> {
-                context.state.findTabOrCustomTab(action.tabId)?.let { tab ->
-                    engineObserver = link(context, action.engineSession, tab, action.skipLoading, action.includeParent)
+                store.state.findTabOrCustomTab(action.tabId)?.let { tab ->
+                    engineObserver = link(store, action.engineSession, tab, action.skipLoading, action.includeParent)
                 }
             }
             else -> {
@@ -73,19 +71,19 @@ internal class LinkingMiddleware(
         }
 
         engineObserver?.let {
-            context.dispatch(EngineAction.UpdateEngineSessionObserverAction(it.first, it.second))
-            context.dispatch(EngineAction.UpdateEngineSessionInitializingAction(it.first, false))
+            store.dispatch(EngineAction.UpdateEngineSessionObserverAction(it.first, it.second))
+            store.dispatch(EngineAction.UpdateEngineSessionInitializingAction(it.first, false))
         }
     }
 
     private fun link(
-        context: MiddlewareContext<BrowserState, BrowserAction>,
+        store: Store<BrowserState, BrowserAction>,
         engineSession: EngineSession,
         tab: SessionState,
         skipLoading: Boolean = true,
         includeParent: Boolean,
     ): Pair<String, EngineObserver> {
-        val observer = EngineObserver(tab.id, context.store)
+        val observer = EngineObserver(tab.id, store, scope)
         engineSession.register(observer)
 
         if (skipLoading) {
@@ -99,7 +97,7 @@ internal class LinkingMiddleware(
             performLoadOnMainThread(engineSession, tab.content.url, loadFlags = tab.engineState.initialLoadFlags)
         } else {
             val parentEngineSession = if (includeParent && tab is TabSessionState) {
-                tab.parentId?.let { context.state.findTabOrCustomTab(it)?.engineState?.engineSession }
+                tab.parentId?.let { store.state.findTabOrCustomTab(it)?.engineState?.engineSession }
             } else {
                 null
             }
@@ -110,6 +108,8 @@ internal class LinkingMiddleware(
                 parent = parentEngineSession,
                 loadFlags = tab.engineState.initialLoadFlags,
                 additionalHeaders = tab.engineState.initialAdditionalHeaders,
+                originalInput = tab.originalInput,
+                textDirectiveUserActivation = tab.engineState.initialTextDirectiveUserActivation,
             )
         }
 
@@ -122,17 +122,21 @@ internal class LinkingMiddleware(
         parent: EngineSession? = null,
         loadFlags: EngineSession.LoadUrlFlags,
         additionalHeaders: Map<String, String>? = null,
+        originalInput: String? = null,
+        textDirectiveUserActivation: Boolean = false,
     ) = scope.launch {
         engineSession.loadUrl(
             url = url,
             parent = parent,
             flags = loadFlags,
             additionalHeaders = additionalHeaders,
+            originalInput = originalInput,
+            textDirectiveUserActivation = textDirectiveUserActivation,
         )
     }
 
     private fun unlink(
-        store: MiddlewareContext<BrowserState, BrowserAction>,
+        store: Store<BrowserState, BrowserAction>,
         action: EngineAction.UnlinkEngineSessionAction,
     ) {
         val tab = store.state.findTabOrCustomTab(action.tabId) ?: return

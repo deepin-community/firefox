@@ -4,7 +4,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "CompositorWidgetChild.h"
-#include "mozilla/Unused.h"
 #include "gfxPlatform.h"
 
 namespace mozilla {
@@ -22,7 +21,10 @@ CompositorWidgetChild::CompositorWidgetChild(
 
 CompositorWidgetChild::~CompositorWidgetChild() = default;
 
-bool CompositorWidgetChild::Initialize() { return true; }
+bool CompositorWidgetChild::Initialize(
+    const layers::CompositorOptions& aOptions) {
+  return true;
+}
 
 mozilla::ipc::IPCResult CompositorWidgetChild::RecvObserveVsync() {
   mVsyncDispatcher->SetCompositorVsyncObserver(mVsyncObserver);
@@ -36,15 +38,13 @@ mozilla::ipc::IPCResult CompositorWidgetChild::RecvUnobserveVsync() {
 
 void CompositorWidgetChild::NotifyClientSizeChanged(
     const LayoutDeviceIntSize& aClientSize) {
-  Unused << SendNotifyClientSizeChanged(aClientSize);
+  (void)SendNotifyClientSizeChanged(aClientSize);
 }
 
-void CompositorWidgetChild::CleanupResources() {
-  Unused << SendCleanupResources();
-}
+void CompositorWidgetChild::CleanupResources() { (void)SendCleanupResources(); }
 
 void CompositorWidgetChild::SetRenderingSurface(const uintptr_t aXWindow) {
-  Unused << SendSetRenderingSurface(aXWindow);
+  (void)SendSetRenderingSurface(aXWindow);
 }
 
 }  // namespace widget

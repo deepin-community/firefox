@@ -6,36 +6,36 @@
 
 #include "StorageDBThread.h"
 
+#include "GeckoProfiler.h"
+#include "LocalStorageCache.h"
+#include "LocalStorageManager.h"
 #include "StorageCommon.h"
 #include "StorageDBUpdater.h"
 #include "StorageUtils.h"
-#include "LocalStorageCache.h"
-#include "LocalStorageManager.h"
-
-#include "nsComponentManagerUtils.h"
-#include "nsDirectoryServiceUtils.h"
-#include "nsAppDirectoryServiceDefs.h"
-#include "nsThreadUtils.h"
-#include "nsProxyRelease.h"
+#include "mozIStorageBindingParams.h"
+#include "mozIStorageFunction.h"
+#include "mozIStorageService.h"
+#include "mozIStorageValueArray.h"
 #include "mozStorageCID.h"
 #include "mozStorageHelper.h"
-#include "mozIStorageService.h"
-#include "mozIStorageBindingParams.h"
-#include "mozIStorageValueArray.h"
-#include "mozIStorageFunction.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/ipc/BackgroundParent.h"
-#include "nsIObserverService.h"
-#include "nsThread.h"
-#include "nsThreadManager.h"
-#include "nsVariant.h"
 #include "mozilla/EventQueue.h"
 #include "mozilla/IOInterposer.h"
 #include "mozilla/OriginAttributes.h"
-#include "mozilla/ThreadEventQueue.h"
 #include "mozilla/Services.h"
+#include "mozilla/ThreadEventQueue.h"
 #include "mozilla/Tokenizer.h"
-#include "GeckoProfiler.h"
+#include "mozilla/glean/DomStorageMetrics.h"
+#include "mozilla/ipc/BackgroundParent.h"
+#include "nsAppDirectoryServiceDefs.h"
+#include "nsComponentManagerUtils.h"
+#include "nsDirectoryServiceUtils.h"
+#include "nsIObserverService.h"
+#include "nsProxyRelease.h"
+#include "nsThread.h"
+#include "nsThreadManager.h"
+#include "nsThreadUtils.h"
+#include "nsVariant.h"
 
 // How long we collect write oprerations
 // before they are flushed to the database
@@ -214,12 +214,7 @@ nsresult StorageDBThread::Init(const nsString& aProfilePath) {
       profilePath = aProfilePath;
     }
 
-    mDatabaseFile = do_CreateInstance(NS_LOCAL_FILE_CONTRACTID, &rv);
-    if (NS_WARN_IF(NS_FAILED(rv))) {
-      return rv;
-    }
-
-    rv = mDatabaseFile->InitWithPath(profilePath);
+    rv = NS_NewLocalFile(profilePath, getter_AddRefs(mDatabaseFile));
     if (NS_WARN_IF(NS_FAILED(rv))) {
       return rv;
     }
@@ -253,7 +248,7 @@ nsresult StorageDBThread::Shutdown() {
     return NS_ERROR_NOT_INITIALIZED;
   }
 
-  Telemetry::AutoTimer<Telemetry::LOCALDOMSTORAGE_SHUTDOWN_DATABASE_MS> timer;
+  auto timer = glean::localdomstorage::shutdown_database.Measure();
 
   {
     MonitorAutoLock monitor(mThreadObserver->GetMonitor());
@@ -411,7 +406,7 @@ void StorageDBThread::SetDefaultPriority() {
 void StorageDBThread::ThreadFunc(void* aArg) {
   {
     auto queue = MakeRefPtr<ThreadEventQueue>(MakeUnique<EventQueue>());
-    Unused << nsThreadManager::get().CreateCurrentThread(queue);
+    (void)nsThreadManager::get().CreateCurrentThread(queue);
   }
 
   AUTO_PROFILER_REGISTER_THREAD("localStorage DB");

@@ -4,7 +4,6 @@
 
 about-reader-loading = Yüklənir…
 about-reader-load-error = Məqalə səhifədən yüklənə bilmədi
-
 # An estimate for how long it takes to read an article,
 # expressed as a range covering both slow and fast readers.
 # Variables:
@@ -15,9 +14,6 @@ about-reader-estimated-read-time =
         [one] { $range } dəqiqə
        *[other] { $range } dəqiqə
     }
-
-## These are used as tooltips in Type Control
-
 
 ## These are the styles of typeface that are options in the reader view controls.
 

@@ -24,11 +24,11 @@ about-private-browsing-info-description-simplified = { -brand-short-name } оч�
 about-private-browsing-learn-more-link = Докладніше
 about-private-browsing-hide-activity = Приховуйте свою активність і місцеперебування де б ви не переглядали щось в інтернеті
 about-private-browsing-get-privacy = Отримайте захист приватності в інтернеті всюди
-about-private-browsing-hide-activity-1 = Приховати активність перегляду та місцеперебування за допомогою { -mozilla-vpn-brand-name }. Одним натисканням створює безпечне з'єднання навіть у загальнодоступній мережі Wi-Fi.
+about-private-browsing-hide-activity-1 = Приховуйте діяльність в інтернеті та розташування за допомогою { -mozilla-vpn-brand-name }. Створюйте захищене з'єднання одним натисканням — навіть у публічній мережі Wi-Fi.
 about-private-browsing-prominent-cta = Зберігайте приватність з { -mozilla-vpn-brand-name }
 about-private-browsing-focus-promo-cta = Завантажити { -focus-brand-name }
 about-private-browsing-focus-promo-header = { -focus-brand-name }: приватний перегляд у дорозі
-about-private-browsing-focus-promo-text = Наш спеціалізований мобільний застосунок для приватного перегляду щоразу очищає вашу історію і файли cookie.
+about-private-browsing-focus-promo-text = Наша спеціальна програма для приватного перегляду на мобільних пристроях щоразу очищає вашу історію і файли cookie.
 
 ## The following strings will be used for experiments in Fx99 and Fx100
 

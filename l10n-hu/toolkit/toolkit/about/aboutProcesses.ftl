@@ -131,6 +131,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windowsos segédprogramok
 about-processes-utility-actor-windows-file-dialog = Windowsos fájlválasztó párbeszédablak
+about-processes-utility-actor-pkcs11-module = Biztonságimodul-segéd
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -184,7 +185,7 @@ duration-unit-d = n
 ## Memory units
 
 memory-unit-B = B
-memory-unit-KB = KB
+memory-unit-KB = kB
 memory-unit-MB = MB
 memory-unit-GB = GB
 memory-unit-TB = TB

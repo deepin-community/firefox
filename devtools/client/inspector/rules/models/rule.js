@@ -5,7 +5,7 @@
 "use strict";
 
 const {
-  style: { ELEMENT_STYLE },
+  style: { ELEMENT_STYLE, PRES_HINTS },
 } = require("resource://devtools/shared/constants.js");
 const CssLogic = require("resource://devtools/shared/inspector/css-logic.js");
 const TextProperty = require("resource://devtools/client/inspector/rules/models/text-property.js");
@@ -38,7 +38,7 @@ class Rule {
   /**
    * @param {ElementStyle} elementStyle
    *        The ElementStyle to which this rule belongs.
-   * @param {Object} options
+   * @param {object} options
    *        The information used to construct this rule. Properties include:
    *          rule: A StyleRuleActor
    *          inherited: An element this rule was inherited from. If omitted,
@@ -53,11 +53,11 @@ class Rule {
     this.compatibilityIssues = null;
 
     this.matchedSelectorIndexes = options.matchedSelectorIndexes || [];
-    this.pseudoElement = options.pseudoElement || "";
     this.isSystem = options.isSystem;
     this.isUnmatched = options.isUnmatched || false;
     this.darkColorScheme = options.darkColorScheme;
     this.inherited = options.inherited || null;
+    this.pseudoElement = options.pseudoElement || "";
     this.keyframes = options.keyframes || null;
     this.userAdded = options.rule.userAdded;
 
@@ -90,17 +90,6 @@ class Rule {
     return this.textProps;
   }
 
-  get inheritance() {
-    if (!this.inherited) {
-      return null;
-    }
-
-    return {
-      inherited: this.inherited,
-      inheritedSource: this.inheritedSource,
-    };
-  }
-
   get selector() {
     return {
       getUniqueSelector: this.getUniqueSelector,
@@ -125,22 +114,25 @@ class Rule {
     return title;
   }
 
-  get inheritedSource() {
-    if (this._inheritedSource) {
-      return this._inheritedSource;
+  get inheritedSectionLabel() {
+    if (this._inheritedSectionLabel) {
+      return this._inheritedSectionLabel;
     }
-    this._inheritedSource = "";
+    this._inheritedSectionLabel = "";
     if (this.inherited) {
       let eltText = this.inherited.displayName;
       if (this.inherited.id) {
         eltText += "#" + this.inherited.id;
       }
-      this._inheritedSource = STYLE_INSPECTOR_L10N.getFormatStr(
+      if (CssLogic.ELEMENT_BACKED_PSEUDO_ELEMENTS.has(this.pseudoElement)) {
+        eltText += this.pseudoElement;
+      }
+      this._inheritedSectionLabel = STYLE_INSPECTOR_L10N.getFormatStr(
         "rule.inheritedFrom",
         eltText
       );
     }
-    return this._inheritedSource;
+    return this._inheritedSectionLabel;
   }
 
   get keyframesName() {
@@ -169,9 +161,15 @@ class Rule {
   }
 
   get selectorText() {
-    return this.domRule.selectors
-      ? this.domRule.selectors.join(", ")
-      : CssLogic.l10n("rule.sourceElement");
+    if (Array.isArray(this.domRule.selectors)) {
+      return this.domRule.selectors.join(", ");
+    }
+
+    if (this.domRule.type === PRES_HINTS) {
+      return CssLogic.l10n("rule.sourceElementAttributesStyle");
+    }
+
+    return CssLogic.l10n("rule.sourceElement");
   }
 
   /**
@@ -197,6 +195,7 @@ class Rule {
 
   /**
    * Get the declaration block issues from the compatibility actor
+   *
    * @returns A promise that resolves with an array of objects in following form:
    *    {
    *      // Type of compatibility issue
@@ -227,7 +226,7 @@ class Rule {
   /**
    * Returns the TextProperty with the given id or undefined if it cannot be found.
    *
-   * @param {String|null} id
+   * @param {string | null} id
    *        A TextProperty id.
    * @return {TextProperty|undefined} with the given id in the current Rule or undefined
    * if it cannot be found.
@@ -261,7 +260,7 @@ class Rule {
    * Returns true if the rule matches the creation options
    * specified.
    *
-   * @param {Object} options
+   * @param {object} options
    *        Creation options. See the Rule constructor for documentation.
    */
   matches(options) {
@@ -271,19 +270,25 @@ class Rule {
   /**
    * Create a new TextProperty to include in the rule.
    *
-   * @param {String} name
+   * @param {string} name
    *        The text property name (such as "background" or "border-top").
-   * @param {String} value
+   * @param {string} value
    *        The property's value (not including priority).
-   * @param {String} priority
+   * @param {string} priority
    *        The property's priority (either "important" or an empty string).
-   * @param {Boolean} enabled
+   * @param {boolean} enabled
    *        True if the property should be enabled.
    * @param {TextProperty} siblingProp
    *        Optional, property next to which the new property will be added.
    */
   createProperty(name, value, priority, enabled, siblingProp) {
-    const prop = new TextProperty(this, name, value, priority, enabled);
+    const prop = new TextProperty({
+      rule: this,
+      name,
+      value,
+      priority,
+      enabled,
+    });
 
     let ind;
     if (siblingProp) {
@@ -296,6 +301,9 @@ class Rule {
 
     this.applyProperties(modifications => {
       modifications.createProperty(ind, name, value, priority, enabled);
+
+      this.store.userProperties.setProperty(this.domRule, name, value);
+
       // Now that the rule has been updated, the server might have given us data
       // that changes the state of the property. Update it now.
       prop.updateEditor();
@@ -416,6 +424,7 @@ class Rule {
     const resultPromise = Promise.resolve(this._applyingModifications)
       .then(() => {
         const modifications = this.domRule.startModifyingProperties(
+          this.inspector.panelWin,
           this.cssProperties
         );
         modifier(modifications);
@@ -443,7 +452,7 @@ class Rule {
    *
    * @param {TextProperty} property
    *        The property to rename.
-   * @param {String} name
+   * @param {string} name
    *        The new property name (such as "background" or "border-top").
    * @return {Promise}
    */
@@ -465,9 +474,9 @@ class Rule {
    *
    * @param {TextProperty} property
    *        The property to manipulate.
-   * @param {String} value
+   * @param {string} value
    *        The property's value (not including priority).
-   * @param {String} priority
+   * @param {string} priority
    *        The property's priority (either "important" or an empty string).
    * @return {Promise}
    */
@@ -491,15 +500,16 @@ class Rule {
    *
    * @param {TextProperty} property
    *        The property which value will be previewed
-   * @param {String} value
+   * @param {string} value
    *        The value to be used for the preview
-   * @param {String} priority
+   * @param {string} priority
    *        The property's priority (either "important" or an empty string).
-   **@return {Promise}
+   * @return {Promise}
    */
   previewPropertyValue(property, value, priority) {
     this.elementStyle.ruleView.emitForTests("start-preview-property-value");
     const modifications = this.domRule.startModifyingProperties(
+      this.inspector.panelWin,
       this.cssProperties
     );
     modifications.setProperty(
@@ -520,7 +530,7 @@ class Rule {
    *
    * @param {TextProperty} property
    *        The property to enable/disable
-   * @param {Boolean} value
+   * @param {boolean} value
    */
   setPropertyEnabled(property, value) {
     if (property.enabled === !!value) {
@@ -590,14 +600,15 @@ class Rule {
         name,
         prop.value
       );
-      const textProp = new TextProperty(
-        this,
+
+      const textProp = new TextProperty({
+        rule: this,
         name,
         value,
-        prop.priority,
-        !("commentOffsets" in prop),
-        invisible
-      );
+        priority: prop.priority,
+        enabled: !("commentOffsets" in prop),
+        invisible,
+      });
       textProps.push(textProp);
     }
 
@@ -624,7 +635,12 @@ class Rule {
         prop.name,
         prop.value
       );
-      const textProp = new TextProperty(this, prop.name, value, prop.priority);
+      const textProp = new TextProperty({
+        rule: this,
+        name: prop.name,
+        value,
+        priority: prop.priority,
+      });
       textProp.enabled = false;
       textProps.push(textProp);
     }
@@ -659,11 +675,7 @@ class Rule {
     }
 
     // Update current properties for each property present on the style.
-    // This will mark any touched properties with _visited so we
-    // can detect properties that weren't touched (because they were
-    // removed from the style).
-    // Also keep track of properties that didn't exist in the current set
-    // of properties.
+    // Also keep track of properties that didn't exist in the current set of properties.
     const brandNewProps = [];
     for (const newProp of newTextProps) {
       if (!this._updateTextProperty(newProp)) {
@@ -674,15 +686,6 @@ class Rule {
     // Refresh editors and disabled state for all the properties that
     // were updated.
     for (const prop of this.textProps) {
-      // Properties that weren't touched during the update
-      // process must no longer exist on the node.  Mark them disabled.
-      if (!prop._visited) {
-        prop.enabled = false;
-        prop.updateEditor();
-      } else {
-        delete prop._visited;
-      }
-
       // Valid properties that aren't disabled might need to get updated in some condition
       if (
         prop.enabled &&
@@ -723,7 +726,7 @@ class Rule {
    * @param {TextProperty} newProp
    *        The current version of the property, as parsed from the
    *        authoredText in Rule._getTextProperties().
-   * @return {Boolean} true if a property was updated, false if no properties
+   * @return {boolean} true if a property was updated, false if no properties
    *         were updated.
    */
   _updateTextProperty(newProp) {
@@ -733,9 +736,6 @@ class Rule {
       if (prop.name !== newProp.name) {
         continue;
       }
-
-      // Mark this property visited.
-      prop._visited = true;
 
       // Start at rank 1 for matching name.
       let rank = 1;
@@ -755,17 +755,8 @@ class Rule {
       }
 
       if (rank > match.rank) {
-        if (match.prop) {
-          // We outrank a previous match, disable it.
-          match.prop.enabled = false;
-          match.prop.updateEditor();
-        }
         match.rank = rank;
         match.prop = prop;
-      } else if (rank) {
-        // A previous match outranks us, disable ourself.
-        prop.enabled = false;
-        prop.updateEditor();
       }
     }
 
@@ -788,7 +779,7 @@ class Rule {
    *
    * @param {TextProperty} textProperty
    *        The text property that will be left to focus on a sibling.
-   * @param {Number} direction
+   * @param {number} direction
    *        The move focus direction number.
    */
   editClosestTextProperty(textProperty, direction) {
@@ -796,7 +787,8 @@ class Rule {
 
     if (direction === Services.focus.MOVEFOCUS_FORWARD) {
       for (++index; index < this.textProps.length; ++index) {
-        if (!this.textProps[index].invisible) {
+        // The prop could be invisible or a hidden unused variable
+        if (this.textProps[index].editor) {
           break;
         }
       }
@@ -807,7 +799,8 @@ class Rule {
       }
     } else if (direction === Services.focus.MOVEFOCUS_BACKWARD) {
       for (--index; index >= 0; --index) {
-        if (!this.textProps[index].invisible) {
+        // The prop could be invisible or a hidden unused variable
+        if (this.textProps[index].editor) {
           break;
         }
       }
@@ -837,7 +830,7 @@ class Rule {
   }
 
   /**
-   * @returns {Boolean} Whether or not the rule is in a layer
+   * @returns {boolean} Whether or not the rule is in a layer
    */
   isInLayer() {
     return this.domRule.ancestorData.some(({ type }) => type === "layer");
@@ -849,7 +842,7 @@ class Rule {
    * of the same CSSLayerBlockRule)
    *
    * @param {Rule} otherRule: The rule we want to compare with
-   * @returns {Boolean}
+   * @returns {boolean}
    */
   isInDifferentLayer(otherRule) {
     const filterLayer = ({ type }) => type === "layer";
@@ -874,7 +867,7 @@ class Rule {
   }
 
   /**
-   * @returns {Boolean} Whether or not the rule is in a @starting-style rule
+   * @returns {boolean} Whether or not the rule is in a @starting-style rule
    */
   isInStartingStyle() {
     return this.domRule.ancestorData.some(
@@ -883,8 +876,21 @@ class Rule {
   }
 
   /**
+   * @returns {boolean} Whether or not the rule can be edited
+   */
+  isEditable() {
+    return (
+      !this.isSystem &&
+      this.domRule.type !== PRES_HINTS &&
+      // FIXME: Should be removed as part of Bug 2004046
+      this.domRule.className !== "CSSPositionTryRule"
+    );
+  }
+
+  /**
    * See whether this rule has any non-invisible properties.
-   * @return {Boolean} true if there is any visible property, or false
+   *
+   * @return {boolean} true if there is any visible property, or false
    *         if all properties are invisible
    */
   hasAnyVisibleProperties() {

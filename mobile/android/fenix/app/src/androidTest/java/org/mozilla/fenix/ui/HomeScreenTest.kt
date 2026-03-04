@@ -5,17 +5,18 @@
 package org.mozilla.fenix.ui
 
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.RetryTestRule
-import org.mozilla.fenix.helpers.TestAssetHelper
-import org.mozilla.fenix.helpers.TestHelper
+import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
+import org.mozilla.fenix.helpers.TestHelper.waitUntilSnackbarGone
 import org.mozilla.fenix.helpers.TestSetup
+import org.mozilla.fenix.helpers.perf.DetectMemoryLeaksRule
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
-import org.mozilla.fenix.ui.robots.searchScreen
 
 /**
  *  Tests for verifying the presence of home screen and first-run homescreen elements
@@ -26,12 +27,15 @@ import org.mozilla.fenix.ui.robots.searchScreen
 
 class HomeScreenTest : TestSetup() {
     @get:Rule(order = 0)
-    val activityTestRule =
+    val composeTestRule =
         AndroidComposeTestRule(
             HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
         ) { it.activity }
 
-    @Rule(order = 1)
+    @get:Rule(order = 1)
+    val memoryLeaksRule = DetectMemoryLeaksRule()
+
+    @Rule(order = 2)
     @JvmField
     val retryTestRule = RetryTestRule(3)
 
@@ -39,24 +43,19 @@ class HomeScreenTest : TestSetup() {
     @Test
     fun homeScreenItemsTest() {
         // Workaround to make sure the Pocket articles are populated before starting the test.
-        homeScreen {
+        homeScreen(composeTestRule) {
         }.openThreeDotMenu {
-        }.openSettings {
-        }.goBack {
+        }.clickSettingsButton {
+        }.goBack(composeTestRule) {
             verifyHomeWordmark()
             verifyHomePrivateBrowsingButton()
             verifyExistingTopSitesTabs("Wikipedia")
-            verifyExistingTopSitesTabs("Top Articles")
             verifyExistingTopSitesTabs("Google")
             verifyCollectionsHeader()
             verifyNoCollectionsText()
-            scrollToPocketProvokingStories()
             verifyThoughtProvokingStories(true)
-            verifyStoriesByTopicItems()
-            verifyCustomizeHomepageButton(true)
             verifyNavigationToolbar()
             verifyHomeMenuButton()
-            verifyTabButton()
             verifyTabCounter("0")
         }
     }
@@ -64,141 +63,68 @@ class HomeScreenTest : TestSetup() {
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/244199
     @Test
     fun privateBrowsingHomeScreenItemsTest() {
-        homeScreen { }.togglePrivateBrowsingMode()
+        homeScreen(composeTestRule) {
+        }.togglePrivateBrowsingMode()
 
-        homeScreen {
+        homeScreen(composeTestRule) {
             verifyPrivateBrowsingHomeScreenItems()
-        }.openCommonMythsLink {
+        }.openPrivateBrowsingModeLearnMoreLink {
             verifyUrl("common-myths-about-private-browsing")
         }
     }
 
     // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1364362
     @SmokeTest
+    @Ignore("disabled - https://bugzilla.mozilla.org/show_bug.cgi?id=1989405")
     @Test
     fun verifyJumpBackInSectionTest() {
-        activityTestRule.activityRule.applySettingsExceptions {
+        composeTestRule.activityRule.applySettingsExceptions {
             it.isRecentlyVisitedFeatureEnabled = false
             it.isPocketEnabled = false
         }
 
-        val firstWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 4)
-        val secondWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
+        val firstWebPage = mockWebServer.getGenericAsset(4)
+        val secondWebPage = mockWebServer.getGenericAsset(1)
 
-        navigationToolbar {
+        navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             verifyPageContent(firstWebPage.content)
             verifyUrl(firstWebPage.url.toString())
         }.goToHomescreen {
             verifyJumpBackInSectionIsDisplayed()
-            verifyJumpBackInItemTitle(activityTestRule, firstWebPage.title)
-            verifyJumpBackInItemWithUrl(activityTestRule, firstWebPage.url.toString())
+            verifyJumpBackInItemTitle(composeTestRule, firstWebPage.title)
+            verifyJumpBackInItemWithUrl(composeTestRule, firstWebPage.url.toString())
             verifyJumpBackInShowAllButton()
-        }.clickJumpBackInShowAllButton(activityTestRule) {
+        }.clickJumpBackInShowAllButton {
             verifyExistingOpenTabs(firstWebPage.title)
         }.closeTabDrawer {
         }
 
-        navigationToolbar {
+        navigationToolbar(composeTestRule) {
         }.enterURLAndEnterToBrowser(secondWebPage.url) {
             verifyPageContent(secondWebPage.content)
             verifyUrl(secondWebPage.url.toString())
         }.goToHomescreen {
             verifyJumpBackInSectionIsDisplayed()
-            verifyJumpBackInItemTitle(activityTestRule, secondWebPage.title)
-            verifyJumpBackInItemWithUrl(activityTestRule, secondWebPage.url.toString())
-        }.openTabDrawer(activityTestRule) {
+            verifyJumpBackInItemTitle(composeTestRule, secondWebPage.title)
+            verifyJumpBackInItemWithUrl(composeTestRule, secondWebPage.url.toString())
+        }.openTabDrawer {
             closeTabWithTitle(secondWebPage.title)
+            waitUntilSnackbarGone()
+            verifyExistingOpenTabs(firstWebPage.title)
         }.closeTabDrawer {
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
             verifyJumpBackInSectionIsDisplayed()
-            verifyJumpBackInItemTitle(activityTestRule, firstWebPage.title)
-            verifyJumpBackInItemWithUrl(activityTestRule, firstWebPage.url.toString())
-        }.openTabDrawer(activityTestRule) {
+            verifyJumpBackInItemTitle(composeTestRule, firstWebPage.title)
+            verifyJumpBackInItemWithUrl(composeTestRule, firstWebPage.url.toString())
+        }.openTabDrawer {
             closeTab()
         }
 
-        homeScreen {
+        homeScreen(composeTestRule) {
             verifyJumpBackInSectionIsNotDisplayed()
-        }
-    }
-
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1569839
-    @Test
-    fun verifyCustomizeHomepageButtonTest() {
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-        }.goToHomescreen {
-        }.openCustomizeHomepage {
-            clickShortcutsButton()
-            clickJumpBackInButton()
-            clickRecentBookmarksButton()
-            clickRecentSearchesButton()
-            clickPocketButton()
-        }.goBackToHomeScreen {
-            verifyCustomizeHomepageButton(false)
-        }.openThreeDotMenu {
-        }.openCustomizeHome {
-            clickShortcutsButton()
-        }.goBackToHomeScreen {
-            verifyCustomizeHomepageButton(true)
-        }
-    }
-
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/414970
-    @SmokeTest
-    @Test
-    fun addPrivateBrowsingShortcutFromHomeScreenCFRTest() {
-        homeScreen {
-        }.triggerPrivateBrowsingShortcutPrompt {
-            verifyNoThanksPrivateBrowsingShortcutButton(activityTestRule)
-            verifyAddPrivateBrowsingShortcutButton(activityTestRule)
-            clickAddPrivateBrowsingShortcutButton(activityTestRule)
-            clickAddAutomaticallyButton()
-        }.openHomeScreenShortcut("Private ${TestHelper.appName}") {}
-        searchScreen {
-            verifySearchView()
-        }.dismissSearchBar {
-            verifyCommonMythsLink()
-        }
-    }
-
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1569867
-    @Test
-    fun verifyJumpBackInContextualHintTest() {
-        activityTestRule.activityRule.applySettingsExceptions {
-            it.isJumpBackInCFREnabled = true
-            it.isNavigationBarCFREnabled = false
-        }
-
-        val genericPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(genericPage.url) {
-        }.goToHomescreen {
-            verifyJumpBackInMessage(activityTestRule, exists = true)
-        }
-    }
-
-    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2651349
-    @Test
-    fun verifyJumpBackCFRIsNotDisplayedWhileSearchFragmentIsEnableTest() {
-        activityTestRule.activityRule.applySettingsExceptions {
-            it.isJumpBackInCFREnabled = true
-        }
-
-        val genericPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(genericPage.url) {
-        }.openNavigationToolbar {
-        }
-        homeScreen {
-            verifyJumpBackInMessage(activityTestRule, exists = false)
         }
     }
 }

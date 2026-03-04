@@ -23,17 +23,17 @@ default-browser-prompt-title-pin =
     }
 default-browser-prompt-message-pin =
     { -brand-short-name.gender ->
-        [masculine] Mějte { -brand-short-name(case: "acc") } nastavený jako výchozí prohlížeč a připnutý na své liště.
-        [feminine] Mějte { -brand-short-name(case: "acc") } nastavenou jako výchozí prohlížeč a připnutou na své liště.
-        [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté na své liště.
-       *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou na své liště.
+        [masculine] Mějte { -brand-short-name(case: "acc") } nastavený jako výchozí prohlížeč a připnutý na systémovém hlavním panelu.
+        [feminine] Mějte { -brand-short-name(case: "acc") } nastavenou jako výchozí prohlížeč a připnutou na systémovém hlavním panelu.
+        [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté na systémovém hlavním panelu.
+       *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou na systémovém hlavním panelu.
     }
 default-browser-prompt-message-pin-msix =
     { -brand-short-name.gender ->
-        [masculine] Mějte { -brand-short-name(case: "acc") } nastavený jako výchozí prohlížeč a připnutý na své liště a v nabídce start.
-        [feminine] Mějte { -brand-short-name(case: "acc") } nastavenou jako výchozí prohlížeč a připnutou na své liště a v nabídce start.
-        [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté na své liště a v nabídce start.
-       *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou na své liště a v nabídce start.
+        [masculine] Mějte { -brand-short-name(case: "acc") } nastavený jako výchozí prohlížeč a připnutý na systémovém hlavním panelu a v nabídce start.
+        [feminine] Mějte { -brand-short-name(case: "acc") } nastavenou jako výchozí prohlížeč a připnutou na systémovém hlavním panelu a v nabídce start.
+        [neuter] Mějte { -brand-short-name(case: "acc") } nastavené jako výchozí prohlížeč a připnuté na systémovém hlavním panelu a v nabídce start.
+       *[other] Mějte aplikaci { -brand-short-name } nastavenou jako výchozí prohlížeč a připnutou na systémovém hlavním panelu a v nabídce start.
     }
 default-browser-prompt-message-pin-mac =
     { -brand-short-name.gender ->
@@ -87,3 +87,18 @@ default-browser-guidance-notification-body-instruction-win11 =
     }
 default-browser-guidance-notification-info-page = Zobrazit
 default-browser-guidance-notification-dismiss = Hotovo
+default-browser-guidance-notification-v2-title =
+    { -brand-short-name.case-status ->
+        [with-cases] Dokončete nastavení { -brand-short-name(case: "gen") } jako svého výchozího prohlížeče
+       *[no-cases] Dokončete nastavení aplikace { -brand-short-name } jako svého výchozího prohlížeče
+    }
+default-browser-guidance-notification-v2-body =
+    { -brand-short-name.case-status ->
+        [with-cases] V Nastavení vyberte pro { -brand-short-name(case: "acc") } možnost „Nastavit jako výchozí“.
+       *[no-cases] V Nastavení vyberte pro aplikaci { -brand-short-name } možnost „Nastavit jako výchozí“.
+    }
+default-browser-guidance-notification-v2-title-only =
+    { -brand-short-name.case-status ->
+        [with-cases] V Nastavení dokončete nastavení { -brand-short-name(case: "gen") } jako výchozího prohlížeče
+       *[no-cases] V Nastavení dokončete nastavení aplikace { -brand-short-name } jako výchozího prohlížeče
+    }

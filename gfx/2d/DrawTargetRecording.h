@@ -10,8 +10,16 @@
 #include "2D.h"
 #include "DrawEventRecorder.h"
 
+class nsICanvasRenderingContextInternal;
+
 namespace mozilla {
+
+namespace ipc {
+class IProtocol;
+}  // namespace ipc
+
 namespace layers {
+class CanvasChild;
 class CanvasDrawEventRecorder;
 class RecordedTextureData;
 struct RemoteTextureOwnerId;
@@ -25,7 +33,6 @@ class DrawTargetRecording final : public DrawTarget {
   DrawTargetRecording(DrawEventRecorder* aRecorder, DrawTarget* aDT,
                       IntRect aRect, bool aHasData = false);
   DrawTargetRecording(layers::CanvasDrawEventRecorder* aRecorder,
-                      int64_t aTextureId,
                       const layers::RemoteTextureOwnerId& aTextureOwnerId,
                       DrawTarget* aDT, const IntSize& aSize);
 
@@ -223,6 +230,9 @@ class DrawTargetRecording final : public DrawTarget {
    */
   virtual void PopClip() override;
 
+  /* Remove all applied clips. */
+  virtual bool RemoveAllClips() override;
+
   /**
    * Push a 'layer' to the DrawTarget, a layer is a temporary surface that all
    * drawing will be redirected to, this is used for example to support group
@@ -355,6 +365,11 @@ class DrawTargetRecording final : public DrawTarget {
 
   virtual already_AddRefed<FilterNode> CreateFilter(FilterType aType) override;
 
+  virtual already_AddRefed<FilterNode> DeferFilterInput(
+      const Path* aPath, const Pattern& aPattern, const IntRect& aSourceRect,
+      const IntPoint& aDestOffset, const DrawOptions& aOptions = DrawOptions(),
+      const StrokeOptions* aStrokeOptions = nullptr) override;
+
   /*
    * Set a transform on the surface, this transform is applied at drawing time
    * to both the mask and source of the operation.
@@ -389,6 +404,17 @@ class DrawTargetRecording final : public DrawTarget {
   }
 
   layers::RecordedTextureData* mTextureData = nullptr;
+
+  friend class layers::CanvasChild;
+
+  already_AddRefed<SourceSurface> CreateExternalSourceSurface(
+      const IntSize& aSize, SurfaceFormat aFormat);
+
+  friend class ::nsICanvasRenderingContextInternal;
+
+  already_AddRefed<SourceSurface> SnapshotExternalCanvas(
+      nsICanvasRenderingContextInternal* aCanvas,
+      mozilla::ipc::IProtocol* aActor);
 
  private:
   /**

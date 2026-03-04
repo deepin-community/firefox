@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFEDisplacementMapElement.h"
-#include "mozilla/dom/SVGFEDisplacementMapElementBinding.h"
+
 #include "mozilla/SVGFilterInstance.h"
-#include "mozilla/dom/Document.h"
 #include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGFEDisplacementMapElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEDisplacementMap)
 
@@ -124,16 +125,16 @@ nsresult SVGFEDisplacementMapElement::BindToTree(BindContext& aCtx,
 
 SVGElement::NumberAttributesInfo SVGFEDisplacementMapElement::GetNumberInfo() {
   return NumberAttributesInfo(mNumberAttributes, sNumberInfo,
-                              ArrayLength(sNumberInfo));
+                              std::size(sNumberInfo));
 }
 
 SVGElement::EnumAttributesInfo SVGFEDisplacementMapElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::StringAttributesInfo SVGFEDisplacementMapElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 }  // namespace mozilla::dom

@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = เลิกโหลดแท็บและหยุดการทำงานของโพรเซส
+about-processes-kill-process =
+    .title = ฆ่าโปรเซส
 about-processes-shutdown-tab =
     .title = ปิดแท็บ
 # Profiler icons
@@ -50,6 +52,7 @@ about-processes-remote-sandbox-broker-process = ตัวกลาง Sandbox �
 about-processes-fork-server-process = ฟอร์คเซิร์ฟเวอร์ ({ $pid })
 about-processes-preallocated-process = จัดสรรล่วงหน้า ({ $pid })
 about-processes-utility-process = โปรแกรมอรรถประโยชน์ ({ $pid })
+about-processes-inference-process = การอนุมาน ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -125,6 +128,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows Utils
 about-processes-utility-actor-windows-file-dialog = กล่องโต้ตอบไฟล์ของ Windows
+about-processes-utility-actor-pkcs11-module = ตัวช่วยโมดูลความปลอดภัย
 
 ## Displaying CPU (percentage and total)
 ## Variables:

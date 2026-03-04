@@ -31,6 +31,9 @@
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
 -fakespot-brand-name = Fakespot
+-solo-ai-brand-name = Solo
+-mdn-brand-name = MDN Web Docs
+-yelp-brand-name = Yelp
 # Note the name of the website is capitalized.
 -fakespot-website-name = Fakespot.com
 # The particle "by" can be localized, "Fakespot" and "Mozilla" should not be localized or transliterated.
@@ -42,12 +45,13 @@
 # and kept in English.
 -firefox-home-brand-name =
     { $case ->
-       *[nominative] Домашняя страница Firefox
-        [genitive] Домашней страницы Firefox
-        [dative] Домашнюю страницу Firefox
-        [accusative] Домашнюю страницу Firefox
-        [instrumental] Домашней страницей Firefox
-        [prepositional] Домашней странице Firefox
+        [nominative_uppercase] Домашняя страница Firefox
+        [genitive] домашней страницы Firefox
+        [dative] домашнюю страницу Firefox
+        [accusative] домашнюю страницу Firefox
+        [instrumental] домашней страницей Firefox
+        [prepositional] домашней странице Firefox
+       *[nominative] домашняя страница Firefox
     }
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.

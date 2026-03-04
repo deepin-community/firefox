@@ -14,7 +14,7 @@
 #include "CacheIndex.h"
 #include "CacheLog.h"
 #include "mozilla/DebugOnly.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkCache2Metrics.h"
 #include "mozilla/TelemetryHistogramEnums.h"
 #include "nsComponentManagerUtils.h"
 #include "nsICacheEntry.h"
@@ -290,6 +290,14 @@ nsresult CacheFile::Init(const nsACString& aKey, bool aCreateNew,
   return NS_OK;
 }
 
+void CacheFile::SetDictionary(DictionaryCacheEntry* aDict) {
+  CacheFileAutoLock lock(this);
+  mDict = aDict;
+  if (OutputStreamExists(false)) {
+    mOutput->SetDictionary(aDict);
+  }
+}
+
 void CacheFile::Key(nsACString& aKey) {
   CacheFileAutoLock lock(this);
   aKey = mKey;
@@ -482,6 +490,11 @@ nsresult CacheFile::OnFileOpened(CacheFileHandle* aHandle, nsresult aResult) {
          this, static_cast<uint32_t>(aResult), aHandle));
 
     mOpeningFile = false;
+
+    if (mDict && OutputStreamExists(false)) {
+      mOutput->SetDictionary(mDict);
+      // leave mDict set for hash accumulation
+    }
 
     autoDoom.mListener.swap(mDoomAfterOpenListener);
 
@@ -897,6 +910,10 @@ nsresult CacheFile::OpenOutputStream(CacheOutputCloseListener* aCloseListener,
       ("CacheFile::OpenOutputStream() - Creating new output stream %p "
        "[this=%p]",
        mOutput, this));
+
+  if (mDict) {
+    mOutput->SetDictionary(mDict);
+  }
 
   mDataAccessed = true;
   *_retval = do_AddRef(mOutput).take();
@@ -2085,8 +2102,8 @@ void CacheFile::RemoveInput(CacheFileInputStream* aInput, nsresult aStatus) {
   // chunks that won't be used anymore.
   CleanUpCachedChunks();
 
-  Telemetry::Accumulate(Telemetry::NETWORK_CACHE_V2_INPUT_STREAM_STATUS,
-                        StatusToTelemetryEnum(aStatus));
+  glean::network::cache_v2_input_stream_status.AccumulateSingleSample(
+      StatusToTelemetryEnum(aStatus));
 }
 
 void CacheFile::RemoveOutput(CacheFileOutputStream* aOutput, nsresult aStatus) {
@@ -2105,7 +2122,13 @@ void CacheFile::RemoveOutput(CacheFileOutputStream* aOutput, nsresult aStatus) {
     return;
   }
 
-  mOutput = nullptr;
+  // This is to finalize the Hash calculation
+  if (mDict) {
+    mDict->FinishHash();
+    mDict = nullptr;
+  }
+
+  mOutput = nullptr;  // XXX should this be after NotifyCloseListener?
 
   // Cancel all queued chunk and update listeners that cannot be satisfied
   NotifyListenersAboutOutputRemoval();
@@ -2152,8 +2175,8 @@ void CacheFile::RemoveOutput(CacheFileOutputStream* aOutput, nsresult aStatus) {
   // Notify close listener as the last action
   aOutput->NotifyCloseListener();
 
-  Telemetry::Accumulate(Telemetry::NETWORK_CACHE_V2_OUTPUT_STREAM_STATUS,
-                        StatusToTelemetryEnum(aStatus));
+  glean::network::cache_v2_output_stream_status.AccumulateSingleSample(
+      StatusToTelemetryEnum(aStatus));
 }
 
 nsresult CacheFile::NotifyChunkListener(CacheFileChunkListener* aCallback,

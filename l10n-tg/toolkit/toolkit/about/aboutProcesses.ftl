@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = Холӣ кардани варақаҳо ва қатъ кардани равандҳо
+about-processes-kill-process =
+    .title = Куштани раванд
 about-processes-shutdown-tab =
     .title = Пӯшидани варақа
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = Миёнрави дурдаст�
 about-processes-fork-server-process = Сервери «Форк» ({ $pid })
 about-processes-preallocated-process = Пешакӣ ҷойгиршуда ({ $pid })
 about-processes-utility-process = Барномаи пуштибонӣ ({ $pid })
+about-processes-inference-process = Ҷамъбаст ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -128,6 +131,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Барномаҳои муфиди «Windows»
 about-processes-utility-actor-windows-file-dialog = Равзанаи гуфтугӯи файл дар низоми «Windows»
+about-processes-utility-actor-pkcs11-module = Ёридиҳандаи модули амният
 
 ## Displaying CPU (percentage and total)
 ## Variables:

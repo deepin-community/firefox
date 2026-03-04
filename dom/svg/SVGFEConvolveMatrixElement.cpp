@@ -5,14 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFEConvolveMatrixElement.h"
-#include "mozilla/dom/SVGFEConvolveMatrixElementBinding.h"
+
+#include <numeric>
+
+#include "DOMSVGAnimatedNumberList.h"
 #include "mozilla/SVGFilterInstance.h"
 #include "mozilla/SVGUtils.h"
-#include "mozilla/UniquePtr.h"
-#include "mozilla/UniquePtrExtensions.h"
-#include "DOMSVGAnimatedNumberList.h"
-#include "mozilla/dom/Document.h"
 #include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGFEConvolveMatrixElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEConvolveMatrix)
 
@@ -160,23 +161,18 @@ FilterPrimitiveDescription SVGFEConvolveMatrixElement::GetPrimitiveDescription(
     targetY = orderY / 2;
   }
 
-  if (orderX > NS_SVG_OFFSCREEN_MAX_DIMENSION ||
-      orderY > NS_SVG_OFFSCREEN_MAX_DIMENSION)
+  if (orderX > kReasonableSurfaceSize || orderY > kReasonableSurfaceSize)
     return failureDescription;
-  UniquePtr<float[]> kernel = MakeUniqueFallible<float[]>(orderX * orderY);
-  if (!kernel) return failureDescription;
-  for (uint32_t i = 0; i < kmLength; i++) {
-    kernel[kmLength - 1 - i] = kernelMatrix[i];
-  }
 
   float divisor;
   if (mNumberAttributes[DIVISOR].IsExplicitlySet()) {
     divisor = mNumberAttributes[DIVISOR].GetAnimValue();
-    if (divisor == 0) return failureDescription;
-  } else {
-    divisor = kernel[0];
-    for (uint32_t i = 1; i < kmLength; i++) divisor += kernel[i];
-    if (divisor == 0) divisor = 1;
+  }
+  if (!mNumberAttributes[DIVISOR].IsExplicitlySet() || divisor == 0) {
+    divisor = std::accumulate(kernelMatrix.begin(), kernelMatrix.end(), 0.0f);
+    if (divisor == 0) {
+      divisor = 1;
+    }
   }
 
   uint32_t edgeMode = mEnumAttributes[EDGEMODE].GetAnimValue();
@@ -186,12 +182,8 @@ FilterPrimitiveDescription SVGFEConvolveMatrixElement::GetPrimitiveDescription(
   Size kernelUnitLength = GetKernelUnitLength(
       aInstance, &mNumberPairAttributes[KERNEL_UNIT_LENGTH]);
 
-  if (kernelUnitLength.width <= 0 || kernelUnitLength.height <= 0) {
-    // According to spec, A negative or zero value is an error. See link below
-    // for details.
-    // https://www.w3.org/TR/SVG/filters.html#feConvolveMatrixElementKernelUnitLengthAttribute
-    return failureDescription;
-  }
+  MOZ_ASSERT(kernelUnitLength.width > 0.0f && kernelUnitLength.height > 0.0f,
+             "Expecting positive kernelUnitLength values");
 
   ConvolveMatrixAttributes atts;
   atts.mKernelSize = IntSize(orderX, orderY);
@@ -235,44 +227,44 @@ nsresult SVGFEConvolveMatrixElement::BindToTree(BindContext& aCtx,
 
 SVGElement::NumberAttributesInfo SVGFEConvolveMatrixElement::GetNumberInfo() {
   return NumberAttributesInfo(mNumberAttributes, sNumberInfo,
-                              ArrayLength(sNumberInfo));
+                              std::size(sNumberInfo));
 }
 
 SVGElement::NumberPairAttributesInfo
 SVGFEConvolveMatrixElement::GetNumberPairInfo() {
   return NumberPairAttributesInfo(mNumberPairAttributes, sNumberPairInfo,
-                                  ArrayLength(sNumberPairInfo));
+                                  std::size(sNumberPairInfo));
 }
 
 SVGElement::IntegerAttributesInfo SVGFEConvolveMatrixElement::GetIntegerInfo() {
   return IntegerAttributesInfo(mIntegerAttributes, sIntegerInfo,
-                               ArrayLength(sIntegerInfo));
+                               std::size(sIntegerInfo));
 }
 
 SVGElement::IntegerPairAttributesInfo
 SVGFEConvolveMatrixElement::GetIntegerPairInfo() {
   return IntegerPairAttributesInfo(mIntegerPairAttributes, sIntegerPairInfo,
-                                   ArrayLength(sIntegerPairInfo));
+                                   std::size(sIntegerPairInfo));
 }
 
 SVGElement::BooleanAttributesInfo SVGFEConvolveMatrixElement::GetBooleanInfo() {
   return BooleanAttributesInfo(mBooleanAttributes, sBooleanInfo,
-                               ArrayLength(sBooleanInfo));
+                               std::size(sBooleanInfo));
 }
 
 SVGElement::EnumAttributesInfo SVGFEConvolveMatrixElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::StringAttributesInfo SVGFEConvolveMatrixElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 SVGElement::NumberListAttributesInfo
 SVGFEConvolveMatrixElement::GetNumberListInfo() {
   return NumberListAttributesInfo(mNumberListAttributes, sNumberListInfo,
-                                  ArrayLength(sNumberListInfo));
+                                  std::size(sNumberListInfo));
 }
 
 }  // namespace mozilla::dom

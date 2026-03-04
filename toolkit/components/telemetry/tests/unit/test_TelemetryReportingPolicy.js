@@ -6,12 +6,25 @@
 
 "use strict";
 
-const { TelemetryReportingPolicy } = ChromeUtils.importESModule(
+ChromeUtils.defineESModuleGetters(this, {
+  AppConstants: "resource://gre/modules/AppConstants.sys.mjs",
+  UpdateUtils: "resource://gre/modules/UpdateUtils.sys.mjs",
+});
+
+const { NimbusTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/NimbusTestUtils.sys.mjs"
+);
+const { Policy, TelemetryReportingPolicy } = ChromeUtils.importESModule(
   "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
 );
-const { UpdateUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/UpdateUtils.sys.mjs"
-);
+
+NimbusTestUtils.init(this);
+
+// Some tests in this test file can't outside desktop Firefox because of
+// features that aren't included in the build.
+const skipIfNotBrowser = () => ({
+  skip_if: () => AppConstants.MOZ_BUILD_APP != "browser",
+});
 
 const TEST_CHANNEL = "TestChannelABC";
 
@@ -19,9 +32,6 @@ const PREF_MINIMUM_CHANNEL_POLICY_VERSION =
   TelemetryUtils.Preferences.MinimumPolicyVersion + ".channel-" + TEST_CHANNEL;
 
 function fakeShowPolicyTimeout(set, clear) {
-  let { Policy } = ChromeUtils.importESModule(
-    "resource://gre/modules/TelemetryReportingPolicy.sys.mjs"
-  );
   Policy.setShowInfobarTimeout = set;
   Policy.clearShowInfobarTimeout = clear;
 }
@@ -54,7 +64,7 @@ function setMinimumPolicyVersion(aNewPolicyVersion) {
   );
 }
 
-add_task(async function test_setup() {
+add_setup(async function test_setup() {
   // Addon manager needs a profile directory
   do_get_profile(true);
   await loadAddonManager(
@@ -69,7 +79,8 @@ add_task(async function test_setup() {
   // Make sure we don't generate unexpected pings due to pref changes.
   await setEmptyPrefWatchlist();
 
-  // Don't bypass the notifications in this test, we'll fake it.
+  // Don't bypass the legacy data reporting notifications in this test, we'll
+  // fake it.
   Services.prefs.setBoolPref(
     TelemetryUtils.Preferences.BypassNotification,
     false
@@ -78,53 +89,98 @@ add_task(async function test_setup() {
   TelemetryReportingPolicy.setup();
 });
 
+add_setup(skipIfNotBrowser(), async () => {
+  const { cleanup } = await NimbusTestUtils.setupTest();
+
+  registerCleanupFunction(cleanup);
+});
+
+async function runlegacyDataReportingFlowfirstRun(prefToSet) {
+  await Services.search.init();
+
+  const FIRST_RUN_TIMEOUT_MSEC = 60 * 1000; // 60s
+  const OTHER_RUNS_TIMEOUT_MSEC = 10 * 1000; // 10s
+
+  Services.prefs.clearUserPref(TelemetryUtils.Preferences.FirstRun);
+  // The new user TOS modal is now enabled by default on all platforms except
+  // Linux, so the infobar will only show if preonboarding is explicitly turned
+  // off via nimbus variable or its fallback pref.
+  if (AppConstants.platform !== "linux") {
+    // This pref is set to false on Linux by default
+    Services.prefs.setBoolPref(prefToSet.name, prefToSet.value);
+  }
+
+  let promiseTimeout = () =>
+    new Promise(resolve => {
+      fakeShowPolicyTimeout(
+        (_callback, timeout) => resolve(timeout),
+        () => {}
+      );
+    });
+  let p, startupTimeout;
+
+  TelemetryReportingPolicy.reset();
+  p = promiseTimeout();
+  Services.obs.notifyObservers(null, "sessionstore-windows-restored");
+  startupTimeout = await p;
+  Assert.equal(
+    startupTimeout,
+    FIRST_RUN_TIMEOUT_MSEC,
+    "The infobar display timeout should be 60s on the first run."
+  );
+
+  // Run again, and check that we actually wait only 10 seconds.
+  TelemetryReportingPolicy.reset();
+  p = promiseTimeout();
+  Services.obs.notifyObservers(null, "sessionstore-windows-restored");
+  startupTimeout = await p;
+  Assert.equal(
+    startupTimeout,
+    OTHER_RUNS_TIMEOUT_MSEC,
+    "The infobar display timeout should be 10s on other runs."
+  );
+
+  Services.prefs.clearUserPref(prefToSet);
+}
+
 add_task(
-  {
-    // This tests initialises the search service, but that doesn't currently
-    // work on Android.
-    skip_if: () => AppConstants.platform == "android",
-  },
-  async function test_firstRun() {
-    await Services.search.init();
-
-    const FIRST_RUN_TIMEOUT_MSEC = 60 * 1000; // 60s
-    const OTHER_RUNS_TIMEOUT_MSEC = 10 * 1000; // 10s
-
-    Services.prefs.clearUserPref(TelemetryUtils.Preferences.FirstRun);
-
-    let startupTimeout = 0;
-    fakeShowPolicyTimeout(
-      (callback, timeout) => (startupTimeout = timeout),
-      () => {}
-    );
-    TelemetryReportingPolicy.reset();
-
-    Services.obs.notifyObservers(null, "sessionstore-windows-restored");
-    Assert.equal(
-      startupTimeout,
-      FIRST_RUN_TIMEOUT_MSEC,
-      "The infobar display timeout should be 60s on the first run."
-    );
-
-    // Run again, and check that we actually wait only 10 seconds.
-    TelemetryReportingPolicy.reset();
-    Services.obs.notifyObservers(null, "sessionstore-windows-restored");
-    Assert.equal(
-      startupTimeout,
-      OTHER_RUNS_TIMEOUT_MSEC,
-      "The infobar display timeout should be 10s on other runs."
-    );
+  skipIfNotBrowser(),
+  async function test_legacyDataReportingFlowfirstRunPreonboardingTOUNotEnabled() {
+    await runlegacyDataReportingFlowfirstRun({
+      name: "browser.preonboarding.enabled",
+      value: false,
+    });
   }
 );
 
-add_task(async function test_prefs() {
+add_task(
+  skipIfNotBrowser(),
+  async function test_legacyDataReportingFlowfirstRunTOUBypassEnabled() {
+    await runlegacyDataReportingFlowfirstRun({
+      name: "termsofuse.bypassNotification",
+      value: true,
+    });
+  }
+);
+
+add_task(async function test_legacyDataReportingPrefs() {
   TelemetryReportingPolicy.reset();
 
   let now = fakeNow(2009, 11, 18);
 
+  // The new user TOS modal is now enabled by default on all platforms except
+  // Linux, so the infobar will only show if preonboarding is explicitly turned
+  // off via nimbus variable or its fallback pref.
+  if (AppConstants.platform !== "linux") {
+    // This pref is set to false on Linux by default
+    Services.prefs.setBoolPref("browser.preonboarding.enabled", false);
+  }
+
   // If the date is not valid (earlier than 2012), we don't regard the policy as accepted.
   TelemetryReportingPolicy.testInfobarShown();
-  Assert.ok(!TelemetryReportingPolicy.testIsUserNotified());
+  Assert.ok(
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy()
+  );
   Assert.equal(
     Services.prefs.getStringPref(
       TelemetryUtils.Preferences.AcceptedPolicyDate,
@@ -180,7 +236,7 @@ add_task(async function test_prefs() {
     ) + 1;
   setMinimumPolicyVersion(newMinimum);
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "A greater minimum policy version must invalidate the policy and disable upload."
   );
 
@@ -191,7 +247,7 @@ add_task(async function test_prefs() {
   );
   TelemetryReportingPolicy.testInfobarShown();
   Assert.ok(
-    TelemetryReportingPolicy.testIsUserNotified(),
+    TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "Accepting the policy again should show the user as notified."
   );
   Assert.ok(
@@ -199,11 +255,7 @@ add_task(async function test_prefs() {
     "Accepting the policy again should let us upload data."
   );
 
-  // macOS has the app.update.channel pref locked. Check if it needs to be
-  // unlocked before proceeding with the test.
-  if (Services.prefs.getDefaultBranch("").prefIsLocked("app.update.channel")) {
-    Services.prefs.getDefaultBranch("").unlockPref("app.update.channel");
-  }
+  maybeUnlockAppUpdateChannelPref();
 
   // Set a new, per channel, minimum policy version. Start by setting a test current channel.
   Services.prefs
@@ -214,7 +266,7 @@ add_task(async function test_prefs() {
   newMinimum++;
   Services.prefs.setIntPref(PREF_MINIMUM_CHANNEL_POLICY_VERSION, newMinimum);
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "Increasing the minimum policy version should invalidate the policy."
   );
 
@@ -225,7 +277,7 @@ add_task(async function test_prefs() {
   );
   TelemetryReportingPolicy.testInfobarShown();
   Assert.ok(
-    TelemetryReportingPolicy.testIsUserNotified(),
+    TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "Accepting the policy again should show the user as notified."
   );
   Assert.ok(
@@ -234,7 +286,7 @@ add_task(async function test_prefs() {
   );
 });
 
-add_task(async function test_migratePrefs() {
+add_task(async function test_migrateLegacyDataReportingPrefs() {
   const DEPRECATED_FHR_PREFS = {
     "datareporting.policy.dataSubmissionPolicyAccepted": true,
     "datareporting.policy.dataSubmissionPolicyBypassAcceptance": true,
@@ -268,13 +320,13 @@ add_task(async function test_migratePrefs() {
   }
 });
 
-add_task(async function test_userNotifiedOfCurrentPolicy() {
+add_task(async function test_userNotifiedOfCurrentDataReportingPolicy() {
   fakeResetAcceptedPolicy();
   TelemetryReportingPolicy.reset();
 
   // User should be reported as not notified by default.
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "The initial state should be unnotified."
   );
 
@@ -284,7 +336,7 @@ add_task(async function test_userNotifiedOfCurrentPolicy() {
     TelemetryReportingPolicy.DEFAULT_DATAREPORTING_POLICY_VERSION
   );
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "The default state of the date should have a time of 0 and it should therefore fail"
   );
 
@@ -292,7 +344,7 @@ add_task(async function test_userNotifiedOfCurrentPolicy() {
   fakeNow(2012, 11, 11);
   TelemetryReportingPolicy.testInfobarShown();
   Assert.ok(
-    TelemetryReportingPolicy.testIsUserNotified(),
+    TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "Using the proper API causes user notification to report as true."
   );
 
@@ -308,21 +360,22 @@ add_task(async function test_userNotifiedOfCurrentPolicy() {
     newVersion
   );
   Assert.ok(
-    TelemetryReportingPolicy.testIsUserNotified(),
+    TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "A future version of the policy should pass."
   );
 
   newVersion =
     Services.prefs.getIntPref(
-      TelemetryUtils.Preferences.CurrentPolicyVersion,
+      TelemetryUtils.Preferences.MinimumPolicyVersion,
       1
     ) - 1;
+
   Services.prefs.setIntPref(
     TelemetryUtils.Preferences.AcceptedPolicyVersion,
     newVersion
   );
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "A previous version of the policy should fail."
   );
 });
@@ -341,7 +394,7 @@ add_task(async function test_canSend() {
 
   // User should be reported as not notified by default.
   Assert.ok(
-    !TelemetryReportingPolicy.testIsUserNotified(),
+    !TelemetryReportingPolicy.testIsUserNotifiedOfDataReportingPolicy(),
     "The initial state should be unnotified."
   );
 

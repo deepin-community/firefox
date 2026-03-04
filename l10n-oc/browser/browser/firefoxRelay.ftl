@@ -4,14 +4,14 @@
 
 
 ## Error messages for failed HTTP web requests.
-## https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
+## https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status#client_error_responses
 ## Variables:
 ##   $status (Number) - HTTP status code, for example 403
 
 firefox-relay-mask-generation-failed = Generacion de l’àlias { -relay-brand-name } novèl impossibla. Còdi d’error HTTP : { $status }.
 firefox-relay-get-reusable-masks-failed = { -relay-brand-name } a pas pogut trobar cap d’àlias reütilizable. Còdi d’error HTTP : { $status }.
 
-##
+## The "control" variation of the Relay offer popup
 
 firefox-relay-must-login-to-fxa = Devètz vos connectar a { -fxaccount-brand-name } per poder utilizar { -relay-brand-name }.
 firefox-relay-must-login-to-account = Connectatz-vos a vòstre compte per utilizar vòstres àlias de messatjariá { -relay-brand-name }.
@@ -33,3 +33,12 @@ firefox-relay-opt-in-confirmation-disable =
 firefox-relay-opt-in-confirmation-postpone =
     .label = Pas ara
     .accesskey = P
+firefox-relay-and-fxa-opt-in-confirmation-enable-button-sign-up =
+    .label = Crear un compte
+    .accesskey = C
+firefox-relay-and-fxa-opt-in-confirmation-disable =
+    .label = Me mostrar pas mai aquò
+    .accesskey = M
+firefox-relay-and-fxa-opt-in-confirmation-postpone =
+    .label = Mai tard
+    .accesskey = M

@@ -185,9 +185,52 @@
         {
           "time_unit": "nanosecond"
         }
+      ],
+      [
+        "boolean",
+        "unordered_boolean_metric",
+        [
+          "metrics"
+        ],
+        "ping",
+        false,
+        {
+          "permit_non_commutative_operations_over_ipc": true
+        }
+      ],
+      [
+        "labeled_boolean",
+        "unordered_labeled_boolean_metric",
+        [
+          "metrics"
+        ],
+        "ping",
+        false,
+        {
+          "ordered_labels": null,
+          "permit_non_commutative_operations_over_ipc": true
+        }
       ]
     ],
     "test.nested": [
+      [
+        "dual_labeled_counter",
+        "a_dual_labeled_counter",
+        [
+          "metrics"
+        ],
+        "ping",
+        false,
+        {
+          "ordered_categories": [
+            "cat1",
+            "cat2",
+            "catred",
+            "catblu"
+          ],
+          "ordered_keys": null
+        }
+      ],
       [
         "object",
         "an_object",
@@ -232,7 +275,9 @@
         {
           "allowed_extra_keys": [
             "an_extra_key",
-            "another_extra_key"
+            "another_extra_key",
+            "bool_extra",
+            "quantity_extra"
           ]
         }
       ],
@@ -267,6 +312,15 @@
         ],
         "ping",
         false
+      ],
+      [
+        "counter",
+        "optimizable_disabled_counter_metric",
+        [
+          "metrics"
+        ],
+        "ping",
+        true
       ],
       [
         "quantity",
@@ -319,7 +373,9 @@
         "background",
         "dirty_startup",
         "foreground"
-      ]
+      ],
+      true,
+      []
     ],
     [
       "not-deletion-request",
@@ -329,6 +385,8 @@
       true,
       true,
       [],
+      [],
+      true,
       []
     ],
     [
@@ -343,7 +401,9 @@
         "background",
         "max_capacity",
         "startup"
-      ]
+      ],
+      true,
+      []
     ],
     [
       "not-metrics",
@@ -359,7 +419,9 @@
         "today",
         "tomorrow",
         "upgrade"
-      ]
+      ],
+      true,
+      []
     ],
     [
       "not-ohttp",
@@ -369,7 +431,11 @@
       false,
       true,
       [],
-      []
+      [],
+      true,
+      [
+        "ohttp"
+      ]
     ],
     [
       "ridealong-test",
@@ -379,6 +445,8 @@
       true,
       true,
       [],
+      [],
+      true,
       []
     ]
   ]

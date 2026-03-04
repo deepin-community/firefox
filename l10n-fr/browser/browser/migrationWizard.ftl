@@ -196,6 +196,14 @@ migration-safari-password-import-step1 = Dans Safari, ouvrez le menu « Safari�
 migration-safari-password-import-step2 = Cliquez sur le bouton <img data-l10n-name="safari-icon-3dots"/> et choisissez « Exporter tous les mots de passe »
 migration-safari-password-import-step3 = Enregistrez le fichier des mots de passe
 migration-safari-password-import-step4 = Utilisez « Sélectionner un fichier » ci-dessous pour choisir le fichier de mots de passe que vous avez enregistré
+migration-chrome-windows-password-import-header = Comment importer des mots de passe depuis Chrome
+migration-chrome-windows-password-import-steps-header = Dans Chrome :
+migration-chrome-windows-password-import-step1 = Ouvrez le menu principal <img data-l10n-name="chrome-icon-3dots"/> et sélectionnez Mots de passe et saisie automatique > Gestionnaire de mots de passe de Google.
+migration-chrome-windows-password-import-step2 = Sélectionnez « Paramètres » depuis le menu.
+migration-chrome-windows-password-import-step3 = Choisissez « Télécharger le fichier » et enregistrez-le sur votre appareil.
+migration-chrome-windows-password-import-step4 = Revenez ici et utilisez « Sélectionner un fichier » pour terminer l’importation.
+migration-manual-password-import-skip-button = Passer
+migration-manual-password-import-select-button = Sélectionner un fichier
 migration-safari-password-import-skip-button = Passer
 migration-safari-password-import-select-button = Sélectionner un fichier
 # Shown in the migration wizard after importing bookmarks from another

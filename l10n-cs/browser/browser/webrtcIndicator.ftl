@@ -90,7 +90,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -201,11 +201,11 @@ webrtc-allow-share-screen-and-audio-capture-unsafe-delegation = Chcete serveru {
 
 ##
 
-webrtc-share-screen-warning = Obrazovku sdílejte pouze se servery, kterým věříte. Sdílení může umožnit klamavým stránkám sledovat vaše prohlížení a ukrást vaše osobní data.
+webrtc-share-screen-warning = Obrazovku sdílejte pouze se servery, kterým věříte. Sdílení může umožnit podvodným stránkám sledovat vaše procházení stránek a ukrást vaše osobní data.
 webrtc-share-browser-warning =
     { -brand-short-name.case-status ->
-        [with-cases] { -brand-short-name(case: "acc") } sdílejte pouze se servery, kterým věříte. Sdílení může umožnit klamavým stránkám sledovat vaše prohlížení a ukrást vaše osobní data.
-       *[no-cases] Aplikaci { -brand-short-name } sdílejte pouze se servery, kterým věříte. Sdílení může umožnit klamavým stránkám sledovat vaše prohlížení a ukrást vaše osobní data.
+        [with-cases] { -brand-short-name(case: "acc") } sdílejte pouze se servery, kterým věříte. Sdílení může umožnit podvodným stránkám sledovat vaše procházení stránek a ukrást vaše osobní data.
+       *[no-cases] Aplikaci { -brand-short-name } sdílejte pouze se servery, kterým věříte. Sdílení může umožnit podvodným stránkám sledovat vaše procházení stránek a ukrást vaše osobní data.
     }
 webrtc-share-screen-learn-more = Zjistit více
 webrtc-pick-window-or-screen = Vyberte okno nebo obrazovku

@@ -7,6 +7,9 @@ import { Module } from "chrome://remote/content/shared/messagehandler/Module.sys
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  assert: "chrome://remote/content/shared/webdriver/Assert.sys.mjs",
+  error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
+  NavigableManager: "chrome://remote/content/shared/NavigableManager.sys.mjs",
   WindowGlobalMessageHandler:
     "chrome://remote/content/shared/messagehandler/WindowGlobalMessageHandler.sys.mjs",
 });
@@ -36,6 +39,54 @@ export class RootBiDiModule extends Module {
   }
 
   /**
+   * Retrieves a browsing context based on its navigable id.
+   *
+   * @see https://w3c.github.io/webdriver-bidi/#get-a-navigable
+   *
+   * @param {string} navigableId
+   *     Unique id of the browsing context.
+   * @param {object=} options
+   * @param {boolean=} options.supportsChromeScope
+   *     If set to `true` chrome browsing contexts are supported
+   *     for the BiDi command. Defaults to `false`.
+   *
+   * @returns {BrowsingContext|null}
+   *     The browsing context, or null if `navigableId` is null.
+   *
+   * @throws {NoSuchFrameError}
+   *     If the browsing context cannot be found.
+   */
+  _getNavigable(navigableId, options = {}) {
+    const { supportsChromeScope = false } = options;
+
+    if (navigableId === null) {
+      // The WebDriver BiDi specification expects `null` to be
+      // returned if navigable id is `null`.
+      return null;
+    }
+
+    const context = lazy.NavigableManager.getBrowsingContextById(navigableId);
+
+    if (context && !context.isContent) {
+      lazy.assert.hasSystemAccess();
+
+      if (!supportsChromeScope) {
+        throw new lazy.error.UnsupportedOperationError(
+          "The command does not support browsing contexts in privileged (chrome) scope"
+        );
+      }
+    }
+
+    if (context === null) {
+      throw new lazy.error.NoSuchFrameError(
+        `Browsing Context with id ${navigableId} not found`
+      );
+    }
+
+    return context;
+  }
+
+  /**
    * Checks if there is a listener for a specific event and context information.
    *
    * @param {string} eventName
@@ -50,5 +101,34 @@ export class RootBiDiModule extends Module {
       eventName,
       contextInfo
     );
+  }
+
+  /**
+   * Forwards a command to the windowglobal module corresponding to the provided
+   * browsing context id, using the same module name as the current one.
+   *
+   * @param {string} commandName
+   *     The name of the command to execute.
+   * @param {number} browsingContextID
+   *     The debuggable context ID.
+   * @param {object} params
+   *    Any command parameters to pass.
+   * @param {object=} args
+   *     Any additional command arguments to pass.
+   * @returns {Promise}
+   *     A Promise that will resolve with the return value of the
+   *     command once it has been executed.
+   */
+  _forwardToWindowGlobal(commandName, browsingContextID, params, args = {}) {
+    return this.messageHandler.forwardCommand({
+      moduleName: this.moduleName,
+      commandName,
+      destination: {
+        type: lazy.WindowGlobalMessageHandler.type,
+        id: browsingContextID,
+      },
+      ...args,
+      params,
+    });
   }
 }

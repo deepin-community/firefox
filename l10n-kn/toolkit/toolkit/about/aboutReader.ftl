@@ -5,9 +5,6 @@
 about-reader-loading = ಲೋಡ್ ಆಗುತ್ತಿದೆ…
 about-reader-load-error = ಲೇಖನವನ್ನು ಪುಟದಿಂದ ತುಂಬಿಸುಲಾಗಲಿಲ್ಲ
 
-## These are used as tooltips in Type Control
-
-
 ## These are the styles of typeface that are options in the reader view controls.
 
 about-reader-font-type-serif = ಸೆರಿಫ್

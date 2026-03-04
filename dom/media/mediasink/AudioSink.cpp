@@ -5,18 +5,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AudioSink.h"
+
 #include "AudioConverter.h"
 #include "AudioDeviceInfo.h"
 #include "MediaQueue.h"
+#include "Tracing.h"
 #include "VideoUtils.h"
 #include "mozilla/CheckedInt.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/ProfilerMarkerTypes.h"
-#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "nsPrintfCString.h"
-#include "Tracing.h"
 
 namespace mozilla {
 
@@ -98,7 +99,7 @@ AudioSink::~AudioSink() {
 }
 
 nsresult AudioSink::InitializeAudioStream(
-    const PlaybackParams& aParams, const RefPtr<AudioDeviceInfo>& aAudioDevice,
+    const RefPtr<AudioDeviceInfo>& aAudioDevice,
     AudioSink::InitializationType aInitializationType) {
   if (aInitializationType == AudioSink::InitializationType::UNMUTING) {
     // Consider the stream to be audible immediately, before initialization
@@ -133,18 +134,18 @@ nsresult AudioSink::InitializeAudioStream(
     return rv;
   }
 
+  return NS_OK;
+}
+
+RefPtr<MediaSink::EndedPromise> AudioSink::Start(
+    const PlaybackParams& aParams, const media::TimeUnit& aStartTime) {
+  MOZ_ASSERT(mOwnerThread->IsCurrentThreadIn());
+
   // Set playback params before calling Start() so they can take effect
   // as soon as the 1st DataCallback of the AudioStream fires.
   mAudioStream->SetVolume(aParams.mVolume);
   mAudioStream->SetPlaybackRate(aParams.mPlaybackRate);
   mAudioStream->SetPreservesPitch(aParams.mPreservesPitch);
-
-  return NS_OK;
-}
-
-RefPtr<MediaSink::EndedPromise> AudioSink::Start(
-    const media::TimeUnit& aStartTime) {
-  MOZ_ASSERT(mOwnerThread->IsCurrentThreadIn());
 
   mAudioQueueListener = mAudioQueue.PushEvent().Connect(
       mOwnerThread, this, &AudioSink::OnAudioPushed);

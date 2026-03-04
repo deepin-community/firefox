@@ -61,7 +61,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } lietotāju
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sinhronizējiet savas grāmatzīmes visur.
 cfr-doorhanger-bookmark-fxa-body = Lielisks atradums! Tagad nepalieciet bez šīs grāmatzīmes savās mobilajās ierīcēs. Sāciet darbu ar { -fxaccount-brand-name }.
@@ -226,7 +226,7 @@ fox-doodle-pin-secondary = Ne tagad
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
-set-default-pdf-handler-headline = <strong>Jūsu PDF datnes tagad tiek atvērtas ar { -brand-short-name }.</strong> Rediģējiet vai parakstiet veidlapas savā pārlūkā. Lai mainītu, iestatījumos meklējiet “PDF”.
+set-default-pdf-handler-headline = <strong>PDF datnes tagad tiek atvērtas ar { -brand-short-name }.</strong> Rediģējiet vai parakstiet veidlapas savā pārlūkā. Lai mainītu, iestatījumos jāmeklē “PDF”.
 set-default-pdf-handler-primary = Sapratu
 
 ## FxA sync CFR

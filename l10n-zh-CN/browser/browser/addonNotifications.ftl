@@ -75,12 +75,14 @@ webext-imported-addons = 正在完成安装已导入 { -brand-short-name } 的�
 
 # Variables:
 #  $name (String): The name of the add-on that will be removed.
-addon-removal-title = 要移除“{ $name }”吗？
+addon-removal-title = 确定要移除“{ $name }”吗？
 # Variables:
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = 移除 { -brand-shorter-name } 中的“{ $name }”吗？
 addon-removal-button = 移除
 addon-removal-abuse-report-checkbox = 向 { -vendor-short-name } 举报此扩展
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = 在使用需依靠此模型运作的功能或扩展时，其将重新添加。
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying = 正在下载并验证 { $addonCount } 个附加组件…
@@ -111,14 +113,19 @@ addon-install-error-corrupt-file = 从该网站下载的附加组件似乎已损
 addon-install-error-file-access = “{ $addonName }”未能安装，因为 { -brand-short-name } 无法修改所需的文件。
 addon-install-error-not-signed = { -brand-short-name } 已阻止此网站安装未通过验证的附加组件。
 addon-install-error-invalid-domain = 无法从此位置安装附加组件“{ $addonName }”。
+addon-install-error-no-addon-name-file-access = 无法安装此附加组件，因为 { -brand-short-name } 无法修改所需的文件。
 addon-local-install-error-network-failure = 因为文件系统错误，无法安装该附加组件。
 addon-local-install-error-incorrect-hash = 无法安装此附加组件，因为其不符合 { -brand-short-name } 预期。
 addon-local-install-error-corrupt-file = 该附加组件无法安装，因为它似乎已损坏。
 addon-local-install-error-file-access = “{ $addonName }”未能安装，因为 { -brand-short-name } 无法修改所需的文件。
 addon-local-install-error-not-signed = 此附加组件无法安装，因为它未通过验证。
+addon-local-install-no-addon-name-error-file-access = 无法安装此附加组件，因为 { -brand-short-name } 无法修改所需的文件。
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = “{ $addonName }”未能安装，因为它与 { -brand-short-name } { $appVersion } 不兼容。
+addon-install-error-hard-blocked = “{ $addonName }”由于违反 Mozilla 的政策，无法安装到 { -brand-short-name }。
+addon-install-error-soft-blocked2 = “{ $addonName }”已受限，无法安装到 { -brand-short-name }。
 addon-install-error-blocklisted = “{ $addonName }”未能安装，因为它很可能引发稳定性或安全性问题。
+addon-install-error-soft-blocked = “{ $addonName }”由于违反 Mozilla 的政策，无法安装到 { -brand-short-name }。
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = 您无法以终端用户身份安装“{ $addonName }”，它只能由采用企业策略的组织安装。

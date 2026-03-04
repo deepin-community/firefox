@@ -22,7 +22,7 @@ def run(
     device_serial=None,
     package_name=None,
     environ=None,
-    bug=None,
+    bugs=None,
     debug=False,
     interventions=None,
     shims=None,
@@ -31,6 +31,9 @@ def run(
     addon=None,
     do2fa=False,
     log_level="INFO",
+    failure_screenshots_dir=None,
+    no_failure_screenshots=None,
+    platform_override=None,
 ):
     """"""
     old_environ = os.environ.copy()
@@ -67,6 +70,8 @@ def run(
                 webdriver_ws_port,
                 "--webdriver-log-level",
                 log_level,
+                "--capture=no",
+                "--show-capture=no",
             ]
 
             if debug:
@@ -91,16 +96,23 @@ def run(
                 args.append("--addon")
                 args.append(addon)
 
-            if bug:
-                args.append("--bug")
-                args.append(bug)
-
             if do2fa:
                 args.append("--do2fa")
 
             if config:
                 args.append("--config")
                 args.append(config)
+
+            if failure_screenshots_dir:
+                args.append("--failure-screenshots-dir")
+                args.append(failure_screenshots_dir)
+
+            if platform_override:
+                args.append("--platform-override")
+                args.append(platform_override)
+
+            if no_failure_screenshots:
+                args.append("--no-failure-screenshots")
 
             if interventions is not None and shims is not None:
                 raise ValueError(
@@ -129,8 +141,8 @@ def run(
             else:
                 name = "smartblock-shims"
 
-            if bug is not None:
-                args.extend(["-k", bug])
+            if bugs is not None:
+                args.extend(["-k", " or ".join(bugs)])
 
             args.append(path)
             try:
@@ -174,12 +186,22 @@ class WDConfig:
         parser.addoption(
             "--browser", action="store", choices=["firefox"], help="Name of the browser"
         )
-        parser.addoption("--bug", action="store", help="Bug number to run tests for")
         parser.addoption(
             "--do2fa",
             action="store_true",
             default=False,
             help="Do two-factor auth live in supporting tests",
+        )
+        parser.addoption(
+            "--failure-screenshots-dir",
+            action="store",
+            help="Path to save failure screenshots",
+        )
+        parser.addoption(
+            "--no-failure-screenshots",
+            action="store_true",
+            default=False,
+            help="Do not save screenshots on failure",
         )
         parser.addoption(
             "--config",
@@ -205,9 +227,15 @@ class WDConfig:
         parser.addoption(
             "--headless", action="store_true", help="Run browser in headless mode"
         )
+        parser.addoption(
+            "--platform-override",
+            action="store",
+            choices=["android", "linux", "mac", "windows"],
+            help="Override key navigator properties to match the given platform and/or use responsive design mode to mimic the given platform",
+        )
 
 
-class ResultRecorder(object):
+class ResultRecorder:
     def __init__(self, logger):
         self.logger = logger
 
@@ -243,7 +271,7 @@ class ResultRecorder(object):
     def record_error(self, report):
         # error in setup/teardown
         if report.when != "call":
-            message = "%s error" % report.when
+            message = f"{report.when} error"
         self.record(report.nodeid, "ERROR", message, report.longrepr)
 
     def record_skip(self, report):
@@ -258,7 +286,7 @@ class ResultRecorder(object):
         )
 
 
-class TemporaryDirectory(object):
+class TemporaryDirectory:
     def __enter__(self):
         self.path = tempfile.mkdtemp(prefix="pytest-")
         return self.path

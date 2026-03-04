@@ -196,6 +196,14 @@ migration-safari-password-import-step1 = Safari ndive, embojuruja “Safari” p
 migration-safari-password-import-step2 = Eiporu votõ <img data-l10n-name="safari-icon-3dots"/> ha eiporavo “Ñe’ẽñemi Jeguerupaite”
 migration-safari-password-import-step3 = Eñongatu ñe’ẽñemi marandurenda
 migration-safari-password-import-step4 = Eiporu “Marandurenda jeporavo” ehecha hag̃ua ñe’ẽñemi eñongatuséva
+migration-chrome-windows-password-import-header = Mba’éicha erúta ñe’ẽñemi Chrome guive
+migration-chrome-windows-password-import-steps-header = Chrome-pe:
+migration-chrome-windows-password-import-step1 = Embojuruja poravoha guasu <img data-l10n-name="chrome-icon-3dots"/> ha eho ñe’ẽñemi ha henyhẽjeheguívape > Google ñe’ẽñemi ñangarekohára.
+migration-chrome-windows-password-import-step2 = Eiporavo “Ñemboheko” poravohápe.
+migration-chrome-windows-password-import-step3 = Eiporavo “Marandurenda ñemboguejy” ha eñongatu ne mba’e’okápe.
+migration-chrome-windows-password-import-step4 = Ejujey ápe ha “Eiporavo marandurenda” emohu’ã hag̃ua jegueru.
+migration-manual-password-import-skip-button = Jepo
+migration-manual-password-import-select-button = Eiporavo Marandurenda
 migration-safari-password-import-skip-button = Jepo
 migration-safari-password-import-select-button = Eiporavo Marandurenda
 # Shown in the migration wizard after importing bookmarks from another

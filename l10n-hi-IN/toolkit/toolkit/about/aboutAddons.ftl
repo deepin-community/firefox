@@ -7,10 +7,6 @@ search-header =
     .placeholder = addons.mozilla.org खोजें
     .searchbuttonlabel = खोजें
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -276,17 +272,13 @@ addon-detail-updates-radio-off = बंद
 install-update-button = अपडेट
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = निजी विंडो में अनुमति है
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = निजी विंडो में अनुमति है
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
 
 ##
 
@@ -314,7 +306,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } असंगत है { -brand-short-name } { $version } के साथ.
 # Variables:
 #   $version (string) - Application version.
@@ -329,12 +321,8 @@ details-notification-unsigned2 =
     .message = { -brand-short-name } मैं उपयोग के लिए { $name } का सत्यापित नहीं किया जा सका. सावधानी के साथ आगे बढ़ें.
 details-notification-unsigned-link = अधिक सूचना
 details-notification-blocked = { $name } को सुरक्षा या स्थायित्व कारणों से निष्क्रिय किया गया है.
-details-notification-blocked2 =
-    .message = { $name } को सुरक्षा या स्थायित्व कारणों से निष्क्रिय किया गया है.
 details-notification-blocked-link = अधिक सूचना
 details-notification-softblocked = { $name } सुरक्षा या स्थायित्व कारणों को पैदा करने के लिए जाना जाता है.
-details-notification-softblocked2 =
-    .message = { $name } सुरक्षा या स्थायित्व कारणों को पैदा करने के लिए जाना जाता है.
 details-notification-softblocked-link = अधिक सूचना
 details-notification-gmp-pending = { $name } जल्द ही संस्थापित होगा.
 details-notification-gmp-pending2 =

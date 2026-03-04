@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Göster
 download-cert-view-text = CA sertifikasını incele
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Veren: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Depolama yeri: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Bu kararı hatırla
+client-auth-cert-remember-label = Bu kararı hatırla:
+client-auth-cert-remember-never =
+    .label = Bir defa
+client-auth-cert-remember-always =
+    .label = Kalıcı olarak
+client-auth-cert-remember-temporarily =
+    .label = Bu oturumda
 
 ## Set password (p12) dialog
 

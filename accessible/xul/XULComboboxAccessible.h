@@ -21,7 +21,7 @@ class XULComboboxAccessible : public AccessibleWrap {
   XULComboboxAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
   // LocalAccessible
-  void Description(nsString& aDescription) const override;
+  EDescriptionValueFlag Description(nsString& aDescription) const override;
   void Value(nsString& aValue) const override;
   a11y::role NativeRole() const override;
   uint64_t NativeState() const override;
@@ -35,6 +35,21 @@ class XULComboboxAccessible : public AccessibleWrap {
   // Widgets
   bool IsActiveWidget() const override;
   MOZ_CAN_RUN_SCRIPT_BOUNDARY bool AreItemsOperable() const override;
+};
+
+/**
+ * Used for the singular, global instance of a XULCombobox which is rendered
+ * in the parent process and contains the options of the focused and expanded
+ * HTML select in a content document. This combobox should have
+ * id=ContentSelectDropdown
+ */
+class XULContentSelectDropdownAccessible : public XULComboboxAccessible {
+ public:
+  XULContentSelectDropdownAccessible(nsIContent* aContent, DocAccessible* aDoc)
+      : XULComboboxAccessible(aContent, aDoc) {}
+  // Accessible
+
+  virtual Accessible* Parent() const override;
 };
 
 }  // namespace a11y

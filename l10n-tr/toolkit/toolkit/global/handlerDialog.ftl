@@ -20,6 +20,17 @@ permission-dialog-description-file-app = Bu dosya { $scheme } bağlantısını {
 permission-dialog-description-extension-app = { $extension } uzantısının { $scheme } bağlantısını { $appName } ile açmasına izin verilsin mi?
 permission-dialog-description-system-app = { $scheme } bağlantısı { $appName } ile açılsın mı?
 permission-dialog-description-system-noapp = { $scheme } bağlantısı açılsın mı?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = Bu site dijital cüzdanınızı açabilsin mi?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = <strong>{ $scheme }</strong> bağlantılarını açtığınızda <strong>{ $host }</strong> sitesi <strong>{ $appName }</strong> aracılığıyla gerçek kimliğinizi isteyebilir. Yalnızca bu siteye güveniyorsanız devam edin.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = <strong>{ $scheme }</strong> bağlantılarını açtığınızda bu site <strong>{ $appName }</strong> aracılığıyla gerçek kimliğinizi isteyebilir. Yalnızca bu siteye güveniyorsanız devam edin.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = <strong>{ $scheme }</strong> bağlantılarını açtığınızda <strong>{ $host }</strong> sitesi dijital cüzdanınızdan gerçek kimliğinizi isteyebilir. Yalnızca bu siteye güveniyorsanız devam edin.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = <strong>{ $scheme }</strong> bağlantılarını açtığınızda bu site dijital cüzdanınızdan gerçek kimliğinizi isteyebilir. Yalnızca bu siteye güveniyorsanız devam edin.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
@@ -55,7 +66,7 @@ chooser-dialog =
     .buttonaccesskeyaccept = B
 chooser-dialog-description = { $scheme } bağlantısını açmak için bir uygulama seçin.
 # Please keep the emphasis around the scheme (ie the `<strong>` HTML tags).
-chooser-dialog-remember = <strong>{ $scheme }</strong> bağlantılarını açmak için her zaman bu uygulamayı kullan
+chooser-dialog-remember = <strong>{ $scheme }</strong> bağlantılarını her zaman bu uygulamayla aç
 chooser-dialog-remember-extra =
     { PLATFORM() ->
         [windows] Bu ayarı { -brand-short-name } seçeneklerinden değiştirebilirsiniz.

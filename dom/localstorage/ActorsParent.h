@@ -8,6 +8,7 @@
 #define mozilla_dom_localstorage_ActorsParent_h
 
 #include <cstdint>
+
 #include "mozilla/AlreadyAddRefed.h"
 
 namespace mozilla {
@@ -35,15 +36,6 @@ class Client;
 }  // namespace quota
 
 void InitializeLocalStorage();
-
-already_AddRefed<PBackgroundLSDatabaseParent> AllocPBackgroundLSDatabaseParent(
-    const mozilla::ipc::PrincipalInfo& aPrincipalInfo,
-    const uint32_t& aPrivateBrowsingId, const uint64_t& aDatastoreId);
-
-bool RecvPBackgroundLSDatabaseConstructor(
-    PBackgroundLSDatabaseParent* aActor,
-    const mozilla::ipc::PrincipalInfo& aPrincipalInfo,
-    const uint32_t& aPrivateBrowsingId, const uint64_t& aDatastoreId);
 
 PBackgroundLSObserverParent* AllocPBackgroundLSObserverParent(
     const uint64_t& aObserverId);

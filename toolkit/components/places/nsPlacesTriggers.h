@@ -130,17 +130,10 @@
         "END")
 
 // This trigger runs on updates to moz_places.frecency.
-//
-// However, we skip this when frecency changes are due to frecency decay
-// since (1) decay updates all frecencies at once, so this trigger would
-// run for each moz_place, which would be expensive; and (2) decay does
-// not change the ordering of frecencies since all frecencies decay by
-// the same percentage.
 #  define CREATE_PLACES_AFTERUPDATE_FRECENCY_TRIGGER                           \
     nsLiteralCString(                                                          \
         "CREATE TEMP TRIGGER moz_places_afterupdate_frecency_trigger "         \
         "AFTER UPDATE OF frecency ON moz_places FOR EACH ROW "                 \
-        "WHEN NOT is_frecency_decaying() "                                     \
         "BEGIN "                                                               \
         "UPDATE moz_places SET recalc_frecency = 0 WHERE id = NEW.id; "        \
         "UPDATE moz_origins SET recalc_frecency = 1, recalc_alt_frecency = 1 " \
@@ -197,7 +190,8 @@
         "BEGIN "                                                           \
         "DELETE FROM moz_openpages_temp "                                  \
         "WHERE url = NEW.url "                                             \
-        "AND userContextId = NEW.userContextId;"                           \
+        "AND userContextId = NEW.userContextId "                           \
+        "AND groupId = NEW.groupId;"                                       \
         "END")
 
 /**
@@ -340,6 +334,48 @@
         "WHERE search_query_id = OLD.search_query_id "                 \
         "); "                                                          \
         "END")
+
+#  define CREATE_PLACES_METADATA_AFTERINSERT_TRIGGER(                        \
+      TOTAL_VIEW_TIME, TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, MANY_KEY_PRESSES) \
+    nsPrintfCString(                                                         \
+        "CREATE TEMP TRIGGER moz_places_metadata_afterinsert_trigger "       \
+        "AFTER INSERT ON moz_places_metadata "                               \
+        "FOR EACH ROW "                                                      \
+        "WHEN NEW.total_view_time >= %d "                                    \
+        "OR (NEW.total_view_time >= %d "                                     \
+        "AND NEW.key_presses >= %d) "                                        \
+        "BEGIN "                                                             \
+        "UPDATE moz_places "                                                 \
+        "SET recalc_frecency = 1, recalc_alt_frecency = 1 "                  \
+        "WHERE id = NEW.place_id AND frecency > 0; "                         \
+        "END",                                                               \
+        TOTAL_VIEW_TIME, TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, MANY_KEY_PRESSES)
+
+#  define CREATE_PLACES_METADATA_AFTERUPDATE_TRIGGER(                         \
+      TOTAL_VIEW_TIME, TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, MANY_KEY_PRESSES)  \
+    nsPrintfCString(                                                          \
+        "CREATE TEMP TRIGGER moz_places_metadata_afterupdate_trigger "        \
+        "AFTER UPDATE ON moz_places_metadata "                                \
+        "FOR EACH ROW "                                                       \
+        "WHEN "                                                               \
+        "  (OLD.total_view_time < %d AND NEW.total_view_time >= %d) "         \
+        "  OR (OLD.total_view_time < %d AND NEW.total_view_time >= %d "       \
+        "    AND OLD.key_presses >= %d) "                                     \
+        "  OR (OLD.total_view_time >= %d "                                    \
+        "    AND OLD.key_presses < %d AND NEW.key_presses >= %d) "            \
+        "  OR (OLD.total_view_time < %d AND NEW.total_view_time >= %d "       \
+        "    AND OLD.key_presses < %d AND NEW.key_presses >= %d) "            \
+        "BEGIN "                                                              \
+        "UPDATE moz_places "                                                  \
+        "SET recalc_frecency = 1, recalc_alt_frecency = 1 "                   \
+        "WHERE id = NEW.place_id AND frecency > 0; "                          \
+        "END",                                                                \
+        TOTAL_VIEW_TIME, TOTAL_VIEW_TIME, TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, \
+        TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, MANY_KEY_PRESSES,                 \
+        TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, MANY_KEY_PRESSES,                 \
+        MANY_KEY_PRESSES, TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES,                 \
+        TOTAL_VIEW_TIME_IF_MANY_KEYPRESSES, MANY_KEY_PRESSES,                 \
+        MANY_KEY_PRESSES)
 
 // since moz_places_extra is really just storing json, there could be a
 // scenario where we have a valid row but empty json -- we should make sure

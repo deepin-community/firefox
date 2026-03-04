@@ -6,9 +6,9 @@
 
 #include "ViewTimeline.h"
 
+#include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/dom/Animation.h"
 #include "mozilla/dom/ElementInlines.h"
-#include "mozilla/ScrollContainerFrame.h"
 #include "nsLayoutUtils.h"
 
 namespace mozilla::dom {
@@ -18,19 +18,21 @@ NS_IMPL_ISUPPORTS_CYCLE_COLLECTION_INHERITED_0(ViewTimeline, ScrollTimeline)
 
 /* static */
 already_AddRefed<ViewTimeline> ViewTimeline::MakeNamed(
-    Document* aDocument, Element* aSubject, PseudoStyleType aPseudoType,
+    Document* aDocument, Element* aSubject,
+    const PseudoStyleRequest& aPseudoRequest,
     const StyleViewTimeline& aStyleTimeline) {
   MOZ_ASSERT(NS_IsMainThread());
 
   // 1. Lookup scroller. We have to find the nearest scroller from |aSubject|
   // and |aPseudoType|.
-  auto [element, pseudo] = FindNearestScroller(aSubject, aPseudoType);
-  auto scroller = Scroller::Nearest(const_cast<Element*>(element), pseudo);
+  auto [element, pseudo] = FindNearestScroller(aSubject, aPseudoRequest);
+  auto scroller =
+      Scroller::Nearest(const_cast<Element*>(element), pseudo.mType);
 
   // 2. Create timeline.
-  return MakeAndAddRef<ViewTimeline>(aDocument, scroller,
-                                     aStyleTimeline.GetAxis(), aSubject,
-                                     aPseudoType, aStyleTimeline.GetInset());
+  return MakeAndAddRef<ViewTimeline>(
+      aDocument, scroller, aStyleTimeline.GetAxis(), aSubject,
+      aPseudoRequest.mType, aStyleTimeline.GetInset());
 }
 
 /* static */
@@ -39,18 +41,19 @@ already_AddRefed<ViewTimeline> ViewTimeline::MakeAnonymous(
     StyleScrollAxis aAxis, const StyleViewTimelineInset& aInset) {
   // view() finds the nearest scroll container from the animation target.
   auto [element, pseudo] =
-      FindNearestScroller(aTarget.mElement, aTarget.mPseudoType);
-  Scroller scroller = Scroller::Nearest(const_cast<Element*>(element), pseudo);
+      FindNearestScroller(aTarget.mElement, aTarget.mPseudoRequest);
+  Scroller scroller =
+      Scroller::Nearest(const_cast<Element*>(element), pseudo.mType);
   return MakeAndAddRef<ViewTimeline>(aDocument, scroller, aAxis,
-                                     aTarget.mElement, aTarget.mPseudoType,
-                                     aInset);
+                                     aTarget.mElement,
+                                     aTarget.mPseudoRequest.mType, aInset);
 }
 
-void ViewTimeline::ReplacePropertiesWith(Element* aSubjectElement,
-                                         PseudoStyleType aPseudoType,
-                                         const StyleViewTimeline& aNew) {
+void ViewTimeline::ReplacePropertiesWith(
+    Element* aSubjectElement, const PseudoStyleRequest& aPseudoRequest,
+    const StyleViewTimeline& aNew) {
   mSubject = aSubjectElement;
-  mSubjectPseudoType = aPseudoType;
+  mSubjectPseudoType = aPseudoRequest.mType;
   mAxis = aNew.GetAxis();
   // FIXME: Bug 1817073. We assume it is a non-animatable value for now.
   mInset = aNew.GetInset();
@@ -69,9 +72,15 @@ Maybe<ScrollTimeline::ScrollOffsets> ViewTimeline::ComputeOffsets(
   MOZ_ASSERT(mSubject);
   MOZ_ASSERT(aScrollContainerFrame);
 
+  // Note: We may fail to get the pseudo element (or its primary frame) if it is
+  // not generated yet or just get destroyed, while we are sampling this view
+  // timeline.
+  // FIXME: Bug 1954230. It's probably a case we need to discard this timeline.
+  // For now, this is just a hot fix.
   const Element* subjectElement =
-      AnimationUtils::GetElementForRestyle(mSubject, mSubjectPseudoType);
-  const nsIFrame* subject = subjectElement->GetPrimaryFrame();
+      mSubject->GetPseudoElement(PseudoStyleRequest(mSubjectPseudoType));
+  const nsIFrame* subject =
+      subjectElement ? subjectElement->GetPrimaryFrame() : nullptr;
   if (!subject) {
     // No principal box of the subject, so we cannot compute the offset. This
     // may happen when we clear all animation collections during unbinding from

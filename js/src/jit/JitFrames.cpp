@@ -322,7 +322,7 @@ static void HandleExceptionIon(JSContext* cx, const InlineFrameIterator& frame,
           }
 
           *hitBailoutException = true;
-          MOZ_ASSERT(cx->isExceptionPending());
+          MOZ_ASSERT(cx->isExceptionPending() || cx->hadUncatchableException());
         }
         break;
 
@@ -691,6 +691,11 @@ static JitFrameLayout* GetLastProfilingFrame(ResumeFromException* rfe) {
 void HandleException(ResumeFromException* rfe) {
   JSContext* cx = TlsContext.get();
 
+  if (!CheckForOOMStackTraceInterrupt(cx)) {
+    return;
+  }
+
+  cx->realm()->localAllocSite = nullptr;
 #ifdef DEBUG
   if (!IsPortableBaselineInterpreterEnabled()) {
     cx->runtime()->jitRuntime()->clearDisallowArbitraryCode();
@@ -1220,41 +1225,11 @@ static void TraceIonICCallFrame(JSTracer* trc, const JSJitFrameIter& frame) {
   }
 }
 
-#if defined(JS_CODEGEN_ARM64) || defined(JS_CODEGEN_MIPS32)
+#if defined(JS_CODEGEN_ARM64)
 uint8_t* alignDoubleSpill(uint8_t* pointer) {
   uintptr_t address = reinterpret_cast<uintptr_t>(pointer);
   address &= ~(uintptr_t(ABIStackAlignment) - 1);
   return reinterpret_cast<uint8_t*>(address);
-}
-#endif
-
-#ifdef JS_CODEGEN_MIPS32
-static void TraceJitExitFrameCopiedArguments(JSTracer* trc,
-                                             const VMFunctionData* f,
-                                             ExitFooterFrame* footer) {
-  uint8_t* doubleArgs = footer->alignedForABI();
-  if (f->outParam == Type_Handle) {
-    doubleArgs -= sizeof(Value);
-  }
-  doubleArgs -= f->doubleByRefArgs() * sizeof(double);
-
-  for (uint32_t explicitArg = 0; explicitArg < f->explicitArgs; explicitArg++) {
-    if (f->argProperties(explicitArg) == VMFunctionData::DoubleByRef) {
-      // Arguments with double size can only have RootValue type.
-      if (f->argRootType(explicitArg) == VMFunctionData::RootValue) {
-        TraceRoot(trc, reinterpret_cast<Value*>(doubleArgs), "ion-vm-args");
-      } else {
-        MOZ_ASSERT(f->argRootType(explicitArg) == VMFunctionData::RootNone);
-      }
-      doubleArgs += sizeof(double);
-    }
-  }
-}
-#else
-static void TraceJitExitFrameCopiedArguments(JSTracer* trc,
-                                             const VMFunctionData* f,
-                                             ExitFooterFrame* footer) {
-  // This is NO-OP on other platforms.
 }
 #endif
 
@@ -1407,8 +1382,6 @@ static void TraceJitExitFrame(JSTracer* trc, const JSJitFrameIter& frame) {
         break;
     }
   }
-
-  TraceJitExitFrameCopiedArguments(trc, &f, footer);
 }
 
 static void TraceBaselineInterpreterEntryFrame(JSTracer* trc,
@@ -1418,15 +1391,6 @@ static void TraceBaselineInterpreterEntryFrame(JSTracer* trc,
       (BaselineInterpreterEntryFrameLayout*)frame.fp();
   layout->replaceCalleeToken(TraceCalleeToken(trc, layout->calleeToken()));
   TraceThisAndArguments(trc, frame, layout);
-}
-
-static void TraceRectifierFrame(JSTracer* trc, const JSJitFrameIter& frame) {
-  // Trace thisv.
-  //
-  // Baseline JIT code generated as part of the ICCall_Fallback stub may use
-  // it if we're calling a constructor that returns a primitive value.
-  RectifierFrameLayout* layout = (RectifierFrameLayout*)frame.fp();
-  TraceRoot(trc, &layout->thisv(), "rectifier-thisv");
 }
 
 static void TraceTrampolineNativeFrame(JSTracer* trc,
@@ -1456,8 +1420,7 @@ static void TraceJitActivation(JSTracer* trc, JitActivation* activation) {
   }
 #endif
 
-  activation->traceRematerializedFrames(trc);
-  activation->traceIonRecovery(trc);
+  activation->trace(trc);
 
   // This is used for sanity checking continuity of the sequence of wasm stack
   // maps as we unwind.  It has no functional purpose.
@@ -1485,9 +1448,6 @@ static void TraceJitActivation(JSTracer* trc, JitActivation* activation) {
         case FrameType::BaselineInterpreterEntry:
           TraceBaselineInterpreterEntryFrame(trc, jitFrame);
           break;
-        case FrameType::Rectifier:
-          TraceRectifierFrame(trc, jitFrame);
-          break;
         case FrameType::TrampolineNative:
           TraceTrampolineNativeFrame(trc, jitFrame);
           break;
@@ -1504,12 +1464,13 @@ static void TraceJitActivation(JSTracer* trc, JitActivation* activation) {
       }
       highestByteVisitedInPrevWasmFrame = 0; /* "unknown" */
     } else {
+      gc::AssertRootMarkingPhase(trc);
       MOZ_ASSERT(frames.isWasm());
       uint8_t* nextPC = frames.resumePCinCurrentFrame();
       MOZ_ASSERT(nextPC != 0);
       wasm::WasmFrameIter& wasmFrameIter = frames.asWasm();
 #ifdef ENABLE_WASM_JSPI
-      if (wasmFrameIter.stackSwitched()) {
+      if (wasmFrameIter.currentFrameStackSwitched()) {
         highestByteVisitedInPrevWasmFrame = 0;
       }
 #endif
@@ -1527,7 +1488,7 @@ void TraceJitActivations(JSContext* cx, JSTracer* trc) {
     TraceJitActivation(trc, activations->asJit());
   }
 #ifdef ENABLE_WASM_JSPI
-  cx->wasm().promiseIntegration.traceRoots(trc);
+  cx->wasm().traceRoots(trc);
 #endif
 }
 
@@ -1548,6 +1509,7 @@ void TraceWeakJitActivationsInSweepingZones(JSContext* cx, JSTracer* trc) {
 
 void UpdateJitActivationsForMinorGC(JSRuntime* rt) {
   MOZ_ASSERT(JS::RuntimeHeapIsMinorCollecting());
+  Nursery& nursery = rt->gc.nursery();
   JSContext* cx = rt->mainContextFromOwnThread();
   for (JitActivationIterator activations(cx); !activations.done();
        ++activations) {
@@ -1560,7 +1522,7 @@ void UpdateJitActivationsForMinorGC(JSRuntime* rt) {
       } else if (iter.isWasm()) {
         const wasm::WasmFrameIter& frame = iter.asWasm();
         frame.instance()->updateFrameForMovingGC(
-            frame, frame.resumePCinCurrentFrame());
+            frame, frame.resumePCinCurrentFrame(), nursery);
       }
     }
   }
@@ -1568,6 +1530,7 @@ void UpdateJitActivationsForMinorGC(JSRuntime* rt) {
 
 void UpdateJitActivationsForCompactingGC(JSRuntime* rt) {
   MOZ_ASSERT(JS::RuntimeHeapIsMajorCollecting());
+  Nursery& nursery = rt->gc.nursery();
   JSContext* cx = rt->mainContextFromOwnThread();
   for (JitActivationIterator activations(cx); !activations.done();
        ++activations) {
@@ -1575,7 +1538,7 @@ void UpdateJitActivationsForCompactingGC(JSRuntime* rt) {
       if (iter.isWasm()) {
         const wasm::WasmFrameIter& frame = iter.asWasm();
         frame.instance()->updateFrameForMovingGC(
-            frame, frame.resumePCinCurrentFrame());
+            frame, frame.resumePCinCurrentFrame(), nursery);
       }
     }
   }
@@ -1756,6 +1719,12 @@ bool SnapshotIterator::allocationReadable(const RValueAllocation& alloc,
       return rm == ReadMethod::AlwaysDefault ||
              hasInstructionResult(alloc.index());
 
+    case RValueAllocation::INTPTR_REG:
+      return hasRegister(alloc.reg());
+    case RValueAllocation::INTPTR_STACK:
+    case RValueAllocation::INTPTR_INT32_STACK:
+      return hasStack(alloc.stackOffset());
+
 #if defined(JS_NUNBOX32)
     case RValueAllocation::INT64_REG_REG:
       return hasRegister(alloc.reg()) && hasRegister(alloc.reg2());
@@ -1769,6 +1738,7 @@ bool SnapshotIterator::allocationReadable(const RValueAllocation& alloc,
     case RValueAllocation::INT64_REG:
       return hasRegister(alloc.reg());
     case RValueAllocation::INT64_STACK:
+    case RValueAllocation::INT64_INT32_STACK:
       return hasStack(alloc.stackOffset());
 #endif
 
@@ -1792,10 +1762,10 @@ Value SnapshotIterator::allocationValue(const RValueAllocation& alloc,
     case RValueAllocation::DOUBLE_REG:
       return DoubleValue(fromRegister<double>(alloc.fpuReg()));
 
-    case RValueAllocation::ANY_FLOAT_REG:
+    case RValueAllocation::FLOAT32_REG:
       return Float32Value(fromRegister<float>(alloc.fpuReg()));
 
-    case RValueAllocation::ANY_FLOAT_STACK:
+    case RValueAllocation::FLOAT32_STACK:
       return Float32Value(ReadFrameFloat32Slot(fp_, alloc.stackOffset()));
 
     case RValueAllocation::TYPED_REG:
@@ -1864,6 +1834,12 @@ Value SnapshotIterator::allocationValue(const RValueAllocation& alloc,
       MOZ_ASSERT(rm == ReadMethod::AlwaysDefault);
       return ionScript_->getConstant(alloc.index2());
 
+    case RValueAllocation::INTPTR_CST:
+    case RValueAllocation::INTPTR_REG:
+    case RValueAllocation::INTPTR_STACK:
+    case RValueAllocation::INTPTR_INT32_STACK:
+      MOZ_CRASH("Can't read IntPtr as Value");
+
     case RValueAllocation::INT64_CST:
 #if defined(JS_NUNBOX32)
     case RValueAllocation::INT64_REG_REG:
@@ -1873,6 +1849,7 @@ Value SnapshotIterator::allocationValue(const RValueAllocation& alloc,
 #elif defined(JS_PUNBOX64)
     case RValueAllocation::INT64_REG:
     case RValueAllocation::INT64_STACK:
+    case RValueAllocation::INT64_INT32_STACK:
 #endif
       MOZ_CRASH("Can't read Int64 as Value");
 
@@ -1929,9 +1906,21 @@ bool SnapshotIterator::readMaybeUnpackedBigInt(JSContext* cx,
 #elif defined(JS_PUNBOX64)
     case RValueAllocation::INT64_REG:
     case RValueAllocation::INT64_STACK:
+    case RValueAllocation::INT64_INT32_STACK:
 #endif
     {
       auto* bigInt = JS::BigInt::createFromInt64(cx, allocationInt64(alloc));
+      if (!bigInt) {
+        return false;
+      }
+      result.setBigInt(bigInt);
+      return true;
+    }
+    case RValueAllocation::INTPTR_CST:
+    case RValueAllocation::INTPTR_REG:
+    case RValueAllocation::INTPTR_STACK:
+    case RValueAllocation::INTPTR_INT32_STACK: {
+      auto* bigInt = JS::BigInt::createFromIntPtr(cx, allocationIntPtr(alloc));
       if (!bigInt) {
         return false;
       }
@@ -1985,11 +1974,53 @@ int64_t SnapshotIterator::allocationInt64(const RValueAllocation& alloc) {
     case RValueAllocation::INT64_STACK: {
       return static_cast<int64_t>(fromStack(alloc.stackOffset()));
     }
+    case RValueAllocation::INT64_INT32_STACK: {
+      return static_cast<int64_t>(ReadFrameInt32Slot(fp_, alloc.stackOffset()));
+    }
 #endif
     default:
       break;
   }
   MOZ_CRASH("invalid int64 allocation");
+}
+
+intptr_t SnapshotIterator::allocationIntPtr(const RValueAllocation& alloc) {
+  MOZ_ASSERT(allocationReadable(alloc));
+  switch (alloc.mode()) {
+    case RValueAllocation::INTPTR_CST: {
+#if !defined(JS_64BIT)
+      int32_t cst = ionScript_->getConstant(alloc.index()).toInt32();
+      return static_cast<intptr_t>(cst);
+#else
+      uint32_t lo = ionScript_->getConstant(alloc.index()).toInt32();
+      uint32_t hi = ionScript_->getConstant(alloc.index2()).toInt32();
+      return static_cast<intptr_t>((static_cast<uint64_t>(hi) << 32) | lo);
+#endif
+    }
+    case RValueAllocation::INTPTR_REG:
+      return static_cast<intptr_t>(fromRegister(alloc.reg()));
+    case RValueAllocation::INTPTR_STACK:
+      return static_cast<intptr_t>(fromStack(alloc.stackOffset()));
+    case RValueAllocation::INTPTR_INT32_STACK:
+      return static_cast<intptr_t>(
+          ReadFrameInt32Slot(fp_, alloc.stackOffset()));
+    default:
+      break;
+  }
+  MOZ_CRASH("invalid intptr allocation");
+}
+
+JS::BigInt* SnapshotIterator::readBigInt(JSContext* cx) {
+  RValueAllocation alloc = readAllocation();
+  switch (alloc.mode()) {
+    case RValueAllocation::INTPTR_CST:
+    case RValueAllocation::INTPTR_REG:
+    case RValueAllocation::INTPTR_STACK:
+    case RValueAllocation::INTPTR_INT32_STACK:
+      return JS::BigInt::createFromIntPtr(cx, allocationIntPtr(alloc));
+    default:
+      return allocationValue(alloc).toBigInt();
+  }
 }
 
 void SnapshotIterator::writeAllocationValuePayload(
@@ -2004,8 +2035,12 @@ void SnapshotIterator::writeAllocationValuePayload(
     case RValueAllocation::CST_UNDEFINED:
     case RValueAllocation::CST_NULL:
     case RValueAllocation::DOUBLE_REG:
-    case RValueAllocation::ANY_FLOAT_REG:
-    case RValueAllocation::ANY_FLOAT_STACK:
+    case RValueAllocation::FLOAT32_REG:
+    case RValueAllocation::FLOAT32_STACK:
+    case RValueAllocation::INTPTR_CST:
+    case RValueAllocation::INTPTR_REG:
+    case RValueAllocation::INTPTR_STACK:
+    case RValueAllocation::INTPTR_INT32_STACK:
     case RValueAllocation::INT64_CST:
 #if defined(JS_NUNBOX32)
     case RValueAllocation::INT64_REG_REG:
@@ -2015,6 +2050,7 @@ void SnapshotIterator::writeAllocationValuePayload(
 #elif defined(JS_PUNBOX64)
     case RValueAllocation::INT64_REG:
     case RValueAllocation::INT64_STACK:
+    case RValueAllocation::INT64_INT32_STACK:
 #endif
       MOZ_CRASH("Not a GC thing: Unexpected write");
       break;
@@ -2503,12 +2539,7 @@ uintptr_t MachineState::read(Register reg) const {
 
 template <typename T>
 T MachineState::read(FloatRegister reg) const {
-#if !defined(JS_CODEGEN_RISCV64)
   MOZ_ASSERT(reg.size() == sizeof(T));
-#else
-  // RISCV64 always store FloatRegister as 64bit.
-  MOZ_ASSERT(reg.size() == sizeof(double));
-#endif
 
 #if !defined(JS_CODEGEN_NONE) && !defined(JS_CODEGEN_WASM32)
   if (state_.is<BailoutState>()) {
@@ -2681,11 +2712,10 @@ void AssertJitStackInvariants(JSContext* cx) {
         frameSize = callerFp - calleeFp;
 
         if (frames.isScripted() &&
-            (frames.prevType() == FrameType::Rectifier ||
-             frames.prevType() == FrameType::BaselineInterpreterEntry)) {
+            frames.prevType() == FrameType::BaselineInterpreterEntry) {
           MOZ_RELEASE_ASSERT(
               frameSize % JitStackAlignment == 0,
-              "The rectifier and bli entry frame should keep the alignment");
+              "The blinterp entry frame should keep the alignment");
 
           size_t expectedFrameSize =
               sizeof(Value) *
@@ -2728,8 +2758,7 @@ void AssertJitStackInvariants(JSContext* cx) {
                              "The baseline stub restores the stack alignment");
         }
 
-        isScriptedCallee =
-            frames.isScripted() || frames.type() == FrameType::Rectifier;
+        isScriptedCallee = frames.isScripted();
       }
 
       MOZ_RELEASE_ASSERT(

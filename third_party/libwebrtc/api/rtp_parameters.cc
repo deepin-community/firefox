@@ -10,12 +10,16 @@
 #include "api/rtp_parameters.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <string>
 #include <tuple>
-#include <utility>
+#include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/array_view.h"
+#include "api/rtp_transceiver_direction.h"
 #include "media/base/media_constants.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
@@ -49,12 +53,11 @@ RtpCodec::RtpCodec() = default;
 RtpCodec::RtpCodec(const RtpCodec&) = default;
 RtpCodec::~RtpCodec() = default;
 bool RtpCodec::IsResiliencyCodec() const {
-  return name == cricket::kRtxCodecName || name == cricket::kRedCodecName ||
-         name == cricket::kUlpfecCodecName ||
-         name == cricket::kFlexfecCodecName;
+  return name == kRtxCodecName || name == kRedCodecName ||
+         name == kUlpfecCodecName || name == kFlexfecCodecName;
 }
 bool RtpCodec::IsMediaCodec() const {
-  return !IsResiliencyCodec() && name != cricket::kComfortNoiseCodecName;
+  return !IsResiliencyCodec() && name != kComfortNoiseCodecName;
 }
 RtpCodecCapability::RtpCodecCapability() = default;
 RtpCodecCapability::~RtpCodecCapability() = default;
@@ -72,6 +75,15 @@ RtpHeaderExtensionCapability::RtpHeaderExtensionCapability(
     int preferred_id,
     RtpTransceiverDirection direction)
     : uri(uri), preferred_id(preferred_id), direction(direction) {}
+RtpHeaderExtensionCapability::RtpHeaderExtensionCapability(
+    absl::string_view uri,
+    int preferred_id,
+    bool preferred_encrypt,
+    RtpTransceiverDirection direction)
+    : uri(uri),
+      preferred_id(preferred_id),
+      preferred_encrypt(preferred_encrypt),
+      direction(direction) {}
 RtpHeaderExtensionCapability::~RtpHeaderExtensionCapability() = default;
 
 RtpExtension::RtpExtension() = default;
@@ -115,7 +127,7 @@ RtpParameters::~RtpParameters() = default;
 
 std::string RtpExtension::ToString() const {
   char buf[256];
-  rtc::SimpleStringBuilder sb(buf);
+  SimpleStringBuilder sb(buf);
   sb << "{uri: " << uri;
   sb << ", id: " << id;
   if (encrypt) {
@@ -125,63 +137,34 @@ std::string RtpExtension::ToString() const {
   return sb.str();
 }
 
-constexpr char RtpExtension::kEncryptHeaderExtensionsUri[];
-constexpr char RtpExtension::kAudioLevelUri[];
-constexpr char RtpExtension::kTimestampOffsetUri[];
-constexpr char RtpExtension::kAbsSendTimeUri[];
-constexpr char RtpExtension::kAbsoluteCaptureTimeUri[];
-constexpr char RtpExtension::kVideoRotationUri[];
-constexpr char RtpExtension::kVideoContentTypeUri[];
-constexpr char RtpExtension::kVideoTimingUri[];
-constexpr char RtpExtension::kGenericFrameDescriptorUri00[];
-constexpr char RtpExtension::kDependencyDescriptorUri[];
-constexpr char RtpExtension::kVideoLayersAllocationUri[];
-constexpr char RtpExtension::kTransportSequenceNumberUri[];
-constexpr char RtpExtension::kTransportSequenceNumberV2Uri[];
-constexpr char RtpExtension::kPlayoutDelayUri[];
-constexpr char RtpExtension::kColorSpaceUri[];
-constexpr char RtpExtension::kMidUri[];
-constexpr char RtpExtension::kRidUri[];
-constexpr char RtpExtension::kRepairedRidUri[];
-constexpr char RtpExtension::kVideoFrameTrackingIdUri[];
-constexpr char RtpExtension::kCsrcAudioLevelsUri[];
-
-constexpr int RtpExtension::kMinId;
-constexpr int RtpExtension::kMaxId;
-constexpr int RtpExtension::kMaxValueSize;
-constexpr int RtpExtension::kOneByteHeaderExtensionMaxId;
-constexpr int RtpExtension::kOneByteHeaderExtensionMaxValueSize;
-
 bool RtpExtension::IsSupportedForAudio(absl::string_view uri) {
-  return uri == webrtc::RtpExtension::kAudioLevelUri ||
-         uri == webrtc::RtpExtension::kAbsSendTimeUri ||
-         uri == webrtc::RtpExtension::kAbsoluteCaptureTimeUri ||
-         uri == webrtc::RtpExtension::kTransportSequenceNumberUri ||
-         uri == webrtc::RtpExtension::kTransportSequenceNumberV2Uri ||
-         uri == webrtc::RtpExtension::kMidUri ||
-         uri == webrtc::RtpExtension::kRidUri ||
-         uri == webrtc::RtpExtension::kRepairedRidUri ||
-         uri == webrtc::RtpExtension::kCsrcAudioLevelsUri;
+  return uri == RtpExtension::kAudioLevelUri ||
+         uri == RtpExtension::kAbsSendTimeUri ||
+         uri == RtpExtension::kAbsoluteCaptureTimeUri ||
+         uri == RtpExtension::kTransportSequenceNumberUri ||
+         uri == RtpExtension::kTransportSequenceNumberV2Uri ||
+         uri == RtpExtension::kMidUri || uri == RtpExtension::kRidUri ||
+         uri == RtpExtension::kRepairedRidUri ||
+         uri == RtpExtension::kCsrcAudioLevelsUri;
 }
 
 bool RtpExtension::IsSupportedForVideo(absl::string_view uri) {
-  return uri == webrtc::RtpExtension::kTimestampOffsetUri ||
-         uri == webrtc::RtpExtension::kAbsSendTimeUri ||
-         uri == webrtc::RtpExtension::kAbsoluteCaptureTimeUri ||
-         uri == webrtc::RtpExtension::kVideoRotationUri ||
-         uri == webrtc::RtpExtension::kTransportSequenceNumberUri ||
-         uri == webrtc::RtpExtension::kTransportSequenceNumberV2Uri ||
-         uri == webrtc::RtpExtension::kPlayoutDelayUri ||
-         uri == webrtc::RtpExtension::kVideoContentTypeUri ||
-         uri == webrtc::RtpExtension::kVideoTimingUri ||
-         uri == webrtc::RtpExtension::kMidUri ||
-         uri == webrtc::RtpExtension::kGenericFrameDescriptorUri00 ||
-         uri == webrtc::RtpExtension::kDependencyDescriptorUri ||
-         uri == webrtc::RtpExtension::kColorSpaceUri ||
-         uri == webrtc::RtpExtension::kRidUri ||
-         uri == webrtc::RtpExtension::kRepairedRidUri ||
-         uri == webrtc::RtpExtension::kVideoLayersAllocationUri ||
-         uri == webrtc::RtpExtension::kVideoFrameTrackingIdUri;
+  return uri == RtpExtension::kTimestampOffsetUri ||
+         uri == RtpExtension::kAbsSendTimeUri ||
+         uri == RtpExtension::kAbsoluteCaptureTimeUri ||
+         uri == RtpExtension::kVideoRotationUri ||
+         uri == RtpExtension::kTransportSequenceNumberUri ||
+         uri == RtpExtension::kTransportSequenceNumberV2Uri ||
+         uri == RtpExtension::kPlayoutDelayUri ||
+         uri == RtpExtension::kVideoContentTypeUri ||
+         uri == RtpExtension::kVideoTimingUri || uri == RtpExtension::kMidUri ||
+         uri == RtpExtension::kGenericFrameDescriptorUri00 ||
+         uri == RtpExtension::kDependencyDescriptorUri ||
+         uri == RtpExtension::kColorSpaceUri || uri == RtpExtension::kRidUri ||
+         uri == RtpExtension::kRepairedRidUri ||
+         uri == RtpExtension::kVideoLayersAllocationUri ||
+         uri == RtpExtension::kVideoFrameTrackingIdUri ||
+         uri == RtpExtension::kCorruptionDetectionUri;
 }
 
 bool RtpExtension::IsEncryptionSupported(absl::string_view uri) {
@@ -192,9 +175,9 @@ bool RtpExtension::IsEncryptionSupported(absl::string_view uri) {
       // srtpfilter. External auth is used by Chromium and replaces the
       // extension header value of "kAbsSendTimeUri", so it must not be
       // encrypted (which can't be done by Chromium).
-      uri != webrtc::RtpExtension::kAbsSendTimeUri &&
+      uri != RtpExtension::kAbsSendTimeUri &&
 #endif
-      uri != webrtc::RtpExtension::kEncryptHeaderExtensionsUri;
+      uri != RtpExtension::kEncryptHeaderExtensionsUri;
 }
 
 // Returns whether a header extension with the given URI exists.
@@ -215,7 +198,7 @@ const RtpExtension* RtpExtension::FindHeaderExtensionByUri(
     const std::vector<RtpExtension>& extensions,
     absl::string_view uri,
     Filter filter) {
-  const webrtc::RtpExtension* fallback_extension = nullptr;
+  const RtpExtension* fallback_extension = nullptr;
   for (const auto& extension : extensions) {
     if (extension.uri != uri) {
       continue;

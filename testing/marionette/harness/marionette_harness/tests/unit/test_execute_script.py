@@ -1,12 +1,16 @@
 import os
-
-from six.moves.urllib.parse import quote
+import sys
+from urllib.parse import quote
 
 from marionette_driver import By, errors
 from marionette_driver.marionette import Alert, WebElement
 from marionette_driver.wait import Wait
-
 from marionette_harness import MarionetteTestCase, WindowManagerMixin
+
+# add this directory to the path
+sys.path.append(os.path.dirname(__file__))
+
+from chrome_handler_mixin import ChromeHandlerMixin
 
 
 def inline(doc):
@@ -221,6 +225,16 @@ class TestExecuteContent(MarionetteTestCase):
             os.path.relpath(__file__.replace(".pyc", ".py")), cm.exception.stacktrace
         )
         self.assertIn("b is not defined", str(cm.exception))
+
+    def test_syntaxerror_stack(self):
+        with self.assertRaises(errors.JavascriptException) as cm:
+            self.marionette.execute_script("notAFunc() {")
+
+        # by default execute_script pass the name of the python file
+        self.assertIn(
+            os.path.relpath(__file__.replace(".pyc", ".py")), cm.exception.stacktrace
+        )
+        self.assertIn("SyntaxError: unexpected token: '{'", str(cm.exception))
 
     def test_permission(self):
         for sandbox in ["default", None]:
@@ -486,12 +500,12 @@ class TestExecuteContent(MarionetteTestCase):
         self.assertIsNone(res)
 
 
-class TestExecuteChrome(WindowManagerMixin, TestExecuteContent):
+class TestExecuteChrome(ChromeHandlerMixin, WindowManagerMixin, TestExecuteContent):
     def setUp(self):
         super(TestExecuteChrome, self).setUp()
 
         self.marionette.set_context("chrome")
-        win = self.open_chrome_window("chrome://remote/content/marionette/test.xhtml")
+        win = self.open_chrome_window(self.chrome_base_url + "test.xhtml")
         self.marionette.switch_to_window(win)
 
     def tearDown(self):
@@ -566,4 +580,7 @@ class TestExecuteChrome(WindowManagerMixin, TestExecuteContent):
         pass
 
     def test_return_value_on_alert(self):
+        pass
+
+    def test_syntaxerror_stack(self):
         pass

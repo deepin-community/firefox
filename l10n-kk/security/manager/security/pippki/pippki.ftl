@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Қарап шығу
 download-cert-view-text = CA сертификатын тексеру
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Кім шығарған: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Қайда сақталған: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Осы таңдауымды есте сақтау
+client-auth-cert-remember-label = Бұл таңдауымды есте сақтау:
+client-auth-cert-remember-never =
+    .label = Бір рет
+client-auth-cert-remember-always =
+    .label = Тұрақты
+client-auth-cert-remember-temporarily =
+    .label = Бұл сессия үшін
 
 ## Set password (p12) dialog
 

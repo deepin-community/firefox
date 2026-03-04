@@ -172,7 +172,6 @@ public final class GeckoLoader {
           "MOZ_ANDROID_CRASH_HANDLER=" + context.getPackageName() + "/" + crashHandler.getName());
     }
 
-    putenv("MOZ_ANDROID_DEVICE_SDK_VERSION=" + Build.VERSION.SDK_INT);
     putenv("MOZ_ANDROID_CPU_ABI=" + Build.CPU_ABI);
 
     // env from extras could have reset out linker flags; set them again.
@@ -211,7 +210,7 @@ public final class GeckoLoader {
       throw new IllegalStateException("Invalid library path for libmozglue.so: " + mozglue);
     }
     final String base = mozglue.substring(0, lastSlash);
-    Log.i(LOGTAG, "Library base=" + base);
+    Log.d(LOGTAG, "Library base=" + base);
     return base;
   }
 
@@ -412,15 +411,14 @@ public final class GeckoLoader {
   // These methods are implemented in mozglue/android/nsGeckoUtils.cpp
   private static native void putenv(String map);
 
+  // These are mirrored in mozglue/android/APKOpen.cpp
+  public static final int PROCESS_TYPE_MAIN = 0;
+  public static final int PROCESS_TYPE_CHILD = 1;
+  public static final int PROCESS_TYPE_XPCSHELL = 2;
+
   // These methods are implemented in mozglue/android/APKOpen.cpp
   public static native void nativeRun(
-      String[] args,
-      int prefsFd,
-      int prefMapFd,
-      int ipcFd,
-      int crashFd,
-      boolean xpcshell,
-      String outFilePath);
+      String[] args, int[] fds, int processType, String outFilePath);
 
   private static native void loadGeckoLibsNative();
 

@@ -68,6 +68,10 @@ startup-header = Gayi'ì
 always-check-default =
     .label = Natsi' si { -brand-short-name } huin raj sun' da' gaché nu'.
     .accesskey = o
+is-default-browser =
+    .message = { -brand-short-name } huin sa rajsun' da' gaché nu'
+is-not-default-browser =
+    .message = { -brand-short-name } sè sa rajsùn yitin' da' gaché nu' huin ma
 is-default = { -brand-short-name } huin sa rajsun' da' gaché nu'
 is-not-default = { -brand-short-name } sè sa rajsùn yitin' da' gaché nu' huin ma
 set-as-my-default-browser =
@@ -77,6 +81,8 @@ startup-restore-warn-on-quit =
     .label = Gataj na'an gunïnt nga gahui riña nana'uî't nuguan'an
 disable-extension =
     .label = Duyichîn' extension
+tabs-group-header2 =
+    .label = Rakïj ñaj
 tabs-group-header = Rakïj ñaj
 ctrl-tab-recently-used-order =
     .label = Ctrl + Tab duguchin ma riña nej rakïj ñanj hìaj garasun'
@@ -98,6 +104,8 @@ browser-containers-settings =
     .label = Nagi'iô'...
     .accesskey = N
 containers-disable-alert-title = Narun' daran' sa hua ni'ninj anj
+startup-group =
+    .label = Gayi'ì
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -118,7 +126,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Ga ra'nga' ma
 containers-remove-alert-title = Guxunt markador na anj?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Si sa' naduret markador na ni ganarrân daran' markador hua ni'ninj { $count }. Gani yitinj ruhuat si duret markador na anj?.
@@ -130,6 +138,12 @@ containers-remove-cancel-button = Si dure' markador na
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Nânj a'mi' ni daj ga ma
+default-font-2 =
+    .label = Letra 'nga hua nia
+    .accesskey = L
+default-font-size-2 =
+    .label = Dàj yachìj man
+    .accesskey = D
 default-font = Letra 'nga hua nia
     .accesskey = L
 default-font-size = Dàj yachìj man
@@ -164,6 +178,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Archivo ni aplikasion
+downloads-header-2 =
+    .label = Nadunínj
+download-save-where-2 =
+    .label = Na'ninj so' archivo riña
+    .accesskey = a
 download-header = Nadunínj
 download-save-where = Na'ninj so' archivo riña
     .accesskey = a
@@ -212,15 +231,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Yitïnj gachinj nu'un'
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Garasun' { $plugin-name } (riña { -brand-short-name })
 
@@ -243,6 +262,8 @@ applications-use-other-label =
 
 ##
 
+drm-group =
+    .label = Sa ma DRM (Digital Rights Management - Sa Dugumin)
 drm-content-header = Sa ma DRM (Digital Rights Management - Sa Dugumin)
 play-drm-content =
     .label = Nachrun' 'ngà DRM
@@ -250,6 +271,8 @@ play-drm-content =
 play-drm-content-learn-more = Gahuin chrūn doj
 update-application-title = { -brand-short-name } Nagi'iaj nakà
 update-application-description = Nagi'iaj { -brand-short-name } nakà da' gi'iaj sun hue'é ma.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Versiun { $version } <a data-l10n-name="learn-more">Sa nia' doj </a>
 update-history =
     .label = Digun' riña ma sa nagui'iaj nako'
@@ -291,9 +314,11 @@ performance-limit-content-process-option = Si ga'ue giman doj
 performance-limit-content-process-enabled-desc = Ga'ue gi'iaj sun hue'e ma 'ngà na'nit a'ngo rakïj ñanj, sani raj sun doj rà ma
 performance-limit-content-process-blocked-desc = Ga'ue nagi'iaj nikot 'ngà multiproseso{ -brand-short-name }.<a data-l10n-name="learn-more">Gahuin chrun' garasun' multiproseso</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (dànj hua nianj)
+performance-group =
+    .label = Daj unūkuaj ma
 
 ## General Section - Browsing
 
@@ -324,6 +349,8 @@ browsing-cfr-features =
     .label = Nga aché nunt ni gataj nan'anj gunïn duguî't nej sa hua hue'ê
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Gahuin chrūn doj
+browsing-group =
+    .label = Aché nu'
 
 ## General Section - Proxy
 
@@ -333,16 +360,27 @@ network-proxy-connection-learn-more = Gahuin chrūn doj
 network-proxy-connection-settings =
     .label = Nagi'iô'...
     .accesskey = N
+network-proxy-group =
+    .label = Dàj ga Red ruhuât
+    .description = Nagi'io' { -brand-short-name } gate' riña internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = Ventâna ni rakïj ñanj
 home-new-windows-tabs-description2 = Ganin ruhua ahuin' si gini'iaj 'ngà gana'nit pajina riña ayi'ij ni rakïj ñanj nakàa.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Nagi'iaj yitïn' ma
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Pajina ayi'ij nī ventana nakàa
 home-newtabs-mode-label = Rakïj ñanj nakàa
+home-homepage-new-tabs =
+    .label = Rakïj ñanj nakàa
 home-restore-defaults =
     .label = Nagi'io' ru'ua nìanj
     .accesskey = R
@@ -372,11 +410,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Nana'uì' web
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = Sa hua hue'e taj { $provider }
 
@@ -399,6 +434,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = 'Ngò dajsu
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -427,6 +464,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Nadigan ma nej sa nana'ui' riña dukuán direksion.
     .accesskey = I
+search-suggestions-cant-show-2 =
+    .message = Nej sa nana'uit nī se si nadiganj riña dukuán direksion dàdin' dàdanj nagi'iât { -brand-short-name } da' si nachra sa'aj.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -453,13 +492,19 @@ search-find-more-link = Nadure' sa nana'ui'
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Dà hua' nanikaj ma
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Ganahuit 'ngo nuguan' 'ngà rajsun “{ $name }”. Gi'iaj suntuj u nī gànahuit a'ngoj.
 search-keyword-warning-bookmark = Nuguan' na nī 'ngà rajsun 'ngo markador. Ganahui a'ngoj.
+search-engine-group =
+    .label = Sa ruguñu'unj ñù' nana'uì'
+search-default-engine =
+    .aria-label = Sa ruguñu'unj ñù' nana'uì'
 
 ## Containers Section
 
 containers-header = Rakïj ñanj mā ma
+containers-section-header =
+    .heading = Rakïj ñanj mā ma
 containers-add-button =
     .label = Nuto' sa nakàa
     .accesskey = A
@@ -490,11 +535,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Gahuī…
     .accesskey = G
+sync-sign-out2 =
+    .label = Gahuī
+    .accesskey = G
 sync-manage-account = Dugumi' Kuenda
+    .accesskey = D
+sync-manage-account2 =
+    .label = Dugumi' Kuenda
     .accesskey = D
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } se sa ni'in huin ma.
 sync-signedin-login-failure = Gayi'ī sesión da' gatu ñut { $email }
@@ -522,8 +574,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Nagi'iaj nuguàn'àn hīaj
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Nagi'iaj nuguàn'àn hīaj
+    .accesskey = N
 prefs-syncing-button =
     .label = Nagi'iaj nuguàn'anj…
+prefs-syncing-button-2 =
+    .label = Nagi'iaj nuguàn'anj…
+    .title = Nagi'iaj nuguàn'àn hīaj
 
 ## The list of things currently syncing.
 
@@ -577,6 +635,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = Si yugui aga'a
+sync-device-name-header-2 =
+    .label = Si yugui aga'a
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Si yugui aga'a
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Naduno' si yugui aga'a
+    .accesskey = h
 sync-device-name-change =
     .label = Naduno' si yugui aga'a...
     .accesskey = h
@@ -587,6 +655,8 @@ sync-device-name-save =
     .label = Na'nïnj sà'
     .accesskey = N
 sync-connect-another-device = Gatu 'ngà a'ngo aga'a...
+sync-connect-another-device-2 =
+    .label = Gatu 'ngà a'ngo aga'a...
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -631,20 +701,27 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Sa gayi'ìt sesión ngà naginu sà'
     .accesskey = S
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Nadunā Da’nga’ Huì A’nïn’ïn
     .accesskey = N
 forms-master-pw-fips-desc = Nu ga’ue nādunaj Da’nga’ Huìi
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Daran sa gahuin
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } ga'ue
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -662,6 +739,18 @@ history-remember-option-never =
     .label = Si gani'ij ma riña gaché nut
 history-remember-option-custom =
     .label = Nagi'io' daj anin ruhuot riña gaché nut
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } gataj na'anj ma dane' gaché nut, nuin si naduninj nī nej sa nana'uit.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } garusunj ru'ua riña gaché nu hui' se si na'ninj sa'aj riña gaché nut.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } gataj na'anj ma dane' gaché nut, nuin si naduninj nī nej sa nana'uit.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } garusunj ru'ua riña gaché nu hui' se si na'ninj sa'aj riña gaché nut.
 history-remember-description = { -brand-short-name } gataj na'anj ma dane' gaché nut, nuin si naduninj nī nej sa nana'uit.
 history-dontremember-description = { -brand-short-name } garusunj ru'ua riña gaché nu hui' se si na'ninj sa'aj riña gaché nut.
 history-private-browsing-permanent =
@@ -682,14 +771,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Nadure' sa gini’iājt...
     .accesskey = r
+history-group =
+    .label = Daran sa gahuin
 
 ## Privacy Section - Site Data
 
 sitedata-header = Kookies nī si dato sitio
 sitedata-total-size-calculating = Si riña ma daj yachij nej sa ma riña sitio nī kaché...
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Si kookies, sa rajsun sitio nī kaché ma sa' ni raj sun ma { $value }{ $unit } riña na'ní sat.
 sitedata-learn-more = Gahuin chrūn doj
 sitedata-delete-on-close =
@@ -718,14 +809,10 @@ sitedata-clear =
 sitedata-settings =
     .label = Dugumi' datos
     .accesskey = M
+cookies-site-data-group =
+    .label = Kookies nī si dato sitio
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Dukuán direksion
 addressbar-suggest = 'Ngà rajsun' dukuán direksion
@@ -836,6 +923,8 @@ permissions-notification-link = Gahuin chrun doj
 permissions-notification-pause =
     .label = Duyichi' akuan't nej sa ataj na'an dâ { -brand-short-name } nayi'ì ñu
     .accesskey = n
+permissions-autoplay2 =
+    .label = Duyinga' man'an man nanèe
 permissions-autoplay = Duyinga' man'an man nanèe
 permissions-autoplay-settings =
     .label = Nagi'iô'...
@@ -849,6 +938,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Sa ga'ue
     .accesskey = E
+permissions-location2 =
+    .label = Dane' huin
+permissions-camera2 =
+    .label = Kamara
+permissions-microphone2 =
+    .label = Aga' uxun nanèe
+permissions-notification2 =
+    .label = Sa ataj na'anj
 
 ## Privacy Section - Data Collection
 
@@ -869,15 +966,14 @@ addon-recommendations-link = Gahuin chrūn doj
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Nej sa ataj na'anj nej datos nitaj si 'iaj sun 'ngà nej kopilacion
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Sa arrán riña yi'ìi
+browsing-protection-group =
+    .label = Sa arrán riña nej sa àta yi'ìi
 security-browsing-protection = Sa arrán riña nej sa àta yi'ìi
 security-enable-safe-browsing =
     .label = Garrun' riña nej sa Àta yi'ìi
@@ -902,12 +998,7 @@ certs-view =
 certs-devices =
     .label = Nej sa dugumi...
     .accesskey = N
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = Nachrun FIPS
 
 ## The following strings are used in the Download section of settings
 

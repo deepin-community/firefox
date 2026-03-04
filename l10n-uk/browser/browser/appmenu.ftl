@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Завантаження
 appmenuitem-passwords =
     .label = Паролі
+appmenuitem-extensions-and-themes =
+    .label = Розширення і теми
+appmenuitem-extensions =
+    .label = Розширення
 appmenuitem-addons-and-themes =
     .label = Додатки й теми
 appmenuitem-print =
@@ -104,12 +108,15 @@ appmenu-account-header = Обліковий запис
 # 3 hours ago, etc.)
 appmenu-fxa-last-sync = Востаннє синхронізовано { $time }
     .label = Востаннє синхронізовано { $time }
-appmenu-fxa-sync-and-save-data2 = Синхронізувати та зберегти дані
+appmenu-fxa-sync-and-save-data2 = Синхронізувати й зберегти дані
 appmenu-fxa-signed-in-label = Увійти
 appmenu-fxa-setup-sync =
     .label = Увімкнути синхронізацію…
+appmenu-fxa-setup-sync-new = Увімкнути
 appmenuitem-save-page =
     .label = Зберегти як…
+appmenuitem-fxa-sync-off-title = Синхронізацію вимкнено
+appmenuitem-fxa-sync-off-description = Захистіть та отримуйте доступ до своїх закладок, паролів та інших даних звідусіль.
 
 ## What's New panel in App menu.
 
@@ -125,20 +132,20 @@ whatsnew-panel-footer-checkbox =
 ## "Enable Profiler Menu Button".
 
 profiler-popup-button-idle =
-    .label = Profiler
+    .label = Профайлер
     .tooltiptext = Запис профілю швидкодії
 profiler-popup-button-recording =
-    .label = Profiler
-    .tooltiptext = Profiler записує профіль
+    .label = Профайлер
+    .tooltiptext = Профайлер записує профіль
 profiler-popup-button-capturing =
-    .label = Profiler
-    .tooltiptext = Profiler захоплює вкладку
+    .label = Профайлер
+    .tooltiptext = Профайлер захоплює профіль
 profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Розкрити більше інформації
 profiler-popup-description-title =
     .value = Записуйте, аналізуйте, діліться
-profiler-popup-description = Співпрацюйте над проблемами швидкодії, оприлюднюючи профілі для своєї команди.
+profiler-popup-description = Співпрацюйте над проблемами продуктивності, оприлюднюючи профілі для своєї команди.
 profiler-popup-learn-more-button =
     .label = Докладніше
 profiler-popup-settings =
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Відкрити панель профайлера
+    .tooltiptext = Відкрити панель профайлера
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -177,28 +187,34 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.sys.mjs
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
-profiler-popup-presets-web-developer-description = Рекомендовані попередні налаштування для налагодження більшості вебзастосунків. З низьким споживанням ресурсів.
+profiler-popup-presets-web-developer-description = Рекомендовані задані параметри з низьким споживанням ресурсів для налагодження більшості вебпрограм.
 profiler-popup-presets-web-developer-label =
     .label = Веброзробник
-profiler-popup-presets-firefox-description = Рекомендовані налаштування для профілювання { -brand-shorter-name }.
+profiler-popup-presets-firefox-description = Рекомендовані задані параметри для профілювання { -brand-shorter-name }.
 profiler-popup-presets-firefox-label =
     .label = { -brand-shorter-name }
-profiler-popup-presets-graphics-description = Налаштування для виявлення помилок графіки в { -brand-shorter-name }.
+profiler-popup-presets-graphics-description = Задані параметри для виявлення помилок графіки в { -brand-shorter-name }.
 profiler-popup-presets-graphics-label =
     .label = Графіка
-profiler-popup-presets-media-description2 = Налаштування для виявлення помилок аудіо та відео в { -brand-shorter-name }.
+profiler-popup-presets-media-description2 = Задані параметри для виявлення помилок аудіо та відео в { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Медіа
-profiler-popup-presets-networking-description = Налаштування для виявлення помилок мережі в { -brand-shorter-name }.
+profiler-popup-presets-ml-description = Задані параметри для дослідження помилок машинного навчання у { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Машинне навчання
+profiler-popup-presets-networking-description = Задані параметри для виявлення мережевих помилок у { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Мережа
-profiler-popup-presets-power-description = Налаштування для виявлення помилок використання потужності { -brand-shorter-name } із низьким накладанням.
+profiler-popup-presets-power-description = Задані параметри з низьким споживанням ресурсів для виявлення помилок використання потужності { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Потужність
-profiler-popup-presets-debug-description = Типові задані параметри для налагодження у { -brand-shorter-name }. Високе споживання ресурсів. Не використовуйте для високопродуктивних завдань, а щоб зрозуміти поведінку браузера.
+profiler-popup-presets-debug-description = Задані параметри для налагодження у { -brand-shorter-name }. Високе споживання ресурсів. Не використовуйте для високопродуктивних завдань, а щоб зрозуміти поведінку браузера.
 profiler-popup-presets-debug-label =
     .label = Налагодження
+profiler-popup-presets-web-compat-description = Рекомендований заданий параметр для налагодження проблем сумісності вебсайтів, а не для відстеження продуктивності.
+profiler-popup-presets-web-compat-label =
+    .label = Web Compat
 profiler-popup-presets-custom-label =
     .label = Власний
 
@@ -277,5 +293,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Отримуйте сповіщення про витоки даних
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Маскуйте свою справжню електронну адресу та телефон
+appmenuitem-services-relay-description = Відкрити панель масок електронної пошти
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Захистіть свою онлайн-діяльність
+appmenu-services-header = Мої послуги
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Спробуйте інші інструменти захисту від Mozilla:
+appmenu-other-protection-header = Спробуйте інші інструменти захисту від { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Інші профілі
+appmenu-manage-profiles =
+    .label = Керувати профілями
+appmenu-copy-profile =
+    .label = Скопіювати цей профіль
+appmenu-create-profile =
+    .label = Новий профіль
+appmenu-edit-profile =
+    .aria-label = Редагувати профіль
+appmenu-profiles-2 =
+    .label = Профілі

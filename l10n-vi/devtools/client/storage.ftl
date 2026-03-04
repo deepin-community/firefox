@@ -71,6 +71,7 @@ storage-table-headers-cookies-expires = Expires / Max-Age
 storage-table-headers-cookies-size = Kích cỡ
 storage-table-headers-cookies-last-accessed = Lần truy cập cuối
 storage-table-headers-cookies-creation-time = Được tạo
+storage-table-headers-cookies-update-time = Đã cập nhật
 storage-table-headers-cache-status = Trạng thái
 storage-table-headers-extension-storage-area = Khu vực lưu trữ
 
@@ -107,3 +108,11 @@ storage-idb-delete-blocked = Cơ sở dữ liệu “{ $dbName }” sẽ bị x�
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = Không thể xóa cơ sở dữ liệu “{ $dbName }”.
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = Không thể tạo cookie: “{ $errorString }”.
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = Không thể cập nhật cookie: “{ $errorString }”.

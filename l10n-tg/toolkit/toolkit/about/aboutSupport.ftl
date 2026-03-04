@@ -19,6 +19,10 @@ support-addons-type = Навъ
 support-addons-enabled = Фаъол аст
 support-addons-version = Силсила
 support-addons-id = Рақами мушаххас
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Ҷойгиршавӣ
 legacy-user-stylesheets-title = Варақаҳои услубҳои корбарии соқит
 legacy-user-stylesheets-enabled = Фаъол
 legacy-user-stylesheets-stylesheet-types = Варақаҳои услубҳо
@@ -133,6 +137,10 @@ place-database-stats-efficiency-perc = Қобилиятнокӣ (%)
 place-database-stats-sequentiality-perc = Пайдарпайӣ (%)
 place-database-integrity = Яклухтӣ
 place-database-verify-integrity = Санҷиши яклухтӣ
+place-database-last-idle-maintenance-data = Санаи охирини нигоҳдорӣ дар реҷаи ғайрифаъол
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Санаи охирини чангкашӣ
+place-database-last-integrity-corruption-date = Санаи охирини вайроншавии яклухтӣ
 a11y-title = Қобилияти дастрасӣ
 a11y-activated = Фаъолшуда
 a11y-force-disabled = Ғайрифаъолсозии қобилияти дастрасӣ
@@ -185,6 +193,8 @@ media-capabilities-enumerate = Ҳисоббарории пойгоҳи итти�
 
 media-codec-support-sw-decoding = Рамзкушоии нармафзорӣ
 media-codec-support-hw-decoding = Рамзкушоии сахтафзорӣ
+media-codec-support-sw-encoding = Рамзгузории нармафзорӣ
+media-codec-support-hw-encoding = Рамзгузории сахтафзорӣ
 media-codec-support-codec-name = Номи кодек
 media-codec-support-supported = Дастгирӣ мешавад
 media-codec-support-unsupported = Дастгирӣ намешавад
@@ -348,6 +358,9 @@ has-seccomp-bpf = Seccomp-BPF (Полоиши дархостҳои низом)
 has-seccomp-tsync = Ҳамоҳангсозии ҷараёни «Seccomp»
 has-user-namespaces = Фазоҳои номҳои корбарӣ
 has-privileged-user-namespaces = Фазоҳои номҳои корбарӣ барои равандҳои имтиёзнок
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — Ин хусусият аз ҷониби низоми шумо иҷозат дода намешавад. Ин хусусият метавонад хусусиятҳои амниятии «{ -brand-short-name }»-ро маҳдуд кунад.
 can-sandbox-content = Минтақаи санҷишӣ барои раванди муҳтаво
 can-sandbox-media = Минтақаи санҷишӣ барои плагини расона
 content-sandbox-level = Дараҷаи минтақаи санҷишӣ барои раванди муҳтаво

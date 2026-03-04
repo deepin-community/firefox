@@ -81,6 +81,8 @@ addon-removal-title = Премахване на { $name }?
 addon-removal-message = Желаете ли да премахнете разширението „{ $name }“ от { -brand-shorter-name }?
 addon-removal-button = Премахване
 addon-removal-abuse-report-checkbox = Докладване разширението на { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Ако използвате функциите или разширения, които използват този модел, той ще бъде добавен наново.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = Изтеглената добавка не м
 addon-install-error-file-access = Добавката { $addonName } не може да бъде инсталирана, защото { -brand-short-name } не може да промени необходимите файлове.
 addon-install-error-not-signed = { -brand-short-name } предотврати опит за инсталиране на непроверена добавка от страницата.
 addon-install-error-invalid-domain = Добавката { $addonName } не може да бъде инсталирана от това място.
+addon-install-error-no-addon-name-file-access = Добавката не може да бъде инсталирана, защото { -brand-short-name } не може да променя нужния файл.
 addon-local-install-error-network-failure = Добавката не може да бъде инсталирана поради грешка във файловата система.
 addon-local-install-error-incorrect-hash = Добавката не може да бъде инсталирана, защото не е тази, която { -brand-short-name } очаква.
 addon-local-install-error-corrupt-file = Добавката не може да бъде инсталирана, защото изглежда е повредена.
 addon-local-install-error-file-access = Добавката { $addonName } не може да бъде инсталирана, защото { -brand-short-name } не може да промени необходимите файлове.
 addon-local-install-error-not-signed = Добавката не може да бъде инсталирана, защото не е проверена.
+addon-local-install-no-addon-name-error-file-access = Добавката не може да бъде инсталирана, защото { -brand-short-name } не може да променя нужния файл.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Добавката { $addonName } не може да бъде инсталирана, защото е несъвместима с { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = Добавката { $addonName } нарушава правилата на Mozilla и не може да бъде инсталирана на { -brand-short-name }.
+addon-install-error-soft-blocked2 = Добавката { $addonName } е ограничена и не може да бъде инсталирана на { -brand-short-name }.
 addon-install-error-blocklisted = Добавката { $addonName } не може да бъде инсталирана, защото носи висок риск от причиняване на проблеми със стабилността или сигурността.
+addon-install-error-soft-blocked = Добавката { $addonName } нарушава правилата на Mozilla и не може да бъде инсталирана на { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Не може да инсталирате { $addonName } като краен потребител, добавката може да бъде инсталирана само от организация, използваща корпоративни политики.

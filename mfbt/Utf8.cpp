@@ -4,13 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#define MOZ_PRETEND_NO_JSRUST 1
+
 #include "mozilla/Maybe.h"
 #include "mozilla/TextUtils.h"
 #include "mozilla/Types.h"
 #include "mozilla/Utf8.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 MFBT_API bool mozilla::detail::IsValidUtf8(const void* aCodeUnits,
                                            size_t aCount) {

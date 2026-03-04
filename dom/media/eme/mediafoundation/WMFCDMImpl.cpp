@@ -6,13 +6,11 @@
 
 #include "WMFCDMImpl.h"
 
-#include <unordered_map>
-
 #include "mozilla/AppShutdown.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/ScopeExit.h"
-#include "mozilla/dom/MediaKeySession.h"
 #include "mozilla/dom/KeySystemNames.h"
+#include "mozilla/dom/MediaKeySession.h"
 
 namespace mozilla {
 
@@ -20,6 +18,7 @@ RefPtr<WMFCDMImpl::InitPromise> WMFCDMImpl::Init(
     const WMFCDMImpl::InitParams& aParams) {
   if (!mCDM) {
     mCDM = MakeRefPtr<MFCDMChild>(mKeySystem);
+    mCDM->EnsureRemote();
   }
   RefPtr<WMFCDMImpl> self = this;
   mCDM->Init(aParams.mOrigin, aParams.mInitDataTypes,
@@ -58,6 +57,7 @@ WMFCDMCapabilites::GetCapabilities(
   nsTArray<RefPtr<CapabilitiesPromise>> promises;
   for (const auto& request : aRequests) {
     RefPtr<MFCDMChild> cdm = new MFCDMChild(request.mKeySystem);
+    cdm->EnsureRemote();
     promises.AppendElement(cdm->GetCapabilities(MFCDMCapabilitiesRequest{
         nsString{request.mKeySystem},
         request.mDecryption == KeySystemConfig::DecryptionInfo::Hardware,

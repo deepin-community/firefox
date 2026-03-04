@@ -80,6 +80,10 @@ startup-header = শুরুতে
 always-check-default =
     .label = সর্বদা যাচাই করবে { -brand-short-name } আপনার ডিফল্ট ব্রাউজার কি না
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } আপনার বর্তমান ডিফল্ট ব্রাউজার
+is-not-default-browser =
+    .message = { -brand-short-name } আপনার নির্ধারিত ব্রাউজার নয়
 is-default = { -brand-short-name } আপনার বর্তমান ডিফল্ট ব্রাউজার
 is-not-default = { -brand-short-name } আপনার নির্ধারিত ব্রাউজার নয়
 set-as-my-default-browser =
@@ -92,6 +96,8 @@ startup-restore-warn-on-quit =
     .label = ব্রাউজার ছেড়ে যেতে আপনাকে সতর্ক করবে
 disable-extension =
     .label = এক্সটেনশনটি নিষ্ক্রিয় করুন
+tabs-group-header2 =
+    .label = ট্যাব
 tabs-group-header = ট্যাব
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab সাম্প্রতিক ব্যবহৃত ট্যাবগুলোতে ক্রমান্বয়ে ঘুড়বে
@@ -113,6 +119,8 @@ browser-containers-settings =
     .label = সেটিং
     .accesskey = i
 containers-disable-alert-title = সব কন্টেইনার ট্যাব বন্ধ করবেন?
+startup-group =
+    .label = শুরুতে
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -133,7 +141,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = সক্রিয় রাখুন
 containers-remove-alert-title = এই কন্টেইনার সরাতে চান?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] আপনি যদি এখন এই কন্টেইনার মুছে ফেলেন, { $count } ধারক ট্যাব বন্ধ হয়ে যাবে. আপনি কি এই কন্টেইনার সরানোর বিষয়ে নিশ্চিত?
@@ -145,6 +153,12 @@ containers-remove-cancel-button = এই কন্টেইনার অপস�
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ভাষা ও অবয়ব
+default-font-2 =
+    .label = ডিফল্ট ফন্ট
+    .accesskey = D
+default-font-size-2 =
+    .label = আকার
+    .accesskey = S
 default-font = ডিফল্ট ফন্ট
     .accesskey = D
 default-font-size = আকার
@@ -153,9 +167,17 @@ advanced-fonts =
     .label = উচ্চপর্যায়...
     .accesskey = A
 # Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = জু়ম
+preferences-default-zoom-label =
+    .label = পূর্বনির্ধারিত জুম
+    .accesskey = z
+# Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = জু়ম
 preferences-default-zoom = পূর্বনির্ধারিত জুম
     .accesskey = z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -188,6 +210,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = ফাইল ও অ্যাপ্লিকেশন
+downloads-header-2 =
+    .label = ডাউনলোড
+download-save-where-2 =
+    .label = ফাইল সংরক্ষণের স্থান
+    .accesskey = v
 download-header = ডাউনলোড
 download-save-where = ফাইল সংরক্ষণের স্থান
     .accesskey = v
@@ -236,15 +263,15 @@ applications-manage-app =
 applications-always-ask =
     .label = সর্বদা জিজ্ঞাসা কর
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } ব্যবহার করা হবে ({ -brand-short-name } তে)
 applications-open-inapp =
@@ -273,6 +300,8 @@ applications-use-os-default-label =
 
 ##
 
+drm-group =
+    .label = ডিজিটাল অধিকার ব্যবস্থাপনা (DRM) কন্টেন্ট
 drm-content-header = ডিজিটাল অধিকার ব্যবস্থাপনা (DRM) কন্টেন্ট
 play-drm-content =
     .label = DRM-নিয়ন্ত্রিত কন্টেন্ট প্লে করুন
@@ -280,6 +309,8 @@ play-drm-content =
 play-drm-content-learn-more = আরও জানুন
 update-application-title = { -brand-short-name } হালনাগাদ
 update-application-description = সেরা পারফরম্যান্স, স্থায়ীত্ব এবং নিরাপত্তার জন্য { -brand-short-name } হালনাগাদ রাখুন।
+# Variables:
+# $version (string) - Firefox version
 update-application-version = সংস্করণ { $version } <a data-l10n-name="learn-more">নতুন কি আছে</a>
 update-history =
     .label = হালনাগাদের ইতিহাস দেখাও…
@@ -321,9 +352,11 @@ performance-limit-content-process-option = কন্টেন্ট প্রক
 performance-limit-content-process-enabled-desc = একাধিক ট্যাব ব্যবহারের সময় বাড়তি কন্টেন্ট প্রসেস কার্যক্ষমতা বৃদ্ধি করে, কিন্তু এতে বেশি মেমরি ব্যবহৃত হয়।
 performance-limit-content-process-blocked-desc = কন্টেন্ট প্রসেসের সংখ্যা পরিবর্তন শুধুমাত্র মাল্টিপ্রসেস { -brand-short-name } এ সম্ভব। <a data-l10n-name="learn-more">শিখুন, মাল্টিপ্রসেস চালু আছে কিনা কিভাবে পরীক্ষা করতে হয়</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (ডিফল্ট)
+performance-group =
+    .label = কার্যকারিতা
 
 ## General Section - Browsing
 
@@ -355,6 +388,8 @@ browsing-cfr-features =
     .label = ব্রাউজ করার সাথে সাথে ফিচারের পরামর্শ  দিন
     .accesskey = f
 browsing-cfr-recommendations-learn-more = আরও জানুন
+browsing-group =
+    .label = ব্রাউজ করা
 
 ## General Section - Proxy
 
@@ -364,16 +399,27 @@ network-proxy-connection-learn-more = আরও জানুন
 network-proxy-connection-settings =
     .label = বৈশিষ্ট্যাবলী...
     .accesskey = e
+network-proxy-group =
+    .label = নেটওয়ার্ক সেটিং
+    .description = কিভাবে { -brand-short-name } ইন্টারেনেটে সংযোগ করে তা কনফিগার করুন।
 
 ## Home Section
 
 home-new-windows-tabs-header = নতুন উইন্ডো এবং ট্যাব
 home-new-windows-tabs-description2 = নীড় পাতা, নতুন ইউন্ডো এবং নতুন ট্যাব খুলে আপনি যা দেখতে চান তা নির্বাচন করুন।
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = ডিফল্ট করুন
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = নীড়পাতা এবং নতুন পর্দা
 home-newtabs-mode-label = নতুন ট্যাবগুলি
+home-homepage-new-tabs =
+    .label = নতুন ট্যাবগুলি
 home-restore-defaults =
     .label = ডিফল্ট মান পুনরায় স্থাপন
     .accesskey = R
@@ -403,8 +449,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = ওয়েব অনুসন্ধান
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } দ্বারা সুপারিশকৃত
@@ -428,6 +473,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = টুকিটাকি
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -456,6 +503,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ঠিকানা বার ফলাফলে অনুসন্ধান পরামর্শ দেখাও
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = { -brand-short-name } এর কনফিগারেশনে ইতিহাস মনে না রাখতে বলার কারনে লোকেশন বারে অনুসন্ধান পরামর্শ দেখাবে না।
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -482,13 +531,19 @@ search-find-more-link = আরও অনুসন্ধান ইঞ্জিন
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = কীওয়ার্ড ইতোমধ্যে বিদ্যমান
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = আপনার দেয়া কীওয়ার্ডটি ইতোমধ্যে "{ $name }" ব্যবহার করছে। অনুগ্রহ করে একটি ভিন্ন কীওয়ার্ড নির্বাচন করুন।
 search-keyword-warning-bookmark = আপনার দেয়া কীওয়ার্ডটি ইতোমধ্যে একটি বুকমার্ক ব্যবহার করছে। অনুগ্রহ করে একটি ভিন্ন কীওয়ার্ড নির্বাচন করুন।
+search-engine-group =
+    .label = ডিফল্ট অনুসন্ধান ইঞ্জিন
+search-default-engine =
+    .aria-label = ডিফল্ট অনুসন্ধান ইঞ্জিন
 
 ## Containers Section
 
 containers-header = কন্টেইনার ট্যাব
+containers-section-header =
+    .heading = কন্টেইনার ট্যাব
 containers-add-button =
     .label = নতুন কন্টেইনার যোগ
     .accesskey = A
@@ -497,6 +552,11 @@ containers-new-tab-check =
     .accesskey = S
 containers-remove-button =
     .label = অপসারণ
+
+## Account and sync
+
+sync-group-label =
+    .label = সিঙ্ক
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -522,11 +582,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = সাইন আউট...
     .accesskey = g
+sync-sign-out2 =
+    .label = সাইন আউট
+    .accesskey = g
 sync-manage-account = অ্যাকাউন্ট ব্যবস্থাপনা
+    .accesskey = o
+sync-manage-account2 =
+    .label = অ্যাকাউন্ট ব্যবস্থাপনা
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } যাচাইকৃত নয়।
 sync-signedin-login-failure = { $email } পুনরায় সংযোগ করতে অনুগ্রহ করে সাইন ইন করুন
@@ -554,8 +621,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = এখনই সিঙ্ক করুন
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = এখনই সিঙ্ক করুন
+    .accesskey = N
 prefs-syncing-button =
     .label = সিঙ্ক হচ্ছে…
+prefs-syncing-button-2 =
+    .label = সিঙ্ক হচ্ছে…
+    .title = এখনই সিঙ্ক করুন
 
 ## The list of things currently syncing.
 
@@ -610,6 +683,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = ডিভাইসের নাম
+sync-device-name-header-2 =
+    .label = ডিভাইসের নাম
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ডিভাইসের নাম
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ডিভাইসের নাম পরিবর্তন
+    .accesskey = h
 sync-device-name-change =
     .label = ডিভাইসের নাম পরিবর্তন…
     .accesskey = h
@@ -620,6 +703,8 @@ sync-device-name-save =
     .label = সংরক্ষণ
     .accesskey = v
 sync-connect-another-device = অন্য একটি ডিভাইস সংযুক্ত করুন
+sync-connect-another-device-2 =
+    .label = অন্য একটি ডিভাইস সংযুক্ত করুন
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -676,12 +761,19 @@ forms-master-pw-fips-desc = পাসওয়ার্ড পরিবর্তন
 
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = ইতিহাস
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } হবে
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -699,6 +791,18 @@ history-remember-option-never =
     .label = কখনোই ইতিহাস মনে রাখবে না
 history-remember-option-custom =
     .label = ইতিহাসের জন্য স্বনির্বাচিত সেটিং ব্যবহার করবে
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } আপনার ব্রাউজিং, ডাউনলোড, ফরম এবং অনুসন্ধান ইতিহাস মনে রাখবে।
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } একান্ত ব্রাউজিং এর মতোই সেটিং ব্যবহার করবে, এবং আপনার ব্রাউজিং এর কোন তথ্য সংরক্ষণ করবে না।
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } আপনার ব্রাউজিং, ডাউনলোড, ফরম এবং অনুসন্ধান ইতিহাস মনে রাখবে।
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } একান্ত ব্রাউজিং এর মতোই সেটিং ব্যবহার করবে, এবং আপনার ব্রাউজিং এর কোন তথ্য সংরক্ষণ করবে না।
 history-remember-description = { -brand-short-name } আপনার ব্রাউজিং, ডাউনলোড, ফরম এবং অনুসন্ধান ইতিহাস মনে রাখবে।
 history-dontremember-description = { -brand-short-name } একান্ত ব্রাউজিং এর মতোই সেটিং ব্যবহার করবে, এবং আপনার ব্রাউজিং এর কোন তথ্য সংরক্ষণ করবে না।
 history-private-browsing-permanent =
@@ -719,14 +823,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = ইতিহাস মুছে ফেলুন…
     .accesskey = s
+history-group =
+    .label = ইতিহাস
 
 ## Privacy Section - Site Data
 
 sitedata-header = কুকি এবং সাইট ডাটা
 sitedata-total-size-calculating = সাইট ডাটা এবং ক্যাশ সাইজ গণনা করা হচ্ছে…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = আপনার সংরক্ষিত কুকিজ, সাইট ডেটা এবং ক্যাশে বর্তমানে { $value } { $unit } ডিস্ক স্পেস ব্যবহার করছে।
 sitedata-learn-more = আরও জানুন
 sitedata-delete-on-close =
@@ -755,14 +861,10 @@ sitedata-clear =
 sitedata-settings =
     .label = ডাটা ব্যবস্থাপনা…
     .accesskey = M
+cookies-site-data-group =
+    .label = কুকি এবং সাইট ডাটা
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = ঠিকানা বার
 addressbar-suggest = ঠিকানা বার ব্যবহার করার সময়, সুপারিশ করবে
@@ -877,6 +979,8 @@ permissions-notification-link = আরও জানুন
 permissions-notification-pause =
     .label = নোটিফিকেশন বন্ধ রাখো যতক্ষণ না { -brand-short-name } রিস্টার্ট হয়
     .accesskey = n
+permissions-autoplay2 =
+    .label = অটোপ্লে
 permissions-autoplay = অটোপ্লে
 permissions-autoplay-settings =
     .label = সেটিং...
@@ -890,6 +994,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = ব্যতিক্রম...
     .accesskey = E
+permissions-location2 =
+    .label = অবস্থান
+permissions-xr2 =
+    .label = ভার্চুয়াল রিয়েলিটি
+permissions-camera2 =
+    .label = ক্যামেরা
+permissions-microphone2 =
+    .label = মাইক্রোফোন
+permissions-notification2 =
+    .label = নোটিফিকেশন
 
 ## Privacy Section - Data Collection
 
@@ -912,15 +1026,14 @@ addon-recommendations-link = আরও জানুন
 # or builds with no Telemetry support available.
 collection-health-report-disabled = এই বিল্ড কনফিগারেশনের জন্যে ডাটা রিপোর্টিং নিস্ক্রিয় করা হয়েছে
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = নিরাপত্তা
+browsing-protection-group =
+    .label = ক্ষতিকারক কন্টেন্ট ও বিপদজনক সফ্টওয়্যার সুরক্ষা
 security-browsing-protection = ক্ষতিকারক কন্টেন্ট ও বিপদজনক সফ্টওয়্যার সুরক্ষা
 security-enable-safe-browsing =
     .label = লুকানো এবং ক্ষতিকর কনটেন্ট ব্লক করো
@@ -945,12 +1058,7 @@ certs-view =
 certs-devices =
     .label = নিরাপত্তা ডিভাইস…
     .accesskey = D
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS সক্রিয় করা হবে
 
 ## The following strings are used in the Download section of settings
 

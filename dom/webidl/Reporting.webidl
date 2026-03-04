@@ -7,6 +7,8 @@
  * https://w3c.github.io/reporting/#interface-reporting-observer
  */
 
+interface nsISupports;
+
 [Pref="dom.reporting.enabled",
  Exposed=(Window,Worker)]
 interface ReportBody {
@@ -46,11 +48,10 @@ typedef sequence<Report> ReportList;
 [Pref="dom.reporting.enabled",
  Exposed=Window]
 interface DeprecationReportBody : ReportBody {
+  [Default] object toJSON();
+
   readonly attribute DOMString id;
-  // The spec currently has Date, but that's not a type that exists in Web IDL.
-  // In any case, we always return null, so we just need _some_ nullable type
-  // here.
-  readonly attribute DOMTimeStamp? anticipatedRemoval;
+  readonly attribute object? anticipatedRemoval;
   readonly attribute DOMString message;
   readonly attribute UTF8String? sourceFile;
   readonly attribute unsigned long? lineNumber;
@@ -112,4 +113,22 @@ dictionary ReportingEndpoint {
   any priority;
   // This is an unsigned long.
   any weight;
+};
+
+dictionary GenerateTestReportParameters
+{
+  required DOMString message;
+  DOMString group = "default";
+};
+
+[ChromeOnly, Pref="dom.reporting.enabled", Exposed=Window]
+namespace TestReportGenerator {
+  [Throws]
+  Promise<undefined> generateReport(GenerateTestReportParameters params);
+};
+
+[LegacyNoInterfaceObject, Exposed=Window]
+interface TestReportBody : ReportBody {
+  [Default] object toJSON();
+  readonly attribute DOMString message;
 };

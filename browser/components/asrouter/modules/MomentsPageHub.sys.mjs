@@ -13,13 +13,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 const SYSTEM_TICK_INTERVAL = 5 * 60 * 1000;
 const HOMEPAGE_OVERRIDE_PREF = "browser.startup.homepage_override.once";
 
-// For the "reach" event of Messaging Experiments
-const REACH_EVENT_CATEGORY = "messaging_experiments";
-const REACH_EVENT_METHOD = "reach";
-// Note it's not "moments-page" as Telemetry Events only accepts understores
-// for the event `object`
-const REACH_EVENT_OBJECT = "moments_page";
-
 export class _MomentsPageHub {
   constructor() {
     this.id = "moments-page-hub";
@@ -77,6 +70,7 @@ export class _MomentsPageHub {
    * it depends on user dependent parameters. Since the message matched
    * targeting we calculate `expire` based on the current timestamp and the
    * `expireDelta` which defines for how long it should be available.
+   *
    * @param expireDelta {number} - Offset in milliseconds from the current date
    */
   getExpirationDate(expireDelta) {
@@ -86,7 +80,7 @@ export class _MomentsPageHub {
   executeAction(message) {
     const { id, data } = message.content.action;
     switch (id) {
-      case "moments-wnp":
+      case "moments-wnp": {
         const { url, expireDelta } = data;
         let { expire } = data;
         if (!expire) {
@@ -103,29 +97,25 @@ export class _MomentsPageHub {
         this._addImpression(message);
         this._blockMessageById(message.id);
         break;
+      }
     }
   }
 
   _recordReachEvent(message) {
-    const extra = { branches: message.branchSlug };
-    Services.telemetry.recordEvent(
-      REACH_EVENT_CATEGORY,
-      REACH_EVENT_METHOD,
-      REACH_EVENT_OBJECT,
-      message.experimentSlug,
-      extra
-    );
+    Glean.messagingExperiments.reachMomentsPage.record({
+      value: message.experimentSlug,
+      branches: message.branchSlug,
+    });
   }
 
   async messageRequest({ triggerId, template }) {
-    const telemetryObject = { triggerId };
-    TelemetryStopwatch.start("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    const timerId = Glean.messagingSystem.messageRequestTime.start();
     const messages = await this._handleMessageRequest({
       triggerId,
       template,
       returnAll: true,
     });
-    TelemetryStopwatch.finish("MS_MESSAGE_REQUEST_TIME_MS", telemetryObject);
+    Glean.messagingSystem.messageRequestTime.stopAndAccumulate(timerId);
 
     // Record the "reach" event for all the messages with `forReachEvent`,
     // only execute action for the first message without forReachEvent.

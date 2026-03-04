@@ -6,8 +6,6 @@
 
 #include "FileSystemMocks.h"
 
-#include <string>
-
 #include "ErrorList.h"
 #include "gtest/gtest-assertion-result.h"
 #include "js/RootingAPI.h"
@@ -30,6 +28,13 @@ nsIGlobalObject* GetGlobal() {
   MOZ_ASSERT(global);
 
   return global.get();
+}
+
+MockGlobalObject* GetMockGlobal() {
+  nsCOMPtr<nsIGlobalObject> global = GetGlobal();
+  MockGlobalObject* mock = new MockGlobalObject(std::move(global));
+
+  return mock;
 }
 
 nsresult GetAsString(const RefPtr<Promise>& aPromise, nsAString& aString) {
@@ -92,3 +97,23 @@ mozilla::ipc::PrincipalInfo GetPrincipalInfo() {
 }
 
 }  // namespace mozilla::dom::fs::test
+
+NS_IMPL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(MockGlobalObject)
+
+NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(MockGlobalObject)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK(mGlobal)
+  NS_IMPL_CYCLE_COLLECTION_UNLINK_PRESERVED_WRAPPER
+NS_IMPL_CYCLE_COLLECTION_UNLINK_END
+
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(MockGlobalObject)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mGlobal)
+NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
+
+NS_INTERFACE_TABLE_HEAD(MockGlobalObject)
+  NS_WRAPPERCACHE_INTERFACE_TABLE_ENTRY
+  NS_INTERFACE_TABLE(MockGlobalObject, nsIGlobalObject)
+  NS_INTERFACE_TABLE_TO_MAP_SEGUE_CYCLE_COLLECTION(MockGlobalObject)
+NS_INTERFACE_MAP_END
+
+NS_IMPL_CYCLE_COLLECTING_ADDREF(MockGlobalObject)
+NS_IMPL_CYCLE_COLLECTING_RELEASE(MockGlobalObject)

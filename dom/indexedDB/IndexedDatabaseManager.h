@@ -7,15 +7,16 @@
 #ifndef mozilla_dom_indexeddatabasemanager_h__
 #define mozilla_dom_indexeddatabasemanager_h__
 
+#include "MainThreadUtils.h"
+#include "SafeRefPtr.h"
 #include "js/TypeDecls.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/dom/quota/PersistenceType.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Mutex.h"
+#include "mozilla/dom/quota/PersistenceType.h"
 #include "nsClassHashtable.h"
 #include "nsHashKeys.h"
 #include "nsIIndexedDatabaseManager.h"
-#include "SafeRefPtr.h"
 
 namespace mozilla {
 
@@ -92,6 +93,8 @@ class IndexedDatabaseManager final : public nsIIndexedDatabaseManager {
 
   static uint32_t DataThreshold();
 
+  static uint32_t MaxStructuredCloneSize();
+
   static uint32_t MaxSerializedMsgSize();
 
   // The maximum number of extra entries to preload in an Cursor::OpenOp or
@@ -166,6 +169,7 @@ class IndexedDatabaseManager final : public nsIIndexedDatabaseManager {
       mPendingDeleteInfos;
 
   nsCString mLocale;
+  bool mLocaleInitialized MOZ_GUARDED_BY(sMainThreadCapability);
 
   indexedDB::BackgroundUtilsChild* mBackgroundActor;
 

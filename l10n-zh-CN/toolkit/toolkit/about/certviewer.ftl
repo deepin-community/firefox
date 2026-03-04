@@ -7,7 +7,7 @@ certificate-viewer-certificate-section-title = 证书
 ## Error messages
 
 certificate-viewer-error-message = 找不到证书信息，或该证书已损坏。请再试一次。
-certificate-viewer-error-title = 出问题了。
+certificate-viewer-error-title = 出了点问题。
 
 ## Certificate information labels
 
@@ -36,6 +36,9 @@ certificate-viewer-key-size = 密钥大小
 certificate-viewer-inc-locality = 公司注册地
 certificate-viewer-locality = 地市
 certificate-viewer-location = 地址
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = 日志名
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = 日志标识符
 certificate-viewer-method = 方法
 certificate-viewer-modulus = 模块
@@ -110,6 +113,8 @@ certificate-viewer-export = 导出
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = （未知）
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = 证书
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

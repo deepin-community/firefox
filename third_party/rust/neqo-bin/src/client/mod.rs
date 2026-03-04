@@ -4,14 +4,15 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(clippy::future_not_send)]
+#![expect(clippy::unwrap_used, reason = "This is example code.")]
 
 use std::{
-    collections::{HashMap, VecDeque},
-    fmt::{self, Display},
+    collections::VecDeque,
+    fmt::Display,
     fs::{create_dir_all, File, OpenOptions},
-    io::{self, BufWriter},
-    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs},
+    io::{self, BufWriter, ErrorKind},
+    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs as _},
+    num::NonZeroUsize,
     path::PathBuf,
     pin::Pin,
     process::exit,
@@ -21,18 +22,20 @@ use std::{
 use clap::Parser;
 use futures::{
     future::{select, Either},
-    FutureExt, TryFutureExt,
+    FutureExt as _, TryFutureExt as _,
 };
-use neqo_common::{self as common, qdebug, qerror, qinfo, qlog::NeqoQlog, qwarn, Datagram, Role};
+use neqo_common::{qdebug, qerror, qinfo, qlog::Qlog, qwarn, Datagram, Role};
 use neqo_crypto::{
     constants::{TLS_AES_128_GCM_SHA256, TLS_AES_256_GCM_SHA384, TLS_CHACHA20_POLY1305_SHA256},
     init, Cipher, ResumptionToken,
 };
-use neqo_http3::Output;
-use neqo_transport::{AppError, CloseReason, ConnectionId, Version};
-use qlog::{events::EventImportance, streamer::QlogStreamer};
+use neqo_http3::Header;
+use neqo_transport::{AppError, CloseReason, ConnectionId, OutputBatch, Version};
+use neqo_udp::RecvBuf;
+use rustc_hash::FxHashMap as HashMap;
+use thiserror::Error;
 use tokio::time::Sleep;
-use url::{Origin, Url};
+use url::{Host, Origin, Url};
 
 use crate::SharedArgs;
 
@@ -41,70 +44,41 @@ mod http3;
 
 const BUFWRITER_BUFFER_SIZE: usize = 64 * 1024;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
-    ArgumentError(&'static str),
-    Http3Error(neqo_http3::Error),
-    IoError(io::Error),
-    QlogError,
-    TransportError(neqo_transport::Error),
-    ApplicationError(neqo_transport::AppError),
-    CryptoError(neqo_crypto::Error),
+    #[error("argument error: {0}")]
+    Argument(&'static str),
+    #[error(transparent)]
+    Http3(#[from] neqo_http3::Error),
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    #[error(transparent)]
+    Qlog(#[from] qlog::Error),
+    #[error(transparent)]
+    Transport(#[from] neqo_transport::Error),
+    #[error("application error: {0}")]
+    Application(AppError),
+    #[error(transparent)]
+    Crypto(#[from] neqo_crypto::Error),
 }
 
-impl From<neqo_crypto::Error> for Error {
-    fn from(err: neqo_crypto::Error) -> Self {
-        Self::CryptoError(err)
-    }
-}
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Self {
-        Self::IoError(err)
-    }
-}
-
-impl From<neqo_http3::Error> for Error {
-    fn from(err: neqo_http3::Error) -> Self {
-        Self::Http3Error(err)
-    }
-}
-
-impl From<qlog::Error> for Error {
-    fn from(_err: qlog::Error) -> Self {
-        Self::QlogError
-    }
-}
-
-impl From<neqo_transport::Error> for Error {
-    fn from(err: neqo_transport::Error) -> Self {
-        Self::TransportError(err)
-    }
-}
-
-impl From<neqo_transport::CloseReason> for Error {
-    fn from(err: neqo_transport::CloseReason) -> Self {
+impl From<CloseReason> for Error {
+    fn from(err: CloseReason) -> Self {
         match err {
-            CloseReason::Transport(e) => Self::TransportError(e),
-            CloseReason::Application(e) => Self::ApplicationError(e),
+            CloseReason::Transport(e) => Self::Transport(e),
+            CloseReason::Application(e) => Self::Application(e),
         }
     }
 }
 
-impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error: {self:?}")?;
-        Ok(())
-    }
-}
-
-impl std::error::Error for Error {}
-
 type Res<T> = Result<T, Error>;
 
-#[derive(Debug, Parser)]
+#[derive(Clone, Debug, Parser)]
 #[command(author, version, about, long_about = None)]
-#[allow(clippy::struct_excessive_bools)] // Not a good use of that lint.
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "Not a good use of that lint."
+)]
 pub struct Args {
     #[command(flatten)]
     shared: SharedArgs,
@@ -114,8 +88,8 @@ pub struct Args {
     #[arg(short = 'm', default_value = "GET")]
     method: String,
 
-    #[arg(short = 'H', long, number_of_values = 2)]
-    header: Vec<String>,
+    #[arg(name = "header", short = 'H', long)]
+    headers: Vec<Header>,
 
     #[arg(name = "max-push", short = 'p', long, default_value = "10")]
     max_concurrent_push_streams: u64,
@@ -170,22 +144,38 @@ pub struct Args {
     /// Print connection stats after close.
     #[arg(name = "stats", long)]
     stats: bool,
+
+    /// The length of the local connection ID.
+    #[arg(name = "cid-length", short = 'l', long, default_value = "0",
+          value_parser = clap::value_parser!(u8).range(..=20))]
+    cid_len: u8,
 }
 
 impl Args {
     #[must_use]
-    #[cfg(feature = "bench")]
-    #[allow(clippy::missing_panics_doc)]
-    pub fn new(requests: &[u64]) -> Self {
-        use std::str::FromStr;
+    #[cfg(any(test, feature = "bench"))]
+    #[expect(clippy::missing_panics_doc, reason = "This is example code.")]
+    pub fn new(
+        server_addr: Option<SocketAddr>,
+        num_requests: usize,
+        upload_size: usize,
+        download_size: usize,
+    ) -> Self {
+        use std::{iter::repeat_with, str::FromStr as _};
+
+        let addr =
+            server_addr.map_or_else(|| "[::1]:12345".into(), |a| format!("[::1]:{}", a.port()));
         Self {
-            shared: crate::SharedArgs::default(),
-            urls: requests
-                .iter()
-                .map(|r| Url::from_str(&format!("http://[::1]:12345/{r}")).unwrap())
+            shared: SharedArgs::default(),
+            urls: repeat_with(|| Url::from_str(&format!("http://{addr}/{download_size}")).unwrap())
+                .take(num_requests)
                 .collect(),
-            method: "GET".into(),
-            header: vec![],
+            method: if upload_size == 0 {
+                "GET".into()
+            } else {
+                "POST".into()
+            },
+            headers: vec![],
             max_concurrent_push_streams: 10,
             download_in_series: false,
             concurrency: 100,
@@ -197,8 +187,9 @@ impl Args {
             ipv4_only: false,
             ipv6_only: false,
             test: None,
-            upload_size: 100,
+            upload_size,
             stats: false,
+            cid_len: 0,
         }
     }
 
@@ -232,8 +223,15 @@ impl Args {
 
         // Only use v1 for most QNS tests.
         self.shared.quic_parameters.quic_version = vec![Version::Version1];
+        // This is the default for all tests except http3.
+        self.shared.alpn = String::from("hq-interop");
+        // Wireshark can't reassemble sliced CRYPTO frames, which causes tests to fail.
+        // So let's turn that off by default, and only enable for some known-good QNS tests.
+        self.shared.quic_parameters.no_sni_slicing = true;
         match testcase.as_str() {
             "http3" => {
+                self.shared.quic_parameters.no_sni_slicing = false;
+                self.shared.alpn = String::from("h3");
                 if let Some(testcase) = &self.test {
                     if testcase.as_str() != "upload" {
                         qerror!("Unsupported test case: {testcase}");
@@ -243,48 +241,60 @@ impl Args {
                     self.method = String::from("POST");
                 }
             }
-            "handshake" | "transfer" | "retry" | "ecn" => {
-                self.shared.use_old_http = true;
-            }
-            "zerortt" | "resumption" => {
+            "handshake" | "transfer" | "retry" | "ecn" => {}
+            "resumption" => {
                 if self.urls.len() < 2 {
-                    qerror!("Warning: resumption tests won't work without >1 URL");
+                    qerror!("Warning: resumption test won't work without >1 URL");
                     exit(127);
                 }
-                self.shared.use_old_http = true;
                 self.resume = true;
             }
+            "zerortt" => {
+                if self.urls.len() < 2 {
+                    qerror!("Warning: zerortt test won't work without >1 URL");
+                    exit(127);
+                }
+                self.shared.quic_parameters.no_sni_slicing = false;
+                self.resume = true;
+                // PMTUD probes inflate what we sent in 1-RTT, causing QNS to fail the test.
+                self.shared.quic_parameters.no_pmtud = true;
+                // If we pace, we might get the initial server flight before sending sufficient
+                // 0-RTT data to pass the QNS check. So let's burst.
+                self.shared.quic_parameters.no_pacing = true;
+            }
             "multiconnect" => {
-                self.shared.use_old_http = true;
                 self.download_in_series = true;
             }
             "chacha20" => {
-                self.shared.use_old_http = true;
                 self.shared.ciphers.clear();
                 self.shared
                     .ciphers
                     .extend_from_slice(&[String::from("TLS_CHACHA20_POLY1305_SHA256")]);
             }
             "keyupdate" => {
-                self.shared.use_old_http = true;
                 self.key_update = true;
             }
             "v2" => {
-                self.shared.use_old_http = true;
+                self.shared.quic_parameters.no_sni_slicing = false;
                 // Use default version set for this test (which allows compatible vneg.)
                 self.shared.quic_parameters.quic_version.clear();
             }
             _ => exit(127),
         }
     }
+
+    #[cfg(any(test, feature = "bench"))]
+    pub fn set_qlog_dir(&mut self, dir: PathBuf) {
+        self.shared.qlog_dir = Some(dir);
+    }
 }
 
 fn get_output_file(
     url: &Url,
-    output_dir: &Option<PathBuf>,
+    output_dir: Option<&PathBuf>,
     all_paths: &mut Vec<PathBuf>,
 ) -> Option<BufWriter<File>> {
-    if let Some(ref dir) = output_dir {
+    if let Some(dir) = output_dir {
         let mut out_path = dir.clone();
 
         let url_path = if url.path() == "/" {
@@ -355,10 +365,13 @@ enum CloseState {
 
 /// Network client, e.g. [`neqo_transport::Connection`] or [`neqo_http3::Http3Client`].
 trait Client {
-    fn process_output(&mut self, now: Instant) -> Output;
-    fn process_multiple_input<'a, I>(&mut self, dgrams: I, now: Instant)
-    where
-        I: IntoIterator<Item = &'a Datagram>;
+    fn process_multiple_output(&mut self, now: Instant, max_datagrams: NonZeroUsize)
+        -> OutputBatch;
+    fn process_multiple_input<'a>(
+        &mut self,
+        dgrams: impl IntoIterator<Item = Datagram<&'a mut [u8]>>,
+        now: Instant,
+    );
     fn has_events(&self) -> bool;
     fn close<S>(&mut self, now: Instant, app_error: AppError, msg: S)
     where
@@ -374,9 +387,28 @@ struct Runner<'a, H: Handler> {
     handler: H,
     timeout: Option<Pin<Box<Sleep>>>,
     args: &'a Args,
+    recv_buf: RecvBuf,
 }
 
 impl<'a, H: Handler> Runner<'a, H> {
+    fn new(
+        local_addr: SocketAddr,
+        socket: &'a mut crate::udp::Socket,
+        client: H::Client,
+        handler: H,
+        args: &'a Args,
+    ) -> Self {
+        Self {
+            local_addr,
+            socket,
+            client,
+            handler,
+            args,
+            timeout: None,
+            recv_buf: RecvBuf::default(),
+        }
+    }
+
     async fn run(mut self) -> Res<Option<ResumptionToken>> {
         loop {
             let handler_done = self.handler.handle(&mut self.client)?;
@@ -385,17 +417,14 @@ impl<'a, H: Handler> Runner<'a, H> {
                 continue;
             }
 
-            #[allow(clippy::match_same_arms)]
             match (handler_done, self.client.is_closed()?) {
-                // more work
-                (false, _) => {}
+                // more work; or no more work, already closing connection
+                (true, CloseState::Closing) | (false, _) => {}
                 // no more work, closing connection
                 (true, CloseState::NotClosing) => {
                     self.client.close(Instant::now(), 0, "kthxbye!");
                     continue;
                 }
-                // no more work, already closing connection
-                (true, CloseState::Closing) => {}
                 // no more work, connection closed, terminating
                 (true, CloseState::Closed) => break,
             }
@@ -417,17 +446,43 @@ impl<'a, H: Handler> Runner<'a, H> {
 
     async fn process_output(&mut self) -> Result<(), io::Error> {
         loop {
-            match self.client.process_output(Instant::now()) {
-                Output::Datagram(dgram) => {
-                    self.socket.writable().await?;
-                    self.socket.send(&dgram)?;
-                }
-                Output::Callback(new_timeout) => {
-                    qdebug!("Setting timeout of {:?}", new_timeout);
+            let max_datagrams = self
+                .socket
+                .max_gso_segments()
+                .try_into()
+                .inspect_err(|_| qerror!("Socket return GSO size of 0"))
+                .map_err(|_| io::Error::from(ErrorKind::Unsupported))?;
+
+            match self
+                .client
+                .process_multiple_output(Instant::now(), max_datagrams)
+            {
+                OutputBatch::DatagramBatch(dgram) => loop {
+                    // Optimistically attempt sending datagram. In case the OS
+                    // buffer is full, wait till socket is writable then try
+                    // again.
+                    match self.socket.send(&dgram) {
+                        Ok(()) => break,
+                        Err(e) if e.kind() == ErrorKind::WouldBlock => {
+                            self.socket.writable().await?;
+                            // Now try again.
+                        }
+                        Err(e)
+                            if e.raw_os_error() == Some(libc::EIO) && dgram.num_datagrams() > 1 =>
+                        {
+                            qinfo!("`libc::sendmsg` failed with {e}; quinn-udp will halt segmentation offload");
+                            // Drop the packets and let QUIC handle retransmission.
+                            break;
+                        }
+                        e @ Err(_) => return e,
+                    }
+                },
+                OutputBatch::Callback(new_timeout) => {
+                    qdebug!("Setting timeout of {new_timeout:?}");
                     self.timeout = Some(Box::pin(tokio::time::sleep(new_timeout)));
                     break;
                 }
-                Output::None => {
+                OutputBatch::None => {
                     qdebug!("Output::None");
                     break;
                 }
@@ -439,12 +494,10 @@ impl<'a, H: Handler> Runner<'a, H> {
 
     async fn process_multiple_input(&mut self) -> Res<()> {
         loop {
-            let dgrams = self.socket.recv(&self.local_addr)?;
-            if dgrams.is_empty() {
+            let Some(dgrams) = self.socket.recv(self.local_addr, &mut self.recv_buf)? else {
                 break;
-            }
-            self.client
-                .process_multiple_input(dgrams.iter(), Instant::now());
+            };
+            self.client.process_multiple_input(dgrams, Instant::now());
             self.process_output().await?;
         }
 
@@ -452,35 +505,62 @@ impl<'a, H: Handler> Runner<'a, H> {
     }
 }
 
-fn qlog_new(args: &Args, hostname: &str, cid: &ConnectionId) -> Res<NeqoQlog> {
-    if let Some(qlog_dir) = &args.shared.qlog_dir {
-        let mut qlog_path = qlog_dir.clone();
-        let filename = format!("{hostname}-{cid}.sqlog");
-        qlog_path.push(filename);
+fn qlog_new(args: &Args, hostname: &str, cid: &ConnectionId) -> Res<Qlog> {
+    let Some(qlog_dir) = args.shared.qlog_dir.clone() else {
+        return Ok(Qlog::disabled());
+    };
 
-        let f = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(&qlog_path)?;
+    // hostname might be an IPv6 address, e.g. `[::1]`. `:` is an invalid
+    // Windows file name character.
+    #[cfg(windows)]
+    let hostname: String = hostname
+        .chars()
+        .map(|c| if c == ':' { '_' } else { c })
+        .collect();
 
-        let streamer = QlogStreamer::new(
-            qlog::QLOG_VERSION.to_string(),
-            Some("Example qlog".to_string()),
-            Some("Example qlog description".to_string()),
-            None,
-            std::time::Instant::now(),
-            common::qlog::new_trace(Role::Client),
-            EventImportance::Base,
-            Box::new(f),
-        );
+    Qlog::enabled_with_file(
+        qlog_dir,
+        Role::Client,
+        Some("Neqo client qlog".to_string()),
+        Some("Neqo client qlog".to_string()),
+        format!("client-{hostname}-{cid}"),
+        Instant::now(),
+    )
+    .map_err(Error::Qlog)
+}
 
-        Ok(NeqoQlog::enabled(streamer, qlog_path)?)
-    } else {
-        Ok(NeqoQlog::disabled())
+const fn local_addr_for(remote_addr: &SocketAddr, local_port: u16) -> SocketAddr {
+    match remote_addr {
+        SocketAddr::V4(..) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), local_port),
+        SocketAddr::V6(..) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), local_port),
     }
 }
 
+fn urls_by_origin(urls: &[Url]) -> impl Iterator<Item = ((Host, u16), VecDeque<Url>)> {
+    urls.iter()
+        .fold(
+            HashMap::<Origin, VecDeque<Url>>::default(),
+            |mut urls, url| {
+                urls.entry(url.origin()).or_default().push_back(url.clone());
+                urls
+            },
+        )
+        .into_iter()
+        .filter_map(|(origin, urls)| match origin {
+            Origin::Tuple(_scheme, h, p) => Some(((h, p), urls)),
+            Origin::Opaque(x) => {
+                qwarn!("Opaque origin {x:?}");
+                None
+            }
+        })
+}
+
+#[expect(
+    clippy::future_not_send,
+    clippy::missing_panics_doc,
+    clippy::missing_errors_doc,
+    reason = "This is example code."
+)]
 pub async fn client(mut args: Args) -> Res<()> {
     neqo_common::log::init(
         args.shared
@@ -494,26 +574,9 @@ pub async fn client(mut args: Args) -> Res<()> {
 
     init()?;
 
-    let urls_by_origin = args
-        .urls
-        .clone()
-        .into_iter()
-        .fold(HashMap::<Origin, VecDeque<Url>>::new(), |mut urls, url| {
-            urls.entry(url.origin()).or_default().push_back(url);
-            urls
-        })
-        .into_iter()
-        .filter_map(|(origin, urls)| match origin {
-            Origin::Tuple(_scheme, h, p) => Some(((h, p), urls)),
-            Origin::Opaque(x) => {
-                qwarn!("Opaque origin {x:?}");
-                None
-            }
-        });
-
-    for ((host, port), mut urls) in urls_by_origin {
+    for ((host, port), mut urls) in urls_by_origin(&args.urls) {
         if args.resume && urls.len() < 2 {
-            qerror!("Resumption to {host} cannot work without at least 2 URLs.");
+            qerror!("Resumption to {host} cannot work without at least 2 URLs");
             exit(127);
         }
 
@@ -527,19 +590,15 @@ pub async fn client(mut args: Args) -> Res<()> {
             qerror!("No compatible address found for: {host}");
             exit(1);
         };
-
-        let local_addr = match remote_addr {
-            SocketAddr::V4(..) => SocketAddr::new(IpAddr::V4(Ipv4Addr::from([0; 4])), 0),
-            SocketAddr::V6(..) => SocketAddr::new(IpAddr::V6(Ipv6Addr::from([0; 16])), 0),
-        };
-
-        let mut socket = crate::udp::Socket::bind(local_addr)?;
+        let mut socket = crate::udp::Socket::bind(local_addr_for(&remote_addr, 0))?;
+        if socket.may_fragment() {
+            qinfo!("Datagrams may be fragmented by the IP layer. Disabling PMTUD.");
+            args.shared.quic_parameters.no_pmtud = true;
+        }
         let real_local = socket.local_addr().unwrap();
         qinfo!(
-            "{} Client connecting: {:?} -> {:?}",
-            if args.shared.use_old_http { "H9" } else { "H3" },
-            real_local,
-            remote_addr,
+            "{} Client connecting: {real_local:?} -> {remote_addr:?}",
+            args.shared.alpn
         );
 
         let hostname = format!("{host}");
@@ -554,39 +613,25 @@ pub async fn client(mut args: Args) -> Res<()> {
 
             first = false;
 
-            token = if args.shared.use_old_http {
+            token = if args.shared.alpn == "h3" {
+                let client = http3::create_client(&args, real_local, remote_addr, &hostname, token)
+                    .expect("failed to create client");
+
+                let handler = http3::Handler::new(to_request, args.clone());
+
+                Runner::new(real_local, &mut socket, client, handler, &args)
+                    .run()
+                    .await?
+            } else {
                 let client =
                     http09::create_client(&args, real_local, remote_addr, &hostname, token)
                         .expect("failed to create client");
 
                 let handler = http09::Handler::new(to_request, &args);
 
-                Runner {
-                    args: &args,
-                    client,
-                    handler,
-                    local_addr: real_local,
-                    socket: &mut socket,
-                    timeout: None,
-                }
-                .run()
-                .await?
-            } else {
-                let client = http3::create_client(&args, real_local, remote_addr, &hostname, token)
-                    .expect("failed to create client");
-
-                let handler = http3::Handler::new(to_request, &args);
-
-                Runner {
-                    args: &args,
-                    client,
-                    handler,
-                    local_addr: real_local,
-                    socket: &mut socket,
-                    timeout: None,
-                }
-                .run()
-                .await?
+                Runner::new(real_local, &mut socket, client, handler, &args)
+                    .run()
+                    .await?
             };
         }
     }

@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nowa karta
     .accesskey = N
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Zamknij karty po lewej stronie
     .accesskey = w
+close-tabs-to-the-start-vertical =
+    .label = Zamknij karty powyżej
+    .accesskey = w
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Zamknij karty po prawej stronie
     .accesskey = s
+close-tabs-to-the-end-vertical =
+    .label = Zamknij karty poniżej
+    .accesskey = o
 close-other-tabs =
     .label = Zamknij inne karty
     .accesskey = m
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Przenieś do nowego okna
     .accesskey = o
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Przenieś do profilu „{ $profileName }”
 tab-context-close-multiple-tabs =
     .label = Zamknij wiele kart
     .accesskey = w
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Udostępnij
     .accesskey = U
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nowa karta po prawej
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = Nowa karta poniżej
+    .accesskey = w
+tab-context-new-group =
+    .label = Nowa grupa
+    .accesskey = u
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -105,11 +129,28 @@ tab-context-move-tabs =
            *[other] Przenieś karty
         }
     .accesskey = r
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [one] Wyślij na urządzenie
+            [few] Wyślij { $tabCount } karty na urządzenie
+           *[many] Wyślij { $tabCount } kart na urządzenie
+        }
+    .accesskey = W
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
-            [one] Wyślij kartę do
-            [few] Wyślij { $tabCount } karty do
-           *[many] Wyślij { $tabCount } kart do
+            [one] Wyślij kartę na urządzenie
+            [few] Wyślij { $tabCount } karty na urządzenie
+           *[many] Wyślij { $tabCount } kart na urządzenie
         }
     .accesskey = W
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [one] Zwolnij kartę
+            [few] Zwolnij { $tabCount } karty
+           *[many] Zwolnij { $tabCount } kart
+        }
+    .accesskey = Z

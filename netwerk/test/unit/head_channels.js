@@ -26,11 +26,12 @@ function read_stream(stream, count) {
   return data.join("");
 }
 
+// CL_ stands for ChannelListener
 const CL_EXPECT_FAILURE = 0x1;
 const CL_EXPECT_GZIP = 0x2;
 const CL_EXPECT_3S_DELAY = 0x4;
 const CL_SUSPEND = 0x8;
-const CL_ALLOW_UNKNOWN_CL = 0x10;
+const CL_ALLOW_UNKNOWN_CL = 0x10; // Response can contain no or invalid content-length header
 const CL_EXPECT_LATE_FAILURE = 0x20;
 const CL_FROM_CACHE = 0x40; // Response must be from the cache
 const CL_NOT_FROM_CACHE = 0x80; // Response must NOT be from the cache
@@ -59,6 +60,7 @@ function ChannelListener(closure, ctx, flags) {
   this._closurectx = ctx;
   this._flags = flags;
   this._isFromCache = false;
+  this._hasCacheEntry = false;
   this._cacheEntryId = undefined;
 }
 ChannelListener.prototype = {
@@ -89,6 +91,12 @@ ChannelListener.prototype = {
           .isFromCache();
       } catch (e) {}
 
+      try {
+        this._hasCacheEntry = request
+          .QueryInterface(Ci.nsICacheInfoChannel)
+          .hasCacheEntry();
+      } catch (e) {}
+
       var thrown = false;
       try {
         this._cacheEntryId = request
@@ -97,9 +105,9 @@ ChannelListener.prototype = {
       } catch (e) {
         thrown = true;
       }
-      if (this._isFromCache && thrown) {
+      if (this._hasCacheEntry && thrown) {
         do_throw("Should get a CacheEntryId");
-      } else if (!this._isFromCache && !thrown) {
+      } else if (!this._hasCacheEntry && !thrown) {
         do_throw("Shouldn't get a CacheEntryId");
       }
 
@@ -377,6 +385,7 @@ async function asyncStartTLSTestServer(
   Services.env.set("LD_LIBRARY_PATH", greBinDir.path + ":/data/local/xpcb");
   Services.env.set("MOZ_TLS_SERVER_DEBUG_LEVEL", "3");
   Services.env.set("MOZ_TLS_SERVER_CALLBACK_PORT", CALLBACK_PORT);
+  Services.env.set("MOZ_TLS_ECH_ALPN_FLAG", "1");
 
   let httpServer = new HttpServer();
   let serverReady = new Promise(resolve => {
@@ -546,4 +555,22 @@ class SimpleChannelListener {
       this._onStopCallback(request, this._buffer);
     }
   }
+}
+
+// nsITLSServerSocket needs a certificate with a corresponding private key
+// available. xpcshell tests can import the test file "client-cert.p12" using
+// the password "password", resulting in a certificate with the common name
+// "Test End-entity" being available with a corresponding private key.
+function getTestServerCertificate() {
+  const certDB = Cc["@mozilla.org/security/x509certdb;1"].getService(
+    Ci.nsIX509CertDB
+  );
+  const certFile = do_get_file("client-cert.p12");
+  certDB.importPKCS12File(certFile, "password");
+  for (const cert of certDB.getCerts()) {
+    if (cert.commonName == "Test End-entity") {
+      return cert;
+    }
+  }
+  return null;
 }

@@ -59,10 +59,7 @@ history-section-label = Ιστορικό
 item-history-and-downloads =
     .label = Ιστορικό περιήγησης και λήψεων
     .accesskey = π
-item-history-form-data-downloads =
-    .label = Ιστορικό
-    .accesskey = Ι
-item-history-form-data-downloads-description = Διαγραφή ιστορικού ιστοτόπων και λήψεων, των πληροφοριών αποθηκευμένων φορμών και αναζητήσεων
+item-history-and-downloads-description2 = Διαγράφει το ιστορικό ιστοτόπων και λήψεων
 item-cookies =
     .label = Cookie
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Ρυθμίσεις ιστοτόπων
     .accesskey = θ
+item-formdata-prefs =
+    .label = Αποθηκευμένες πληροφορίες φορμών
+    .accesskey = ο
+item-formdata-description = Διαγράφει στοιχεία, όπως ονόματα, email και άλλα στοιχεία που έχετε εισαγάγει σε φόρμες
 item-site-prefs-description = Επαναφέρει τα δικαιώματα και τις προτιμήσεις ιστοτόπων σας στις αρχικές ρυθμίσεις
 data-section-label = Δεδομένα
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Θα διαγραφεί όλο το ιστορικ
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Θα διαγραφούν όλα τα επιλεγμένα στοιχεία.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Υπολογισμός…

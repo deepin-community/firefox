@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = 開啟地址自動填寫功能。
 policy-AutofillCreditCardEnabled = 開啟付款方式自動填寫功能。
 policy-AutoLaunchProtocolsFromOrigins = 列舉一組外部通訊協定的清單與來源網址，可不提示使用者就自動啟動外部通訊協定。
 policy-BackgroundAppUpdate2 = 啟用或停用背景更新程式。
+policy-Backup = 停用備份或還原設定檔資料。
 policy-BlockAboutAddons = 防止開啟附加元件管理員（about:addons）。
 policy-BlockAboutConfig = 防止開啟 about:config 頁面。
 policy-BlockAboutProfiles = 防止開啟 about:profiles 頁面。
@@ -55,6 +56,7 @@ policy-DisablePocket2 = 停用儲存網頁到 { -pocket-brand-name } 的功能�
 policy-DisablePrivateBrowsing = 停用隱私瀏覽功能。
 policy-DisableProfileImport = 停用自其他瀏覽器匯入資料的選單功能。
 policy-DisableProfileRefresh = 停用 about:support 頁面中的「重新整理 { -brand-short-name }」按鈕。
+policy-DisableRemoteImprovements = 防止 { -brand-short-name } 在新版本推出前套用效能、穩定度與功能變更。
 policy-DisableSafeMode = 停用以安全模式重新啟動的功能。註：啟動時按住 Shift 鍵進入安全模式的功能，僅能於 Windows 使用群組原則停用。
 policy-DisableSecurityBypass = 防止使用者忽略某些安全性警告。
 policy-DisableSetAsDesktopBackground = 停用將圖片「設為桌布」的選單功能。
@@ -79,13 +81,14 @@ policy-ExtensionSettings = 管理擴充套件的各種安裝設定。
 policy-ExtensionUpdate = 開啟或關閉擴充套件自動更新。
 policy-FirefoxHome2 = 設定 { -firefox-home-brand-name }。
 policy-FirefoxSuggest = 設定 { -firefox-suggest-brand-name }。
+policy-GenerativeAI = 設定生成式 AI 功能。
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = 在網址列輸入單一文字時，強制導航到企業內部網站，而非進行線上搜尋。
 policy-Handlers = 設定預設應用程式處理方式。
 policy-HardwareAcceleration = 若為 false，就會關閉硬體加速。
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = 設定或鎖定首頁。
 policy-HttpAllowlist = 不升級為 HTTPS 連線的來源。
-policy-HttpsOnlyMode = 允許開啟僅 HTTPS 模式。
+policy-HttpsOnlyMode = 允許開啟純 HTTPS 模式。
 policy-InstallAddonsPermission = 允許某些網站安裝附加元件。
 policy-LegacyProfiles = 停用「於每一套安裝使用不同設定檔」的功能。
 
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = 對指定的網站恢�
 ##
 
 policy-LocalFileLinks = 允許特定網站鏈結到本機檔案。
+policy-LocalNetworkAccess = 開啟或關閉本機網路存取檢查。
 policy-ManagedBookmarks = 設定由管理員控管的書籤清單，使用者無法更改。
 policy-ManualAppUpdateOnly = 只允許手動更新，也不通知使用者已有更新推出。
 policy-PrimaryPassword = 要求使用或不允許使用主控密碼。
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = 開啟 TLS 的後量子金鑰協定。
 policy-PDFjs = 停用或設定 { -brand-short-name } 內建的 PDF 閱讀器 PDF.js。
 policy-Permissions2 = 設定攝影機、麥克風、地理位置、通知、自動播放等權限。
 policy-PictureInPicture = 開啟或關閉子母畫面功能。
+policy-PopupBlocking2 = 允許某些網站顯示彈出型視窗，並且由第三方畫框重新導向網頁。
 policy-PopupBlocking = 允許某些網站預設可顯示彈出型視窗。
 policy-Preferences = 鎖定部分偏好設定的內容。
 policy-PrivateBrowsingModeAvailability = 設定是否可使用隱私瀏覽模式。
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = 啟用或停用搜尋建議。
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = 新增或刪除 PKCS #11 模組。
 policy-ShowHomeButton = 於工具列顯示首頁按鈕。
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = 程式啟動時不顯示使用條款與隱私權公告。您必須獲得您提供使用此瀏覽器的所有使用者授權，並代表他們同意使用條款。
 policy-SSLVersionMax = 設定最大 SSL 版本。
 policy-SSLVersionMin = 設定最小 SSL 版本。
 policy-StartDownloadsInTempDirectory = 強制在本機的暫存位置，而非預設下載目錄開始下載。
@@ -137,6 +144,9 @@ policy-SupportMenu = 於說明選單內新增自訂的技術支援項目。
 policy-TranslateEnabled = 啟用或停用網頁翻譯功能。
 policy-UserMessaging = 不要對使用者顯示某些訊息。
 policy-UseSystemPrintDialog = 使用系統列印對話框列印。
+policy-VisualSearchEnabled = 開啟或關閉視覺化搜尋功能。
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = 封鎖網站，不讓使用者開啟。請參考文件取得設定格式的詳細資料。
 policy-Windows10SSO = 允許使用 Windows 單一登入系統，登入微軟、工作單位、學校提供的帳號。
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = 允許使用 Microsoft Entra 帳號單一登入。

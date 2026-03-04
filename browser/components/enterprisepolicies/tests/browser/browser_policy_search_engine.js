@@ -10,6 +10,9 @@ ChromeUtils.defineESModuleGetters(this, {
 let gCUITestUtils = new CustomizableUITestUtils(window);
 
 add_task(async function test_setup() {
+  SpecialPowers.pushPrefEnv({
+    set: [["browser.search.widget.new", false]],
+  });
   await gCUITestUtils.addSearchBar();
   registerCleanupFunction(() => {
     gCUITestUtils.removeSearchBar();
@@ -19,7 +22,7 @@ add_task(async function test_setup() {
 // |shouldWork| should be true if opensearch is expected to work and false if
 // it is not.
 async function test_opensearch(shouldWork) {
-  let searchBar = BrowserSearch.searchBar;
+  let searchBar = document.getElementById("searchbar");
 
   let rootDir = getRootDirectory(gTestPath);
   let tab = await BrowserTestUtils.openNewForegroundTab(

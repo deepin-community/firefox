@@ -4,35 +4,29 @@
 
 profile-selection-window =
     .title = { -brand-short-name } — wybierz profil użytkownika
-
 profile-selection-button-accept =
     .label = Uruchom program { -brand-short-name }
-
 profile-selection-button-cancel =
     .label = Zakończ
-
 profile-selection-new-button =
     .label = Utwórz nowy profil…
     .accesskey = N
-
 profile-selection-rename-button =
     .label = Zmień nazwę profilu…
     .accesskey = Z
-
 profile-selection-delete-button =
     .label = Usuń profil…
     .accesskey = U
-
 profile-selection-conflict-message = Inna kopia programu { -brand-product-name } wprowadziła zmiany w profilach. Przed wprowadzeniem dalszych zmian należy ponownie uruchomić program { -brand-short-name }.
 
 ## Messages used in the profile manager
 
 profile-manager-description = { -brand-short-name } przechowuje informacje o ustawieniach i preferencjach użytkownika w profilu.
-
 profile-manager-work-offline =
     .label = Pracuj w trybie offline
     .accesskey = P
-
 profile-manager-use-selected =
     .label = Domyślnie (bez pytania) używaj zaznaczonego profilu przy uruchamianiu
     .accesskey = D
+profile-has-selectable-profiles-title = Nie można usunąć profilu, który jest powiązany z innymi profilami
+profile-has-selectable-profiles-message = Aby usunąć ten profil, otwórz go i wybierz „Zarządzaj profilami” w sekcji profili menu { -brand-short-name(case: "gen") }. Po usunięciu wszelkich dodatkowych profili utworzonych w tym miejscu można wrócić do strony about:profiles i usunąć ten profil.

@@ -19,7 +19,6 @@
 
 // This include is required in order for content_decryption_module to work
 // on Unix systems.
-#include <stddef.h>
 
 #include <atomic>
 #include <queue>
@@ -30,7 +29,7 @@
 
 class VideoDecoder : public RefCounted {
  public:
-  explicit VideoDecoder(cdm::Host_10* aHost);
+  explicit VideoDecoder(cdm::Host_11* aHost);
 
   cdm::Status InitDecode(const cdm::VideoDecoderConfig_2& aConfig);
 
@@ -61,7 +60,7 @@ class VideoDecoder : public RefCounted {
                              int32_t aFrameHeight,
                              cdm::VideoFrame* aVideoFrame);
 
-  cdm::Host_10* mHost;
+  cdm::Host_11* mHost;
   wmf::AutoPtr<wmf::WMFH264Decoder> mDecoder;
 
   std::queue<wmf::CComPtr<IMFSample>> mOutputQueue;

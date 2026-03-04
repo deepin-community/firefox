@@ -24,7 +24,7 @@ class LIRGeneratorMIPS64 : public LIRGeneratorMIPSShared {
   LBoxAllocation useBoxFixed(MDefinition* mir, Register reg1, Register reg2,
                              bool useAtStart = false);
 
-  inline LDefinition tempToUnbox() { return temp(); }
+  LDefinition tempToUnbox();
 
   void lowerUntypedPhiInput(MPhi* phi, uint32_t inputPosition, LBlock* block,
                             size_t lirIndex);
@@ -40,9 +40,6 @@ class LIRGeneratorMIPS64 : public LIRGeneratorMIPSShared {
   void lowerWasmBuiltinModI64(MWasmBuiltinModI64* mod);
   void lowerUDivI64(MDiv* div);
   void lowerUModI64(MMod* mod);
-
-  void lowerBigIntDiv(MBigIntDiv* ins);
-  void lowerBigIntMod(MBigIntMod* ins);
 
   void lowerAtomicLoad64(MLoadUnboxedScalar* ins);
   void lowerAtomicStore64(MStoreUnboxedScalar* ins);

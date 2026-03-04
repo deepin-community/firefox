@@ -12,6 +12,8 @@
 
 namespace js {
 
+enum class SetSlotOptimizable { Yes, No, NotYet };
+
 // [SMDOC] Watchtower
 //
 // Watchtower is a framework to hook into changes to certain objects. This gives
@@ -36,19 +38,27 @@ class Watchtower {
   static bool watchPropertyAddSlow(JSContext* cx, Handle<NativeObject*> obj,
                                    HandleId id);
   static bool watchPropertyRemoveSlow(JSContext* cx, Handle<NativeObject*> obj,
-                                      HandleId id);
-  static bool watchPropertyChangeSlow(JSContext* cx, Handle<NativeObject*> obj,
-                                      HandleId id, PropertyFlags flags);
+                                      HandleId id, PropertyInfo propInfo,
+                                      bool* wasTrackedObjectFuseProp);
+  static bool watchPropertyFlagsChangeSlow(JSContext* cx,
+                                           Handle<NativeObject*> obj,
+                                           HandleId id, PropertyInfo propInfo,
+                                           PropertyFlags newFlags);
   template <AllowGC allowGC>
-  static bool watchPropertyModificationSlow(
+  static void watchPropertyValueChangeSlow(
       JSContext* cx,
       typename MaybeRooted<NativeObject*, allowGC>::HandleType obj,
-      typename MaybeRooted<PropertyKey, allowGC>::HandleType id);
+      typename MaybeRooted<PropertyKey, allowGC>::HandleType id,
+      typename MaybeRooted<Value, allowGC>::HandleType value,
+      PropertyInfo propInfo);
   static bool watchFreezeOrSealSlow(JSContext* cx, Handle<NativeObject*> obj,
                                     IntegrityLevel level);
   static bool watchProtoChangeSlow(JSContext* cx, HandleObject obj);
   static bool watchObjectSwapSlow(JSContext* cx, HandleObject a,
                                   HandleObject b);
+  static SetSlotOptimizable canOptimizeSetSlotSlow(JSContext* cx,
+                                                   NativeObject* obj,
+                                                   PropertyInfo prop);
 
  public:
   static bool watchesPropertyAdd(NativeObject* obj) {
@@ -58,16 +68,18 @@ class Watchtower {
   static bool watchesPropertyRemove(NativeObject* obj) {
     return obj->hasAnyFlag(
         {ObjectFlag::IsUsedAsPrototype, ObjectFlag::GenerationCountedGlobal,
-         ObjectFlag::UseWatchtowerTestingLog, ObjectFlag::HasFuseProperty});
+         ObjectFlag::UseWatchtowerTestingLog, ObjectFlag::HasRealmFuseProperty,
+         ObjectFlag::HasObjectFuse});
   }
-  static bool watchesPropertyChange(NativeObject* obj) {
-    return obj->hasAnyFlag(
-        {ObjectFlag::IsUsedAsPrototype, ObjectFlag::GenerationCountedGlobal,
-         ObjectFlag::HasFuseProperty, ObjectFlag::UseWatchtowerTestingLog});
+  static bool watchesPropertyFlagsChange(NativeObject* obj) {
+    return obj->hasAnyFlag({ObjectFlag::IsUsedAsPrototype,
+                            ObjectFlag::GenerationCountedGlobal,
+                            ObjectFlag::UseWatchtowerTestingLog});
   }
-  static bool watchesPropertyModification(NativeObject* obj) {
-    return obj->hasAnyFlag(
-        {ObjectFlag::HasFuseProperty, ObjectFlag::UseWatchtowerTestingLog});
+  static bool watchesPropertyValueChange(NativeObject* obj) {
+    return obj->hasAnyFlag({ObjectFlag::HasRealmFuseProperty,
+                            ObjectFlag::UseWatchtowerTestingLog,
+                            ObjectFlag::HasObjectFuse});
   }
   static bool watchesFreezeOrSeal(NativeObject* obj) {
     return obj->hasAnyFlag(
@@ -79,10 +91,22 @@ class Watchtower {
   }
   static bool watchesObjectSwap(JSObject* a, JSObject* b) {
     auto watches = [](JSObject* obj) {
-      return obj->hasAnyFlag(
-          {ObjectFlag::IsUsedAsPrototype, ObjectFlag::UseWatchtowerTestingLog});
+      return obj->hasAnyFlag({ObjectFlag::IsUsedAsPrototype,
+                              ObjectFlag::UseWatchtowerTestingLog,
+                              ObjectFlag::HasObjectFuse});
     };
     return watches(a) || watches(b);
+  }
+  static SetSlotOptimizable canOptimizeSetSlot(JSContext* cx, NativeObject* obj,
+                                               PropertyInfo prop) {
+    if (obj->hasAnyFlag({ObjectFlag::HasRealmFuseProperty,
+                         ObjectFlag::UseWatchtowerTestingLog})) {
+      return SetSlotOptimizable::No;
+    }
+    if (!obj->hasObjectFuse()) {
+      return SetSlotOptimizable::Yes;
+    }
+    return canOptimizeSetSlotSlow(cx, obj, prop);
   }
 
   static bool watchPropertyAdd(JSContext* cx, Handle<NativeObject*> obj,
@@ -93,31 +117,37 @@ class Watchtower {
     return watchPropertyAddSlow(cx, obj, id);
   }
   static bool watchPropertyRemove(JSContext* cx, Handle<NativeObject*> obj,
-                                  HandleId id) {
+                                  HandleId id, PropertyInfo propInfo,
+                                  bool* wasTrackedObjectFuseProp) {
+    MOZ_ASSERT(!*wasTrackedObjectFuseProp);
     if (MOZ_LIKELY(!watchesPropertyRemove(obj))) {
       return true;
     }
-    return watchPropertyRemoveSlow(cx, obj, id);
+    return watchPropertyRemoveSlow(cx, obj, id, propInfo,
+                                   wasTrackedObjectFuseProp);
   }
-  static bool watchPropertyChange(JSContext* cx, Handle<NativeObject*> obj,
-                                  HandleId id, PropertyFlags flags) {
-    if (MOZ_LIKELY(!watchesPropertyChange(obj))) {
+  static bool watchPropertyFlagsChange(JSContext* cx, Handle<NativeObject*> obj,
+                                       HandleId id, PropertyInfo propInfo,
+                                       PropertyFlags newFlags) {
+    if (MOZ_LIKELY(!watchesPropertyFlagsChange(obj))) {
       return true;
     }
-    return watchPropertyChangeSlow(cx, obj, id, flags);
+    return watchPropertyFlagsChangeSlow(cx, obj, id, propInfo, newFlags);
   }
 
-  // Note: We can only watch property modification for regular object slots
+  // Note: We can only watch property value changes for regular object slots
   // with an id, not reserved slots.
   template <AllowGC allowGC>
-  static bool watchPropertyModification(
+  static void watchPropertyValueChange(
       JSContext* cx,
       typename MaybeRooted<NativeObject*, allowGC>::HandleType obj,
-      typename MaybeRooted<PropertyKey, allowGC>::HandleType id) {
-    if (MOZ_LIKELY(!watchesPropertyModification(obj))) {
-      return true;
+      typename MaybeRooted<PropertyKey, allowGC>::HandleType id,
+      typename MaybeRooted<Value, allowGC>::HandleType value,
+      PropertyInfo propInfo) {
+    if (MOZ_LIKELY(!watchesPropertyValueChange(obj))) {
+      return;
     }
-    return watchPropertyModificationSlow<allowGC>(cx, obj, id);
+    watchPropertyValueChangeSlow<allowGC>(cx, obj, id, value, propInfo);
   }
   static bool watchFreezeOrSeal(JSContext* cx, Handle<NativeObject*> obj,
                                 IntegrityLevel level) {

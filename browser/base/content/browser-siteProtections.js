@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/browser-window */
-
 ChromeUtils.defineESModuleGetters(this, {
   ContentBlockingAllowList:
     "resource://gre/modules/ContentBlockingAllowList.sys.mjs",
-  ReportBrokenSite: "resource:///modules/ReportBrokenSite.sys.mjs",
+  ReportBrokenSite:
+    "moz-src:///browser/components/reportbrokensite/ReportBrokenSite.sys.mjs",
   SpecialMessageActions:
     "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
 });
@@ -16,7 +15,7 @@ XPCOMUtils.defineLazyServiceGetter(
   this,
   "TrackingDBService",
   "@mozilla.org/tracking-db-service;1",
-  "nsITrackingDBService"
+  Ci.nsITrackingDBService
 );
 
 /**
@@ -27,21 +26,22 @@ XPCOMUtils.defineLazyServiceGetter(
 class ProtectionCategory {
   /**
    * Creates a protection category.
+   *
    * @param {string} id - Identifier of the category. Used to query the category
    * UI elements in the DOM.
-   * @param {Object} options - Category options.
+   * @param {object} options - Category options.
    * @param {string} options.prefEnabled - ID of pref which controls the
    * category enabled state.
-   * @param {Object} flags - Flags for this category to look for in the content
+   * @param {object} flags - Flags for this category to look for in the content
    * blocking event and content blocking log.
-   * @param {Number} [flags.load] - Load flag for this protection category. If
+   * @param {number} [flags.load] - Load flag for this protection category. If
    * omitted, we will never match a isAllowing check for this category.
-   * @param {Number} [flags.block] - Block flag for this protection category. If
+   * @param {number} [flags.block] - Block flag for this protection category. If
    * omitted, we will never match a isBlocking check for this category.
-   * @param {Number} [flags.shim] - Shim flag for this protection category. This
+   * @param {number} [flags.shim] - Shim flag for this protection category. This
    * flag is set if we replaced tracking content with a non-tracking shim
    * script.
-   * @param {Number} [flags.allow] - Allow flag for this protection category.
+   * @param {number} [flags.allow] - Allow flag for this protection category.
    * This flag is set if we explicitly allow normally blocked tracking content.
    * The webcompat extension can do this if it needs to unblock content on user
    * opt-in.
@@ -111,6 +111,7 @@ class ProtectionCategory {
   /**
    * Get the category item associated with this protection from the main
    * protections panel.
+   *
    * @returns {xul:toolbarbutton|undefined} - Item or undefined if the panel is
    * not yet initialized.
    */
@@ -127,6 +128,7 @@ class ProtectionCategory {
 
   /**
    * Defaults to enabled state. May be overridden by child classes.
+   *
    * @returns {boolean} - Whether the protection is set to block trackers.
    */
   get blockingEnabled() {
@@ -136,6 +138,7 @@ class ProtectionCategory {
   /**
    * Update the category item state in the main view of the protections panel.
    * Determines whether the category is set to block trackers.
+   *
    * @returns {boolean} - true if the state has been updated, false if the
    * protections popup has not been initialized yet.
    */
@@ -189,7 +192,8 @@ class ProtectionCategory {
 
   /**
    * Create a list of items, each representing a tracker.
-   * @returns {Object} result - An object containing the results.
+   *
+   * @returns {object} result - An object containing the results.
    * @returns {HTMLDivElement[]} result.items - Generated tracker items. May be
    * empty.
    * @returns {boolean} result.anyShimAllowed - Flag indicating if any of the
@@ -217,11 +221,22 @@ class ProtectionCategory {
   }
 
   /**
+   * Return the number items blocked by this blocker.
+   *
+   * @returns {Integer} count - The number of items blocked.
+   */
+  async getBlockerCount() {
+    let { items } = await this._generateSubViewListItems();
+    return items?.childElementCount ?? 0;
+  }
+
+  /**
    * Create a DOM item representing a tracker.
+   *
    * @param {string} origin - Origin of the tracker.
    * @param {Array} actions - Array of actions from the content blocking log
    * associated with the tracking origin.
-   * @returns {Object} result - An object containing the results.
+   * @returns {object} result - An object containing the results.
    * @returns {HTMLDListElement} [options.item] - Generated item or null if we
    * don't have an item for this origin based on the actions log.
    * @returns {boolean} options.shimAllowed - Flag indicating whether the
@@ -269,6 +284,7 @@ class ProtectionCategory {
   /**
    * Create an indicator icon for marking origins that have been allowed by a
    * shim script.
+   *
    * @returns {HTMLImageElement} - Created element.
    */
   _getShimAllowIndicator() {
@@ -284,7 +300,7 @@ class ProtectionCategory {
   }
 
   /**
-   * @param {Number} state - Content blocking event flags.
+   * @param {number} state - Content blocking event flags.
    * @returns {boolean} - Whether the protection has blocked a tracker.
    */
   isBlocking(state) {
@@ -292,7 +308,7 @@ class ProtectionCategory {
   }
 
   /**
-   * @param {Number} state - Content blocking event flags.
+   * @param {number} state - Content blocking event flags.
    * @returns {boolean} - Whether the protection has allowed a tracker.
    */
   isAllowing(state) {
@@ -300,7 +316,7 @@ class ProtectionCategory {
   }
 
   /**
-   * @param {Number} state - Content blocking event flags.
+   * @param {number} state - Content blocking event flags.
    * @returns {boolean} - Whether the protection has detected (blocked or
    * allowed) a tracker.
    */
@@ -309,7 +325,7 @@ class ProtectionCategory {
   }
 
   /**
-   * @param {Number} state - Content blocking event flags.
+   * @param {number} state - Content blocking event flags.
    * @returns {boolean} - Whether the protections has allowed a tracker that
    * would have normally been blocked.
    */
@@ -320,6 +336,17 @@ class ProtectionCategory {
 
 let Fingerprinting =
   new (class FingerprintingProtection extends ProtectionCategory {
+    iconSrc = "chrome://browser/skin/fingerprint.svg";
+    l10nKeys = {
+      content: "fingerprinters",
+      general: "fingerprinter",
+      title: {
+        blocking: "protections-blocking-fingerprinters",
+        "not-blocking": "protections-not-blocking-fingerprinters",
+      },
+    };
+    #isInitialized = false;
+
     constructor() {
       super(
         "fingerprinters",
@@ -346,15 +373,24 @@ let Fingerprinting =
     init() {
       this.updateEnabled();
 
-      Services.prefs.addObserver(this.prefEnabled, this);
-      Services.prefs.addObserver(this.prefFPPEnabled, this);
-      Services.prefs.addObserver(this.prefFPPEnabledInPrivateWindows, this);
+      if (!this.#isInitialized) {
+        Services.prefs.addObserver(this.prefEnabled, this);
+        Services.prefs.addObserver(this.prefFPPEnabled, this);
+        Services.prefs.addObserver(this.prefFPPEnabledInPrivateWindows, this);
+        this.#isInitialized = true;
+      }
     }
 
     uninit() {
-      Services.prefs.removeObserver(this.prefEnabled, this);
-      Services.prefs.removeObserver(this.prefFPPEnabled, this);
-      Services.prefs.removeObserver(this.prefFPPEnabledInPrivateWindows, this);
+      if (this.#isInitialized) {
+        Services.prefs.removeObserver(this.prefEnabled, this);
+        Services.prefs.removeObserver(this.prefFPPEnabled, this);
+        Services.prefs.removeObserver(
+          this.prefFPPEnabledInPrivateWindows,
+          this
+        );
+        this.#isInitialized = false;
+      }
     }
 
     updateEnabled() {
@@ -393,7 +429,6 @@ let Fingerprinting =
 
       return (state & blockFlag) != 0;
     }
-
     // TODO (Bug 1864914): Consider showing suspicious fingerprinting as allowed
     // when the fingerprinting protection is disabled.
   })();
@@ -409,8 +444,30 @@ let Cryptomining = new ProtectionCategory(
   }
 );
 
+Cryptomining.l10nId = "trustpanel-cryptomining";
+Cryptomining.iconSrc = "chrome://browser/skin/controlcenter/cryptominers.svg";
+Cryptomining.l10nKeys = {
+  content: "cryptominers",
+  general: "cryptominer",
+  title: {
+    blocking: "protections-blocking-cryptominers",
+    "not-blocking": "protections-not-blocking-cryptominers",
+  },
+};
+
 let TrackingProtection =
   new (class TrackingProtection extends ProtectionCategory {
+    iconSrc = "chrome://browser/skin/canvas.svg";
+    l10nKeys = {
+      content: "tracking-content",
+      general: "tracking-content",
+      title: {
+        blocking: "protections-blocking-tracking-content",
+        "not-blocking": "protections-not-blocking-tracking-content",
+      },
+    };
+    #isInitialized = false;
+
     constructor() {
       super(
         "trackers",
@@ -466,26 +523,35 @@ let TrackingProtection =
     init() {
       this.updateEnabled();
 
-      Services.prefs.addObserver(this.prefEnabled, this);
-      Services.prefs.addObserver(this.prefEnabledInPrivateWindows, this);
-      Services.prefs.addObserver(this.prefEmailTrackingProtectionEnabled, this);
-      Services.prefs.addObserver(
-        this.prefEmailTrackingProtectionEnabledInPrivateWindows,
-        this
-      );
+      if (!this.#isInitialized) {
+        Services.prefs.addObserver(this.prefEnabled, this);
+        Services.prefs.addObserver(this.prefEnabledInPrivateWindows, this);
+        Services.prefs.addObserver(
+          this.prefEmailTrackingProtectionEnabled,
+          this
+        );
+        Services.prefs.addObserver(
+          this.prefEmailTrackingProtectionEnabledInPrivateWindows,
+          this
+        );
+        this.#isInitialized = true;
+      }
     }
 
     uninit() {
-      Services.prefs.removeObserver(this.prefEnabled, this);
-      Services.prefs.removeObserver(this.prefEnabledInPrivateWindows, this);
-      Services.prefs.removeObserver(
-        this.prefEmailTrackingProtectionEnabled,
-        this
-      );
-      Services.prefs.removeObserver(
-        this.prefEmailTrackingProtectionEnabledInPrivateWindows,
-        this
-      );
+      if (this.#isInitialized) {
+        Services.prefs.removeObserver(this.prefEnabled, this);
+        Services.prefs.removeObserver(this.prefEnabledInPrivateWindows, this);
+        Services.prefs.removeObserver(
+          this.prefEmailTrackingProtectionEnabled,
+          this
+        );
+        Services.prefs.removeObserver(
+          this.prefEmailTrackingProtectionEnabledInPrivateWindows,
+          this
+        );
+        this.#isInitialized = false;
+      }
     }
 
     observe() {
@@ -647,6 +713,16 @@ let TrackingProtection =
 
 let ThirdPartyCookies =
   new (class ThirdPartyCookies extends ProtectionCategory {
+    iconSrc = "chrome://browser/skin/controlcenter/3rdpartycookies.svg";
+    l10nKeys = {
+      content: "cross-site-tracking-cookies",
+      general: "tracking-cookies",
+      title: {
+        blocking: "protections-blocking-cookies-third-party",
+        "not-blocking": "protections-not-blocking-cookies-third-party",
+      },
+    };
+
     constructor() {
       super(
         "cookies",
@@ -698,7 +774,10 @@ let ThirdPartyCookies =
         (state &
           Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_BY_PERMISSION) !=
           0 ||
-        (state & Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_FOREIGN) != 0
+        (state & Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_FOREIGN) !=
+          0 ||
+        (state & Ci.nsIWebProgressListener.STATE_COOKIES_PARTITIONED_TRACKER) !=
+          0
       );
     }
 
@@ -767,6 +846,34 @@ let ThirdPartyCookies =
 
     get enabled() {
       return this.prefEnabledValues.includes(this.behaviorPref);
+    }
+
+    _generateSubViewListItems() {
+      let fragment = document.createDocumentFragment();
+      let contentBlockingLog = gBrowser.selectedBrowser.getContentBlockingLog();
+      contentBlockingLog = JSON.parse(contentBlockingLog);
+      let categories = this._processContentBlockingLog(contentBlockingLog);
+
+      let categoryNames = ["trackers"];
+      switch (this.behaviorPref) {
+        case Ci.nsICookieService.BEHAVIOR_REJECT:
+          categoryNames.push("firstParty");
+        // eslint-disable-next-line no-fallthrough
+        case Ci.nsICookieService.BEHAVIOR_REJECT_FOREIGN:
+          categoryNames.push("thirdParty");
+      }
+
+      for (let category of categoryNames) {
+        let itemsToShow = categories[category];
+
+        if (!itemsToShow.length) {
+          continue;
+        }
+        for (let info of itemsToShow) {
+          fragment.appendChild(this._createListItem(info));
+        }
+      }
+      return { items: fragment };
     }
 
     updateSubView() {
@@ -1059,6 +1166,16 @@ let ThirdPartyCookies =
 
 let SocialTracking =
   new (class SocialTrackingProtection extends ProtectionCategory {
+    iconSrc = "chrome://browser/skin/thumb-down.svg";
+    l10nKeys = {
+      content: "social-media-trackers",
+      general: "social-tracking",
+      title: {
+        blocking: "protections-blocking-social-media-trackers",
+        "not-blocking": "protections-not-blocking-social-media-trackers",
+      },
+    };
+
     constructor() {
       super(
         "socialblock",
@@ -1251,7 +1368,7 @@ let cookieBannerHandling = new (class {
     );
   }
 
-  /*
+  /**
    * @returns {string} - Base domain (eTLD + 1) used for clearing site data.
    */
   get #currentBaseDomain() {
@@ -1356,10 +1473,10 @@ let cookieBannerHandling = new (class {
       this._cookieBannerSection.toggleAttribute("hasException");
     if (hasException) {
       await this.#disableCookieBannerHandling();
-      gProtectionsHandler.recordClick("cookieb_toggle_off");
+      Glean.securityUiProtectionspopup.clickCookiebToggleOff.record();
     } else {
       this.#enableCookieBannerHandling();
-      gProtectionsHandler.recordClick("cookieb_toggle_on");
+      Glean.securityUiProtectionspopup.clickCookiebToggleOn.record();
     }
     gProtectionsHandler._hidePopup();
     gBrowser.reloadTab(gBrowser.selectedTab);
@@ -1371,6 +1488,55 @@ let cookieBannerHandling = new (class {
  */
 var gProtectionsHandler = {
   PREF_CB_CATEGORY: "browser.contentblocking.category",
+
+  /**
+   * Contains an array of smartblock compatible sites and information on the corresponding shim
+   * sites is a list of compatible sites
+   * shimId is the id of the shim blocking content from the origin
+   * displayName is the name shown for the toggle used for blocking/unblocking the origin
+   */
+  smartblockEmbedInfo: [
+    {
+      matchPatterns: ["https://itisatracker.org/*"],
+      shimId: "EmbedTestShim",
+      displayName: "Test",
+    },
+    {
+      matchPatterns: [
+        "https://www.instagram.com/*",
+        "https://platform.instagram.com/*",
+      ],
+      shimId: "InstagramEmbed",
+      displayName: "Instagram",
+    },
+    {
+      matchPatterns: ["https://www.tiktok.com/*"],
+      shimId: "TiktokEmbed",
+      displayName: "Tiktok",
+    },
+    {
+      matchPatterns: ["https://platform.twitter.com/*"],
+      shimId: "TwitterEmbed",
+      displayName: "X",
+    },
+    {
+      matchPatterns: ["https://*.disqus.com/*"],
+      shimId: "DisqusEmbed",
+      displayName: "Disqus",
+    },
+  ],
+
+  /**
+   * Keeps track of if a smartblock toggle has been clicked since the panel was opened. Resets
+   * everytime the panel is closed. Used for telemetry purposes.
+   */
+  _hasClickedSmartBlockEmbedToggle: false,
+
+  /**
+   * Keeps track of what was responsible for opening the protections panel popup. Used for
+   * telemetry purposes.
+   */
+  _protectionsPopupOpeningReason: null,
 
   _protectionsPopup: null,
   _initializePopup() {
@@ -1405,11 +1571,6 @@ var gProtectionsHandler = {
       notBlockingWhy.addEventListener("mouseout", closeTooltip);
       notBlockingWhy.addEventListener("blur", closeTooltip);
 
-      document
-        .getElementById("protections-popup-mainView-panel-header")
-        .addEventListener("click", event =>
-          gProtectionsHandler.onHeaderClicked(event)
-        );
       document
         .getElementById(
           "protections-popup-trackers-blocked-counter-description"
@@ -1462,6 +1623,12 @@ var gProtectionsHandler = {
       "protections-popup-tp-switch"
     ));
   },
+  get _protectionsPopupCategoryList() {
+    delete this._protectionsPopupCategoryList;
+    return (this._protectionsPopupCategoryList = document.getElementById(
+      "protections-popup-category-list"
+    ));
+  },
   get _protectionsPopupBlockingHeader() {
     delete this._protectionsPopupBlockingHeader;
     return (this._protectionsPopupBlockingHeader = document.getElementById(
@@ -1479,6 +1646,22 @@ var gProtectionsHandler = {
     return (this._protectionsPopupNotFoundHeader = document.getElementById(
       "protections-popup-not-found-section-header"
     ));
+  },
+  get _protectionsPopupSmartblockContainer() {
+    delete this._protectionsPopupSmartblockContainer;
+    return (this._protectionsPopupSmartblockContainer = document.getElementById(
+      "protections-popup-smartblock-highlight-container"
+    ));
+  },
+  get _protectionsPopupSmartblockDescription() {
+    delete this._protectionsPopupSmartblockDescription;
+    return (this._protectionsPopupSmartblockDescription =
+      document.getElementById("protections-popup-smartblock-description"));
+  },
+  get _protectionsPopupSmartblockToggleContainer() {
+    delete this._protectionsPopupSmartblockToggleContainer;
+    return (this._protectionsPopupSmartblockToggleContainer =
+      document.getElementById("protections-popup-smartblock-toggle-container"));
   },
   get _protectionsPopupSettingsButton() {
     delete this._protectionsPopupSettingsButton;
@@ -1568,16 +1751,16 @@ var gProtectionsHandler = {
   init() {
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
-      "_fontVisibilityTrackingProtection",
-      "layout.css.font-visibility.trackingprotection",
+      "_protectionsPopupToastTimeout",
+      "browser.protections_panel.toast.timeout",
       3000
     );
 
     XPCOMUtils.defineLazyPreferenceGetter(
       this,
-      "_protectionsPopupToastTimeout",
-      "browser.protections_panel.toast.timeout",
-      3000
+      "_protectionsPopupButtonDelay",
+      "security.notification_enable_delay",
+      500
     );
 
     XPCOMUtils.defineLazyPreferenceGetter(
@@ -1621,6 +1804,20 @@ var gProtectionsHandler = {
       false
     );
 
+    XPCOMUtils.defineLazyPreferenceGetter(
+      this,
+      "smartblockEmbedsEnabledPref",
+      "extensions.webcompat.smartblockEmbeds.enabled",
+      false
+    );
+
+    XPCOMUtils.defineLazyPreferenceGetter(
+      this,
+      "trustPanelEnabledPref",
+      "browser.urlbar.trustPanel.featureGate",
+      false
+    );
+
     for (let blocker of Object.values(this.blockers)) {
       if (blocker.init) {
         blocker.init();
@@ -1629,6 +1826,13 @@ var gProtectionsHandler = {
 
     // Add an observer to observe that the history has been cleared.
     Services.obs.addObserver(this, "browser:purge-session-history");
+    // Add an observer to listen to requests to open the protections panel
+    Services.obs.addObserver(this, "smartblock:open-protections-panel");
+
+    // bind the reset toggle sec delay function to this so we can use it
+    // as an event listener without this becoming the event target inside
+    // the function
+    this._resetToggleSecDelay = this._resetToggleSecDelay.bind(this);
   },
 
   uninit() {
@@ -1639,6 +1843,7 @@ var gProtectionsHandler = {
     }
 
     Services.obs.removeObserver(this, "browser:purge-session-history");
+    Services.obs.removeObserver(this, "smartblock:open-protections-panel");
   },
 
   getTrackingProtectionLabel() {
@@ -1718,34 +1923,21 @@ var gProtectionsHandler = {
     );
   },
 
-  recordClick(object, value = null, source = "protectionspopup") {
-    Services.telemetry.recordEvent(
-      `security.ui.${source}`,
-      "click",
-      object,
-      value
-    );
-  },
-
   shieldHistogramAdd(value) {
     if (PrivateBrowsingUtils.isWindowPrivate(window)) {
       return;
     }
-    Services.telemetry
-      .getHistogramById("TRACKING_PROTECTION_SHIELD")
-      .add(value);
+    Glean.contentblocking.trackingProtectionShield.accumulateSingleSample(
+      value
+    );
   },
 
   cryptominersHistogramAdd(value) {
-    Services.telemetry
-      .getHistogramById("CRYPTOMINERS_BLOCKED_COUNT")
-      .add(value);
+    Glean.contentblocking.cryptominersBlockedCount[value].add(1);
   },
 
   fingerprintersHistogramAdd(value) {
-    Services.telemetry
-      .getHistogramById("FINGERPRINTERS_BLOCKED_COUNT")
-      .add(value);
+    Glean.contentblocking.fingerprintersBlockedCount[value].add(1);
   },
 
   handleProtectionsButtonEvent(event) {
@@ -1759,7 +1951,7 @@ var gProtectionsHandler = {
       return; // Left click, space or enter only
     }
 
-    this.showProtectionsPopup({ event });
+    this.showProtectionsPopup({ event, openingReason: "shieldButtonClicked" });
   },
 
   onPopupShown(event) {
@@ -1773,12 +1965,29 @@ var gProtectionsHandler = {
       // remain collapsed.
       this._insertProtectionsPanelInfoMessage(event);
 
+      // Record telemetry for open, don't record if the panel open is only a toast
       if (!event.target.hasAttribute("toast")) {
-        Services.telemetry.recordEvent(
-          "security.ui.protectionspopup",
-          "open",
-          "protections_popup"
-        );
+        Glean.securityUiProtectionspopup.openProtectionsPopup.record({
+          openingReason: this._protectionsPopupOpeningReason,
+          smartblockEmbedTogglesShown:
+            !this._protectionsPopupSmartblockContainer.hidden,
+        });
+      }
+
+      // Add the "open" attribute to the tracking protection icon container
+      // for styling.
+      // Only set the attribute once the panel is opened to avoid icon being
+      // incorrectly highlighted if opening is cancelled. See Bug 1926460.
+      this._trackingProtectionIconContainer.setAttribute("open", "true");
+
+      // Disable the toggles for a short time after opening via SmartBlock placeholder button
+      // to prevent clickjacking.
+      if (this._protectionsPopupOpeningReason == "embedPlaceholderButton") {
+        this._disablePopupToggles();
+        this._protectionsPopupToggleDelayTimer = setTimeout(() => {
+          this._enablePopupToggles();
+          delete this._protectionsPopupToggleDelayTimer;
+        }, this._protectionsPopupButtonDelay);
       }
 
       ReportBrokenSite.updateParentMenu(event);
@@ -1789,17 +1998,23 @@ var gProtectionsHandler = {
     if (event.target == this._protectionsPopup) {
       window.removeEventListener("focus", this, true);
       this._protectionsPopupTPSwitch.removeEventListener("toggle", this);
-    }
-  },
 
-  onHeaderClicked(event) {
-    // Display the whole protections panel if the toast has been clicked.
-    if (this._protectionsPopup.hasAttribute("toast")) {
-      // Hide the toast first.
-      PanelMultiView.hidePopup(this._protectionsPopup);
+      // Record close telemetry, don't record for toasts
+      if (!event.target.hasAttribute("toast")) {
+        Glean.securityUiProtectionspopup.closeProtectionsPopup.record({
+          openingReason: this._protectionsPopupOpeningReason,
+          smartblockToggleClicked: this._hasClickedSmartBlockEmbedToggle,
+        });
+      }
 
-      // Open the full protections panel.
-      this.showProtectionsPopup({ event });
+      if (this._protectionsPopupToggleDelayTimer) {
+        clearTimeout(this._protectionsPopupToggleDelayTimer);
+        this._enablePopupToggles();
+        delete this._protectionsPopupToggleDelayTimer;
+      }
+
+      this._hasClickedSmartBlockEmbedToggle = false;
+      this._protectionsPopupOpeningReason = null;
     }
   },
 
@@ -2064,55 +2279,65 @@ var gProtectionsHandler = {
     switch (event.target.id) {
       case "protections-popup-category-trackers":
         gProtectionsHandler.showTrackersSubview(event);
-        gProtectionsHandler.recordClick("trackers");
+        Glean.securityUiProtectionspopup.clickTrackers.record();
         break;
       case "protections-popup-category-socialblock":
         gProtectionsHandler.showSocialblockerSubview(event);
-        gProtectionsHandler.recordClick("social");
+        Glean.securityUiProtectionspopup.clickSocial.record();
         break;
       case "protections-popup-category-cookies":
         gProtectionsHandler.showCookiesSubview(event);
-        gProtectionsHandler.recordClick("cookies");
+        Glean.securityUiProtectionspopup.clickCookies.record();
         break;
       case "protections-popup-category-cryptominers":
         gProtectionsHandler.showCryptominersSubview(event);
-        gProtectionsHandler.recordClick("cryptominers");
+        Glean.securityUiProtectionspopup.clickCryptominers.record();
         return;
       case "protections-popup-category-fingerprinters":
         gProtectionsHandler.showFingerprintersSubview(event);
-        gProtectionsHandler.recordClick("fingerprinters");
+        Glean.securityUiProtectionspopup.clickFingerprinters.record();
         break;
       case "protections-popup-settings-button":
         gProtectionsHandler.openPreferences();
-        gProtectionsHandler.recordClick("settings");
+        Glean.securityUiProtectionspopup.clickSettings.record();
         break;
       case "protections-popup-show-report-button":
         gProtectionsHandler.openProtections(true);
-        gProtectionsHandler.recordClick("full_report");
+        Glean.securityUiProtectionspopup.clickFullReport.record();
         break;
       case "protections-popup-milestones-content":
         gProtectionsHandler.openProtections(true);
-        gProtectionsHandler.recordClick("milestone_message");
+        Glean.securityUiProtectionspopup.clickMilestoneMessage.record();
         break;
       case "protections-popup-trackersView-settings-button":
         gProtectionsHandler.openPreferences();
-        gProtectionsHandler.recordClick("subview_settings", "trackers");
+        Glean.securityUiProtectionspopup.clickSubviewSettings.record({
+          value: "trackers",
+        });
         break;
       case "protections-popup-socialblockView-settings-button":
         gProtectionsHandler.openPreferences();
-        gProtectionsHandler.recordClick("subview_settings", "social");
+        Glean.securityUiProtectionspopup.clickSubviewSettings.record({
+          value: "social",
+        });
         break;
       case "protections-popup-cookiesView-settings-button":
         gProtectionsHandler.openPreferences();
-        gProtectionsHandler.recordClick("subview_settings", "cookies");
+        Glean.securityUiProtectionspopup.clickSubviewSettings.record({
+          value: "cookies",
+        });
         break;
       case "protections-popup-fingerprintersView-settings-button":
         gProtectionsHandler.openPreferences();
-        gProtectionsHandler.recordClick("subview_settings", "fingerprinters");
+        Glean.securityUiProtectionspopup.clickSubviewSettings.record({
+          value: "fingerprinters",
+        });
         break;
       case "protections-popup-cryptominersView-settings-button":
         gProtectionsHandler.openPreferences();
-        gProtectionsHandler.recordClick("subview_settings", "cryptominers");
+        Glean.securityUiProtectionspopup.clickSubviewSettings.record({
+          value: "cryptominers",
+        });
         break;
       case "protections-popup-cookieBannerView-cancel":
         gProtectionsHandler._protectionsPopupMultiView.goBack();
@@ -2120,6 +2345,17 @@ var gProtectionsHandler = {
       case "protections-popup-cookieBannerView-enable-button":
       case "protections-popup-cookieBannerView-disable-button":
         gProtectionsHandler.onCookieBannerToggleCommand();
+        break;
+      case "protections-popup-toast-panel-tp-on-desc":
+      case "protections-popup-toast-panel-tp-off-desc":
+        // Hide the toast first.
+        PanelMultiView.hidePopup(this._protectionsPopup);
+
+        // Open the full protections panel.
+        this.showProtectionsPopup({
+          event,
+          openingReason: "toastButtonClicked",
+        });
         break;
     }
   },
@@ -2169,6 +2405,23 @@ var gProtectionsHandler = {
         // cleared.
         this._earliestRecordedDate = 0;
         this.maybeUpdateEarliestRecordedDateTooltip();
+        break;
+      case "smartblock:open-protections-panel":
+        if (!this.smartblockEmbedsEnabledPref) {
+          // don't react if smartblock disabled by pref
+          break;
+        }
+
+        if (gBrowser.selectedBrowser.browserId !== subject.browserId) {
+          break;
+        }
+
+        // Ensure panel is fully hidden before trying to open
+        this._hidePopup();
+
+        this.showProtectionsPopup({
+          openingReason: "embedPlaceholderButton",
+        });
         break;
     }
   },
@@ -2252,6 +2505,7 @@ var gProtectionsHandler = {
     this._protectionsPopupBlockingHeader.hidden = true;
     this._protectionsPopupNotBlockingHeader.hidden = true;
     this._protectionsPopupNotFoundHeader.hidden = true;
+    this._protectionsPopupSmartblockContainer.hidden = true;
 
     for (let { categoryItem } of Object.values(this.blockers)) {
       if (
@@ -2260,7 +2514,7 @@ var gProtectionsHandler = {
       ) {
         // Add the item to the bottom of the list. This will be under
         // the "None Detected" section.
-        categoryItem.parentNode.insertAdjacentElement(
+        this._protectionsPopupCategoryList.insertAdjacentElement(
           "beforeend",
           categoryItem
         );
@@ -2275,11 +2529,11 @@ var gProtectionsHandler = {
       categoryItem.removeAttribute("disabled");
 
       if (categoryItem.classList.contains("blocked") && !this.hasException) {
-        // Add the item just above the "Allowed" section - this will be the
+        // Add the item just above the Smartblock embeds section - this will be the
         // bottom of the "Blocked" section.
         categoryItem.parentNode.insertBefore(
           categoryItem,
-          this._protectionsPopupNotBlockingHeader
+          this._protectionsPopupSmartblockContainer
         );
         // We have a blocking category, show the header.
         this._protectionsPopupBlockingHeader.hidden = false;
@@ -2295,6 +2549,139 @@ var gProtectionsHandler = {
       // We have an allowing category, show the header.
       this._protectionsPopupNotBlockingHeader.hidden = false;
     }
+
+    // add toggles if required to the Smartblock embed section
+    let smartblockEmbedDetected = this._addSmartblockEmbedToggles();
+
+    if (smartblockEmbedDetected) {
+      // We have a compatible smartblock toggle, show the smartblock
+      // embed section
+      this._protectionsPopupSmartblockContainer.hidden = false;
+    }
+  },
+
+  /**
+   * Adds the toggles into the smartblock toggle container. Clears existing toggles first, then
+   * searches through the contentBlockingLog for smartblock-compatible content.
+   *
+   * @returns {boolean} true if a smartblock compatible resource is blocked or shimmed, false otherwise
+   */
+  _addSmartblockEmbedToggles() {
+    if (!this.smartblockEmbedsEnabledPref) {
+      // Do not insert toggles if feature is disabled.
+      return false;
+    }
+
+    let contentBlockingLog = gBrowser.selectedBrowser.getContentBlockingLog();
+    contentBlockingLog = JSON.parse(contentBlockingLog);
+    let smartBlockEmbedToggleAdded = false;
+
+    // remove all old toggles
+    while (this._protectionsPopupSmartblockToggleContainer.lastChild) {
+      this._protectionsPopupSmartblockToggleContainer.lastChild.remove();
+    }
+
+    // check that there is an allowed or replaced flag present
+    let contentBlockingEvents =
+      gBrowser.selectedBrowser.getContentBlockingEvents();
+
+    // In the future, we should add a flag specifically for smartblock embeds so that
+    // these checks do not trigger when a non-embed-related shim is shimming
+    // a smartblock compatible site, see Bug 1926461
+    let somethingAllowedOrReplaced =
+      contentBlockingEvents &
+        Ci.nsIWebProgressListener.STATE_ALLOWED_TRACKING_CONTENT ||
+      contentBlockingEvents &
+        Ci.nsIWebProgressListener.STATE_REPLACED_TRACKING_CONTENT;
+
+    if (!somethingAllowedOrReplaced) {
+      // return early if there is no content that is allowed or replaced
+      return smartBlockEmbedToggleAdded;
+    }
+
+    // search through content log for compatible blocked origins
+    for (let [origin, actions] of Object.entries(contentBlockingLog)) {
+      let shimAllowed = actions.some(
+        ([flag]) =>
+          (flag & Ci.nsIWebProgressListener.STATE_ALLOWED_TRACKING_CONTENT) != 0
+      );
+
+      let shimDetected = actions.some(
+        ([flag]) =>
+          (flag & Ci.nsIWebProgressListener.STATE_REPLACED_TRACKING_CONTENT) !=
+          0
+      );
+
+      if (!shimAllowed && !shimDetected) {
+        // origin is not being shimmed or allowed
+        continue;
+      }
+
+      let shimInfo = this.smartblockEmbedInfo.find(element => {
+        let matchPatternSet = new MatchPatternSet(element.matchPatterns);
+        return matchPatternSet.matches(origin);
+      });
+      if (!shimInfo) {
+        // origin not relevant to smartblock
+        continue;
+      }
+
+      const { shimId, displayName } = shimInfo;
+      smartBlockEmbedToggleAdded = true;
+
+      // check that a toggle doesn't already exist
+      let existingToggle = document.getElementById(
+        `smartblock-${shimId.toLowerCase()}-toggle`
+      );
+      if (existingToggle) {
+        // make sure toggle state is allowed if ANY of the sites are allowed
+        if (shimAllowed) {
+          existingToggle.setAttribute("pressed", true);
+        }
+        // skip adding a new toggle
+        continue;
+      }
+
+      // create the toggle element
+      let toggle = document.createElement("moz-toggle");
+      toggle.setAttribute("id", `smartblock-${shimId.toLowerCase()}-toggle`);
+      toggle.setAttribute("data-l10n-attrs", "label");
+      document.l10n.setAttributes(
+        toggle,
+        "protections-panel-smartblock-blocking-toggle",
+        {
+          trackername: displayName,
+        }
+      );
+
+      // set toggle to correct position
+      toggle.toggleAttribute("pressed", !!shimAllowed);
+
+      // add functionality to toggle
+      toggle.addEventListener("toggle", event => {
+        let newToggleState = event.target.pressed;
+
+        if (newToggleState) {
+          this._sendUnblockMessageToSmartblock(shimId);
+        } else {
+          this._sendReblockMessageToSmartblock(shimId);
+        }
+
+        Glean.securityUiProtectionspopup.clickSmartblockembedsToggle.record({
+          isBlock: !newToggleState,
+          openingReason: this._protectionsPopupOpeningReason,
+        });
+
+        this._hasClickedSmartBlockEmbedToggle = true;
+      });
+
+      this._protectionsPopupSmartblockToggleContainer.insertAdjacentElement(
+        "beforeend",
+        toggle
+      );
+    }
+
+    return smartBlockEmbedToggleAdded;
   },
 
   disableForCurrentPage(shouldReload = true) {
@@ -2350,10 +2737,10 @@ var gProtectionsHandler = {
 
     if (newExceptionState) {
       this.disableForCurrentPage(false);
-      this.recordClick("etp_toggle_off");
+      Glean.securityUiProtectionspopup.clickEtpToggleOff.record();
     } else {
       this.enableForCurrentPage(false);
-      this.recordClick("etp_toggle_on");
+      Glean.securityUiProtectionspopup.clickEtpToggleOn.record();
     }
 
     // We need to flush the TP state change immediately without waiting the
@@ -2469,7 +2856,7 @@ var gProtectionsHandler = {
   /**
    * Showing the protections popup.
    *
-   * @param {Object} options
+   * @param {object} options
    *                 The object could have two properties.
    *                 event:
    *                   The event triggers the protections popup to be opened.
@@ -2477,11 +2864,20 @@ var gProtectionsHandler = {
    *                   A boolean to indicate if we need to open the protections
    *                   popup as a toast. A toast only has a header section and
    *                   will be hidden after a certain amount of time.
+   *                 openingReason:
+   *                   A string indicating why the panel was opened. Used for
+   *                   telemetry purposes.
    */
   showProtectionsPopup(options = {}) {
-    const { event, toast } = options;
+    if (this.trustPanelEnabledPref) {
+      return;
+    }
+    const { event, toast, openingReason } = options;
 
     this._initializePopup();
+
+    // Set opening reason variable for telemetry
+    this._protectionsPopupOpeningReason = openingReason;
 
     // Ensure we've updated category state based on the last blocking event:
     if (this.hasOwnProperty("_lastEvent")) {
@@ -2514,10 +2910,6 @@ var gProtectionsHandler = {
         { once: true }
       );
     }
-
-    // Add the "open" attribute to the tracking protection icon container
-    // for styling.
-    this._trackingProtectionIconContainer.setAttribute("open", "true");
 
     // Check the panel state of other panels. Hide them if needed.
     let openPanels = Array.from(document.querySelectorAll("panel[openpanel]"));
@@ -2560,17 +2952,30 @@ var gProtectionsHandler = {
     }
   },
 
-  _sendUserEventTelemetry(event, value = null, options = {}) {
-    // Only send telemetry for non private browsing windows
-    if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
-      Services.telemetry.recordEvent(
-        "security.ui.protectionspopup",
-        event,
-        "protectionspopup_cfr",
-        value,
-        options
-      );
-    }
+  /**
+   * Sends a message to webcompat extension to unblock content and remove placeholders
+   *
+   * @param {string} shimId - the id of the shim blocking the content
+   */
+  _sendUnblockMessageToSmartblock(shimId) {
+    Services.obs.notifyObservers(
+      gBrowser.selectedTab,
+      "smartblock:unblock-embed",
+      shimId
+    );
+  },
+
+  /**
+   * Sends a message to webcompat extension to reblock content
+   *
+   * @param {string} shimId - the id of the shim blocking the content
+   */
+  _sendReblockMessageToSmartblock(shimId) {
+    Services.obs.notifyObservers(
+      gBrowser.selectedTab,
+      "smartblock:reblock-embed",
+      shimId
+    );
   },
 
   /**
@@ -2596,9 +3001,13 @@ var gProtectionsHandler = {
       window.browser
     );
 
-    this._sendUserEventTelemetry("click", "learn_more_link", {
-      message: message.id,
-    });
+    // Only send telemetry for non private browsing windows
+    if (!PrivateBrowsingUtils.isWindowPrivate(window)) {
+      Glean.securityUiProtectionspopup.clickProtectionspopupCfr.record({
+        value: "learn_more_link",
+        message: message.id,
+      });
+    }
   },
 
   /**
@@ -2654,8 +3063,13 @@ var gProtectionsHandler = {
         learnMoreLink.disabled = !learnMoreLink.disabled;
       }
       // If the message panel is opened, send impression telemetry
-      if (panelContainer.hasAttribute("infoMessageShowing")) {
-        this._sendUserEventTelemetry("open", "impression", {
+      // if we are in a non private browsing window.
+      if (
+        panelContainer.hasAttribute("infoMessageShowing") &&
+        !PrivateBrowsingUtils.isWindowPrivate(window)
+      ) {
+        Glean.securityUiProtectionspopup.openProtectionspopupCfr.record({
+          value: "impression",
           message: message.id,
         });
       }
@@ -2742,5 +3156,30 @@ var gProtectionsHandler = {
     }
 
     return messageEl;
+  },
+
+  _resetToggleSecDelay() {
+    // Note: `this` is bound to gProtectionsHandler in init.
+    clearTimeout(this._protectionsPopupToggleDelayTimer);
+    this._protectionsPopupToggleDelayTimer = setTimeout(() => {
+      this._enablePopupToggles();
+      delete this._protectionsPopupToggleDelayTimer;
+    }, this._protectionsPopupButtonDelay);
+  },
+
+  _disablePopupToggles() {
+    // Disables all toggles in the protections panel
+    this._protectionsPopup.querySelectorAll("moz-toggle").forEach(toggle => {
+      toggle.setAttribute("disabled", true);
+      toggle.addEventListener("pointerdown", this._resetToggleSecDelay);
+    });
+  },
+
+  _enablePopupToggles() {
+    // Enables all toggles in the protections panel
+    this._protectionsPopup.querySelectorAll("moz-toggle").forEach(toggle => {
+      toggle.removeAttribute("disabled");
+      toggle.removeEventListener("pointerdown", this._resetToggleSecDelay);
+    });
   },
 };

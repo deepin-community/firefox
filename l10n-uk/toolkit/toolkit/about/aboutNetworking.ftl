@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS пошук
 about-networking-dns-lookup-button = Вирішити
 about-networking-dns-domain = Домен:
 about-networking-dns-lookup-table-column = IPs
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = RCWN статистика
 about-networking-rcwn-status = RCWN стан
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Цю сторінку було перем
 
 about-networking-networkid-is-up = Посилання працює
 about-networking-networkid-status-known = Стан посилання відомий
-
-##
-

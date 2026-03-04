@@ -53,7 +53,6 @@ mr1-onboarding-import-primary-button-label-attribution = Ion-phortaich o { $prev
 mr1-onboarding-theme-header = Gnàthaich dhut-sa e
 mr1-onboarding-theme-subtitle = Cuir dreach pearsanta air { -brand-short-name } le ùrlar.
 mr1-onboarding-theme-secondary-button-label = Chan ann an-dràsta
-newtab-wallpaper-onboarding-primary-button-label = Suidhich pàipear-balla
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Ùrlar an t-siostaim
 mr1-onboarding-theme-label-light = Soilleir
@@ -219,7 +218,9 @@ mr2022-onboarding-set-default-subtitle = Cleachd brabhsair aig a bheil cùl-taic
 mr2022-onboarding-get-started-primary-subtitle = Chaidh an tionndadh as ùire againn a dhealbhadh is tusa aig a theis-meadhan is nì seo nas fhasa dhut e ceithir-thimcheall an lìn a shiubhal na a-riamh roimhe. Tha e loma-làn de rudan a chòrdas riut fìor-mhath nar beachd-ne.
 mr2022-onboarding-get-started-primary-button-label = Suidhich e ann am priobadh na sùla
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Suidheachadh cho luatha ri seabhag
 mr2022-onboarding-import-subtitle = Suidhiche { -brand-short-name } mar a lùigeas tu fhèin e. Cuir ris na comharran-lìn, faclan-faire ’s mòran a bharrachd on t-seann-bhrabhsair agad.
@@ -339,6 +340,3 @@ onboarding-easy-setup-security-and-privacy-subtitle = Cuiridh am brabhsair again
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Cùm rudan crioptaichte is tu a’ gluasad o uidheam gu uidheam
 onboarding-mobile-download-security-and-privacy-subtitle = Nuair a bhios an sioncronachadh deiseil, crioptaichidh { -brand-short-name } na faclan-faire, comharran-lìn is mòran a bharrachd dhut. Agus gheibh thu cothrom orra o na h-uidheaman eile agad.
-
-## New user time and familiarity survey strings
-

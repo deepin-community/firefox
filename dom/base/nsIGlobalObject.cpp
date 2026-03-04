@@ -5,11 +5,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsIGlobalObject.h"
+
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/GlobalFreezeObserver.h"
 #include "mozilla/GlobalTeardownObserver.h"
 #include "mozilla/Result.h"
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/StorageAccess.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
@@ -17,14 +19,12 @@
 #include "mozilla/dom/Report.h"
 #include "mozilla/dom/ReportingObserver.h"
 #include "mozilla/dom/ServiceWorker.h"
+#include "mozilla/dom/ServiceWorkerContainer.h"
 #include "mozilla/dom/ServiceWorkerRegistration.h"
 #include "mozilla/ipc/PBackgroundSharedTypes.h"
 #include "nsContentUtils.h"
-#include "nsThreadUtils.h"
 #include "nsGlobalWindowInner.h"
-
-// Max number of Report objects
-constexpr auto MAX_REPORT_RECORDS = 100;
+#include "nsThreadUtils.h"
 
 using mozilla::AutoSlowOperation;
 using mozilla::CycleCollectedJSContext;
@@ -39,20 +39,21 @@ using mozilla::MicroTaskRunnable;
 using mozilla::dom::BlobURLProtocolHandler;
 using mozilla::dom::CallerType;
 using mozilla::dom::ClientInfo;
+using mozilla::dom::ClientState;
 using mozilla::dom::Report;
 using mozilla::dom::ReportingObserver;
 using mozilla::dom::ServiceWorker;
+using mozilla::dom::ServiceWorkerContainer;
 using mozilla::dom::ServiceWorkerDescriptor;
 using mozilla::dom::ServiceWorkerRegistration;
 using mozilla::dom::ServiceWorkerRegistrationDescriptor;
 using mozilla::dom::VoidFunction;
 
-nsIGlobalObject::nsIGlobalObject()
-    : mIsDying(false), mIsScriptForbidden(false), mIsInnerWindow(false) {}
+nsIGlobalObject::nsIGlobalObject() : mIsDying(false), mIsInnerWindow(false) {}
 
 bool nsIGlobalObject::IsScriptForbidden(JSObject* aCallback,
                                         bool aIsJSImplementedWebIDL) const {
-  if (mIsScriptForbidden || mIsDying) {
+  if (mIsDying) {
     return true;
   }
 
@@ -103,11 +104,7 @@ class UnlinkHostObjectURIsRunnable final : public mozilla::Runnable {
 
   NS_IMETHOD Run() override {
     MOZ_ASSERT(NS_IsMainThread());
-
-    for (uint32_t index = 0; index < mURIs.Length(); ++index) {
-      BlobURLProtocolHandler::RemoveDataEntry(mURIs[index]);
-    }
-
+    BlobURLProtocolHandler::RemoveDataEntries(mURIs);
     return NS_OK;
   }
 
@@ -123,10 +120,7 @@ void nsIGlobalObject::UnlinkObjectsInGlobal() {
   if (!mHostObjectURIs.IsEmpty()) {
     // BlobURLProtocolHandler is main-thread only.
     if (NS_IsMainThread()) {
-      for (uint32_t index = 0; index < mHostObjectURIs.Length(); ++index) {
-        BlobURLProtocolHandler::RemoveDataEntry(mHostObjectURIs[index]);
-      }
-
+      BlobURLProtocolHandler::RemoveDataEntries(mHostObjectURIs);
       mHostObjectURIs.Clear();
     } else {
       RefPtr<UnlinkHostObjectURIsRunnable> runnable =
@@ -140,7 +134,7 @@ void nsIGlobalObject::UnlinkObjectsInGlobal() {
     }
   }
 
-  mReportRecords.Clear();
+  ClearReports();
   mReportingObservers.Clear();
   mCountQueuingStrategySizeFunction = nullptr;
   mByteLengthQueuingStrategySizeFunction = nullptr;
@@ -157,7 +151,7 @@ void nsIGlobalObject::TraverseObjectsInGlobal(
   }
 
   nsIGlobalObject* tmp = this;
-  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mReportRecords)
+  NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mReportBuffer)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mReportingObservers)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mCountQueuingStrategySizeFunction)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mByteLengthQueuingStrategySizeFunction)
@@ -275,10 +269,18 @@ void nsIGlobalObject::NotifyGlobalThawed() {
       });
 }
 
+nsIURI* nsIGlobalObject::GetBaseURI() const { return nullptr; }
+
 Maybe<ClientInfo> nsIGlobalObject::GetClientInfo() const {
   // By default globals do not expose themselves as a client.  Only real
   // window and worker globals are currently considered clients.
   return Maybe<ClientInfo>();
+}
+
+Maybe<ClientState> nsIGlobalObject::GetClientState() const {
+  // By default globals do not expose themselves as a client.  Only real
+  // window and worker globals are currently considered clients.
+  return Maybe<ClientState>();
 }
 
 Maybe<nsID> nsIGlobalObject::GetAgentClusterId() const {
@@ -295,18 +297,21 @@ Maybe<ServiceWorkerDescriptor> nsIGlobalObject::GetController() const {
   return Maybe<ServiceWorkerDescriptor>();
 }
 
+already_AddRefed<ServiceWorkerContainer>
+nsIGlobalObject::GetServiceWorkerContainer() {
+  return nullptr;
+}
+
 RefPtr<ServiceWorker> nsIGlobalObject::GetOrCreateServiceWorker(
     const ServiceWorkerDescriptor& aDescriptor) {
-  MOZ_DIAGNOSTIC_ASSERT(false,
-                        "this global should not have any service workers");
+  MOZ_DIAGNOSTIC_CRASH("this global should not have any service workers");
   return nullptr;
 }
 
 RefPtr<ServiceWorkerRegistration> nsIGlobalObject::GetServiceWorkerRegistration(
     const mozilla::dom::ServiceWorkerRegistrationDescriptor& aDescriptor)
     const {
-  MOZ_DIAGNOSTIC_ASSERT(false,
-                        "this global should not have any service workers");
+  MOZ_DIAGNOSTIC_CRASH("this global should not have any service workers");
   return nullptr;
 }
 
@@ -320,6 +325,10 @@ nsIGlobalObject::GetOrCreateServiceWorkerRegistration(
 
 mozilla::StorageAccess nsIGlobalObject::GetStorageAccess() {
   return mozilla::StorageAccess::eDeny;
+}
+
+nsICookieJarSettings* nsIGlobalObject::GetCookieJarSettings() {
+  return nullptr;
 }
 
 nsPIDOMWindowInner* nsIGlobalObject::GetAsInnerWindow() {
@@ -377,7 +386,7 @@ void nsIGlobalObject::RegisterReportingObserver(ReportingObserver* aObserver,
     return;
   }
 
-  for (Report* report : mReportRecords) {
+  for (const auto& report : mReportBuffer) {
     aObserver->MaybeReport(report);
   }
 }
@@ -395,12 +404,24 @@ void nsIGlobalObject::BroadcastReport(Report* aReport) {
     observer->MaybeReport(aReport);
   }
 
-  if (NS_WARN_IF(!mReportRecords.AppendElement(aReport, mozilla::fallible))) {
+  if (NS_WARN_IF(!mReportBuffer.AppendElement(aReport, mozilla::fallible))) {
     return;
   }
 
-  while (mReportRecords.Length() > MAX_REPORT_RECORDS) {
-    mReportRecords.RemoveElementAt(0);
+  uint32_t& count = mReportPerTypeCount.LookupOrInsert(aReport->Type());
+  ++count;
+
+  const uint32_t maxReportCount =
+      mozilla::StaticPrefs::dom_reporting_delivering_maxReports();
+  const nsString& reportType = aReport->Type();
+
+  for (size_t i = 0u; count > maxReportCount && i < mReportBuffer.Length();) {
+    if (mReportBuffer[i]->Type() == reportType) {
+      mReportBuffer.RemoveElementAt(i);
+      --count;
+    } else {
+      ++i;
+    }
   }
 }
 
@@ -416,7 +437,7 @@ void nsIGlobalObject::NotifyReportingObservers() {
 }
 
 void nsIGlobalObject::RemoveReportRecords() {
-  mReportRecords.Clear();
+  ClearReports();
 
   for (auto& observer : mReportingObservers) {
     observer->ForgetReports();
@@ -480,4 +501,34 @@ bool nsIGlobalObject::ShouldResistFingerprinting(CallerType aCallerType,
                                                  RFPTarget aTarget) const {
   return aCallerType != CallerType::System &&
          ShouldResistFingerprinting(aTarget);
+}
+
+bool nsIGlobalObject::IsRFPTargetActive(const nsAString& aTargetName,
+                                        mozilla::ErrorResult& aRv) {
+  MOZ_ASSERT(mozilla::StaticPrefs::privacy_fingerprintingProtection_testing());
+
+  Maybe<RFPTarget> target = mozilla::nsRFPService::TextToRFPTarget(aTargetName);
+  if (NS_WARN_IF(!target)) {
+    aRv.Throw(NS_ERROR_INVALID_ARG);
+    return false;
+  }
+
+  return ShouldResistFingerprinting(*target);
+}
+
+void nsIGlobalObject::ReportToConsole(
+    uint32_t aErrorFlags, const nsCString& aCategory,
+    nsContentUtils::PropertiesFile aFile, const nsCString& aMessageName,
+    const nsTArray<nsString>& aParams,
+    const mozilla::SourceLocation& aLocation) {
+  // We pass nullptr for the document because nsGlobalWindowInner handles the
+  // case where it should be non-null.  We also expect the worker impl to
+  // override.
+  nsContentUtils::ReportToConsole(aErrorFlags, aCategory, nullptr, aFile,
+                                  aMessageName.get(), aParams, aLocation);
+}
+
+void nsIGlobalObject::ClearReports() {
+  mReportBuffer.Clear();
+  mReportPerTypeCount.Clear();
 }

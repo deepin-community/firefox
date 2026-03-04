@@ -19,6 +19,7 @@ namespace mozilla::dom {
 
 class RemoteWorkerController;
 class RemoteWorkerServiceParent;
+class RemoteWorkerNonLifeCycleOpControllerParent;
 
 /**
  * PBackground instance that keeps tracks of RemoteWorkerServiceParent actors
@@ -49,12 +50,6 @@ class RemoteWorkerManager final {
   static Result<nsCString, nsresult> GetRemoteType(
       const nsCOMPtr<nsIPrincipal>& aPrincipal, WorkerKind aWorkerKind);
 
-  /**
-   * Verify if a remote worker should be allowed to run in the current
-   * child process remoteType.
-   */
-  static bool IsRemoteTypeAllowed(const RemoteWorkerData& aData);
-
   static bool HasExtensionPrincipal(const RemoteWorkerData& aData);
 
  private:
@@ -74,7 +69,7 @@ class RemoteWorkerManager final {
 
   void LaunchInternal(RemoteWorkerController* aController,
                       RemoteWorkerServiceParent* aTargetActor,
-                      UniqueThreadsafeContentParentKeepAlive aKeepAlive,
+                      UniqueThreadsafeContentParentKeepAlive&& aKeepAlive,
                       const RemoteWorkerData& aData);
 
   using LaunchProcessPromise =

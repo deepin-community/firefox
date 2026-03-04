@@ -7,20 +7,25 @@ ChromeUtils.defineESModuleGetters(this, {
   AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
   BrowsetUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
   ExperimentAPI: "resource://nimbus/ExperimentAPI.sys.mjs",
-  ExperimentFakes: "resource://testing-common/NimbusTestUtils.sys.mjs",
+  NimbusTestUtils: "resource://testing-common/NimbusTestUtils.sys.mjs",
   ObjectUtils: "resource://gre/modules/ObjectUtils.sys.mjs",
   PromptTestUtils: "resource://testing-common/PromptTestUtils.sys.mjs",
   ResetProfile: "resource://gre/modules/ResetProfile.sys.mjs",
-  SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
+  SearchUITestUtils: "resource://testing-common/SearchUITestUtils.sys.mjs",
+  SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
   TelemetryTestUtils: "resource://testing-common/TelemetryTestUtils.sys.mjs",
-  UrlbarController: "resource:///modules/UrlbarController.sys.mjs",
-  UrlbarEventBufferer: "resource:///modules/UrlbarEventBufferer.sys.mjs",
-  UrlbarQueryContext: "resource:///modules/UrlbarUtils.sys.mjs",
-  UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
-  UrlbarResult: "resource:///modules/UrlbarResult.sys.mjs",
-  UrlbarSearchUtils: "resource:///modules/UrlbarSearchUtils.sys.mjs",
-  UrlbarUtils: "resource:///modules/UrlbarUtils.sys.mjs",
-  UrlbarView: "resource:///modules/UrlbarView.sys.mjs",
+  UrlbarController:
+    "moz-src:///browser/components/urlbar/UrlbarController.sys.mjs",
+  UrlbarEventBufferer:
+    "moz-src:///browser/components/urlbar/UrlbarEventBufferer.sys.mjs",
+  UrlbarQueryContext:
+    "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
+  UrlbarPrefs: "moz-src:///browser/components/urlbar/UrlbarPrefs.sys.mjs",
+  UrlbarResult: "moz-src:///browser/components/urlbar/UrlbarResult.sys.mjs",
+  UrlbarSearchUtils:
+    "moz-src:///browser/components/urlbar/UrlbarSearchUtils.sys.mjs",
+  UrlbarUtils: "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs",
+  UrlbarView: "moz-src:///browser/components/urlbar/UrlbarView.sys.mjs",
   sinon: "resource://testing-common/Sinon.sys.mjs",
 });
 
@@ -29,6 +34,8 @@ ChromeUtils.defineLazyGetter(this, "PlacesFrecencyRecalculator", () => {
     Ci.nsIObserver
   ).wrappedJSObject;
 });
+
+SearchUITestUtils.init(this);
 
 let sandbox;
 
@@ -311,8 +318,8 @@ function assertSearchStringIsInUrlbar(
   searchString,
   {
     win = window,
-    pageProxyState = "valid",
-    userTypedValue = null,
+    pageProxyState = "invalid",
+    userTypedValue = searchString,
     persistSearchTerms = true,
   } = {}
 ) {
@@ -321,8 +328,9 @@ function assertSearchStringIsInUrlbar(
     searchString,
     `Search string should be the urlbar value.`
   );
+  let state = win.gURLBar.getBrowserState(win.gBrowser.selectedBrowser);
   Assert.equal(
-    win.gBrowser.selectedBrowser.searchTerms,
+    state.persist?.searchTerms,
     searchString,
     `Search terms should match.`
   );
@@ -372,6 +380,8 @@ async function searchWithTab(
     waitForFocus,
     value: searchString,
     fireInputEvent: true,
+    selectionStart: 0,
+    selectionEnd: searchString.length - 1,
   });
   EventUtils.synthesizeKey("KEY_Enter");
   await browserLoadedPromise;
@@ -382,4 +392,35 @@ async function searchWithTab(
   }
 
   return { tab, expectedSearchUrl };
+}
+
+async function focusSwitcher(win = window) {
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window: win,
+    waitForFocus: true,
+    value: "",
+    fireInputEvent: true,
+  });
+  Assert.ok(win.gURLBar.hasAttribute("focused"), "Urlbar was focused");
+
+  EventUtils.synthesizeKey("KEY_Tab", { shiftKey: true }, win);
+  let switcher = win.gURLBar.querySelector(".searchmode-switcher");
+  await BrowserTestUtils.waitForCondition(
+    () => win.document.activeElement == switcher
+  );
+  Assert.ok(true, "Search mode switcher was focused");
+}
+
+/**
+ * Clears the SAP telemetry probes (SEARCH_COUNTS and all of Glean).
+ */
+function clearSAPTelemetry() {
+  TelemetryTestUtils.getAndClearKeyedHistogram("SEARCH_COUNTS");
+  Services.fog.testResetFOG();
+}
+
+async function waitForIdle() {
+  for (let i = 0; i < 10; i++) {
+    await new Promise(resolve => Services.tm.idleDispatchToMainThread(resolve));
+  }
 }

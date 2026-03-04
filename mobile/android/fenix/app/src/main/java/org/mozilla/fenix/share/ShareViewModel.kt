@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import mozilla.components.concept.sync.DeviceCapability
 import mozilla.components.feature.share.RecentAppsStorage
 import mozilla.components.service.fxa.manager.FxaAccountManager
-import mozilla.components.support.utils.ext.queryIntentActivitiesCompat
+import mozilla.components.support.utils.ext.packageManagerCompatHelper
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.isOnline
@@ -163,7 +163,7 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
     @VisibleForTesting
     @WorkerThread
     fun getIntentActivities(shareIntent: Intent, context: Context): List<ResolveInfo>? {
-        return context.packageManager.queryIntentActivitiesCompat(shareIntent, 0)
+        return context.packageManagerCompatHelper.queryIntentActivitiesCompat(shareIntent, 0)
     }
 
     /**
@@ -203,7 +203,7 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
 
         return when {
             // No network
-            connectivityManager?.isOnline(network) != true -> listOf(SyncShareOption.Offline)
+            isOffline(network) -> listOf(SyncShareOption.Offline)
             // No account signed in
             account == null -> listOf(SyncShareOption.SignIn)
             // Account needs to be re-authenticated
@@ -232,4 +232,15 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    /**
+     * Checks if the network is offline.
+     *
+     * @param network The network to check. If null, the default active network is checked.
+     * @return `true` if `connectivityManager` is null (unable to determine network state) or if
+     *   `isOnline(network)` returns false (explicitly offline).
+     */
+    @VisibleForTesting
+    internal fun isOffline(network: Network?): Boolean =
+        connectivityManager?.isOnline(network) != true
 }

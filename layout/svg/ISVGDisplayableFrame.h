@@ -10,9 +10,10 @@
 #include "gfxMatrix.h"
 #include "gfxPoint.h"
 #include "gfxRect.h"
+#include "mozilla/EnumSet.h"
+#include "mozilla/gfx/MatrixFwd.h"
 #include "nsQueryFrame.h"
 #include "nsRect.h"
-#include "mozilla/gfx/MatrixFwd.h"
 
 class gfxContext;
 class nsIFrame;
@@ -95,28 +96,30 @@ class ISVGDisplayableFrame : public nsQueryFrame {
 
   // Flags to pass to NotifySVGChange:
   //
-  // TRANSFORM_CHANGED:
+  // TransformChanged:
   //   the current transform matrix for this frame has changed
-  // COORD_CONTEXT_CHANGED:
+  // CoordContextChanged:
   //   the dimensions of this frame's coordinate context has changed (percentage
   //   lengths must be reevaluated)
-  // FULL_ZOOM_CHANGED:
+  // FullZoomChanged:
   //   the page's zoom level has changed
-  enum SVGChangedFlags {
-    TRANSFORM_CHANGED = 0x01,
-    COORD_CONTEXT_CHANGED = 0x02,
-    FULL_ZOOM_CHANGED = 0x04
+  enum class ChangeFlag {
+    TransformChanged,
+    CoordContextChanged,
+    FullZoomChanged
   };
+  using ChangeFlags = EnumSet<ChangeFlag>;
+
   /**
    * This is called on a frame when there has been a change to one of its
-   * ancestors that might affect the frame too. SVGChangedFlags are passed
+   * ancestors that might affect the frame too. ChangeFlags are passed
    * to indicate what changed.
    *
    * Implementations do not need to invalidate, since the caller will
    * invalidate the entire area of the ancestor that changed. However, they
    * may need to update their bounds.
    */
-  virtual void NotifySVGChanged(uint32_t aFlags) = 0;
+  virtual void NotifySVGChanged(ChangeFlags aFlags) = 0;
 
   /**
    * Get this frame's contribution to the rect returned by a GetBBox() call
@@ -125,7 +128,7 @@ class ISVGDisplayableFrame : public nsQueryFrame {
    * SVG defines an element's bbox to be the element's fill bounds in the
    * userspace established by that element. By allowing callers to pass in the
    * transform from the userspace established by this element to the userspace
-   * established by an an ancestor, this method allows callers to obtain this
+   * established by an ancestor, this method allows callers to obtain this
    * element's fill bounds in the userspace established by that ancestor
    * instead. In that case, since we return the bounds in a different userspace
    * (the ancestor's), the bounds we return are not this element's bbox, but

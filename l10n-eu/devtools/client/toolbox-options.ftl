@@ -30,6 +30,10 @@ options-context-inspector = Ikuskatzailea
 options-show-user-agent-styles-label = Erakutsi nabigatzaile-estiloak
 options-show-user-agent-styles-tooltip =
     .title = Ezarrita badago, nabigatzaileak kargatzen dituen estilo lehenetsiak erakutsiko dira.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Erakutsi nabigatzailearen Shadow DOMa
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Hau aktibatuz gero, nabigatzaileak maneiatzen dituen Shadow DOM elementuak erakutsiko dira.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Moztu DOM atributuak
 options-collapse-attrs-tooltip =
@@ -38,6 +42,16 @@ options-collapse-attrs-tooltip =
 options-inspector-draggable-properties-label = Egin klik eta arrastatu tamainaren balioak editatzeko
 options-inspector-draggable-properties-tooltip =
     .title = Egin klik eta arrastatu ikuskatzailearen arauen ikuspegiko tamainaren balioak editatzeko.
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Erabili nabarmengailu sinpleagoak prefers-reduced-motion aukerarekin
+options-inspector-simplified-highlighters-tooltip =
+    .title = Nabarmengailu sinpleagoak gaitzen ditu prefers-reduced-motion gaituta dagoenean. Flash-efektuak ekiditeko, nabarmendutako elementuen inguruan lerroak marrazten ditu betetako laukizuzenen ordez.
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = Jarri fokua hurrengo sarrerako eremuan <kbd>Sartu</kbd> sakatzean
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Gaituta dagoenean, Sartu tekla sakatuta hautatzaile bat editatzean, propietate-izen edo -balioak fokua hurrengo sarrerako eremura aldatuko du.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -48,6 +62,15 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Koloreen izenak
+
+## Web Console section
+
+# The heading
+options-webconsole-label = Web kontsola
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Gaitu zatitutako kontsola
+options-webconsole-split-console-tooltip =
+    .title = Ireki zatitutako kontsola eskape teklarekin
 
 ## Style Editor section
 
@@ -97,6 +120,8 @@ options-disable-http-cache-label = Desgaitu HTTP cachea (tresna-kutxa irekita da
 options-disable-http-cache-tooltip =
     .title = Ezarrita badago, Ezarrita badago, HTTP cachea desgaitu egingo da tresna-kutxa zabalik duten fitxa guztietan. Aukera honek ez die zerbitzu-langileei eragiten.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Desgaitu JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Desgaitu JavaScript *
 options-disable-javascript-tooltip =
     .title = Ezarrita badago, JavaScript desgaituko da uneko fitxan. Fitxa edo tresna-kutxa itxita badaude, ezarpen hau ahaztu egingo da.
@@ -110,6 +135,8 @@ options-enable-remote-tooltip2 =
     .title = Aukera hau aktibatuz gero, nabigatzaile-instantzia hau urrunetik araztu ahal izango da
 # The label for checkbox that enables F12 as a shortcut to open DevTools
 options-enable-f12-label = Erabili F12 tekla garatzaile-tresnak ireki edo ixteko
+options-enable-f12-tooltip =
+    .title = Aukera hau gaituz gero, F12 tekla garatzaile-tresnen tresna-kutxa ireki eta ixteko erabiliko da.
 # The label for checkbox that toggles custom formatters for objects
 options-enable-custom-formatters-label = Gaitu formateatzaile pertsonalizatuak
 options-enable-custom-formatters-tooltip =
@@ -122,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Gaitu iturburu-mapak
 options-source-maps-tooltip =
     .title = Aukera hau gaituz gero, iturburuak mapeatu egingo dira tresnetan.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (uneko saioa soilik, orria berritzen du)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Uneko saioa soilik, orria berritzen du
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (orria berritzen du)

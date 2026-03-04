@@ -32,7 +32,7 @@ add_task(async function adaptive_history() {
       assertEngagementTelemetry([
         {
           groups: "heuristic,adaptive_history",
-          results: "search_engine,history",
+          results: "search_engine,history_adaptive",
           n_results: 2,
         },
       ]),
@@ -170,9 +170,9 @@ add_task(async function general() {
     assert: () =>
       assertEngagementTelemetry([
         {
-          groups: "heuristic,general",
-          results: "search_engine,bookmark",
-          n_results: 2,
+          groups: "heuristic,suggested_index,general",
+          results: "search_engine,action,bookmark",
+          n_results: 3,
         },
       ]),
   });
@@ -190,16 +190,51 @@ add_task(async function general() {
   });
 });
 
+add_task(async function restrict_keywords() {
+  const telemetryTemplate = {
+    groups:
+      "general,general,general,general,general,general,restrict_keyword," +
+      "restrict_keyword,restrict_keyword,restrict_keyword",
+    results:
+      "search_engine,search_engine,search_engine,search_engine," +
+      "search_engine,search_engine,restrict_keyword_bookmarks," +
+      "restrict_keyword_tabs,restrict_keyword_history,restrict_keyword_actions",
+    n_results: 10,
+  };
+  let telemetry = [];
+  await doRestrictKeywordsTest({
+    trigger: async (rowToSelect, category) => {
+      await triggerKeywordTest(rowToSelect, category);
+    },
+    assert: () => assertEngagementTelemetry(telemetry),
+  });
+
+  async function triggerKeywordTest(rowToSelect, category) {
+    EventUtils.synthesizeMouseAtCenter(rowToSelect, {});
+    await UrlbarTestUtils.exitSearchMode(window);
+    await UrlbarTestUtils.promisePopupClose(window, () => {
+      EventUtils.synthesizeKey("KEY_Escape");
+    });
+
+    const telemetryItem = {
+      ...telemetryTemplate,
+      selected_result: `restrict_keyword_${category}`,
+    };
+    telemetry.push(telemetryItem);
+  }
+});
+
 add_task(async function suggest() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.suggest.engines", false]],
+  });
   await doSuggestTest({
     trigger: () => doEnter(),
     assert: () =>
       assertEngagementTelemetry([
         {
           groups: "heuristic,suggest",
-          results: UrlbarPrefs.get("quickSuggestRustEnabled")
-            ? "search_engine,rust_adm_nonsponsored"
-            : "search_engine,rs_adm_nonsponsored",
+          results: "search_engine,rust_adm_nonsponsored",
           n_results: 2,
         },
       ]),
@@ -290,5 +325,76 @@ add_task(async function always_empty_if_paste_go() {
     await doPasteAndGo("example.com");
 
     assertEngagementTelemetry(expected);
+  });
+});
+
+add_task(async function actions_search_mode() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", true]],
+  });
+
+  const expected = [
+    {
+      engagement_type: "enter",
+      groups: "general,general,general",
+      results: "action,action,action",
+      n_results: 3,
+    },
+  ];
+
+  await doTest(async () => {
+    await openPopup("> addon");
+    await UrlbarTestUtils.promisePopupClose(window, () => {
+      EventUtils.synthesizeKey("KEY_Tab");
+      EventUtils.synthesizeKey("KEY_Enter");
+    });
+
+    assertEngagementTelemetry(expected);
+  });
+});
+
+add_task(async function history_semantic() {
+  await doSemanticHistoryTest({
+    trigger: () => doEnter(),
+    assert: () =>
+      assertEngagementTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,history_semantic",
+          n_results: 2,
+          selected_result: "history_semantic",
+        },
+      ]),
+  });
+});
+
+add_task(async function history_serp() {
+  await doSerpHistoryTest({
+    trigger: () => doEnter(),
+    assert: () =>
+      assertEngagementTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,history_serp",
+          n_results: 2,
+          selected_result: "history_serp",
+        },
+      ]),
+  });
+});
+
+add_task(async function tab_serp() {
+  // Cannot use doEnter as it awaits for load, not tab switch.
+  await doTabSerpHistoryTest({
+    trigger: () => EventUtils.synthesizeKey("KEY_Enter"),
+    assert: () =>
+      assertEngagementTelemetry([
+        {
+          groups: "heuristic,general",
+          results: "search_engine,tab_serp",
+          n_results: 2,
+          selected_result: "tab_serp",
+        },
+      ]),
   });
 });

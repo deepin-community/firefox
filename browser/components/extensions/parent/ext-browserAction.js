@@ -8,7 +8,8 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   BrowserUsageTelemetry: "resource:///modules/BrowserUsageTelemetry.sys.mjs",
-  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
+  CustomizableUI:
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
   ExtensionTelemetry: "resource://gre/modules/ExtensionTelemetry.sys.mjs",
   OriginControls: "resource://gre/modules/ExtensionPermissions.sys.mjs",
   ViewPopup: "resource:///modules/ExtensionPopups.sys.mjs",
@@ -254,7 +255,7 @@ this.browserAction = class extends ExtensionAPIPersistent {
           "unified-extensions-item-open-menu"
         );
         // Allow the users to quickly move between extension items using
-        // the arrow keys, see: `PanelMultiView._isNavigableWithTabOnly()`.
+        // the arrow keys, see: `PanelMultiView.#isNavigableWithTabOnly()`.
         menuButton.setAttribute("data-navigable-with-tab-only", true);
 
         menuButton.setAttribute("data-extensionid", extension.id);
@@ -267,7 +268,17 @@ this.browserAction = class extends ExtensionAPIPersistent {
         );
         node.setAttribute("view-button-id", viewId);
         node.setAttribute("data-extensionid", extension.id);
-        node.append(button, menuButton);
+
+        let rowWrapper = document.createXULElement("box");
+        rowWrapper.classList.add("unified-extensions-item-row-wrapper");
+        rowWrapper.append(button, menuButton);
+
+        let messagebarWrapper = document.createElement(
+          "unified-extensions-item-messagebar-wrapper"
+        );
+        messagebarWrapper.extensionId = extension.id;
+
+        node.append(rowWrapper, messagebarWrapper);
         node.viewButton = button;
 
         return node;
@@ -479,12 +490,19 @@ this.browserAction = class extends ExtensionAPIPersistent {
     // immediately triggers a popuphidden event)
     window.focus();
 
-    if (widgetForWindow.node.firstElementChild.open) {
+    const toolbarButton = widgetForWindow.node.querySelector(
+      ".unified-extensions-item-action-button"
+    );
+
+    if (toolbarButton.open) {
       return;
     }
 
     if (this.widget.areaType == CustomizableUI.TYPE_PANEL) {
-      await window.gUnifiedExtensions.togglePanel();
+      await window.gUnifiedExtensions.openPanel(
+        null,
+        "extension_browser_action_popup"
+      );
     }
 
     // This should already have been checked by callers, but acts as an
@@ -501,7 +519,7 @@ this.browserAction = class extends ExtensionAPIPersistent {
         openPopupWithoutUserInteraction,
       },
     });
-    widgetForWindow.node.firstElementChild.dispatchEvent(event);
+    toolbarButton.dispatchEvent(event);
   }
 
   /**
@@ -668,7 +686,7 @@ this.browserAction = class extends ExtensionAPIPersistent {
         break;
       }
 
-      case "popupshowing":
+      case "popupshowing": {
         const menu = event.target;
         const trigger = menu.triggerNode;
         const node = window.document.getElementById(this.id);
@@ -681,8 +699,9 @@ this.browserAction = class extends ExtensionAPIPersistent {
           this.updateContextMenu(menu);
         }
         break;
+      }
 
-      case "auxclick":
+      case "auxclick": {
         if (event.button !== 1) {
           return;
         }
@@ -699,6 +718,7 @@ this.browserAction = class extends ExtensionAPIPersistent {
           CustomizableUI.hidePanelForNode(event.target);
         }
         break;
+      }
     }
   }
 
@@ -712,11 +732,16 @@ this.browserAction = class extends ExtensionAPIPersistent {
     const action =
       this.extension.manifestVersion < 3 ? "onBrowserAction" : "onAction";
 
-    global.actionContextMenu({
-      extension: this.extension,
-      [action]: true,
-      menu,
-    });
+    if (
+      this.extension.hasPermission("contextMenus") ||
+      this.extension.hasPermission("menus")
+    ) {
+      global.actionContextMenu({
+        extension: this.extension,
+        [action]: true,
+        menu,
+      });
+    }
   }
 
   /**
@@ -868,6 +893,17 @@ this.browserAction = class extends ExtensionAPIPersistent {
 
       let style = this.iconData.get(tabData.icon);
       button.setAttribute("style", style);
+
+      // Refresh the unified extensions panel item messagebar
+      // (e.g. in response to blocklistState changes).
+      const messagebarWrapper = node.querySelector(
+        "unified-extensions-item-messagebar-wrapper"
+      );
+      // NOTE: if the refresh() method isn't found, that's because the
+      // custom element has not been loaded yet.  When the custom element
+      // is loaded and registered, connectedCallback() will call refresh()
+      // internally.
+      messagebarWrapper.refresh?.();
     };
     if (sync) {
       callback();
@@ -877,37 +913,41 @@ this.browserAction = class extends ExtensionAPIPersistent {
   }
 
   getIconData(icons) {
-    let getIcon = (icon, theme) => {
+    const getIcon = (icon, theme) => {
       if (typeof icon === "object") {
         return IconDetails.escapeUrl(icon[theme]);
       }
       return IconDetails.escapeUrl(icon);
     };
 
-    let getStyle = (name, icon1x, icon2x) => {
-      return `
-        --webextension-${name}: image-set(
-          url("${getIcon(icon1x, "default")}"),
-          url("${getIcon(icon2x, "default")}") 2x
-        );
-        --webextension-${name}-light: image-set(
-          url("${getIcon(icon1x, "light")}"),
-          url("${getIcon(icon2x, "light")}") 2x
-        );
-        --webextension-${name}-dark: image-set(
-          url("${getIcon(icon1x, "dark")}"),
-          url("${getIcon(icon2x, "dark")}") 2x
-        );
-      `;
+    const getBackgroundImage = (icon1x, icon2x = icon1x) => {
+      const image1x = `url("${icon1x}")`;
+      if (icon2x === icon1x) {
+        return image1x;
+      }
+
+      const image2x = `url("${icon2x}")`;
+      return `image-set(${image1x} 1dppx, ${image2x} 2dppx);`;
     };
 
-    let icon16 = IconDetails.getPreferredIcon(icons, this.extension, 16).icon;
-    let icon32 = IconDetails.getPreferredIcon(icons, this.extension, 32).icon;
-    let icon64 = IconDetails.getPreferredIcon(icons, this.extension, 64).icon;
+    const getStyle = (cssVarName, icon1x, icon2x) => {
+      return `${cssVarName}: ${getBackgroundImage(
+        getIcon(icon1x, "light"),
+        getIcon(icon2x, "light")
+      )};
+      ${cssVarName}-dark: ${getBackgroundImage(
+        getIcon(icon1x, "dark"),
+        getIcon(icon2x, "dark")
+      )};`;
+    };
+
+    const icon16 = IconDetails.getPreferredIcon(icons, this.extension, 16).icon;
+    const icon32 = IconDetails.getPreferredIcon(icons, this.extension, 32).icon;
+    const icon64 = IconDetails.getPreferredIcon(icons, this.extension, 64).icon;
 
     return `
-        ${getStyle("menupanel-image", icon32, icon64)}
-        ${getStyle("toolbar-image", icon16, icon32)}
+        ${getStyle("--webextension-menupanel-image", icon32, icon64)}
+        ${getStyle("--webextension-toolbar-image", icon16, icon32)}
       `;
   }
 
@@ -961,6 +1001,37 @@ this.browserAction = class extends ExtensionAPIPersistent {
         },
       };
     },
+    onUserSettingsChanged({ fire }) {
+      let listener = {
+        onWidgetRemoved: (widgetId, oldArea) => {
+          if (widgetId !== this.id) {
+            return;
+          }
+
+          if (oldArea === CustomizableUI.AREA_ADDONS) {
+            fire.async({ isOnToolbar: true });
+          }
+        },
+        onWidgetAdded: (widgetId, newArea) => {
+          if (widgetId !== this.id) {
+            return;
+          }
+
+          if (newArea === CustomizableUI.AREA_ADDONS) {
+            fire.async({ isOnToolbar: false });
+          }
+        },
+      };
+      CustomizableUI.addListener(listener);
+      return {
+        unregister: () => {
+          CustomizableUI.removeListener(listener);
+        },
+        convert(newFire) {
+          fire = newFire;
+        },
+      };
+    },
   };
 
   getAPI(context) {
@@ -975,10 +1046,19 @@ this.browserAction = class extends ExtensionAPIPersistent {
         onClicked: new EventManager({
           context,
           // module name is "browserAction" because it the name used in the
-          // ext-browser.json, indipendently from the manifest version.
+          // ext-browser.json, independently from the manifest version.
           module: "browserAction",
           event: "onClicked",
           inputHandling: true,
+          extensionApi: this,
+        }).api(),
+
+        onUserSettingsChanged: new EventManager({
+          context,
+          // module name is "browserAction" because it the name used in the
+          // ext-browser.json, independently from the manifest version.
+          module: "browserAction",
+          event: "onUserSettingsChanged",
           extensionApi: this,
         }).api(),
 

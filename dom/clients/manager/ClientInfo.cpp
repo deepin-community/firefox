@@ -14,14 +14,14 @@ namespace mozilla::dom {
 using mozilla::ipc::PrincipalInfo;
 using mozilla::ipc::PrincipalInfoToPrincipal;
 
-ClientInfo::ClientInfo(const nsID& aId, ClientType aType,
+ClientInfo::ClientInfo(const nsID& aId, const Maybe<nsID>& aAgentClusterId,
+                       ClientType aType,
                        const mozilla::ipc::PrincipalInfo& aPrincipalInfo,
-                       const TimeStamp& aCreationTime)
-    : mData(MakeUnique<IPCClientInfo>(aId, mozilla::Nothing(), aType,
-                                      aPrincipalInfo, aCreationTime, ""_ns,
-                                      mozilla::dom::FrameType::None,
-                                      mozilla::Nothing(), mozilla::Nothing())) {
-}
+                       const TimeStamp& aCreationTime, const nsCString& aURL,
+                       mozilla::dom::FrameType aFrameType)
+    : mData(MakeUnique<IPCClientInfo>(
+          aId, aAgentClusterId, aType, aPrincipalInfo, aCreationTime, aURL,
+          aFrameType, mozilla::Nothing(), mozilla::Nothing())) {}
 
 ClientInfo::ClientInfo(const IPCClientInfo& aData)
     : mData(MakeUnique<IPCClientInfo>(aData)) {}
@@ -111,12 +111,14 @@ Result<nsCOMPtr<nsIPrincipal>, nsresult> ClientInfo::GetPrincipal() const {
   return PrincipalInfoToPrincipal(PrincipalInfo());
 }
 
-const Maybe<mozilla::ipc::CSPInfo>& ClientInfo::GetCspInfo() const {
-  return mData->cspInfo();
+const Maybe<mozilla::ipc::PolicyContainerArgs>&
+ClientInfo::GetPolicyContainerArgs() const {
+  return mData->policyContainerArgs();
 }
 
-void ClientInfo::SetCspInfo(const mozilla::ipc::CSPInfo& aCSPInfo) {
-  mData->cspInfo() = Some(aCSPInfo);
+void ClientInfo::SetPolicyContainerArgs(
+    const mozilla::ipc::PolicyContainerArgs& aPolicyContainer) {
+  mData->policyContainerArgs() = Some(aPolicyContainer);
 }
 
 const Maybe<mozilla::ipc::CSPInfo>& ClientInfo::GetPreloadCspInfo() const {

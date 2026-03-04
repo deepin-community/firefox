@@ -17,6 +17,16 @@ function handleRequest(request, response) {
   ) {
     response.setHeader("Content-Type", "image/png", false);
     response.write(IMAGE);
+  } else if (
+    request.queryString &&
+    request.queryString.includes("type=partitioned")
+  ) {
+    response.setHeader("Access-Control-Allow-Origin", "https://example.net");
+    response.setHeader("Access-Control-Allow-Credentials", "true");
+    response.setHeader(
+      "Set-Cookie",
+      "foopy=1; SameSite=None; Secure; Partitioned"
+    );
   } else {
     response.setHeader("Set-Cookie", "foopy=1");
     response.write("cookie served");

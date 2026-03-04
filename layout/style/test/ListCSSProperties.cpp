@@ -6,9 +6,10 @@
 /* build (from code) lists of all supported CSS properties */
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include "mozilla/ArrayUtils.h"
+#include <string.h>
+
+#include <array>
 
 // Do not consider properties not valid in style rules
 #define CSS_PROP_LIST_EXCLUDE_NOT_IN_STYLE
@@ -105,14 +106,14 @@ const char* gInaccessibleProperties[] = {
     "-moz-subtree-hidden-only-visually",  // chrome-only internal properties
     "-moz-user-focus",                    // chrome-only internal properties
     "-moz-window-input-region-margin",    // chrome-only internal properties
+    "-moz-window-dragging",               // chrome-only internal properties
     "-moz-window-opacity",                // chrome-only internal properties
     "-moz-window-transform",              // chrome-only internal properties
-    "-moz-window-transform-origin",       // chrome-only internal properties
     "-moz-window-shadow",                 // chrome-only internal properties
 };
 
 inline int is_inaccessible(const char* aPropName) {
-  for (unsigned j = 0; j < MOZ_ARRAY_LENGTH(gInaccessibleProperties); ++j) {
+  for (unsigned j = 0; j < std::size(gInaccessibleProperties); ++j) {
     if (strcmp(aPropName, gInaccessibleProperties[j]) == 0) return 1;
   }
   return 0;
@@ -167,12 +168,10 @@ void print_array(const char* aName, const PropertyInfo* aProps,
 
 int main() {
   print_array("gLonghandProperties", gLonghandProperties,
-              MOZ_ARRAY_LENGTH(gLonghandProperties),
-              gLonghandPropertiesWithDOMProp,
-              MOZ_ARRAY_LENGTH(gLonghandPropertiesWithDOMProp));
+              std::size(gLonghandProperties), gLonghandPropertiesWithDOMProp,
+              std::size(gLonghandPropertiesWithDOMProp));
   print_array("gShorthandProperties", gShorthandProperties,
-              MOZ_ARRAY_LENGTH(gShorthandProperties),
-              gShorthandPropertiesWithDOMProp,
-              MOZ_ARRAY_LENGTH(gShorthandPropertiesWithDOMProp));
+              std::size(gShorthandProperties), gShorthandPropertiesWithDOMProp,
+              std::size(gShorthandPropertiesWithDOMProp));
   return 0;
 }

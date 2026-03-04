@@ -19,19 +19,19 @@ graph-total-tracker-summary =
        *[other] <b>{ $count }</b> მეთვალყურეა შეზღუდული თარიღიდან { DATETIME($earliestDate, day: "numeric", month: "long", year: "numeric") }
     }
 # Text displayed instead of the graph when in Private Mode
-graph-private-window = { -brand-short-name } განაგრძობს მეთვალყურეების შეზღუდვას პირად ჩანართებში, თუმცა არ აღრიცხავს, რა შეიზღუდა.
+graph-private-window = { -brand-short-name } არ წყვეტს მეთვალყურეების შეზღუდვას პირად ჩანართებში, თუმცა იმას არ აღრიცხავს, რა შეიზღუდა.
 # Weekly summary of the graph when the graph is empty in Private Mode
 graph-week-summary-private-window = მეთვალყურეები, რომელთაც ზღუდავდა { -brand-short-name } ამ კვირაში
 protection-report-webpage-title = დაცვის მაჩვენებლები
 protection-report-page-content-title = დაცვის მაჩვენებლები
 # This message shows when all privacy protections are turned off, which is why we use the word "can", Firefox is able to protect your privacy, but it is currently not.
-protection-report-page-summary = { -brand-short-name } იცავს თქვენს უსაფრთხოებას შეუმჩნევლად, გვერდების თვალიერებისას. აქ იხილავთ თქვენთვის განკუთვნილ დაცვის მაჩვენებლებსა და საშუალებებს, რომლებითაც შეძლებთ საკუთარი ინტერნეტცხოვრების მართვის სადავეების ხელში აღებას.
+protection-report-page-summary = { -brand-short-name } შეუმჩნევლად იცავს თქვენს უსაფრთხოებას გვერდების თვალიერებისას. აქ იხილავთ თქვენთვის განკუთვნილ დაცვის მაჩვენებლებსა და საშუალებებს, რითაც შეძლებთ საკუთარი ინტერნეტცხოვრების მართვის სადავეები ხელში იქონიოთ.
 # This message shows when at least some protections are turned on, we are more assertive compared to the message above, Firefox is actively protecting you.
-protection-report-page-summary-default = { -brand-short-name } იცავს თქვენს უსაფრთხოებას შეუმჩნევლად, გვერდების თვალიერებისას. აქ იხილავთ თქვენთვის განკუთვნილ დაცვის მაჩვენებლებსა და საშუალებებს, რომლებითაც შეძლებთ საკუთარი ინტერნეტცხოვრების მართვის სადავეების ხელში აღებას.
-protection-report-settings-link = პირადულობისა და უსართხოების პარამეტრები
+protection-report-page-summary-default = { -brand-short-name } შეუმჩნევლად იცავს თქვენს უსაფრთხოებას გვერდების თვალიერებისას. აქ იხილავთ თქვენთვის განკუთვნილ დაცვის მაჩვენებლებსა და საშუალებებს, რითაც შეძლებთ საკუთარი ინტერნეტცხოვრების მართვის სადავეები ხელში იქონიოთ.
+protection-report-settings-link = პირადულობისა და უსაფრთხოების პარამეტრები
 etp-card-title-always = თვალთვალისგან გაძლიერებული დაცვა: მუდმივად ჩართულია
 etp-card-title-custom-not-blocking = თვალთვალისგან გაძლიერებული დაცვა: გამორთულია
-etp-card-content-description = { -brand-short-name } ავტომატურად უზღუდავს კომპანიებს, თქვენს მოქმედებებზე ფარულად თვალის მიდევნების საშუალებას ვებსივრცეში.
+etp-card-content-description = { -brand-short-name } ავტომატურად უზღუდავს კომპანიებს თქვენს მოქმედებებზე ფარულად თვალის მიდევნების საშუალებას ვებსივრცეში.
 protection-report-etp-card-content-custom-not-blocking = დაცვა სრულად გამორთულია ამჟამად. უსაფრთხოების პარამეტრებიდან შეარჩიეთ მეთვალყურეები, რომელთაც შეზღუდავს { -brand-short-name }.
 protection-report-manage-protections = პარამეტრების მართვა
 # This string is used to label the X axis of a graph. Other days of the week are generated via Intl.DateTimeFormat,
@@ -42,18 +42,18 @@ graph-legend-description = გამოსახულებაზე მოც�
 social-tab-title = სოციალური ქსელის მეთვალყურეები
 social-tab-contant = სოციალური ქსელები ათავსებს მეთვალყურეებს სხვა საიტებზე, რომ თვალი გადევნონ ინტერნეტში. ეს საშუალებას აძლევს მათ მფლობელ დაწესებულებებს, იმაზე მეტი რამ შეიტყონ თქვენ შესახებ, ვიდრე ამ სოციალურ ქსელში გაქვთ გაზიარებული. <a data-l10n-name="learn-more-link">ვრცლად</a>
 cookie-tab-title = საიტთაშორისი მეთვალყურე ფუნთუშები
-cookie-tab-content = ეს ფუნთუშები თან დაგყვებათ საიტებზე და აგროვებს მონაცემებს, თუ რას აკეთებთ ინტერნეტში. მათ იყენებს გარეშე მხარეები, სარეკლამო და კვლევითი დაწესებულებები. საიტთაშორისი მეთვალყურე ფუნთუშების შეზღუდვა, ამცირებს თვალის მდევნელ რეკლამებს თქვენ ირგვლივ. <a data-l10n-name="learn-more-link">ვრცლად</a>
+cookie-tab-content = ეს ფუნთუშები თან დაგყვებათ საიტებზე და აგროვებს მონაცემებს, თუ რას აკეთებთ ინტერნეტში. მათ იყენებენ გარეშე მხარეები, სარეკლამო და კვლევითი დაწესებულებები. საიტთაშორისი მეთვალყურე ფუნთუშების შეზღუდვა, ამცირებს თვალის მდევნელ რეკლამებს თქვენ ირგვლივ. <a data-l10n-name="learn-more-link">ვრცლად</a>
 tracker-tab-title = თვალის მდევნელი შიგთავსი
 tracker-tab-description = საიტები, ზოგჯერ გარე ბმულებიდან ტვირთავს თვალის სადევნებელი კოდის შემცველ მასალას. მათი შეზღუდვით, საიტი უფრო სწრაფად ჩაიტვირთება, თუმცა ღილაკებმა, ანგარიშისა და სხვა შესავსებმა ველებმა შეიძლება, აღარ იმუშაოს. <a data-l10n-name="learn-more-link">ვრცლად</a>
 fingerprinter-tab-title = მომხმარებლის ამომცნობები
 fingerprinter-tab-content = მომხმარებლის ამომცნობები აგროვებს ბრაუზერისა და კომპიუტერის მონაცემებს თქვენი დახასიათების შესადგენად. ამის შედეგად კი თქვენი სხვებისგან გამორჩევაა შესაძლებელი სხვადასხვა საიტებზე. <a data-l10n-name="learn-more-link">ვრცლად</a>
 cryptominer-tab-title = კრიპტოვალუტის გამომმუშავებლები
-cryptominer-tab-content = კრიპტოვალუტის გამომმუშავებლები სარგებლობს თქვენი სისტემის გამოთვლის სიმძლავრით ციფრული ფულის მოსაპოვებლად. ამგვარი კოდები ასუსტებს ბატარეას, ანელებს კომპიუტერს და ზრდის დენის დანახარჯს. <a data-l10n-name="learn-more-link">ვრცლად</a>
+cryptominer-tab-content = კრიპტოვალუტის გამომმუშავებლები სარგებლობს თქვენი სისტემის გამოთვლის სიმძლავრით ციფრული ფულის მოსაპოვებლად. ამგვარი კოდები ასუსტებს ბატარეას, ანელებს კომპიუტერს და ზრდის დენის ხარჯს. <a data-l10n-name="learn-more-link">ვრცლად</a>
 protections-close-button2 =
     .aria-label = დახურვა
     .title = დახურვა
 mobile-app-title = შეზღუდეთ სარეკლამო მეთვალყურეები მეტ მოწყობილობაზე
-mobile-app-card-content = გამოიყენეთ მობილური ბრაუზერი ჩაშენებული დაცვით, სარეკლამო მეთვალყურეებისგან.
+mobile-app-card-content = გამოიყენეთ მობილური ბრაუზერი სარეკლამო მეთვალყურეებისგან ჩაშენებული დაცვით.
 mobile-app-links = { -brand-product-name } ბრაუზერი <a data-l10n-name="android-mobile-inline-link">Android-სა</a> და <a data-l10n-name="ios-mobile-inline-link">iOS-ზე</a>
 lockwise-title = აღარასდროს დაკარგავთ პაროლებს
 passwords-title-logged-in = მართეთ თქვენი პაროლები

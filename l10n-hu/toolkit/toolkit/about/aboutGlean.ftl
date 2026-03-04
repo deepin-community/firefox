@@ -16,6 +16,12 @@ about-glean-interface-description =
     egy a { -vendor-short-name } projekjeiben használt adatgyűjtő programkönyvtár.
     Ez a felület arra lett tervezve, hogy a fejlesztők és tesztelők kézileg
     <a data-l10n-name="fog-link">teszteljék a mérőeszközöket</a>.
+about-glean-category-about-glean = A { -glean-brand-name } névjegye
+about-glean-category-manual-testing = Kézi tesztelés
+about-glean-category-adhoc-testing = Ad hoc tesztelés
+about-glean-category-profiler = A Profilozó használata
+about-glean-category-about-data = Információk az adatokról
+about-glean-category-metrics-table = Statisztikai táblázat
 about-glean-upload-enabled = Az adatfeltöltés engedélyezett.
 about-glean-upload-disabled = Az adatfeltöltés le van tiltva.
 about-glean-upload-enabled-local = Az adatfeltöltés csak helyi kiszolgálóra történő küldés esetén engedélyezett.
@@ -43,6 +49,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Az adatok rögzítésének és keresésének különböző módjainak magyarázatához tekintse meg az
+    <strong>Információk az adatokról</strong> lapot.
 about-glean-about-testing-header = Tudnivalók a tesztelésről
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -100,8 +109,108 @@ about-glean-adhoc-note =
     Vegye figyelembe, hogy a fejlesztői eszközök konzolban a Glean JS API-t használja.
     Ez azt jelenti, hogy a metrikák kategóriája és neve <code>camelCase</code>
     formázást használ, ellentétben a Rust és C++ API-kkal.
+about-glean-profiler-explanation =
+    Az összes rögzített metrika teljes nézetéhez használja a { -profiler-brand-name }t.
+    Először egy <a data-l10n-name="firefox-profiler-link">teljesítményprofilt kell rögzítenie</a>.
+    A profil rögzítése után válassza a <q>Marker Chart</q> lehetőséget, és nézze meg a jelölőket a <q>Telemetry</q> szakasz alatt.
+about-glean-profiler-explanation-profiler =
+    A teljesítményprofilban látható az összes begyűjtött mérőszám, illetve hogy mikor
+    és pontosan milyen értékek lettek begyűjtve. Az egyes jelölőkre mutatva ellenőrizheti,
+    hogy a megfelelő érték lett-e begyűjtve, és hogy a gyűjtés a megfelelő időben történt-e.
 controls-button-label-verbose = Beállítások alkalmazása, és ping küldése
+about-glean-feedback-settings-only =
+    .message = Beállítások alkalmazva.
+about-glean-feedback-settings-and-ping =
+    .message = Beállítások alkalmazva, és a ping elküldve.
 about-glean-about-data-header = Információk az adatokról
+about-glean-about-data-description =
+    Különböző eszközök segítségével jelenítheti meg az adatokat,
+    attól függően, hogy mire kíváncsi.
+about-glean-about-data-description-list-intro =
+    Tekintse meg az alábbi listát az egyes eszközök
+    konkrét felhasználásairól:
+about-glean-about-data-list-item-dictionary =
+    A { -glean-brand-name } által alkalmazásonként gyűjtött adatok listájának böngészéséhez tekintse
+    meg a <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } szótárat</a>.
+about-glean-about-data-list-item-about-telemetry =
+    A hagyományos telemetria által gyűjtött adatok közti tallózáshoz forduljon a következőhöz:
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    A hibakeresési címkék böngészéséhez tekintse meg a teljes pingeket, tekintse meg az élő eseményfolyamot vagy tekintse meg a mutatók
+    vizualizációit, tekintse meg a<a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }t</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Teljesítményprofil rögzítéséhez és az összes rögzített metrika megtekintéséhez használja a
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }t</a>.
+about-glean-metrics-table-header = Összes statisztika
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Kategória
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Név
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Típus
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Érték
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Műveletek
+about-glean-metrics-table-settings-button = Beállítások
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Metrikatáblázat beállításai
+about-glean-metrics-table-settings-category-general = Általános
+about-glean-metrics-table-settings-hide-empty-value-rows = Üres értéksorok elrejtése
+about-glean-metrics-table-settings-category-visualizations = Vizualizációk
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Példa
+about-glean-metrics-table-settings-category-visualizations-histogram = Hisztogram
+about-glean-metrics-table-settings-histograms-chart-max = Grafikon legnagyobb magassága
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Átméretezett legnagyobb magasság
+about-glean-metrics-table-settings-histograms-box-padding = Doboz kitöltése
+about-glean-metrics-table-settings-histograms-chart-padding = Diagram kitöltése
+about-glean-metrics-table-settings-histograms-left-padding = További bal oldali kitöltés
+about-glean-metrics-table-settings-category-visualizations-timeline = Idővonal
+about-glean-metrics-table-settings-timelines-height = Magasság
+about-glean-metrics-table-settings-timelines-width = Szélesség
+about-glean-metrics-table-settings-timelines-chart-padding = Diagram kitöltése
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Kör sugara
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Y-tengely X eltolása
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Y-tengely Y eltolása
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Szűrő
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Ez fogja szűrni az alábbi táblázatot kategória, név, típus és érték (ha az érték egyszerű típus) alapján.
+about-glean-button-load-all = Összes érték betöltése
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Adatok exportálása
+about-glean-button-load-value = Betöltés
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Dokumentumok
+about-glean-button-watch = Figyelés
+# Meaning "to stop watching"
+about-glean-button-unwatch = Figyelés megszüntetése
+about-glean-no-data-to-display = Nincs megjeleníthető adat.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = A <code>DualLabeledCounter</code> statisztikák még nem támogatottak az <code>about:glean</code> nézetben.
+about-glean-unknown-metric-type-warning = Ismeretlen statisztikatípus.
+about-glean-enable-new-features-promo =
+    .message = Új funkciók bevezetésén dolgozunk! Még mindig aktív fejlesztés alatt vannak, de kattintson a művelet gombra, ha engedélyezni szeretné őket.
+    .heading = Új funkciók érkeznek!
+about-glean-enable-new-features-button = Új funkciók engedélyezése
+about-glean-disable-new-features-button = Új funkciók letiltása
 about-glean-about-data-explanation =
     Az összegyűjtött adatok tallózásához tekintse meg a
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Szótárat</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Beépített pingek
+about-glean-ping-list-optgroup-custom =
+    .label = Egyéni pingek

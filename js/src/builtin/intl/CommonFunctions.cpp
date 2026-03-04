@@ -52,10 +52,11 @@ bool js::intl::InitializeDateTimeFormatObject(
     JSContext* cx, JS::Handle<JSObject*> obj, JS::Handle<JS::Value> thisValue,
     JS::Handle<JS::Value> locales, JS::Handle<JS::Value> options,
     JS::Handle<JSString*> required, JS::Handle<JSString*> defaults,
+    JS::Handle<JS::Value> toLocaleStringTimeZone,
     DateTimeFormatOptions dtfOptions, JS::MutableHandle<JS::Value> result) {
   Handle<PropertyName*> initializer = cx->names().InitializeDateTimeFormat;
 
-  FixedInvokeArgs<7> args(cx);
+  FixedInvokeArgs<8> args(cx);
 
   args[0].setObject(*obj);
   args[1].set(thisValue);
@@ -63,7 +64,8 @@ bool js::intl::InitializeDateTimeFormatObject(
   args[3].set(options);
   args[4].setString(required);
   args[5].setString(defaults);
-  args[6].setBoolean(dtfOptions == DateTimeFormatOptions::EnableMozExtensions);
+  args[6].set(toLocaleStringTimeZone);
+  args[7].setBoolean(dtfOptions == DateTimeFormatOptions::EnableMozExtensions);
 
   if (!CallSelfHostedFunction(cx, initializer, NullHandleValue, args, result)) {
     return false;
@@ -143,20 +145,15 @@ js::UniqueChars js::intl::EncodeLocale(JSContext* cx, JSString* locale) {
   MOZ_ASSERT(locale->length() > 0);
 
   js::UniqueChars chars = EncodeAscii(cx, locale);
-
-#ifdef DEBUG
-  // Ensure the returned value contains only valid BCP 47 characters.
-  // (Lambdas can't be placed inside MOZ_ASSERT, so move the checks in an
-  // #ifdef block.)
-  if (chars) {
-    auto alnumOrDash = [](char c) {
-      return mozilla::IsAsciiAlphanumeric(c) || c == '-';
-    };
-    MOZ_ASSERT(mozilla::IsAsciiAlpha(chars[0]));
-    MOZ_ASSERT(
-        std::all_of(chars.get(), chars.get() + locale->length(), alnumOrDash));
+  if (!chars) {
+    return nullptr;
   }
-#endif
+
+  // Ensure the returned value contains only valid BCP 47 characters.
+  MOZ_ASSERT(mozilla::IsAsciiAlpha(chars[0]));
+  MOZ_ASSERT(std::all_of(
+      chars.get(), chars.get() + locale->length(),
+      [](char c) { return mozilla::IsAsciiAlphanumeric(c) || c == '-'; }));
 
   return chars;
 }
@@ -165,6 +162,10 @@ void js::intl::AddICUCellMemory(JSObject* obj, size_t nbytes) {
   // Account the (estimated) number of bytes allocated by an ICU object against
   // the JSObject's zone.
   AddCellMemory(obj, nbytes, MemoryUse::ICUObject);
+}
+
+void js::intl::RemoveICUCellMemory(JSObject* obj, size_t nbytes) {
+  RemoveCellMemory(obj, nbytes, MemoryUse::ICUObject);
 }
 
 void js::intl::RemoveICUCellMemory(JS::GCContext* gcx, JSObject* obj,

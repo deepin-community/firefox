@@ -132,8 +132,6 @@ const FILE_EXTENSIONS = [
   "zip",
 ];
 
-const TELEMETRY_EVENT_CATEGORY = "downloads";
-
 /**
  * Represents a collection of Download objects that can be viewed and managed by
  * the user interface, and persisted across sessions.
@@ -156,8 +154,8 @@ export class DownloadList {
    * returned array does not change when downloads are added or removed, though
    * the Download objects it contains are still updated in real time.
    *
-   * @return {Promise}
-   * @resolves An array of Download objects.
+   * @returns {Promise}
+   *   Resolves to an array of Download objects.
    * @rejects JavaScript exception.
    */
   async getAll() {
@@ -167,7 +165,7 @@ export class DownloadList {
   /**
    * Adds a new download to the end of the items list.
    *
-   * @note When a download is added to the list, its "onchange" event is
+   * Note: When a download is added to the list, its "onchange" event is
    *       registered by the list, thus it cannot be used to monitor the
    *       download.  To receive change notifications for downloads that are
    *       added to the list, use the addView method to register for
@@ -176,8 +174,8 @@ export class DownloadList {
    * @param download
    *        The Download object to add.
    *
-   * @return {Promise}
-   * @resolves When the download has been added.
+   * @returns {Promise<void>}
+   *   Resolves when the download has been added.
    * @rejects JavaScript exception.
    */
   async add(download) {
@@ -198,8 +196,8 @@ export class DownloadList {
    * @param download
    *        The Download object to remove.
    *
-   * @return {Promise}
-   * @resolves When the download has been removed.
+   * @returns {Promise<void>}
+   *   Resolves when the download has been removed.
    * @rejects JavaScript exception.
    */
   async remove(download) {
@@ -245,13 +243,8 @@ export class DownloadList {
    *            // Called after all the changes have been made.
    *          },
    *        }
-   *
-   * @return {Promise}
-   * @resolves When the view has been registered and all the onDownloadAdded
-   *           notifications for the existing downloads have been sent.
-   * @rejects JavaScript exception.
    */
-  async addView(view) {
+  addView(view) {
     this._views.add(view);
 
     if ("onDownloadAdded" in view) {
@@ -272,13 +265,8 @@ export class DownloadList {
    *
    * @param view
    *        The view object to remove.
-   *
-   * @return {Promise}
-   * @resolves When the view has been removed.  At this point, the removed view
-   *           will not receive any more notifications.
-   * @rejects JavaScript exception.
    */
-  async removeView(view) {
+  removeView(view) {
     this._views.delete(view);
   }
 
@@ -379,14 +367,14 @@ export class DownloadCombinedList extends DownloadList {
      */
     this._privateList = privateList;
 
-    publicList.addView(this).catch(console.error);
-    privateList.addView(this).catch(console.error);
+    publicList.addView(this);
+    privateList.addView(this);
   }
 
   /**
    * Adds a new download to the end of the items list.
    *
-   * @note When a download is added to the list, its "onchange" event is
+   * Note: When a download is added to the list, its "onchange" event is
    *       registered by the list, thus it cannot be used to monitor the
    *       download.  To receive change notifications for downloads that are
    *       added to the list, use the addView method to register for
@@ -395,8 +383,8 @@ export class DownloadCombinedList extends DownloadList {
    * @param download
    *        The Download object to add.
    *
-   * @return {Promise}
-   * @resolves When the download has been added.
+   * @returns {Promise<void>}
+   *   Resolves when the download has been added.
    * @rejects JavaScript exception.
    */
   add(download) {
@@ -406,20 +394,7 @@ export class DownloadCombinedList extends DownloadList {
       extension = "other";
     }
 
-    try {
-      Services.telemetry.recordEvent(
-        TELEMETRY_EVENT_CATEGORY,
-        "added",
-        "fileExtension",
-        extension,
-        {}
-      );
-    } catch (ex) {
-      console.error(
-        "DownloadsCommon: error recording telemetry event.",
-        ex.message
-      );
-    }
+    Glean.downloads.addedFileExtension.record({ value: extension });
 
     if (download.source.isPrivate) {
       return this._privateList.add(download);
@@ -440,8 +415,8 @@ export class DownloadCombinedList extends DownloadList {
    * @param download
    *        The Download object to remove.
    *
-   * @return {Promise}
-   * @resolves When the download has been removed.
+   * @returns {Promise<void>}
+   *   Resolves when the download has been removed.
    * @rejects JavaScript exception.
    */
   remove(download) {
@@ -531,8 +506,8 @@ export class DownloadSummary {
    * @param list
    *        Underlying DownloadList whose contents should be summarized.
    *
-   * @return {Promise}
-   * @resolves When the view on the underlying list has been registered.
+   * @returns {Promise<void>}
+   *   Resolves when the view on the underlying list has been registered.
    * @rejects JavaScript exception.
    */
   async bindToList(list) {
@@ -558,13 +533,8 @@ export class DownloadSummary {
    *            // Called after any property of the summary has changed.
    *          },
    *        }
-   *
-   * @return {Promise}
-   * @resolves When the view has been registered and the onSummaryChanged
-   *           notification has been sent.
-   * @rejects JavaScript exception.
    */
-  async addView(view) {
+  addView(view) {
     this._views.add(view);
 
     if ("onSummaryChanged" in view) {
@@ -581,13 +551,8 @@ export class DownloadSummary {
    *
    * @param view
    *        The view object to remove.
-   *
-   * @return {Promise}
-   * @resolves When the view has been removed.  At this point, the removed view
-   *           will not receive any more notifications.
-   * @rejects JavaScript exception.
    */
-  async removeView(view) {
+  removeView(view) {
     this._views.delete(view);
   }
 
@@ -605,7 +570,9 @@ export class DownloadSummary {
     // Recalculate the aggregated state.  See the description of the individual
     // properties for an explanation of the summarization logic.
     for (let download of this._downloads) {
-      if (!download.stopped) {
+      if (download.isInCurrentBatch) {
+        // A batch ends when all downloads are stopped, so since there is a
+        // running batch, not all have stopped.
         allHaveStopped = false;
         if (download.hasProgress) {
           allUnknownSize = false;

@@ -14,11 +14,13 @@
  * Other Nimbus features contain specific variables whose keys are enumerated in
  * FeatureManifest.yaml. Conversely, messaging experiment features contain
  * actual messages, with the usual message keys like `template` and `targeting`.
+ *
  * @see FeatureManifest.yaml
  * Messages delivered through these feature IDs record reach events, with the
  * exception of "pbNewtab". If you're adding new features to this list, make
  * sure they're also added in the `messaging_experiments.reach.objects` defined
- * in "toolkit/components/telemetry/Events.yaml"
+ * in "toolkit/components/telemetry/Events.yaml", and as new event metrics in
+ * "toolkit/components/messaging-system/metrics.yaml".
  */
 export const MESSAGING_EXPERIMENTS_DEFAULT_FEATURES = [
   "cfr",
@@ -34,9 +36,24 @@ export const MESSAGING_EXPERIMENTS_DEFAULT_FEATURES = [
   "fxms-message-9",
   "fxms-message-10",
   "fxms-message-11",
+  "fxms-message-12",
+  "fxms-message-13",
+  "fxms-message-14",
+  "fxms-message-15",
+  "fxms-message-16",
+  "fxms-message-17",
+  "fxms-message-18",
+  "fxms-message-19",
+  "fxms-message-20",
+  "fxms-message-21",
+  "fxms-message-22",
+  "fxms-message-23",
+  "fxms-message-24",
+  "fxms-message-25",
   "infobar",
   "moments-page",
   "pbNewtab",
+  "setToDefaultPrompt",
   "spotlight",
   "featureCallout",
 ];

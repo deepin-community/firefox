@@ -20,6 +20,8 @@ off=0 len=7 span[method]="OPTIONS"
 off=7 method complete
 off=8 len=4 span[url]="/url"
 off=13 url complete
+off=13 len=4 span[protocol]="HTTP"
+off=17 protocol complete
 off=18 len=3 span[version]="1.1"
 off=21 version complete
 off=23 len=7 span[header_field]="Header1"
@@ -54,6 +56,8 @@ off=0 len=4 span[method]="HEAD"
 off=4 method complete
 off=5 len=4 span[url]="/url"
 off=10 url complete
+off=10 len=4 span[protocol]="HTTP"
+off=14 protocol complete
 off=15 len=3 span[version]="1.1"
 off=18 version complete
 off=22 headers complete method=2 v=1/1 flags=0 content_length=0
@@ -78,6 +82,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=5 span[url]="/test"
 off=10 url complete
+off=10 len=4 span[protocol]="HTTP"
+off=14 protocol complete
 off=15 len=3 span[version]="1.1"
 off=18 version complete
 off=20 len=10 span[header_field]="User-Agent"
@@ -119,6 +125,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=12 span[url]="/favicon.ico"
 off=17 url complete
+off=17 len=4 span[protocol]="HTTP"
+off=21 protocol complete
 off=22 len=3 span[version]="1.1"
 off=25 version complete
 off=27 len=4 span[header_field]="Host"
@@ -173,6 +181,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=9 span[url]="/dumbpack"
 off=14 url complete
+off=14 len=4 span[protocol]="HTTP"
+off=18 protocol complete
 off=19 len=3 span[version]="1.1"
 off=22 version complete
 off=24 len=13 span[header_field]="aaaaaaaaaaaaa"
@@ -198,6 +208,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=29 span[url]="/get_no_headers_no_body/world"
 off=34 url complete
+off=34 len=4 span[protocol]="HTTP"
+off=38 protocol complete
 off=39 len=3 span[version]="1.1"
 off=42 version complete
 off=46 headers complete method=1 v=1/1 flags=0 content_length=0
@@ -220,6 +232,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=23 span[url]="/get_one_header_no_body"
 off=28 url complete
+off=28 len=4 span[protocol]="HTTP"
+off=32 protocol complete
 off=33 len=3 span[version]="1.1"
 off=36 version complete
 off=38 len=6 span[header_field]="Accept"
@@ -251,6 +265,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=5 span[url]="/test"
 off=10 url complete
+off=10 len=4 span[protocol]="HTTP"
+off=14 protocol complete
 off=15 len=3 span[version]="1.0"
 off=18 version complete
 off=20 len=4 span[header_field]="Host"
@@ -287,6 +303,8 @@ off=2 len=3 span[method]="GET"
 off=5 method complete
 off=6 len=5 span[url]="/test"
 off=12 url complete
+off=12 len=4 span[protocol]="HTTP"
+off=16 protocol complete
 off=17 len=3 span[version]="1.1"
 off=20 version complete
 off=24 headers complete method=1 v=1/1 flags=0 content_length=0
@@ -340,6 +358,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=1 span[url]="/"
 off=6 url complete
+off=6 len=4 span[protocol]="HTTP"
+off=10 protocol complete
 off=11 len=3 span[version]="1.1"
 off=14 version complete
 off=16 len=5 span[header_field]="Line1"
@@ -374,8 +394,9 @@ off=133 message complete
 ## Line folding in header value with LF
 
 <!-- meta={"type": "request"} -->
+
 ```http
-GET / HTTP/1.1\n\
+GET / HTTP/1.1
 Line1:   abc\n\
 \tdef\n\
  ghi\n\
@@ -398,12 +419,60 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=1 span[url]="/"
 off=6 url complete
+off=6 len=4 span[protocol]="HTTP"
+off=10 protocol complete
 off=11 len=3 span[version]="1.1"
 off=14 version complete
-off=15 len=5 span[header_field]="Line1"
-off=21 header_field complete
-off=24 len=3 span[header_value]="abc"
-off=27 error code=10 reason="Invalid header value char"
+off=16 len=5 span[header_field]="Line1"
+off=22 header_field complete
+off=25 len=3 span[header_value]="abc"
+off=28 error code=25 reason="Missing expected CR after header value"
+```
+
+## No LF after CR
+
+<!-- meta={"type":"request"} -->
+
+```http
+GET / HTTP/1.1\rLine: 1
+
+```
+
+```log
+off=0 message begin
+off=0 len=3 span[method]="GET"
+off=3 method complete
+off=4 len=1 span[url]="/"
+off=6 url complete
+off=6 len=4 span[protocol]="HTTP"
+off=10 protocol complete
+off=11 len=3 span[version]="1.1"
+off=14 version complete
+off=15 error code=2 reason="Expected CRLF after version"
+```
+
+## No LF after CR (lenient)
+
+<!-- meta={"type":"request-lenient-optional-lf-after-cr"} -->
+
+```http
+GET / HTTP/1.1\rLine: 1
+
+```
+
+```log
+off=0 message begin
+off=0 len=3 span[method]="GET"
+off=3 method complete
+off=4 len=1 span[url]="/"
+off=6 url complete
+off=6 len=4 span[protocol]="HTTP"
+off=10 protocol complete
+off=11 len=3 span[version]="1.1"
+off=14 version complete
+off=15 len=4 span[header_field]="Line"
+off=20 header_field complete
+off=21 len=1 span[header_value]="1"
 ```
 
 ## Request starting with CRLF
@@ -422,6 +491,8 @@ off=2 len=3 span[method]="GET"
 off=5 method complete
 off=6 len=4 span[url]="/url"
 off=11 url complete
+off=11 len=4 span[protocol]="HTTP"
+off=15 protocol complete
 off=16 len=3 span[version]="1.1"
 off=19 version complete
 off=21 len=7 span[header_field]="Header1"
@@ -450,6 +521,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=1 span[url]="/"
 off=6 url complete
+off=6 len=4 span[protocol]="HTTP"
+off=10 protocol complete
 off=11 len=3 span[version]="1.1"
 off=14 version complete
 off=16 len=4 span[header_field]="Test"
@@ -479,6 +552,8 @@ off=0 len=7 span[method]="OPTIONS"
 off=7 method complete
 off=8 len=4 span[url]="/url"
 off=13 url complete
+off=13 len=4 span[protocol]="HTTP"
+off=17 protocol complete
 off=18 len=3 span[version]="1.1"
 off=21 version complete
 off=23 len=7 span[header_field]="Header1"
@@ -497,7 +572,7 @@ off=61 message complete
 
 See nodejs/test/parallel/test-http-headers-obstext.js
 
-<!-- meta={"type": "request"} -->
+<!-- meta={"type": "request-lenient-headers"} -->
 ```http
 GET / HTTP/1.1
 X-SSL-Nonsense:   -----BEGIN CERTIFICATE-----
@@ -542,6 +617,8 @@ off=0 len=3 span[method]="GET"
 off=3 method complete
 off=4 len=1 span[url]="/"
 off=6 url complete
+off=6 len=4 span[protocol]="HTTP"
+off=10 protocol complete
 off=11 len=3 span[version]="1.1"
 off=14 version complete
 off=16 len=14 span[header_field]="X-SSL-Nonsense"

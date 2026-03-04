@@ -10,7 +10,7 @@
 #include "mozilla/Literals.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_memory.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/XpcomMetrics.h"
 #include "prsystem.h"
 
 namespace mozilla {
@@ -21,14 +21,16 @@ static const char kPHCEnabledPref[] = "memory.phc.enabled";
 static const char kPHCMinRamMBPref[] = "memory.phc.min_ram_mb";
 static const char kPHCAvgDelayFirst[] = "memory.phc.avg_delay.first";
 static const char kPHCAvgDelayNormal[] = "memory.phc.avg_delay.normal";
-static const char kPHCAvgDelayPageRuse[] = "memory.phc.avg_delay.page_reuse";
+static const char kPHCAvgDelayPageReuse[] = "memory.phc.avg_delay.page_reuse";
 
 static const char kPHCAvgDelayContentFirst[] =
     "memory.phc.avg_delay.content.first";
 static const char kPHCAvgDelayContentNormal[] =
     "memory.phc.avg_delay.content.normal";
-static const char kPHCAvgDelayContentPageRuse[] =
+static const char kPHCAvgDelayContentPageReuse[] =
     "memory.phc.avg_delay.content.page_reuse";
+
+static const char kPHCSizePref[] = "memory.phc.size_kb";
 
 // True if PHC has ever been enabled for this process.
 static bool sWasPHCEnabled = false;
@@ -59,6 +61,8 @@ static void UpdatePHCState() {
                           StaticPrefs::memory_phc_avg_delay_page_reuse());
     }
 
+    SetPHCSize(StaticPrefs::memory_phc_size_kb() * 1024);
+
     SetPHCState(Enabled);
     sWasPHCEnabled = true;
   } else {
@@ -71,10 +75,11 @@ static void PrefChangeCallback(const char* aPrefName, void* aNull) {
              (0 == strcmp(aPrefName, kPHCMinRamMBPref)) ||
              (0 == strcmp(aPrefName, kPHCAvgDelayFirst)) ||
              (0 == strcmp(aPrefName, kPHCAvgDelayNormal)) ||
-             (0 == strcmp(aPrefName, kPHCAvgDelayPageRuse)) ||
+             (0 == strcmp(aPrefName, kPHCAvgDelayPageReuse)) ||
              (0 == strcmp(aPrefName, kPHCAvgDelayContentFirst)) ||
              (0 == strcmp(aPrefName, kPHCAvgDelayContentNormal)) ||
-             (0 == strcmp(aPrefName, kPHCAvgDelayContentPageRuse)));
+             (0 == strcmp(aPrefName, kPHCAvgDelayContentPageReuse)) ||
+             (0 == strcmp(aPrefName, kPHCSizePref)));
 
   UpdatePHCState();
 }
@@ -84,11 +89,12 @@ void InitPHCState() {
   Preferences::RegisterCallback(PrefChangeCallback, kPHCMinRamMBPref);
   Preferences::RegisterCallback(PrefChangeCallback, kPHCAvgDelayFirst);
   Preferences::RegisterCallback(PrefChangeCallback, kPHCAvgDelayNormal);
-  Preferences::RegisterCallback(PrefChangeCallback, kPHCAvgDelayPageRuse);
+  Preferences::RegisterCallback(PrefChangeCallback, kPHCAvgDelayPageReuse);
   Preferences::RegisterCallback(PrefChangeCallback, kPHCAvgDelayContentFirst);
   Preferences::RegisterCallback(PrefChangeCallback, kPHCAvgDelayContentNormal);
   Preferences::RegisterCallback(PrefChangeCallback,
-                                kPHCAvgDelayContentPageRuse);
+                                kPHCAvgDelayContentPageReuse);
+  Preferences::RegisterCallback(PrefChangeCallback, kPHCSizePref);
   UpdatePHCState();
 }
 
@@ -100,13 +106,14 @@ void ReportPHCTelemetry() {
   MemoryUsage usage;
   PHCMemoryUsage(usage);
 
-  Accumulate(Telemetry::MEMORY_PHC_SLOP, usage.mFragmentationBytes);
+  glean::memory_phc::slop.Accumulate(usage.mFragmentationBytes);
 
   PHCStats stats;
   GetPHCStats(stats);
 
-  Accumulate(Telemetry::MEMORY_PHC_SLOTS_ALLOCATED, stats.mSlotsAllocated);
-  Accumulate(Telemetry::MEMORY_PHC_SLOTS_FREED, stats.mSlotsFreed);
+  glean::memory_phc::slots_allocated.AccumulateSingleSample(
+      stats.mSlotsAllocated);
+  glean::memory_phc::slots_freed.AccumulateSingleSample(stats.mSlotsFreed);
   // There are also slots that are unused (neither free nor allocated) they
   // can be calculated by knowing the total number of slots.
 }

@@ -18,6 +18,8 @@
 #include "mozilla/Likely.h"
 #include "mozilla/LoggingCore.h"
 
+#include "fmt/format.h"
+
 #define MOZ_LOGGING_ENABLED 1
 
 // The mandatory extension we add to log files.  Note that rotate will append
@@ -84,11 +86,6 @@ class LogModule {
   static void SetCaptureStacks(bool aCaptureStacks);
 
   /**
-   * Disable all log modules.
-   */
-  static void DisableModules();
-
-  /**
    * Indicates whether or not the given log level is enabled.
    */
   bool ShouldLog(LogLevel aLevel) const { return mLevel >= aLevel; }
@@ -111,6 +108,12 @@ class LogModule {
 
   void Printv(LogLevel aLevel, const TimeStamp* aStart, const char* aFmt,
               va_list aArgs) const MOZ_FORMAT_PRINTF(4, 0);
+
+  /**
+   * Use {fmt} for specifying format
+   */
+  void PrintvFmt(LogLevel aLevel, fmt::string_view aFmt,
+                 fmt::format_args aArgs) const;
 
   /**
    * Retrieves the module name.
@@ -179,6 +182,12 @@ inline bool log_test(const LogModule* module, LogLevel level) {
 
 void log_print(const LogModule* aModule, LogLevel aLevel, const char* aFmt, ...)
     MOZ_FORMAT_PRINTF(3, 4);
+
+template <typename... T>
+inline void log_print_fmt(const LogModule* aModule, LogLevel aLevel,
+                          fmt::format_string<T...> aFmt, T&&... aArgs) {
+  aModule->PrintvFmt(aLevel, aFmt, fmt::make_format_args(aArgs...));
+}
 
 void log_print(const LogModule* aModule, LogLevel aLevel, TimeStamp* aStart,
                const char* aFmt, ...) MOZ_FORMAT_PRINTF(4, 5);
@@ -263,6 +272,14 @@ void log_print(const LogModule* aModule, LogLevel aLevel, TimeStamp* aStart,
                                    MOZ_LOG_EXPAND_ARGS _args);     \
       }                                                            \
     } while (0)
+#  define MOZ_LOG_FMT(_module, _level, _fmt, ...)                        \
+    do {                                                                 \
+      const ::mozilla::LogModule* moz_real_module = _module;             \
+      if (MOZ_LOG_TEST(moz_real_module, _level)) {                       \
+        mozilla::detail::log_print_fmt(moz_real_module, _level,          \
+                                       FMT_STRING(_fmt), ##__VA_ARGS__); \
+      }                                                                  \
+    } while (0)
 #else
 #  define MOZ_LOG(_module, _level, _args)                      \
     do {                                                       \
@@ -278,10 +295,56 @@ void log_print(const LogModule* aModule, LogLevel aLevel, TimeStamp* aStart,
                                    MOZ_LOG_EXPAND_ARGS _args); \
       }                                                        \
     } while (0)
+#  define MOZ_LOG_FMT(_module, _level, _fmt, ...)                         \
+    do {                                                                  \
+      if (MOZ_LOG_TEST(_module, _level)) {                                \
+        mozilla::detail::log_print_fmt(_module, _level, FMT_STRING(_fmt), \
+                                       ##__VA_ARGS__);                    \
+      }                                                                   \
+    } while (0)
+#endif
+
+#ifdef DEBUG
+   // MOZ_LOG_DEBUG_ONLY calls MOZ_LOG only in debug builds.
+#  define MOZ_LOG_DEBUG_ONLY(...) MOZ_LOG(__VA_ARGS__)
+   // MOZ_LOG_DURATION_DEBUG_ONLY calls MOZ_LOG_DURATION only in debug builds.
+#  define MOZ_LOG_DURATION_DEBUG_ONLY(...) MOZ_LOG_DURATION(__VA_ARGS__)
+   // MOZ_LOG_FMT_DEBUG_ONLY calls MOZ_LOG_FMT only in debug builds.
+#  define MOZ_LOG_FMT_DEBUG_ONLY(...) MOZ_LOG_FMT(__VA_ARGS__)
+#else
+   // MOZ_LOG_DEBUG_ONLY is noop in non-debug builds.
+#  define MOZ_LOG_DEBUG_ONLY(...)
+   // MOZ_LOG_DURATION_DEBUG_ONLY is noop in non-debug builds.
+#  define MOZ_LOG_DURATION_DEBUG_ONLY(...)
+   // MOZ_LOG_FMT_DEBUG_ONLY is noop in non-debug builds.
+#  define MOZ_LOG_FMT_DEBUG_ONLY(...)
 #endif
 
 // This #define is a Logging.h-only knob!  Don't encourage people to get fancy
 // with their log definitions by exporting it outside of Logging.h.
 #undef MOZ_LOGGING_ENABLED
+
+/**
+ * Define a utility method to pretty print a boolean value.
+ * TrueOrFalse, YesOrNo, SucceededOrFailed, OkOrError, DoneOrIgnored,
+ * HandledOrIgnored, DoneOrCanceled, HandledOrCanceled are defined in the
+ * global scope.
+ */
+#define MOZ_DEFINE_BOOL_PRETTY_PRINTER(_method_name, _true_str, _false_str) \
+  inline const char* _method_name(bool aBool) {                             \
+    return aBool ? #_true_str : #_false_str;                                \
+  }
+
+namespace mozilla {
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(TrueOrFalse, true, false);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(YesOrNo, Yes, No);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(OnOrOff, On, Off);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(SucceededOrFailed, Succeeded, Failed);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(OkOrError, OK, Failed);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(DoneOrIgnored, Done, Ignored);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(HandledOrIgnored, Handled, Ignored);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(DoneOrCanceled, Done, Canceled);
+MOZ_DEFINE_BOOL_PRETTY_PRINTER(HandledOrCanceled, Handled, Canceled);
+}  // namespace mozilla
 
 #endif  // mozilla_logging_h

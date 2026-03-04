@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -114,9 +111,6 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Marcar ista pachina con o marcapachinas ({ $shortcut })
 
-## Page Action Context Menu
-
-
 ## Auto-hide Context Menu
 
 full-screen-autohide =
@@ -128,7 +122,7 @@ full-screen-exit =
 
 ## Search Engine selection buttons (one-offs)
 
-# This string prompts the user to use the list of one-click search engines in
+# This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
 search-one-offs-with-title = Esta vegada, mira con:
 search-one-offs-change-settings-compact-button =
@@ -166,11 +160,6 @@ search-one-offs-tabs =
     .tooltiptext = Pestanyas ({ $restrict })
 search-one-offs-history =
     .tooltiptext = Historial ({ $restrict })
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
 
 ## Bookmark Panel
 
@@ -255,17 +244,6 @@ browser-window-restore-down-button =
 browser-window-close-button =
     .tooltiptext = Zarrar
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = Se compartirán todas as finestras visibles en a suya pantalla.
@@ -278,9 +256,6 @@ sharing-warning-proceed-to-tab =
     .label = Pasar a la pestanya
 sharing-warning-disable-for-session =
     .label = Desactivar la protección de compartición pa esta sesión
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
@@ -354,13 +329,14 @@ urlbar-result-action-search-w-engine = Mirar con { $engine }
 urlbar-result-action-switch-tab = Cambiar t'a pestanya
 urlbar-result-action-visit = Vesitar
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
-## In these actions "Search" is a verb, followed by where the search is performed.
+## Strings used for buttons in the urlbar
 
-
-## Labels shown above groups of urlbar results
-
+urlbar-searchmode-bookmarks =
+    .label = Marcapachinas
+urlbar-searchmode-tabs =
+    .label = Pestanyas
+urlbar-searchmode-history =
+    .label = Historial
 
 ## Reader View toolbar buttons
 
@@ -370,11 +346,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Zarrar a Vista de Lectura
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -459,9 +430,6 @@ save-to-pocket-button =
     .label = Alzar en { -pocket-brand-name }
     .tooltiptext = Alzar en { -pocket-brand-name }
 
-## Repair text encoding toolbar button
-
-
 ## Customize Toolbar Buttons
 
 toolbar-overflow-customize-button =
@@ -493,9 +461,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Bell audio u video d'iste puesto fan servir software DRM, o qual puet limitar o que { -brand-short-name } le deixará fer con ell.
 
-## Password save/update panel
-
-
 ##
 
 ui-tour-info-panel-close =
@@ -519,10 +484,6 @@ popups-infobar-dont-show-message =
 picture-in-picture-hide-toggle =
     .label = Amaga lo commutador d'imachen incrustada
     .accesskey = A
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -562,29 +523,12 @@ tabs-toolbar-list-all-tabs =
     .label = Amostrar todas as pestanyas
     .tooltiptext = Amostrar todas as pestanyas
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } ninvia automaticament bells datos ta { -vendor-short-name } pa que podamos amillorar a suya experiencia.
 data-reporting-notification-button =
     .label = Deixar-me trigar o que quiero compartir
     .accesskey = c
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -593,9 +537,6 @@ refresh-blocked-redirect-label = { -brand-short-name } privó que ista pachina s
 refresh-blocked-allow =
     .label = Permitir
     .accesskey = P
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

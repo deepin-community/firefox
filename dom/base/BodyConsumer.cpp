@@ -6,6 +6,8 @@
 
 #include "BodyConsumer.h"
 
+#include "mozilla/ScopeExit.h"
+#include "mozilla/TaskQueue.h"
 #include "mozilla/dom/BlobBinding.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/BlobURLProtocolHandler.h"
@@ -22,15 +24,13 @@
 #include "mozilla/dom/WorkerRunnable.h"
 #include "mozilla/dom/WorkerScope.h"
 #include "mozilla/ipc/PBackgroundSharedTypes.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/TaskQueue.h"
 #include "nsComponentManagerUtils.h"
 #include "nsIFile.h"
-#include "nsIThreadRetargetableRequest.h"
+#include "nsIInputStream.h"
 #include "nsIStreamLoader.h"
+#include "nsIThreadRetargetableRequest.h"
 #include "nsNetUtil.h"
 #include "nsProxyRelease.h"
-#include "nsIInputStream.h"
 
 // Undefine the macro of CreateFile to avoid FileCreatorHelper#CreateFile being
 // replaced by FileCreatorHelper#CreateFileW.
@@ -439,25 +439,17 @@ nsresult BodyConsumer::GetBodyLocalFile(nsIFile** aFile) const {
     return NS_OK;
   }
 
-  nsresult rv;
-  nsCOMPtr<nsIFile> file = do_CreateInstance("@mozilla.org/file/local;1", &rv);
-  if (NS_FAILED(rv)) {
-    return rv;
-  }
-
-  rv = file->InitWithPath(mBodyLocalPath);
-  NS_ENSURE_SUCCESS(rv, rv);
+  nsCOMPtr<nsIFile> file;
+  MOZ_TRY(NS_NewLocalFile(mBodyLocalPath, getter_AddRefs(file)));
 
   bool exists;
-  rv = file->Exists(&exists);
-  NS_ENSURE_SUCCESS(rv, rv);
+  MOZ_TRY(file->Exists(&exists));
   if (!exists) {
     return NS_ERROR_FILE_NOT_FOUND;
   }
 
   bool isDir;
-  rv = file->IsDirectory(&isDir);
-  NS_ENSURE_SUCCESS(rv, rv);
+  MOZ_TRY(file->IsDirectory(&isDir));
   if (isDir) {
     return NS_ERROR_FILE_IS_DIRECTORY;
   }
@@ -621,7 +613,7 @@ void BodyConsumer::DispatchContinueConsumeBlobBody(
   RefPtr<AbortConsumeBlobBodyControlRunnable> r =
       new AbortConsumeBlobBodyControlRunnable(this, aWorkerRef->Private());
 
-  Unused << NS_WARN_IF(!r->Dispatch(aWorkerRef->Private()));
+  (void)NS_WARN_IF(!r->Dispatch(aWorkerRef->Private()));
 }
 
 /*

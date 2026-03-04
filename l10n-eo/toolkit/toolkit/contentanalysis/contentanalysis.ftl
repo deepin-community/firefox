@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Skanado progresas
 contentanalysis-slow-agent-dialog-body-file = { $agent } kontrolas ĉu “{ $filename }” kongruas kun la datumaj reguloj de via organizo. Tio ĉi povas bezoni iom da tempo.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } kontrolas ĉu “{ $filename }” kaj alia elemento kongruas kun la datumaj reguloj de via organizo. Tio ĉi povas bezoni iom da tempo.
+       *[other] { $agent } kontrolas ĉu “{ $filename }” kaj { $count } aliaj elementoj kongruas kun la datumaj reguloj de via organizo. Tio ĉi povas bezoni iom da tempo.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } kontrolas ĉu via alguaĵo kongruas kun la datumaj reguloj de via organizo. Tio ĉi povas bezoni iom da tempo.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,11 +34,13 @@ contentanalysis-operationtype-clipboard = tondujo
 contentanalysis-operationtype-dropped-text = demetita teksto
 contentanalysis-operationtype-print = presi
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = alŝuto de “{ $filename }”
+contentanalysis-upload-description = alŝuto de “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = elŝuto de “{ $filename }”
 contentanalysis-warndialogtitle = Tiu ĉi enhavo povus esti nesekura
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
-contentanalysis-warndialogtext = Via organizo uzas programon kiuj evitas perdon de datumoj kaj ĝi signalis tiun ĉi enhavon kiel nesekuran: { $content }. Ĉu tamen uzi ĝin?
+contentanalysis-warndialogtext = Via organizo uzas programon kiu evitas perdon de datumoj kaj ĝi signalis tiun ĉi enhavon kiel nesekuran: { $content }. Ĉu tamen uzi ĝin?
 contentanalysis-warndialog-response-allow = Uzi enhavon
 contentanalysis-warndialog-response-deny = Nuligi
 contentanalysis-notification-title = Analizo de enhavo
@@ -39,22 +50,7 @@ contentanalysis-notification-title = Analizo de enhavo
 contentanalysis-genericresponse-message = La analizo de enhavo respondis per { $response } al rimedo: { $content }
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-block-message = Via organizo uzas programon kiuj evitas perdon de datumoj kaj ĝi blokis tiun ĉi enhavon: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Eraro okazis dum komunikado kun la programo kiu evitas perdon de datumoj. Transporto rifuzita por rimedo: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Eraro okazis dum komunikado kun { $agent }. Transporto rifuzita por la rimedo: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Ne eblis konektiĝi al { $agent }. Transporto rifuzita por la rimedo: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Malsukcesa kontrolo de subskribo de { $agent }. Transporto rifuzita por la rimedo: { $content }.
+contentanalysis-block-message = Via organizo uzas programon kiu evitas perdon de datumoj kaj ĝi blokis tiun ĉi enhavon: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Rifuzita alŝuto de “{ $filename }
 contentanalysis-error-message-dropped-text = Rifuzita treno kaj faligo.
 contentanalysis-error-message-clipboard = Rifuzita algluo.
 contentanalysis-error-message-print = Rifuzita presado.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Elĉerpiĝis la tempo por konektiĝi al { $agent }. { $contentName } estis blokita.
 contentanalysis-block-dialog-title-upload-file = Vi ne rajtas alŝuti tiun ĉi dosieron
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Laŭ la politikoj de protekto de datumoj de via organizo vi ne rajtas alŝuti la dosieron “{ $filename }”. Kontaktu vian administranton por havi pli da informo.
+contentanalysis-block-dialog-title-download-file = Vi ne rajtas elŝuti tiun ĉi dosieron
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Laŭ la politikoj de protekto de datumoj de via organizo vi ne rajtas elŝuti la dosieron “{ $filename }”. Kontaktu vian administranton por havi pli da informo.
 contentanalysis-block-dialog-title-clipboard = Vi ne rajtas alglui tiun ĉi enhavon
 contentanalysis-block-dialog-body-clipboard = Laŭ la politikoj de protekto de datumoj de via organizo vi ne rajtas alglui tiun ĉi enhavon. Kontaktu vian administranton por havi pli da informo.
 contentanalysis-block-dialog-title-dropped-text = Vi ne rajtas faligi tiun ĉi enhavon

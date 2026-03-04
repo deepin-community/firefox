@@ -2,23 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@namespace html url("http://www.w3.org/1999/xhtml");
-
-:root {
-  --sidebar-background-color: -moz-sidebar;
-  --sidebar-text-color: -moz-sidebartext;
-  --sidebar-border-color: var(--lwt-sidebar-border-color, -moz-sidebarborder);
-  --sidebar-collapsed-width: 51px;
-  --sidebar-expanded-width: 192px;
-  --sidebar-screenshot-overlay-z-index: 3;
-  --sidebar-screenshot-opacity-animation-duration: 100ms;
-  --sidebar-screenshot-translate-animation-duration: 300ms;
-}
-
 #sidebar-box {
-  background-color: var(--sidebar-background-color);
-  color: var(--sidebar-text-color);
-  text-shadow: none;
   max-width: 75vw;
   min-width: 14em;
   width: 18em;
@@ -31,23 +15,41 @@
   }
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "sidebar.revamp") {
+  @media -moz-pref("sidebar.revamp") {
     min-width: 200px;
-    background-color: var(--toolbar-bgcolor);
-    color: var(--toolbar-color);
+    width: 340px;
     padding-block-end: var(--space-small);
-    padding-inline-end: var(--space-small);
     position: relative;
-
-    &[positionend] {
-      padding-inline-end: 0;
-      padding-inline-start: var(--space-small);
-    }
+    z-index: var(--browser-area-z-index-sidebar);
   }
 
   &[sidebarcommand="viewGenaiChatSidebar"] {
     min-width: 400px;
   }
+
+  &[sidebarcommand="viewCPMSidebar"] {
+    min-width: 260px;
+  }
+}
+
+#sidebar-main,
+#sidebar-box {
+  text-shadow: none;
+  max-width: 75vw;
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media not -moz-pref("sidebar.revamp") {
+    background-color: var(--sidebar-background-color);
+    color: var(--sidebar-text-color);
+    /* Note that with sidebar.revamp we apply the --sidebar-background-color to the
+     * #sidebar browser. We still need the #sidebar-box background to match the
+     * toolbar tho - this background is set on the #browser ancestor rather than here */
+  }
+}
+
+.sidebar-browser-stack > .dialogStack > .dialogTemplate > .dialogBox {
+  /* Not enough horizontal space, remove the margin */
+  margin-inline: 0;
 }
 
 #sidebar-header {
@@ -66,46 +68,75 @@
   flex: 1;
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "sidebar.revamp") {
-    height: 100%;
-    box-sizing: border-box;
-    display: inline-block;
-    width: 100%;
+  @media -moz-pref("sidebar.revamp") {
     border-radius: var(--border-radius-medium);
-    box-shadow: 0 2px 6px 0 light-dark(rgb(0, 0, 0, 0.2), rgb(0, 0, 0, 0.8));
-    border: 0.5px solid var(--sidebar-border-color);
+    box-shadow: var(--content-area-shadow);
+    outline: 0.5px solid var(--sidebar-border-color);
+    background-color: var(--sidebar-background-color);
+    color: var(--sidebar-text-color);
   }
 }
 
 .sidebar-splitter {
-  @media not (-moz-platform: linux) {
-    /* We don't let the splitter overlap the sidebar on Linux since the sidebar's
-    scrollbar is too narrow on Linux. */
-    appearance: none;
-    border: 0 solid;
-    border-inline-end-width: 1px;
-    border-color: var(--sidebar-border-color);
-    min-width: 1px;
-    width: 4px;
-    background-image: none !important;
-    background-color: transparent;
-    margin-inline-start: -4px;
-    position: relative;
+  /* Ensure the splitter is painted on top of the sidebar box it overlaps.
+  Otherwise, the user may be unable to drag the splitter to resize the sidebar. */
+  position: relative;
+  z-index: var(--browser-area-z-index-sidebar-splitter);
+  --splitter-width: 4px;
+  @media (-moz-overlay-scrollbars) {
+    --splitter-width: 2px;
+  }
 
-    #sidebar-box[positionend] + & {
-      border-inline-width: 1px 0;
-      margin-inline: 0 -4px;
+  min-width: 1px;
+  width: var(--splitter-width);
+  appearance: none;
+  border: none;
+  transition: background-color 0.5s ease-in-out;
+  margin-inline: 0;
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media -moz-pref("sidebar.revamp") {
+    background-color: transparent;
+    &:hover {
+      background-color: var(--focus-outline-color);
     }
   }
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "sidebar.revamp") {
-    transition: background-color 0.5s ease-in-out;
-    border-color: transparent;
-
-    &:hover {
-      background-color: var(--focus-outline-color);
+  @media not -moz-pref("sidebar.revamp") {
+    border: 0 solid;
+    border-color: var(--sidebar-border-color);
+    border-inline-end-width: 1px;
+    #sidebar-box[sidebar-positionend] + & {
+      border-inline-width: 1px 0;
     }
+  }
+}
+
+/* stylelint-disable-next-line media-query-no-invalid */
+@media -moz-pref("sidebar.revamp") {
+  #sidebar-splitter {
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/no-non-semantic-token-usage */
+    width: var(--space-medium);
+    border-inline: calc((var(--space-medium) - var(--splitter-width)) / 2) solid transparent;
+    background-clip: padding-box;
+  }
+}
+
+#sidebar-launcher-splitter {
+  /* We don't let the splitter overlap the sidebar on Linux since the
+   * scrollbar is too narrow. */
+  @media not (-moz-platform: linux) {
+    margin-inline-start: calc(-1 * var(--splitter-width));
+
+    #sidebar-main[sidebar-positionend] + & {
+      margin-inline: 0 calc(-1 * var(--splitter-width));
+    }
+  }
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media not -moz-pref("sidebar.verticalTabs") {
+    display: none;
   }
 }
 
@@ -130,8 +161,8 @@
 
 #sidebar-switcher-arrow {
   list-style-image: url(chrome://global/skin/icons/arrow-down-12.svg);
-  width: 12px;
-  height: 12px;
+  width: var(--icon-size-xsmall);
+  height: var(--icon-size-xsmall);
 }
 
 #sidebar-switcher-target {
@@ -198,109 +229,161 @@ menuseparator + #sidebar-extensions-separator {
 }
 
 .webextension-menuitem {
-  list-style-image: var(--webextension-menuitem-image, inherit) !important;
+  --menuitem-icon: var(--webextension-menuitem-image);
 }
 
 /* Sidebar animation */
 
-.sidebar-animation-screenshot {
-  position: absolute;
-  z-index: var(--sidebar-screenshot-overlay-z-index);
-  inset-inline-start: 0;
-  inset-inline-end: unset;
+#sidebar-main,
+sidebar-main,
+#sidebar-box,
+#sidebar-splitter,
+#tabbrowser-tabbox {
+  transform-origin: 0 0;
+  /* will-change would cause us to be considered animated unconditionally, see
+   * bug 1930674 */
+  translate: 0;
+}
 
-  &.collapsed {
-    transform: translateX(var(--sidebar-collapsed-width));
+#sidebar-main {
+  /* Prevent overflow during sidebar animation when the sidebar is reordered */
+  overflow: clip;
 
-    &.translate {
-      animation: var(--sidebar-screenshot-translate-animation-duration) ease-in-out 1 sidebar-translate-expand;
-    }
+  &[sidebar-ongoing-animations] > sidebar-main::part(overflow-button) {
+    display: none;
   }
+}
 
-  &.expanded {
-    transform: translateX(var(--sidebar-expanded-width));
+/* Expand on hover */
 
-    &.translate {
-      animation: var(--sidebar-screenshot-translate-animation-duration) ease-in-out 1 sidebar-translate-collapse;
-    }
-  }
+:root[sidebar-expand-on-hover] {
+  #sidebar-main {
+    border-radius: inherit;
+    background-color: inherit;
+    position: relative;
+    inset: 0;
+    inset-inline-end: unset;
 
-  &.fadeOut {
-    animation: var(--sidebar-screenshot-opacity-animation-duration) ease-in-out 1 sidebar-opacity;
-  }
+    /* We only want to apply these styles in two scenarios:
+      * When the sidebar is expanded AND hovered
+      * When the sidebar is in the process of moving from expanded to collapsed
+    */
+    &[sidebar-launcher-expanded],
+    &[sidebar-ongoing-animations]:not([sidebar-launcher-expanded]) {
+      z-index: var(--browser-area-z-index-sidebar-expand-on-hover);
+      position: absolute;
+      color: var(--toolbox-textcolor);
+      /* With Windows Mica, the toolbox background is not guaranteed to be
+       * opaque. Make sure there's some opaque backdrop that matches our color
+       * scheme. These colors match the "transparency effects disabled" mica
+       * backdrop on Windows 11, which is as good as we can make it. */
+      background-image: linear-gradient(var(--toolbox-bgcolor));
+      background-color: light-dark(#e8e8e8, #202020);
 
-  &.positionend {
-    inset-inline-start: unset;
-    inset-inline-end: 0;
+      &:not([sidebar-positionend]) {
+        border-inline-end: 0.01px solid var(--sidebar-border-color);
+      }
 
-    &.collapsed {
-      transform: translateX(calc(var(--sidebar-collapsed-width) * -1));
-
-      &.translate {
-        animation: var(--sidebar-screenshot-translate-animation-duration) ease-in-out 1 sidebar-translate-expand-rtl;
+      &[sidebar-positionend] {
+        border-inline-start: 0.01px solid var(--sidebar-border-color);
       }
     }
 
-    &.expanded {
-      transform: translateX(calc(var(--sidebar-expanded-width) * -1));
+    :root[lwtheme] & {
+      border-radius: unset;
+      border-inline: unset;
+      color: var(--toolbox-textcolor);
+      background-color: var(--toolbox-bgcolor);
 
-      &.translate {
-        animation: var(--sidebar-screenshot-translate-animation-duration) ease-in-out 1 sidebar-translate-collapse-rtl;
+      &:-moz-window-inactive {
+        color: var(--toolbox-textcolor-inactive);
+        background-color: var(--toolbox-bgcolor-inactive);
       }
     }
 
-    &.fadeOut {
-      animation: var(--sidebar-screenshot-opacity-animation-duration) ease-in-out 1 sidebar-opacity;
+    &[sidebar-positionend] {
+      inset-inline-start: unset;
+      inset-inline-end: 0;
+    }
+  }
+
+  #sidebar-launcher-splitter[sidebar-launcher-expanded] {
+    visibility: hidden;
+  }
+
+  /* We add margin to compensate for the launcher width to the element next to it.
+  The element next to it can be the sidebar box or the tabbox,
+  depending on whether the sidebar box is expanded */
+  #tabbrowser-tabbox {
+    &:not([sidebar-positionend]) {
+      &:not([sidebar-panel-open]) {
+        margin-inline-start: 0;
+      }
+
+      &[sidebar-launcher-expanded][sidebar-launcher-hovered]:not([sidebar-panel-open]),
+      &[sidebar-ongoing-animations]:not([sidebar-launcher-expanded], [sidebar-panel-open]) {
+        margin-inline-start: var(--sidebar-launcher-collapsed-width);
+      }
+    }
+
+    &[sidebar-positionend] {
+      &:not([sidebar-panel-open]) {
+        margin-inline-end: 0;
+      }
+
+      &[sidebar-launcher-expanded][sidebar-launcher-hovered]:not([sidebar-panel-open]),
+      &[sidebar-ongoing-animations]:not([sidebar-panel-open], [sidebar-launcher-expanded]) {
+        margin-inline-end: var(--sidebar-launcher-collapsed-width);
+      }
+    }
+  }
+
+  #sidebar-box {
+    &:not([sidebar-positionend]) {
+      &[sidebar-panel-open] {
+        margin-inline-start: 0;
+      }
+
+      &[sidebar-panel-open][sidebar-launcher-hovered][sidebar-launcher-expanded],
+      &[sidebar-ongoing-animations][sidebar-panel-open] {
+        margin-inline-start: var(--sidebar-launcher-collapsed-width);
+      }
+    }
+
+    &[sidebar-positionend] {
+      &[sidebar-panel-open] {
+        margin-inline-end: 0;
+      }
+
+      &[sidebar-panel-open][sidebar-launcher-hovered][sidebar-launcher-expanded],
+      &[sidebar-ongoing-animations][sidebar-panel-open] {
+        margin-inline-end: var(--sidebar-launcher-collapsed-width);
+      }
     }
   }
 }
 
-@keyframes sidebar-translate-expand {
-  0% {
-    transform: translateX(var(--sidebar-collapsed-width));
-  }
-
-  100% {
-    transform: translateX(var(--sidebar-expanded-width));
-  }
-}
-
-@keyframes sidebar-translate-collapse {
-  0% {
-    transform: translateX(var(--sidebar-expanded-width));
-  }
-
-  100% {
-    transform: translateX(var(--sidebar-collapsed-width));
+/* stylelint-disable-next-line media-query-no-invalid */
+@media -moz-pref("sidebar.visibility", "expand-on-hover") {
+  /* We need these rules to apply at all times when the sidebar.visibility
+    pref is set to "expand-on-hover" as opposed to when the "sidebar-expand-on-hover" attribute
+    has been added to root. There are certain scenarios when that attribute is temporarily
+    removed from root such as when toggling the sidebar to expand with the toolbar button. */
+  #sidebar {
+    box-shadow: none;
+    margin-block-start: 1px;
+    outline-offset: -0.1px;
   }
 }
 
-@keyframes sidebar-translate-expand-rtl {
-  0% {
-    transform: translateX(calc(var(--sidebar-collapsed-width) * -1));
-  }
-
-  100% {
-    transform: translateX(calc(var(--sidebar-expanded-width) * -1));
-  }
+/* History Menu */
+#sidebar-history-sort-by-heading {
+  margin-block: var(--space-xsmall);
 }
 
-@keyframes sidebar-translate-collapse-rtl {
-  0% {
-    transform: translateX(calc(var(--sidebar-expanded-width) * -1));
-  }
-
-  100% {
-    transform: translateX(calc(var(--sidebar-collapsed-width) * -1));
-  }
-}
-
-@keyframes sidebar-opacity {
-  0% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
+#sidebar-history-clear {
+  padding: var(--menuitem-padding);
+  &::before {
+    content: unset;
   }
 }

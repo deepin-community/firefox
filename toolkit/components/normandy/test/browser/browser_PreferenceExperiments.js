@@ -213,7 +213,8 @@ const migrationsInfo = [
 /**
  * Make a mock `JsonFile` object with a no-op `saveSoon` method and a deep copy
  * of the data passed.
- * @param {Object} data the data in the store
+ *
+ * @param {object} data the data in the store
  */
 function makeMockJsonFile(data = {}) {
   return {
@@ -2126,8 +2127,6 @@ decorate_task(
 
 // When a default-branch experiment starts, prefs that already exist and that
 // have user values should not be changed.
-// Bug 1735344:
-// eslint-disable-next-line mozilla/reject-addtask-only
 decorate_task(
   withMockExperiments(),
   withStub(TelemetryEnvironment, "setExperimentActive"),
@@ -2176,4 +2175,6 @@ decorate_task(
       "Pref should be marked as overridden"
     );
   }
+  // Bug 1735344:
+  // eslint-disable-next-line mozilla/reject-addtask-only
 ).only();

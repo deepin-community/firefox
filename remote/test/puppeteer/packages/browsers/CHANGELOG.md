@@ -1,5 +1,117 @@
 # Changelog
 
+## [2.10.5](https://github.com/puppeteer/puppeteer/compare/browsers-v2.10.4...browsers-v2.10.5) (2025-05-20)
+
+
+### Bug Fixes
+
+* don't expect extra arguments ([#13886](https://github.com/puppeteer/puppeteer/issues/13886)) ([fd4e8d3](https://github.com/puppeteer/puppeteer/commit/fd4e8d38385ae8d3ab4dfbf135611c6489e26d19))
+
+## [2.10.4](https://github.com/puppeteer/puppeteer/compare/browsers-v2.10.3...browsers-v2.10.4) (2025-05-07)
+
+
+### Bug Fixes
+
+* decode URL before parsing ([#13857](https://github.com/puppeteer/puppeteer/issues/13857)) ([c747eb8](https://github.com/puppeteer/puppeteer/commit/c747eb882ca3825d65167b13ebf1e016ccbbaf9b))
+
+## [2.10.3](https://github.com/puppeteer/puppeteer/compare/browsers-v2.10.2...browsers-v2.10.3) (2025-05-02)
+
+
+### Bug Fixes
+
+* explicitly configure version in yargs ([#13830](https://github.com/puppeteer/puppeteer/issues/13830)) ([6983da9](https://github.com/puppeteer/puppeteer/commit/6983da941ef35dea8c867e112fd6b1585ecb16ee))
+
+## [2.10.2](https://github.com/puppeteer/puppeteer/compare/browsers-v2.10.1...browsers-v2.10.2) (2025-04-22)
+
+
+### Bug Fixes
+
+* revert makeProgressCallback changes ([#13800](https://github.com/puppeteer/puppeteer/issues/13800)) ([f04ef25](https://github.com/puppeteer/puppeteer/commit/f04ef250c191d275942d60851640e69cddba70e2))
+* support default download callback option in install() ([#13801](https://github.com/puppeteer/puppeteer/issues/13801)) ([334e7ff](https://github.com/puppeteer/puppeteer/commit/334e7ff4615ee11dc29abcb94368236c65cf39d1))
+
+## [2.10.1](https://github.com/puppeteer/puppeteer/compare/browsers-v2.10.0...browsers-v2.10.1) (2025-04-22)
+
+
+### Bug Fixes
+
+* dynamically import yargs and progress in CLI ([#13781](https://github.com/puppeteer/puppeteer/issues/13781)) ([3cfed9b](https://github.com/puppeteer/puppeteer/commit/3cfed9b71fa3f9dcdf3414a29022e4e64538549d))
+
+## [2.10.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.9.0...browsers-v2.10.0) (2025-04-09)
+
+
+### Features
+
+* expose utilities for managing browser artifacts manually ([#13761](https://github.com/puppeteer/puppeteer/issues/13761)) ([43baf13](https://github.com/puppeteer/puppeteer/commit/43baf1328665212a088f59fc258da53ca60e2a5e))
+
+## [2.9.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.8.0...browsers-v2.9.0) (2025-03-31)
+
+
+### Features
+
+* support dumpio option on launch ([#13656](https://github.com/puppeteer/puppeteer/issues/13656)) ([332af85](https://github.com/puppeteer/puppeteer/commit/332af850bc42fd4df1b4e8ae210f502fb8098f71))
+* support extra args to launch ([#13658](https://github.com/puppeteer/puppeteer/issues/13658)) ([844f013](https://github.com/puppeteer/puppeteer/commit/844f0134d231ed013e8b3f537d9336e6cd0a8e4b))
+
+## [2.8.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.7.1...browsers-v2.8.0) (2025-03-05)
+
+
+### Features
+
+* add firefox arm64 downloads ([#13646](https://github.com/puppeteer/puppeteer/issues/13646)) ([92ca975](https://github.com/puppeteer/puppeteer/commit/92ca975ffc90968c6759be0481459ecc56f4606c))
+
+## [2.7.1](https://github.com/puppeteer/puppeteer/compare/browsers-v2.7.0...browsers-v2.7.1) (2025-02-05)
+
+
+### Bug Fixes
+
+* close the readline interface ([#13558](https://github.com/puppeteer/puppeteer/issues/13558)) ([7073519](https://github.com/puppeteer/puppeteer/commit/70735190449247774d273e11968d2b07f6c5accd))
+
+## [2.7.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.6.1...browsers-v2.7.0) (2025-01-09)
+
+
+### Features
+
+* resolve relative paths to absolute before unpacking ([#13466](https://github.com/puppeteer/puppeteer/issues/13466)) ([f23c391](https://github.com/puppeteer/puppeteer/commit/f23c391e3c22bf9c9e9ff2c400f5a0c6b07effad))
+
+
+### Bug Fixes
+
+* skip retries for same URL ([#13469](https://github.com/puppeteer/puppeteer/issues/13469)) ([04135ec](https://github.com/puppeteer/puppeteer/commit/04135ec6571312e4dbec0fead182beb8ec9f39d0))
+
+## [2.6.1](https://github.com/puppeteer/puppeteer/compare/browsers-v2.6.0...browsers-v2.6.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* support .tar.xz archives for Firefox 135+ ([#13391](https://github.com/puppeteer/puppeteer/issues/13391)) ([d247a7f](https://github.com/puppeteer/puppeteer/commit/d247a7fcd4fc01cf0c53d733632a1e9687b8004d))
+
+## [2.6.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.5.0...browsers-v2.6.0) (2024-12-09)
+
+
+### Features
+
+* allow listing installed browsers ([#13385](https://github.com/puppeteer/puppeteer/issues/13385)) ([8b814bf](https://github.com/puppeteer/puppeteer/commit/8b814bfd1bfb5156d4d1334c7d2d3292ea17fbfc))
+
+## [2.5.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.4.1...browsers-v2.5.0) (2024-12-03)
+
+
+### Features
+
+* support LaunchOptions in executablePath() ([#13340](https://github.com/puppeteer/puppeteer/issues/13340)) ([6acfee6](https://github.com/puppeteer/puppeteer/commit/6acfee6810da378844d4dca7f28d539dd46a3529))
+
+## [2.4.1](https://github.com/puppeteer/puppeteer/compare/browsers-v2.4.0...browsers-v2.4.1) (2024-11-04)
+
+
+### Bug Fixes
+
+* **browsers:** correctly import yargs for esm module ([#13249](https://github.com/puppeteer/puppeteer/issues/13249)) ([694fef9](https://github.com/puppeteer/puppeteer/commit/694fef9f4ea61a9fa65a8dddff73dc6b81e8986a))
+
+## [2.4.0](https://github.com/puppeteer/puppeteer/compare/browsers-v2.3.1...browsers-v2.4.0) (2024-09-04)
+
+
+### Features
+
+* support --install-deps flag in the browsers CLI ([#12580](https://github.com/puppeteer/puppeteer/issues/12580)) ([b832417](https://github.com/puppeteer/puppeteer/commit/b832417eede8506b0fb70d4e4fceb0fa9655cdf5))
+
 ## [2.3.1](https://github.com/puppeteer/puppeteer/compare/browsers-v2.3.0...browsers-v2.3.1) (2024-08-14)
 
 

@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
@@ -24,9 +23,9 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.support.ktx.kotlin.stripDefaultPort
@@ -110,7 +109,7 @@ class SitePermissionsExceptionsFragment :
     private fun bindClearButton(rootView: View) {
         clearButton = rootView.findViewById(R.id.delete_all_site_permissions_button)
         clearButton.setOnClickListener {
-            AlertDialog.Builder(requireContext()).apply {
+            MaterialAlertDialogBuilder(requireContext()).apply {
                 setMessage(R.string.confirm_clear_permissions_on_all_sites)
                 setTitle(R.string.clear_permissions)
                 setPositiveButton(R.string.clear_permissions_positive) { dialog: DialogInterface, _ ->

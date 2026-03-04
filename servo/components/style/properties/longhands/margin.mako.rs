@@ -13,8 +13,8 @@
     %>
     ${helpers.predefined_type(
         "margin-%s" % side[0],
-        "LengthPercentageOrAuto",
-        "computed::LengthPercentageOrAuto::zero()",
+        "Margin",
+        "computed::Margin::zero()",
         engines="gecko servo",
         aliases=maybe_moz_logical_alias(engine, side, "-moz-margin-%s"),
         allow_quirks="No" if side[1] else "Yes",
@@ -23,17 +23,16 @@
         gecko_ffi_name="mMargin.{}".format(index),
         spec=spec,
         rule_types_allowed=(DEFAULT_RULES if side[1] else DEFAULT_RULES_AND_PAGE) | POSITION_TRY_RULE,
-        servo_restyle_damage="reflow",
+        servo_restyle_damage="rebuild_box",
         affects="layout",
     )}
 % endfor
 
 ${helpers.predefined_type(
     "overflow-clip-margin",
-    "Length",
-    "computed::Length::zero()",
-    parse_method="parse_non_negative",
-    engines="gecko",
+    "OverflowClipMargin",
+    "computed::OverflowClipMargin::zero()",
+    engines="gecko servo",
     spec="https://drafts.csswg.org/css-overflow/#propdef-overflow-clip-margin",
     affects="overflow",
 )}

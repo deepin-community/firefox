@@ -270,7 +270,7 @@ typedef struct _PRInterruptTable {
 #define _PR_CPU_PTR(_qp) \
     ((_PRCPU*) ((char*) (_qp) - offsetof(_PRCPU,links)))
 
-#if !defined(WIN32) && !defined(XP_OS2) \
+#if !defined(WIN32) \
         && !(defined(SOLARIS) && defined(_PR_GLOBAL_THREADS_ONLY))
 #define _MD_GET_ATTACHED_THREAD()        (_PR_MD_CURRENT_THREAD())
 #endif
@@ -1359,7 +1359,7 @@ extern PRUintn _PR_NetAddrSize(const PRNetAddr* addr);
 ** struct sockaddr_in6.
 */
 
-#if defined(XP_UNIX) || defined(XP_OS2)
+#if defined(XP_UNIX)
 #define PR_NETADDR_SIZE(_addr)                  \
         ((_addr)->raw.family == PR_AF_INET      \
         ? sizeof((_addr)->inet)                 \
@@ -1375,7 +1375,7 @@ extern PRUintn _PR_NetAddrSize(const PRNetAddr* addr);
 
 #else
 
-#if defined(XP_UNIX) || defined(XP_OS2)
+#if defined(XP_UNIX)
 #define PR_NETADDR_SIZE(_addr)                  \
         ((_addr)->raw.family == PR_AF_INET      \
         ? sizeof((_addr)->inet)                 \
@@ -1589,10 +1589,6 @@ struct PRThread {
     PRUint32 interrupt_blocked;     /* interrupt blocked */
     struct pollfd *syspoll_list;    /* Unix polling list used by PR_Poll */
     PRUint32 syspoll_count;         /* number of elements in syspoll_list */
-#if defined(_PR_POLL_WITH_SELECT)
-    int *selectfd_list;             /* Unix fd's that PR_Poll selects on */
-    PRUint32 selectfd_count;        /* number of elements in selectfd_list */
-#endif
 #elif defined(_PR_BTHREADS)
     PRUint32 flags;
     _MDThread md;
@@ -1875,8 +1871,7 @@ extern void _PR_DestroyZones(void);
         && !defined(_PR_PTHREADS) && !defined(_PR_GLOBAL_THREADS_ONLY) \
         && !defined(PURIFY) \
         && !defined(DARWIN) \
-        && !defined(QNX) \
-        && !(defined (UNIXWARE) && defined (USE_SVR4_THREADS))
+        && !defined(QNX)
 #define _PR_OVERRIDE_MALLOC
 #endif
 

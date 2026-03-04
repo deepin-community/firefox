@@ -6,14 +6,15 @@
 
 #include "DOMSVGStringList.h"
 
+#include <algorithm>
+
+#include "SVGAttrTearoffTable.h"
 #include "mozAutoDocUpdate.h"
 #include "mozilla/dom/SVGStringListBinding.h"
 #include "mozilla/dom/SVGTests.h"
 #include "nsCOMPtr.h"
 #include "nsError.h"
 #include "nsQueryObject.h"
-#include "SVGAttrTearoffTable.h"
-#include <algorithm>
 
 // See the architecture comment in this file's header.
 
@@ -59,7 +60,7 @@ class MOZ_RAII AutoChangeStringListNotifier : public mozAutoDocUpdate {
       : mozAutoDocUpdate(aStringList->mElement->GetComposedDoc(), true),
         mStringList(aStringList) {
     MOZ_ASSERT(mStringList, "Expecting non-null stringList");
-    mEmptyOrOldValue = mStringList->mElement->WillChangeStringList(
+    mStringList->mElement->WillChangeStringList(
         mStringList->mIsConditionalProcessingAttribute, mStringList->mAttrEnum,
         *this);
   }
@@ -67,12 +68,11 @@ class MOZ_RAII AutoChangeStringListNotifier : public mozAutoDocUpdate {
   ~AutoChangeStringListNotifier() {
     mStringList->mElement->DidChangeStringList(
         mStringList->mIsConditionalProcessingAttribute, mStringList->mAttrEnum,
-        mEmptyOrOldValue, *this);
+        *this);
   }
 
  private:
   DOMSVGStringList* const mStringList;
-  nsAttrValue mEmptyOrOldValue;
 };
 
 /* static */
@@ -91,7 +91,10 @@ already_AddRefed<DOMSVGStringList> DOMSVGStringList::GetDOMWrapper(
 
 void DOMSVGStringList::RemoveFromTearoffTable() {
   // Script no longer has any references to us.
-  SVGStringListTearoffTable().RemoveTearoff(&InternalList());
+  if (mIsInTearoffTable) {
+    SVGStringListTearoffTable().RemoveTearoff(&InternalList());
+    mIsInTearoffTable = false;
+  }
 }
 
 DOMSVGStringList::~DOMSVGStringList() { RemoveFromTearoffTable(); }
@@ -131,7 +134,7 @@ void DOMSVGStringList::GetItem(uint32_t aIndex, nsAString& aRetval,
   bool found;
   IndexedGetter(aIndex, found, aRetval);
   if (!found) {
-    aRv.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    aRv.ThrowIndexSizeError("Index out of range");
   }
 }
 
@@ -147,7 +150,7 @@ void DOMSVGStringList::InsertItemBefore(const nsAString& aNewItem,
                                         uint32_t aIndex, nsAString& aRetval,
                                         ErrorResult& aRv) {
   if (aNewItem.IsEmpty()) {
-    aRv.Throw(NS_ERROR_DOM_SYNTAX_ERR);
+    aRv.ThrowSyntaxError("Cannot insert empty string");
     return;
   }
   aIndex = std::min(aIndex, InternalList().Length());
@@ -166,11 +169,11 @@ void DOMSVGStringList::InsertItemBefore(const nsAString& aNewItem,
 void DOMSVGStringList::ReplaceItem(const nsAString& aNewItem, uint32_t aIndex,
                                    nsAString& aRetval, ErrorResult& aRv) {
   if (aNewItem.IsEmpty()) {
-    aRv.Throw(NS_ERROR_DOM_SYNTAX_ERR);
+    aRv.ThrowSyntaxError("Cannot replace with empty string");
     return;
   }
   if (aIndex >= InternalList().Length()) {
-    aRv.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    aRv.ThrowIndexSizeError("Index out of range");
     return;
   }
 
@@ -182,7 +185,7 @@ void DOMSVGStringList::ReplaceItem(const nsAString& aNewItem, uint32_t aIndex,
 void DOMSVGStringList::RemoveItem(uint32_t aIndex, nsAString& aRetval,
                                   ErrorResult& aRv) {
   if (aIndex >= InternalList().Length()) {
-    aRv.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    aRv.ThrowIndexSizeError("Index out of range");
     return;
   }
 

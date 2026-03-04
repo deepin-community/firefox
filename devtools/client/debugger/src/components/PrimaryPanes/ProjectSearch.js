@@ -22,7 +22,7 @@ import {
 } from "../../selectors/index";
 
 import SearchInput from "../shared/SearchInput";
-import AccessibleImage from "../shared/AccessibleImage";
+import DebuggerImage from "../shared/DebuggerImage";
 
 const { PluralForm } = require("resource://devtools/shared/plural-form.js");
 const classnames = require("resource://devtools/client/shared/classnames.js");
@@ -59,7 +59,6 @@ export class ProjectSearch extends Component {
       // or when restoring primary panes from collapse.
       query: this.props.query || "",
 
-      inputFocused: false,
       focusedItem: null,
       expanded: new Set(),
       results: [],
@@ -77,18 +76,8 @@ export class ProjectSearch extends Component {
     return {
       doSearchForHighlight: PropTypes.func.isRequired,
       query: PropTypes.string.isRequired,
-      results: PropTypes.array.isRequired,
       searchSources: PropTypes.func.isRequired,
       selectSpecificLocationOrSameUrl: PropTypes.func.isRequired,
-      status: PropTypes.oneOf([
-        "INITIAL",
-        "FETCHING",
-        "CANCELED",
-        "DONE",
-        "ERROR",
-      ]).isRequired,
-      modifiers: PropTypes.object,
-      toggleProjectSearchModifier: PropTypes.func,
     };
   }
 
@@ -161,12 +150,7 @@ export class ProjectSearch extends Component {
       this.tooltip = tooltip;
       return;
     }
-    this.props.doSearchForHighlight(
-      this.state.query,
-      getEditor(),
-      matchItem.location.line,
-      matchItem.location.column
-    );
+    this.props.doSearchForHighlight(this.state.query, getEditor());
   };
 
   highlightMatches = lineMatch => {
@@ -250,13 +234,14 @@ export class ProjectSearch extends Component {
         }),
         key: file.location.source.id,
       },
-      React.createElement(AccessibleImage, {
-        className: classnames("arrow", {
+      React.createElement(DebuggerImage, {
+        name: "arrow",
+        className: classnames({
           expanded,
         }),
       }),
-      React.createElement(AccessibleImage, {
-        className: "file",
+      React.createElement(DebuggerImage, {
+        name: "file",
       }),
       span(
         {
@@ -323,8 +308,8 @@ export class ProjectSearch extends Component {
           : L10N.getStr("projectTextSearch.refreshButtonTooltip"),
         onClick: this.doSearch,
       },
-      React.createElement(AccessibleImage, {
-        className: "refresh",
+      React.createElement(DebuggerImage, {
+        name: "refresh",
       })
     );
   }
@@ -385,7 +370,7 @@ export class ProjectSearch extends Component {
         : L10N.getStr("projectTextSearch.noResults");
     return div(
       {
-        className: "no-result-msg absolute-center",
+        className: "no-result-msg",
       },
       msg
     );
@@ -417,14 +402,6 @@ export class ProjectSearch extends Component {
       showErrorEmoji: this.shouldShowErrorEmoji(),
       isLoading: status === statusType.fetching,
       onChange: this.inputOnChange,
-      onFocus: () =>
-        this.setState({
-          inputFocused: true,
-        }),
-      onBlur: () =>
-        this.setState({
-          inputFocused: false,
-        }),
       onKeyDown: this.onKeyDown,
       onHistoryScroll: this.onHistoryScroll,
       showClose: false,

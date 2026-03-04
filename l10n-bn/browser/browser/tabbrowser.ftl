@@ -76,13 +76,6 @@ tabbrowser-unblock-tab-audio-tooltip =
 
 tabbrowser-confirm-close-tabs-button = সব ট্যাব বন্ধ করুন
 
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
-
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 tabbrowser-confirm-open-multiple-tabs-title = খোলা নিশ্চিত করুন
@@ -94,12 +87,6 @@ tabbrowser-confirm-open-multiple-tabs-message =
     }
 tabbrowser-confirm-open-multiple-tabs-button = ট্যাব খুলুন
 tabbrowser-confirm-open-multiple-tabs-checkbox = একাধিক ট্যাব খোলার ফলে { -brand-short-name } ধীর হওয়ার সম্ভাবনা থাকলে সতর্ক করুন
-
-## Confirmation dialog for enabling caret browsing
-
-
-## Confirmation dialog for closing all duplicate tabs
-
 
 ##
 
@@ -132,6 +119,3 @@ tabbrowser-context-unmute-selected-tabs =
 #   $tabCount (Number): The number of tabs in the current browser window. It will always be 2 at least.
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = সকল { $tabCount } ট্যাব এর তালিকা
-
-## Tab manager menu buttons
-

@@ -8,14 +8,12 @@ const TP_PB_PREF = "privacy.trackingprotection.enabled";
 const TRACKING_PAGE =
   // eslint-disable-next-line @microsoft/sdl/no-insecure-url
   "http://tracking.example.org/browser/browser/base/content/test/protectionsUI/trackingPage.html";
-const DTSCBN_PREF = "dom.testing.sync-content-blocking-notifications";
 var TrackingProtection = null;
 var gProtectionsHandler = null;
 var browser = null;
 
 registerCleanupFunction(function () {
   Services.prefs.clearUserPref(TP_PB_PREF);
-  Services.prefs.clearUserPref(DTSCBN_PREF);
   gProtectionsHandler = TrackingProtection = browser = null;
   UrlClassifierTestUtils.cleanupTestTrackers();
 });
@@ -91,7 +89,6 @@ add_task(async function testExceptionAddition() {
   });
 
   await UrlClassifierTestUtils.addTestTrackers();
-  Services.prefs.setBoolPref(DTSCBN_PREF, true);
   let privateWin = await BrowserTestUtils.openNewBrowserWindow({
     private: true,
   });
@@ -110,14 +107,17 @@ add_task(async function testExceptionAddition() {
 
   info("Load a test page containing tracking elements");
   await Promise.all([
-    promiseTabLoadEvent(tab, TRACKING_PAGE),
+    BrowserTestUtils.loadURIString({
+      browser: tab.linkedBrowser,
+      uriString: TRACKING_PAGE,
+    }),
     waitForContentBlockingEvent(2, tab.ownerGlobal),
   ]);
 
   testTrackingPage(tab.ownerGlobal);
 
   info("Disable TP for the page (which reloads the page)");
-  let tabReloadPromise = promiseTabLoadEvent(tab);
+  let tabReloadPromise = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
   gProtectionsHandler.disableForCurrentPage();
   is(protectionsPopupState(), "closed", "protections popup is closed");
 
@@ -130,7 +130,10 @@ add_task(async function testExceptionAddition() {
   tab = browser.selectedTab = BrowserTestUtils.addTab(browser);
 
   info("Load a test page containing tracking elements");
-  await promiseTabLoadEvent(tab, TRACKING_PAGE);
+  await BrowserTestUtils.loadURIString({
+    browser: tab.linkedBrowser,
+    uriString: TRACKING_PAGE,
+  });
   testTrackingPageUnblocked();
 
   await BrowserTestUtils.closeWindow(privateWin);
@@ -158,14 +161,17 @@ add_task(async function testExceptionPersistence() {
 
   info("Load a test page containing tracking elements");
   await Promise.all([
-    promiseTabLoadEvent(tab, TRACKING_PAGE),
+    BrowserTestUtils.loadURIString({
+      browser: tab.linkedBrowser,
+      uriString: TRACKING_PAGE,
+    }),
     waitForContentBlockingEvent(2, tab.ownerGlobal),
   ]);
 
   testTrackingPage(tab.ownerGlobal);
 
   info("Disable TP for the page (which reloads the page)");
-  let tabReloadPromise = promiseTabLoadEvent(tab);
+  let tabReloadPromise = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
   gProtectionsHandler.disableForCurrentPage();
   is(protectionsPopupState(), "closed", "protections popup is closed");
 

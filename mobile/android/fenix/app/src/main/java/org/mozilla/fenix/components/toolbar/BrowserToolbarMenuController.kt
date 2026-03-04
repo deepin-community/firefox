@@ -6,20 +6,22 @@ package org.mozilla.fenix.components.toolbar
 
 import android.content.Intent
 import androidx.annotation.VisibleForTesting
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.browser.state.action.EngineAction
+import mozilla.components.browser.state.action.ShareResourceAction
 import mozilla.components.browser.state.ext.getUrl
 import mozilla.components.browser.state.selector.findCustomTabOrSelectedTab
 import mozilla.components.browser.state.selector.findTab
 import mozilla.components.browser.state.selector.selectedTab
+import mozilla.components.browser.state.state.content.ShareResourceState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.EngineSession.LoadUrlFlags
 import mozilla.components.concept.engine.prompt.ShareData
@@ -28,12 +30,16 @@ import mozilla.components.feature.top.sites.DefaultTopSitesStorage
 import mozilla.components.feature.top.sites.PinnedSiteStorage
 import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
+import mozilla.components.support.ktx.kotlin.isContentUrl
+import mozilla.components.support.utils.BuildManufacturerChecker
 import mozilla.components.ui.widgets.withCenterAlignedButtons
 import mozilla.telemetry.glean.private.NoExtras
+import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.AppMenu
 import org.mozilla.fenix.GleanMetrics.Collections
 import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.ReaderMode
+import org.mozilla.fenix.GleanMetrics.Toolbar
 import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
@@ -51,9 +57,15 @@ import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.navigateSafe
 import org.mozilla.fenix.ext.openSetDefaultBrowserOption
-import org.mozilla.fenix.settings.biometric.bindBiometricsCredentialsPromptOrShowWarning
-import org.mozilla.fenix.settings.deletebrowsingdata.deleteAndQuit
+import org.mozilla.fenix.telemetry.ACTION_NAVIGATE_BACK_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_NAVIGATE_BACK_LONG_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_NAVIGATE_FORWARD_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_NAVIGATE_FORWARD_LONG_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_OPEN_IN_FENIX
+import org.mozilla.fenix.telemetry.SOURCE_ADDRESS_BAR
+import org.mozilla.fenix.telemetry.SOURCE_CUSTOM_BAR
 import org.mozilla.fenix.utils.Settings
+import org.mozilla.fenix.webcompat.WEB_COMPAT_REPORTER_URL
 
 /**
  * An interface that handles events from the BrowserToolbar menu, triggered by the Interactor
@@ -81,8 +93,7 @@ class DefaultBrowserToolbarMenuController(
     private val tabCollectionStorage: TabCollectionStorage,
     private val topSitesStorage: DefaultTopSitesStorage,
     private val pinnedSiteStorage: PinnedSiteStorage,
-    private val onShowPinVerification: (Intent) -> Unit,
-    private val onBiometricAuthenticationSuccessful: () -> Unit,
+    private val deleteAndQuit: (FragmentActivity) -> Unit,
 ) : BrowserToolbarMenuController {
 
     private val currentSession
@@ -94,11 +105,13 @@ class DefaultBrowserToolbarMenuController(
     @VisibleForTesting
     internal var ioScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
-    @Suppress("ComplexMethod", "LongMethod")
+    @Suppress("CognitiveComplexMethod", "LongMethod", "CyclomaticComplexMethod")
     override fun handleToolbarItemInteraction(item: ToolbarMenu.Item) {
         val sessionUseCases = activity.components.useCases.sessionUseCases
         val customTabUseCases = activity.components.useCases.customTabsUseCases
         val tabsUseCases = activity.components.useCases.tabsUseCases
+        val fenixBrowserUseCases = activity.components.useCases.fenixBrowserUseCases
+
         trackToolbarItemInteraction(item)
 
         when (item) {
@@ -156,7 +169,7 @@ class DefaultBrowserToolbarMenuController(
                 }
             }
             is ToolbarMenu.Item.Quit -> {
-                deleteAndQuit(activity, activity.lifecycleScope)
+                deleteAndQuit(activity)
             }
             is ToolbarMenu.Item.CustomizeReaderView -> {
                 readerModeController.showControls()
@@ -209,17 +222,29 @@ class DefaultBrowserToolbarMenuController(
                 val url = sessionId?.let {
                     store.state.findTab(it)?.getUrl()
                 } ?: currentSession?.content?.url
-                val directions = NavGraphDirections.actionGlobalShareFragment(
-                    sessionId = sessionId,
-                    data = arrayOf(
-                        ShareData(
-                            url = url,
-                            title = currentSession?.content?.title,
+
+                if (url?.isContentUrl() == true) {
+                    val tab = sessionId?.let { store.state.findTab(it) } ?: return
+
+                    store.dispatch(
+                        ShareResourceAction.AddShareAction(
+                            tab.id,
+                            ShareResourceState.LocalResource(url),
                         ),
-                    ),
-                    showPage = true,
-                )
-                navController.navigate(directions)
+                    )
+                } else {
+                    val directions = NavGraphDirections.actionGlobalShareFragment(
+                        sessionId = sessionId,
+                        data = arrayOf(
+                            ShareData(
+                                url = url,
+                                title = currentSession?.content?.title,
+                            ),
+                        ),
+                        showPage = true,
+                    )
+                    navController.navigate(directions)
+                }
             }
             is ToolbarMenu.Item.Settings -> browserAnimator.captureEngineViewAndDrawStatically {
                 val directions = BrowserFragmentDirections.actionBrowserFragmentToSettingsFragment()
@@ -264,7 +289,7 @@ class DefaultBrowserToolbarMenuController(
                         .filter { it is TopSite.Default || it is TopSite.Pinned }.size
 
                     if (numPinnedSites >= settings.topSitesMaxLimit) {
-                        AlertDialog.Builder(fragment.requireContext()).apply {
+                        MaterialAlertDialogBuilder(fragment.requireContext()).apply {
                             setTitle(R.string.shortcut_max_limit_title)
                             setMessage(R.string.shortcut_max_limit_content)
                             setPositiveButton(R.string.top_sites_max_limit_confirmation_button) { dialog, _ ->
@@ -292,9 +317,15 @@ class DefaultBrowserToolbarMenuController(
                         if (isInstallable()) {
                             addToHomescreen()
                         } else {
-                            val directions =
-                                BrowserFragmentDirections.actionBrowserFragmentToCreateShortcutFragment()
-                            navController.navigateSafe(R.id.browserFragment, directions)
+                            if (BuildManufacturerChecker().isXiaomi()) {
+                                val directions =
+                                    BrowserFragmentDirections.actionBrowserFragmentToCreateXiaomiShortcutFragment()
+                                navController.navigateSafe(R.id.browserFragment, directions)
+                            } else {
+                                val directions =
+                                    BrowserFragmentDirections.actionBrowserFragmentToCreateShortcutFragment()
+                                navController.navigateSafe(R.id.browserFragment, directions)
+                            }
                         }
                     }
                 }
@@ -352,13 +383,10 @@ class DefaultBrowserToolbarMenuController(
                 )
             }
             is ToolbarMenu.Item.Passwords -> {
-                fragment.view?.let { view ->
-                    bindBiometricsCredentialsPromptOrShowWarning(
-                        view = view,
-                        onShowPinVerification = onShowPinVerification,
-                        onAuthSuccess = onBiometricAuthenticationSuccessful,
-                    )
-                }
+                navController.nav(
+                    R.id.browserFragment,
+                    BrowserFragmentDirections.actionLoginsListFragment(),
+                )
             }
             is ToolbarMenu.Item.Downloads -> browserAnimator.captureEngineViewAndDrawStatically {
                 navController.nav(
@@ -367,6 +395,12 @@ class DefaultBrowserToolbarMenuController(
                 )
             }
             is ToolbarMenu.Item.NewTab -> {
+                if (settings.enableHomepageAsNewTab) {
+                    fenixBrowserUseCases.addNewHomepageTab(
+                        private = currentSession?.content?.private ?: false,
+                    )
+                }
+
                 navController.navigate(
                     BrowserFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
                 )
@@ -389,8 +423,24 @@ class DefaultBrowserToolbarMenuController(
                             }
                         }.join()
                     }
-
-                    appStore.dispatch(ShortcutAction.ShortcutRemoved)
+                }
+            }
+            is ToolbarMenu.Item.ReportBrokenSite -> {
+                currentSession?.content?.url?.let { tabUrl ->
+                    if (settings.isTelemetryEnabled) {
+                        navController.navigate(
+                            directions = BrowserFragmentDirections
+                                .actionBrowserFragmentToWebCompatReporterFragment(
+                                    tabUrl = tabUrl,
+                                ),
+                        )
+                    } else {
+                        activity.openToBrowserAndLoad(
+                            searchTermOrURL = "$WEB_COMPAT_REPORTER_URL$tabUrl",
+                            newTab = true,
+                            from = BrowserDirection.FromGlobal,
+                        )
+                    }
                 }
             }
 
@@ -403,11 +453,17 @@ class DefaultBrowserToolbarMenuController(
         }
     }
 
-    @Suppress("ComplexMethod", "LongMethod")
+    @Suppress("CognitiveComplexMethod", "LongMethod")
     private fun trackToolbarItemInteraction(item: ToolbarMenu.Item) {
         when (item) {
             is ToolbarMenu.Item.OpenInFenix ->
-                Events.browserMenuAction.record(Events.BrowserMenuActionExtra("open_in_fenix"))
+                if (item.isOnToolbar) {
+                    Toolbar.buttonTapped.record(
+                        Toolbar.ButtonTappedExtra(source = SOURCE_CUSTOM_BAR, item = ACTION_OPEN_IN_FENIX),
+                    )
+                } else {
+                    Events.browserMenuAction.record(Events.BrowserMenuActionExtra("open_in_fenix"))
+                }
             is ToolbarMenu.Item.InstallPwaToHomeScreen ->
                 Events.browserMenuAction.record(Events.BrowserMenuActionExtra("add_to_homescreen"))
             is ToolbarMenu.Item.Quit ->
@@ -417,18 +473,75 @@ class DefaultBrowserToolbarMenuController(
             is ToolbarMenu.Item.CustomizeReaderView ->
                 Events.browserMenuAction.record(Events.BrowserMenuActionExtra("reader_mode_appearance"))
             is ToolbarMenu.Item.Back -> {
-                if (item.viewHistory) {
-                    Events.browserMenuAction.record(Events.BrowserMenuActionExtra("back_long_press"))
-                } else {
-                    Events.browserMenuAction.record(Events.BrowserMenuActionExtra("back"))
+                when {
+                    item.isOnToolbar && item.isCustomTab && item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_CUSTOM_BAR,
+                                item = ACTION_NAVIGATE_BACK_LONG_CLICKED,
+                            ),
+                        )
+                    item.isOnToolbar && item.isCustomTab && !item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_CUSTOM_BAR,
+                                item = ACTION_NAVIGATE_BACK_CLICKED,
+                            ),
+                        )
+                    item.isOnToolbar && !item.isCustomTab && item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_ADDRESS_BAR,
+                                item = ACTION_NAVIGATE_BACK_LONG_CLICKED,
+                            ),
+                        )
+                    item.isOnToolbar && !item.isCustomTab && !item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_ADDRESS_BAR,
+                                item = ACTION_NAVIGATE_BACK_CLICKED,
+                            ),
+                        )
+                    item.viewHistory ->
+                        Events.browserMenuAction.record(Events.BrowserMenuActionExtra("back_long_press"))
+                    else -> Events.browserMenuAction.record(Events.BrowserMenuActionExtra("back"))
                 }
             }
             is ToolbarMenu.Item.Forward ->
-                if (item.viewHistory) {
-                    Events.browserMenuAction.record(Events.BrowserMenuActionExtra("forward_long_press"))
-                } else {
-                    Events.browserMenuAction.record(Events.BrowserMenuActionExtra("forward"))
+                when {
+                    item.isOnToolbar && item.isCustomTab && item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_CUSTOM_BAR,
+                                item = ACTION_NAVIGATE_FORWARD_LONG_CLICKED,
+                            ),
+                        )
+                    item.isOnToolbar && item.isCustomTab && !item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_CUSTOM_BAR,
+                                item = ACTION_NAVIGATE_FORWARD_CLICKED,
+                            ),
+                        )
+                    item.isOnToolbar && !item.isCustomTab && item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_ADDRESS_BAR,
+                                item = ACTION_NAVIGATE_FORWARD_LONG_CLICKED,
+                            ),
+                        )
+                    item.isOnToolbar && !item.isCustomTab && !item.viewHistory ->
+                        Toolbar.buttonTapped.record(
+                            Toolbar.ButtonTappedExtra(
+                                source = SOURCE_ADDRESS_BAR,
+                                item = ACTION_NAVIGATE_FORWARD_CLICKED,
+                            ),
+                        )
+                    item.viewHistory ->
+                        Events.browserMenuAction.record(Events.BrowserMenuActionExtra("forward_long_press"))
+                    else -> Events.browserMenuAction.record(Events.BrowserMenuActionExtra("forward"))
                 }
+
             is ToolbarMenu.Item.Reload ->
                 Events.browserMenuAction.record(Events.BrowserMenuActionExtra("reload"))
             is ToolbarMenu.Item.Stop ->
@@ -477,6 +590,12 @@ class DefaultBrowserToolbarMenuController(
                 Events.browserMenuAction.record(Events.BrowserMenuActionExtra("set_default_browser"))
             is ToolbarMenu.Item.RemoveFromTopSites ->
                 Events.browserMenuAction.record(Events.BrowserMenuActionExtra("remove_from_top_sites"))
+            is ToolbarMenu.Item.ReportBrokenSite ->
+                Events.browserMenuAction.record(
+                    Events.BrowserMenuActionExtra(
+                        item = "report_broken_site",
+                    ),
+                )
 
             ToolbarMenu.Item.Translate -> Events.browserMenuAction.record(
                 Events.BrowserMenuActionExtra(

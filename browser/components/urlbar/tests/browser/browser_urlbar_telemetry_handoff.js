@@ -4,7 +4,7 @@
 "use strict";
 
 const { SearchSERPTelemetry } = ChromeUtils.importESModule(
-  "resource:///modules/SearchSERPTelemetry.sys.mjs"
+  "moz-src:///browser/components/search/SearchSERPTelemetry.sys.mjs"
 );
 
 const TEST_PROVIDER_INFO = [
@@ -38,15 +38,6 @@ add_setup(async function () {
   SearchSERPTelemetry.overrideSearchTelemetryForTests(TEST_PROVIDER_INFO);
   await waitForIdle();
 
-  await SpecialPowers.pushPrefEnv({
-    set: [
-      [
-        "browser.newtabpage.activity-stream.improvesearch.handoffToAwesomebar",
-        true,
-      ],
-    ],
-  });
-
   await SearchTestUtils.installSearchExtension(
     {
       search_url: getPageUrl(true),
@@ -60,13 +51,11 @@ add_setup(async function () {
 
   const oldCanRecord = Services.telemetry.canRecordExtended;
   Services.telemetry.canRecordExtended = true;
-  Services.telemetry.setEventRecordingEnabled("navigation", true);
 
   registerCleanupFunction(async function () {
     await PlacesUtils.history.clear();
 
     Services.telemetry.canRecordExtended = oldCanRecord;
-    Services.telemetry.setEventRecordingEnabled("navigation", false);
 
     SearchSERPTelemetry.overrideSearchTelemetryForTests();
 
@@ -78,9 +67,7 @@ add_setup(async function () {
 add_task(async function test_search() {
   Services.telemetry.clearScalars();
   Services.telemetry.clearEvents();
-
-  const histogram =
-    TelemetryTestUtils.getAndClearKeyedHistogram("SEARCH_COUNTS");
+  clearSAPTelemetry();
 
   info("Load about:newtab in new window");
   const newtab = "about:newtab";
@@ -90,9 +77,18 @@ add_task(async function test_search() {
 
   info("Focus on search input in newtab content");
   await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
-    const searchInput = content.document.querySelector(".fake-editable");
+    let handoffUI = content.document.querySelector("content-search-handoff-ui");
+    await handoffUI.updateComplete;
+    let searchInput = handoffUI.shadowRoot.querySelector(
+      ".search-handoff-button"
+    );
     searchInput.click();
   });
+
+  await BrowserTestUtils.waitForCondition(
+    () => window.gURLBar._hideFocus,
+    "Wait until _hideFocus will be true"
+  );
 
   info("Search and wait the result");
   const onLoaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
@@ -101,7 +97,7 @@ add_task(async function test_search() {
   await onLoaded;
 
   info("Check the telemetries");
-  await assertHandoffResult(histogram);
+  await assertHandoffResult();
 
   BrowserTestUtils.removeTab(tab);
 });
@@ -109,9 +105,7 @@ add_task(async function test_search() {
 add_task(async function test_search_private_mode() {
   Services.telemetry.clearScalars();
   Services.telemetry.clearEvents();
-
-  const histogram =
-    TelemetryTestUtils.getAndClearKeyedHistogram("SEARCH_COUNTS");
+  clearSAPTelemetry();
 
   info("Open private window");
   let privateWindow = await BrowserTestUtils.openNewBrowserWindow({
@@ -121,9 +115,18 @@ add_task(async function test_search_private_mode() {
 
   info("Focus on search input in newtab content");
   await SpecialPowers.spawn(tab.linkedBrowser, [], async function () {
-    const searchInput = content.document.querySelector(".fake-editable");
+    let handoffUI = content.document.querySelector("content-search-handoff-ui");
+    await handoffUI.updateComplete;
+    let searchInput = handoffUI.shadowRoot.querySelector(
+      ".search-handoff-button"
+    );
     searchInput.click();
   });
+
+  await BrowserTestUtils.waitForCondition(
+    () => privateWindow.gURLBar._hideFocus,
+    "Wait until _hideFocus will be true"
+  );
 
   info("Search and wait the result");
   const onLoaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser);
@@ -132,40 +135,22 @@ add_task(async function test_search_private_mode() {
   await onLoaded;
 
   info("Check the telemetries");
-  await assertHandoffResult(histogram);
+  await assertHandoffResult();
 
   await BrowserTestUtils.closeWindow(privateWindow);
 });
 
-async function assertHandoffResult(histogram) {
+async function assertHandoffResult() {
   await assertScalars([
     ["browser.engagement.navigation.urlbar_handoff", "search_enter", 1],
     ["browser.search.content.urlbar_handoff", "example:tagged:ff", 1],
   ]);
-  await assertHistogram(histogram, [["other-Example.urlbar-handoff", 1]]);
-  TelemetryTestUtils.assertEvents(
-    [
-      [
-        "navigation",
-        "search",
-        "urlbar_handoff",
-        "enter",
-        { engine: "other-Example" },
-      ],
-    ],
-    { category: "navigation", method: "search" }
-  );
-}
 
-async function assertHistogram(histogram, expectedResults) {
-  await TestUtils.waitForCondition(() => {
-    const snapshot = histogram.snapshot();
-    return expectedResults.every(([key]) => key in snapshot);
-  }, "Wait until the histogram has expected keys");
-
-  for (const [key, value] of expectedResults) {
-    TelemetryTestUtils.assertKeyedHistogramSum(histogram, key, value);
-  }
+  await SearchUITestUtils.assertSAPTelemetry({
+    engineName: "Example",
+    source: "urlbar-handoff",
+    count: 1,
+  });
 }
 
 async function assertScalars(expectedResults) {

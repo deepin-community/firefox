@@ -7,7 +7,6 @@
 #ifndef mozilla_dom_HTMLStyleElement_h
 #define mozilla_dom_HTMLStyleElement_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/LinkStyle.h"
 #include "nsGenericHTMLElement.h"
 #include "nsStubMutationObserver.h"
@@ -32,12 +31,17 @@ class HTMLStyleElement final : public nsGenericHTMLElement,
 
   void GetInnerHTML(nsAString& aInnerHTML, OOMReporter& aError) override;
   using nsGenericHTMLElement::SetInnerHTML;
-  virtual void SetInnerHTML(const nsAString& aInnerHTML,
-                            nsIPrincipal* aSubjectPrincipal,
-                            mozilla::ErrorResult& aError) override;
-  virtual void SetTextContentInternal(const nsAString& aTextContent,
-                                      nsIPrincipal* aSubjectPrincipal,
-                                      mozilla::ErrorResult& aError) override;
+
+  void SetInnerHTMLTrusted(const nsAString& aInnerHTML,
+                           nsIPrincipal* aSubjectPrincipal,
+                           mozilla::ErrorResult& aError) override;
+
+ public:
+  virtual void SetTextContentInternal(
+      const nsAString& aTextContent, nsIPrincipal* aSubjectPrincipal,
+      mozilla::ErrorResult& aError,
+      MutationEffectOnScript aMutationEffectOnScript =
+          MutationEffectOnScript::DropTrustWorthiness) override;
   /**
    * Mark this style element with a devtools-specific principal that
    * skips Content Security Policy unsafe-inline checks. This triggering
@@ -96,6 +100,7 @@ class HTMLStyleElement final : public nsGenericHTMLElement,
    * parent; we should only respond to the change if aContent is non-anonymous.
    */
   void ContentChanged(nsIContent* aContent);
+  nsresult CopyInnerTo(HTMLStyleElement* aDest);
 
   RefPtr<nsDOMTokenList> mBlocking;
 };

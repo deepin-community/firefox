@@ -11,19 +11,30 @@ Please note that some targeting attributes require stricter controls on the tele
 * [activeNotifications](#activenotifications)
 * [addonsInfo](#addonsinfo)
 * [addressesSaved](#addressessaved)
+* [alltabsButtonAreaType](#alltabsButtonAreaType)
 * [archBits](#archbits)
 * [attachedFxAOAuthClients](#attachedfxaoauthclients)
 * [attributionData](#attributiondata)
 * [backgroundTaskName](#backgroundtaskname)
+* [backupsInfo](#backupsinfo)
+* [backupArchiveEnabled](#backuparchiveenabled)
+* [backupRestoreEnabled](#backuprestoreenabled)
 * [blockedCountByType](#blockedcountbytype)
 * [browserIsSelected](#browserisselected)
 * [browserSettings](#browsersettings)
+* [buildId](#buildId)
+* [canCreateSelectableProfiles](#cancreateselectableprofiles)
 * [creditCardsSaved](#creditcardssaved)
 * [currentDate](#currentdate)
+* [currentTabGroups](#currenttabgroups)
+* [currentTabInstalledAsWebApp](#currenttabinstalledaswebapp)
+* [currentProfileId](#currentprofileid)
+* [profileGroupProfileCount](#profileGroupProfileCount)
 * [defaultPDFHandler](#defaultpdfhandler)
 * [devToolsOpenedCount](#devtoolsopenedcount)
 * [distributionId](#distributionid)
 * [doesAppNeedPin](#doesappneedpin)
+* [doesAppNeedPinUncached](#doesappneedpinuncached)
 * [doesAppNeedPrivatePin](#doesappneedprivatepin)
 * [firefoxVersion](#firefoxversion)
 * [fxViewButtonAreaType](#fxviewbuttonareatype)
@@ -34,37 +45,47 @@ Please note that some targeting attributes require stricter controls on the tele
 * [hasMigratedHistory](#hasmigratedhistory)
 * [hasMigratedPasswords](#hasmigratedpasswords)
 * [hasPinnedTabs](#haspinnedtabs)
+* [hasSelectableProfiles](#hasselectableprofiles)
 * [homePageSettings](#homepagesettings)
 * [isBackgroundTaskMode](#isbackgroundtaskmode)
+* [isAIWindow] (#isaiwindow)
 * [isChinaRepack](#ischinarepack)
 * [isDefaultBrowser](#isdefaultbrowser)
+* [isDefaultBrowserUncached](#isdefaultbrowseruncached)
 * [isDefaultHandler](#isdefaulthandler)
 * [isDeviceMigration](#isdevicemigration)
+* [isEncryptedBackup](#isEncryptedBackup)
 * [isFxAEnabled](#isfxaenabled)
 * [isFxASignedIn](#isfxasignedin)
 * [isMajorUpgrade](#ismajorupgrade)
 * [isMSIX](#ismsix)
 * [isRTAMO](#isrtamo)
+* [unhandledCampaignAction](#unhandledCampaignAction)
 * [launchOnLoginEnabled](#launchonloginenabled)
 * [locale](#locale)
 * [localeLanguageCode](#localelanguagecode)
 * [memoryMB](#memorymb)
 * [messageImpressions](#messageimpressions)
 * [needsUpdate](#needsupdate)
+* [newtabAddonVersion](#newtabaddonversion)
 * [newtabSettings](#newtabsettings)
+* [packageFamilyName](#packagefamilyname)
 * [pinnedSites](#pinnedsites)
 * [platformName](#platformname)
 * [previousSessionEnd](#previoussessionend)
 * [primaryResolution](#primaryresolution)
 * [profileAgeCreated](#profileagecreated)
 * [profileAgeReset](#profileagereset)
+* [profileGroupId](#profilegroupid)
 * [profileRestartCount](#profilerestartcount)
 * [providerCohorts](#providercohorts)
 * [recentBookmarks](#recentbookmarks)
 * [region](#region)
+* [savedTabGroups](#savedtabgroups)
 * [screenImpressions](#screenimpressions)
 * [searchEngines](#searchengines)
 * [sync](#sync)
+* [systemArch](#systemarch)
 * [topFrecentSites](#topfrecentsites)
 * [totalBlockedCount](#totalblockedcount)
 * [totalBookmarksCount](#totalbookmarkscount)
@@ -121,6 +142,8 @@ interface AddonsInfoResponse {
     // When was it installed? e.g. "2018-03-10T03:41:06.000Z"
     installDate: string;
   };
+  // Has the user installed addons beyond the built in and system addons?
+  hasInstalledAddons: boolean;
 }
 ```
 ### `attributionData`
@@ -193,6 +216,24 @@ declare const browserSettings: {
 }
 ```
 
+### `buildId`
+
+The build ID (`MOZ_BUILDID`) parsed as a number to allow for comparisons.
+
+#### Examples
+
+* Is the build from at least Jan 01 2025
+
+```java
+buildId >= 202501010000
+```
+
+#### Definition
+
+```ts
+declare const buildId: number;
+```
+
 ### `currentDate`
 
 The current date at the moment message targeting is checked.
@@ -234,6 +275,10 @@ Is Firefox the user's default browser?
 ```ts
 declare const isDefaultBrowser: boolean;
 ```
+
+### `isDefaultBrowserUncached`
+
+Behaves the same as `isDefaultBrowser`, but retrieves the current value directly from shell service instead of using the cached value. This may not be as performant.
 
 ### `isDefaultHandler`
 
@@ -333,6 +378,21 @@ Does the client have the latest available version installed
 
 ```ts
 declare const needsUpdate: boolean;
+```
+
+### `packageFamilyName`
+Provides the package family name as given by the MSIX that Firefox was
+installed from, or the empty string if not installed from MSIX.
+
+#### Examples
+* Is the user running MSIX Nightly?
+```ts
+"MozillaNightly" in packageFamilyName
+```
+
+#### Definition
+```ts
+declare const packageFamilyName: string;
 ```
 
 ### `pinnedSites`
@@ -453,7 +513,8 @@ declare const region: string;
 
 ### `searchEngines`
 
-Information about the current and available search engines.
+Information about the current and available search engines. If the user's engine
+is a third party engine, then the value will be ``null``.
 
 #### Examples
 * Is the current default search engine set to google?
@@ -469,7 +530,7 @@ interface SearchEnginesResponse: {
   current: SearchEngineId;
   installed: Array<SearchEngineId>;
 }
-// This is an identifier for a search engine such as "google" or "amazondotcom"
+// This is an identifier for a search engine such as "google" or "ddg"
 type SearchEngineId = string;
 ```
 
@@ -501,9 +562,9 @@ Information about the browser's top 25 frecent sites.
 
 
 #### Examples
-* Is mozilla.com in the user's top frecent sites with a frececy greater than 400?
+* Is `mozilla.com` in the user's top frecent sites and with a last visit date greater than April 4th, 2018(UNIX Epoch timestamp 1522843725924)?
 ```java
-"mozilla.com" in topFrecentSites[.frecency >= 400]|mapToProperty("host")
+"mozilla.com" in topFrecentSites[.lastVisitDate > 1522843725924]|mapToProperty("host")
 ```
 
 #### Definition
@@ -514,6 +575,7 @@ interface TopSite {
   url: string;
   // e.g. foo.mozilla.com
   host: string;
+  // Deprecated property unsupported in Firefox 145+, refer to bug 1987415 for guidance on future options.
   frecency: number;
   lastVisitDate: UnixEpochNumber;
 }
@@ -610,6 +672,24 @@ Pref used by system administrators to disallow add-ons from installed altogether
 ```ts
 declare const xpinstallEnabled: boolean;
 ```
+
+### `currentTabInstalledAsWebApp`
+
+Returns whether the current tab has a matching Web App (Taskbar Tab) installed.
+
+#### Definition
+
+```ts
+declare const currentTabInstalledAsWebApp: Promise<boolean>;
+```
+
+### `currentTabGroups`
+
+Returns the number of currently open tab groups.
+
+### `savedTabGroups`
+
+Returns the number of tab groups the user has saved.
 
 ### `hasPinnedTabs`
 
@@ -776,6 +856,36 @@ actually emit from tabs, this is always true. For other triggers, like
 declare const browserIsSelected: boolean;
 ```
 
+### `isAIWindow`
+
+A context property included for all triggers that evaluates to `true` when the
+message comes from an AI Window, and `false` otherwise.
+
+#### Definition
+
+```ts
+declare const isAIWindow: boolean;
+```
+
+#### Examples
+
+* Target AI Windows only:
+```javascript
+isAIWindow
+```
+
+* Target Classic Windows only:
+```javascript
+!isAIWindow
+```
+
+* Target both AI Windows and Classic Windows:
+```javascript
+isAIWindow == isAIWindow
+or equivalently
+(isAIWindow || !isAIWindow)
+```
+
 ### `isChinaRepack`
 
 Does the user use [the partner repack distributed by Mozilla Online](https://github.com/mozilla-partners/mozillaonline),
@@ -897,6 +1007,17 @@ Object {
 }
 ```
 
+### `newtabAddonVersion`
+
+The full version string of the built-in New Tab add-on that is actively in use.
+Comparisons should be done with the `versionCompare` filter expression.
+
+#### Definition
+
+```ts
+declare const newtabAddonVersion: string;
+```
+
 ### `newtabSettings`
 
 An object reflecting the current settings of the browser newtab page (about:newtab)
@@ -970,6 +1091,10 @@ user activity where the first entry is the total urls visited for that day.
 
 Checks if Firefox app can be and isn't pinned to OS taskbar/dock or Windows start menu in MSIX builds.
 
+### `doesAppNeedPinUncached`
+
+Does the same as `doesAppNeedPin`, but retrieves the current value directly from shell service instead of using the cached value. This may not be as performant.
+
 ### `doesAppNeedPrivatePin`
 
 Checks if Firefox Private Browsing Mode can be and isn't pinned to OS taskbar/dock. Currently this only works on certain Windows versions.
@@ -996,6 +1121,10 @@ is no distribution associated with the build.
 
 A string of the name of the container where the Firefox View button is shown, null if the button has been removed.
 
+### `alltabsButtonAreaType`
+
+A string of the name of the container where the Tab Overflow button (or All Tabs button) is shown, null if the button has been removed.
+
 ### `hasMigratedBookmarks`
 
 A boolean. `true` if the user ever used the Migration Wizard to migrate bookmarks since Firefox 113 released. Available in Firefox 113+; will not be true if the user had only ever migrated bookmarks prior to Firefox 113 being released.
@@ -1020,6 +1149,18 @@ A boolean. `true` if the user is configured to use the embedded Migration Wizard
 
 A boolean. `true` when [RTAMO](first-run.md#return-to-amo-rtamo) has been used to download Firefox, `false` otherwise.
 
+### `canCreateSelectableProfiles`
+
+A boolean. `true` when both the current install and current profile support creating additional profiles using the `SelectableProfileService`; `false` otherwise.
+
+### `hasSelectableProfiles`
+
+A boolean. `true` when the `toolkit.profiles.storeID` pref has a value. Indicates that the profile is part of a profile group managed by the `SelectableProfileService`, and the user has used the multiple profiles feature. `false` otherwise.
+
+### `unhandledCampaignAction`
+
+A string. A special message action to be executed on first-run. For example, `"SET_DEFAULT_BROWSER"` when the user selected to set as default via the [install marketing page](https://www.mozilla.org/firefox/new/) and set default has not yet been automatically triggered, `null` otherwise. Currently supported actions include `"PIN_AND_DEFAULT"`, `"PIN_FIREFOX_TO_TASKBAR"`, and `"SET_DEFAULT_BROWSER"`.
+
 ### `isMSIX`
 
 A boolean. `true` when hasPackageId is `true` on Windows, `false` otherwise.
@@ -1037,6 +1178,61 @@ An array that maps about:welcome screen IDs to their most recent impression time
 declare const screenImpressions: { [key: string]: Array<UnixEpochNumber> };
 ```
 
+### `systemArch`
+
+The architecture of this Firefox build: x86, x86-64 or aarch64.
+
+#### Definition
+
+```ts
+declare const systemArch: string | null;
+```
+
 ### `totalSearches`
 
 Returns the number of times a user has completed a search in the URL Bar. The number is arbitrarily capped at 100.
+
+### `profileGroupId`
+
+Returns the stable profile group ID used for data reporting.
+
+### `currentProfileId`
+
+The integer-valued identifier of the current selectable profile, as reported by `SelectableProfileService`, converted to a string.
+
+### `profileGroupProfileCount`
+
+The number of profiles in the current profile group or zero if either the
+feature is not enabled or the user has not created any profiles.
+
+### `backupsInfo`
+
+Provides information about the backups a user has in the default directory.
+
+#### Definition
+
+```ts
+declare const backupsInfo: {
+  // True if exactly one backup was found.
+  found: boolean;
+
+  // True if multiple backups were found.
+  multipleBackupsFound: boolean;
+
+  // Absolute path to the selected backup to restore when `found` is true.
+  // Null when no single file is selected (none or multiple).
+  backupFileToRestore: string | null;
+};
+```
+
+### `backupArchiveEnabled`
+
+Indicates whether the archive function is enabled by BackupService.
+
+### `backupRestoreEnabled`
+
+Indicates whether the restore function is enabled by BackupService.
+
+### `isEncryptedBackup`
+
+Indicates whether a user has selected an encrypted or non-encrypted backup method during the spotlight onboarding flow. (Refers to the `messaging-system-action.backupChooser` pref.)

@@ -22,19 +22,17 @@ with Files("PictureInPictureChild.sys.mjs"):
 SPHINX_TREES["actors"] = "docs"
 
 TESTING_JS_MODULES += [
-    "TestProcessActorChild.jsm",
     "TestProcessActorChild.sys.mjs",
-    "TestProcessActorParent.jsm",
     "TestProcessActorParent.sys.mjs",
-    "TestWindowChild.jsm",
     "TestWindowChild.sys.mjs",
-    "TestWindowParent.jsm",
     "TestWindowParent.sys.mjs",
 ]
 
 FINAL_TARGET_FILES.actors += [
     "AboutHttpsOnlyErrorChild.sys.mjs",
     "AboutHttpsOnlyErrorParent.sys.mjs",
+    "AboutRestrictedChild.sys.mjs",
+    "AboutRestrictedParent.sys.mjs",
     "AudioPlaybackChild.sys.mjs",
     "AudioPlaybackParent.sys.mjs",
     "AutoCompleteChild.sys.mjs",
@@ -50,8 +48,6 @@ FINAL_TARGET_FILES.actors += [
     "ContentMetaParent.sys.mjs",
     "ControllersChild.sys.mjs",
     "ControllersParent.sys.mjs",
-    "DateTimePickerChild.sys.mjs",
-    "DateTimePickerParent.sys.mjs",
     "ExtFindChild.sys.mjs",
     "FindBarChild.sys.mjs",
     "FindBarParent.sys.mjs",
@@ -62,8 +58,8 @@ FINAL_TARGET_FILES.actors += [
     "NetErrorChild.sys.mjs",
     "NetErrorParent.sys.mjs",
     "PictureInPictureChild.sys.mjs",
-    "PopupBlockingChild.sys.mjs",
-    "PopupBlockingParent.sys.mjs",
+    "PopupAndRedirectBlockingChild.sys.mjs",
+    "PopupAndRedirectBlockingParent.sys.mjs",
     "PrintingChild.sys.mjs",
     "PrintingParent.sys.mjs",
     "PrintingSelectionChild.sys.mjs",
@@ -75,6 +71,7 @@ FINAL_TARGET_FILES.actors += [
     "UAWidgetsChild.sys.mjs",
     "UnselectedTabHoverChild.sys.mjs",
     "UnselectedTabHoverParent.sys.mjs",
+    "UserCharacteristicsCanvasRenderingChild.sys.mjs",
     "UserCharacteristicsChild.sys.mjs",
     "UserCharacteristicsParent.sys.mjs",
     "UserCharacteristicsWindowInfoChild.sys.mjs",
@@ -83,4 +80,13 @@ FINAL_TARGET_FILES.actors += [
     "ViewSourcePageParent.sys.mjs",
     "WebChannelChild.sys.mjs",
     "WebChannelParent.sys.mjs",
+]
+
+MOZ_SRC_FILES += [
+    "ColorPickerChild.sys.mjs",
+    "ColorPickerParent.sys.mjs",
+    "DateTimePickerChild.sys.mjs",
+    "DateTimePickerParent.sys.mjs",
+    "InputPickerChildCommon.sys.mjs",
+    "InputPickerParentCommon.sys.mjs",
 ]

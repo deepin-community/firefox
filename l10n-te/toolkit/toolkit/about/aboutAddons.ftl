@@ -7,10 +7,6 @@ search-header =
     .placeholder = addons.mozilla.orgలో వెతకండి
     .searchbuttonlabel = వెతుకు
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -117,6 +113,10 @@ addon-category-available-updates-title =
 addon-category-recent-updates = ఇటీవలి నవీకరణలు
 addon-category-recent-updates-title =
     .title = ఇటీవలి నవీకరణలు
+# String displayed in about:addons in the Site Permissions section
+# Variables:
+#  $host (string) - DNS host name for which the webextension enables permissions
+addon-sitepermission-host = { $host }కి సైటు అనుమతులు
 
 ## These are global warnings
 
@@ -248,14 +248,6 @@ addon-detail-update-check-label = తాజాకరణలకై చూడు
 addon-detail-private-browsing-allow = అనుమతించు
 addon-detail-private-browsing-disallow = అనుమతించ వద్దు
 
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
 ##
 
 available-updates-heading = అందుబాటులో ఉన్న తాజాకరణలు
@@ -278,7 +270,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } అనునది { -brand-short-name } { $version } తో సారూప్యంగా లేదు.
 # Variables:
 #   $version (string) - Application version.
@@ -293,12 +285,8 @@ details-notification-unsigned2 =
     .message = { -brand-short-name }‌లో వాడుకకు { $name }‌ను తనిఖీ చేయబడలేదు. జాగ్రత్తతో కొనసాగండి.
 details-notification-unsigned-link = మరింత సమాచారం
 details-notification-blocked = రక్షణ లేదా స్థిరత్వ సమస్యల కారణంగా { $name } అచేతనపరచబడింది.
-details-notification-blocked2 =
-    .message = రక్షణ లేదా స్థిరత్వ సమస్యల కారణంగా { $name } అచేతనపరచబడింది.
 details-notification-blocked-link = మరింత సమాచారం
 details-notification-softblocked = { $name } రక్షణ లేదా స్థిరత్వ సమస్యలకు కారణం.
-details-notification-softblocked2 =
-    .message = { $name } రక్షణ లేదా స్థిరత్వ సమస్యలకు కారణం.
 details-notification-softblocked-link = మరింత సమాచారం
 details-notification-gmp-pending = { $name } త్వరలో స్థాపించబడుతుంది.
 details-notification-gmp-pending2 =

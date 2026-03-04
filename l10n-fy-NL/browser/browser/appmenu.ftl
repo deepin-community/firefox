@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Downloads
 appmenuitem-passwords =
     .label = Wachtwurden
+appmenuitem-extensions-and-themes =
+    .label = Utwreidingen en tema’s
+appmenuitem-extensions =
+    .label = Utwreidingen
 appmenuitem-addons-and-themes =
     .label = Add-ons en tema’s
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Syngronisearje en gegevens bewarje
 appmenu-fxa-signed-in-label = Oanmelde
 appmenu-fxa-setup-sync =
     .label = Syngronisaasje ynskeakelje…
+appmenu-fxa-setup-sync-new = Ynskeakelje
 appmenuitem-save-page =
     .label = Side bewarje as…
+appmenuitem-fxa-sync-off-title = Syngronisaasje is útskeakele
+appmenuitem-fxa-sync-off-description = Beskermje en benaderje jo blêdwizers, wachtwurden en mear, wêr’t jo ek binne.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Profilerpaniel iepenje
+    .tooltiptext = Profilerpaniel iepenje
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Foarynstelling foar it ûndersykjen fan audio- en fideobugs yn { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Foarynstelling foar it ûndersykjen fan masineoersettingsbugs yn { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Masinaal leare
 profiler-popup-presets-networking-description = Foarynstelling foar it ûndersykjen fan netwerkbugs yn { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Netwurk
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Foarynstelling foar debugging yn { -brand-shorter-name }. Hege overhead, net brûke foar prestaasjewurk, mar om te fokussen op it begripen fan browsergedrach.
 profiler-popup-presets-debug-label =
     .label = Debugge
+profiler-popup-presets-web-compat-description = Oanrekommandearre foarynstelling foar it opspoaren fan webkompatibiliteitsproblemen op websites, yn stee fan it folgjen fan prestaasjes.
+profiler-popup-presets-web-compat-label =
+    .label = Webkompatibiliteit
 profiler-popup-presets-custom-label =
     .label = Oanpast
 
@@ -277,5 +293,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Untfang warskôgingen oer datalekken
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskearje jo wiere e-mailadres en telefoannûmer
+appmenuitem-services-relay-description = E-mailmaskersdashboard iepenje
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Beskermje jo online aktiviteit
+appmenu-services-header = Myn tsjinsten
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Probearje oar beskermingsark fan Mozilla:
+appmenu-other-protection-header = Probearje oar beskermingsark fan { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Oare profilen
+appmenu-manage-profiles =
+    .label = Profilen beheare
+appmenu-copy-profile =
+    .label = Dit profyl kopiearje
+appmenu-create-profile =
+    .label = Nij profyl
+appmenu-edit-profile =
+    .aria-label = Profyl bewurkje
+appmenu-profiles-2 =
+    .label = Profilen

@@ -93,6 +93,14 @@ NS_EVENT_MESSAGE(eMouseEnter)
 NS_EVENT_MESSAGE(eMouseLeave)
 NS_EVENT_MESSAGE(eMouseTouchDrag)
 NS_EVENT_MESSAGE(eMouseLongTap)
+// eMouseRawUpdate is for dispatching ePointerRawUpdate caused by a mouse input.
+// When we dispatch ePointerRawUpdate, we need to handle the steps defined by
+// the spec in "fire a pointer event" section like the other pointer event.
+// The steps are handled by
+// PresShell::EventHandler::DispatchPrecedingPointerEvent() and for using it, we
+// should dispatch this internal event instead of dispatching ePointerRawUpdate
+// directly.
+NS_EVENT_MESSAGE(eMouseRawUpdate)
 NS_EVENT_MESSAGE(eMouseExploreByTouch)
 NS_EVENT_MESSAGE_FIRST_LAST(eMouseEvent, eMouseMove, eMouseExploreByTouch)
 
@@ -100,6 +108,13 @@ NS_EVENT_MESSAGE(ePointerClick)
 NS_EVENT_MESSAGE(ePointerAuxClick)
 
 // Pointer spec events
+// NOTE: We handle the steps before dispatching a pointer event which is defined
+// by the spec in "fire a pointer event" section in
+// PresShell::EventHandler::DispatchPrecedingPointerEvent().  Therefore,
+// we should not dispatch ePointer* events with
+// `PresShell::EventHandler::HandleEvent` directly.  Create a new internal
+// message for implementing a new pointer event if the new event is defined as
+// dispatched with "fire a pointer event" steps.
 NS_EVENT_MESSAGE(ePointerMove)
 NS_EVENT_MESSAGE(ePointerUp)
 NS_EVENT_MESSAGE(ePointerDown)
@@ -108,15 +123,19 @@ NS_EVENT_MESSAGE(ePointerOut)
 NS_EVENT_MESSAGE(ePointerEnter)
 NS_EVENT_MESSAGE(ePointerLeave)
 NS_EVENT_MESSAGE(ePointerCancel)
+NS_EVENT_MESSAGE(ePointerRawUpdate)
 NS_EVENT_MESSAGE(ePointerGotCapture)
 NS_EVENT_MESSAGE(ePointerLostCapture)
 NS_EVENT_MESSAGE_FIRST_LAST(ePointerEvent, ePointerMove, ePointerLostCapture)
 
 NS_EVENT_MESSAGE(eContextMenu)
 
+NS_EVENT_MESSAGE(eCommand)
+
 NS_EVENT_MESSAGE(eCueChange)
 
 NS_EVENT_MESSAGE(eBeforeToggle)
+NS_EVENT_MESSAGE(eBeforematch)
 
 NS_EVENT_MESSAGE(eLoad)
 NS_EVENT_MESSAGE(eUnload)
@@ -171,16 +190,6 @@ NS_EVENT_MESSAGE(eLegacyMousePixelScroll)
 
 NS_EVENT_MESSAGE(eScrollPortUnderflow)
 NS_EVENT_MESSAGE(eScrollPortOverflow)
-
-NS_EVENT_MESSAGE(eLegacySubtreeModified)
-NS_EVENT_MESSAGE(eLegacyNodeInserted)
-NS_EVENT_MESSAGE(eLegacyNodeRemoved)
-NS_EVENT_MESSAGE(eLegacyNodeRemovedFromDocument)
-NS_EVENT_MESSAGE(eLegacyNodeInsertedIntoDocument)
-NS_EVENT_MESSAGE(eLegacyAttrModified)
-NS_EVENT_MESSAGE(eLegacyCharacterDataModified)
-NS_EVENT_MESSAGE_FIRST_LAST(eLegacyMutationEvent, eLegacySubtreeModified,
-                            eLegacyCharacterDataModified)
 
 NS_EVENT_MESSAGE(eUnidentifiedEvent)
 
@@ -246,9 +255,6 @@ NS_EVENT_MESSAGE(eContentVisibilityAutoStateChange)
 NS_EVENT_MESSAGE(eSVGLoad)
 NS_EVENT_MESSAGE(eSVGScroll)
 
-// XUL command events
-NS_EVENT_MESSAGE(eXULCommand)
-
 // Cut, copy, paste events
 NS_EVENT_MESSAGE(eCopy)
 NS_EVENT_MESSAGE(eCut)
@@ -287,6 +293,9 @@ NS_EVENT_MESSAGE(eQueryCharacterAtPoint)
 // Query if the DOM element under Event::mRefPoint belongs to our widget
 // or not.
 NS_EVENT_MESSAGE(eQueryDOMWidgetHittest)
+// Query for the DOM element under Event::mRefPoint that is the target of a
+// delayed drop event.
+NS_EVENT_MESSAGE(eQueryDropTargetHittest)
 
 // Video events
 NS_EVENT_MESSAGE(eLoadStart)
@@ -355,6 +364,8 @@ NS_EVENT_MESSAGE(eContentCommandLookUpDictionary)
 // scrollable ancestor element can only be scrolled vertically, and horizontal
 // scrolling is requested using this event, no scrolling will occur.
 NS_EVENT_MESSAGE(eContentCommandScroll)
+NS_EVENT_MESSAGE_FIRST_LAST(eContentCommandEvent, eContentCommandCut,
+                            eContentCommandScroll)
 
 // Event to gesture notification
 NS_EVENT_MESSAGE(eGestureNotify)
@@ -383,10 +394,6 @@ NS_EVENT_MESSAGE(eSMILRepeatEvent)
 
 NS_EVENT_MESSAGE(eAudioProcess)
 NS_EVENT_MESSAGE(eAudioComplete)
-
-// script notification events
-NS_EVENT_MESSAGE(eBeforeScriptExecute)
-NS_EVENT_MESSAGE(eAfterScriptExecute)
 
 NS_EVENT_MESSAGE(eBeforePrint)
 NS_EVENT_MESSAGE(eAfterPrint)
@@ -426,6 +433,14 @@ NS_EVENT_MESSAGE(eTouchMove)
 NS_EVENT_MESSAGE(eTouchEnd)
 NS_EVENT_MESSAGE(eTouchCancel)
 NS_EVENT_MESSAGE(eTouchPointerCancel)
+// eTouchRawUpdate is for dispatching ePointerRawUpdate caused by a touch.
+// When we dispatch ePointerRawUpdate, we need to handle the steps defined by
+// the spec in "fire a pointer event" section like the other pointer event.
+// The steps are handled by
+// PresShell::EventHandler::DispatchPrecedingPointerEvent() and for using it, we
+// should dispatch this internal event instead of dispatching ePointerRawUpdate
+// directly.
+NS_EVENT_MESSAGE(eTouchRawUpdate)
 
 // Pointerlock DOM API
 NS_EVENT_MESSAGE(ePointerLockChange)
@@ -483,7 +498,14 @@ NS_EVENT_MESSAGE(eToggle)
 NS_EVENT_MESSAGE(eClose)
 NS_EVENT_MESSAGE(eCancel)
 
+// Media element events.
+NS_EVENT_MESSAGE(eEncrypted)
+NS_EVENT_MESSAGE(eWaitingForKey)
+
 NS_EVENT_MESSAGE(eScrollend)
+
+// Legacy orientatipon events.
+NS_EVENT_MESSAGE(eMozOrientationChange)
 
 #ifdef UNDEF_NS_EVENT_MESSAGE_FIRST_LAST
 #  undef UNDEF_NS_EVENT_MESSAGE_FIRST_LAST
